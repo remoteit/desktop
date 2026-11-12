@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useDeviceSessions } from './useDeviceSessions'
 import { useDeviceSessionInfo } from './useDeviceSessionInfo'
-import { LocalSubnetName, localSubnetName } from '../services/localSubnet'
+import { LocalSignIn, LocalSubnetName, localSignIn, localSubnetName, onLocalForgotten } from '../services/localSubnet'
 
 export type SubnetReach = {
   name?: string // the service's name in device subnets, when it has one
@@ -28,11 +28,15 @@ export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetRea
     setReach({ checked: false })
     if (!name || !id) return
     let current = true
-    localSubnetName(id, name).then(answer => {
-      if (current) setReach({ local: answer ?? undefined, checked: true })
-    })
+    const ask = () =>
+      localSubnetName(id, name).then(answer => {
+        if (current) setReach({ local: answer ?? undefined, checked: true })
+      })
+    ask()
+    const off = onLocalForgotten(ask)
     return () => {
       current = false
+      off()
     }
   }, [id, name])
 
@@ -43,3 +47,27 @@ export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetRea
 // no name, no daemon here, or one that does not reach it.
 export const useLocalSubnetName = (deviceId?: string, serviceId?: string): LocalSubnetName | undefined =>
   useSubnetReach(deviceId, serviceId).local
+
+// Whether the daemon here would serve this person once they sign in on it, and the link that opens its app's sign-in
+// (services/localSubnet localSignIn): asked only while `enabled` — Connect has nothing to hand off to it otherwise.
+export const useLocalSignIn = (enabled: boolean): LocalSignIn | null => {
+  const [signIn, setSignIn] = useState<LocalSignIn | null>(null)
+
+  useEffect(() => {
+    setSignIn(null)
+    if (!enabled) return
+    let current = true
+    const ask = () =>
+      localSignIn().then(answer => {
+        if (current) setSignIn(answer)
+      })
+    ask()
+    const off = onLocalForgotten(ask)
+    return () => {
+      current = false
+      off()
+    }
+  }, [enabled])
+
+  return signIn
+}

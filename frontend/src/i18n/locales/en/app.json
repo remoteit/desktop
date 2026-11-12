@@ -2245,6 +2245,17 @@
   "localPortsListed": {
     "title": "Also on a local port of this machine"
   },
+  "localSignIn": {
+    "asked": "Finish signing in where remote.it opened it; Connect uses it once you have.",
+    "body": "Until you sign in there, Connect goes through this browser. Signing in lets this computer reach your devices by name.",
+    "checkAgain": "Check again",
+    "nothingOpened": "Nothing opened?",
+    "signIn": "Sign in",
+    "title": "remote.it on this computer isn't signed in",
+    "whereMac": "Open remote.it from the menu bar and choose Sign in.",
+    "whereOther": "Open remote.it from the top bar or the app grid and choose Sign in.",
+    "whereWindows": "Open remote.it from the notification area and choose Sign in."
+  },
   "localSubnetConnect": {
     "address": "resolves here to {{address}}",
     "launch": "Open in the browser",

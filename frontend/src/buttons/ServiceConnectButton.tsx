@@ -12,7 +12,8 @@ import { DesktopUI } from '../components/DesktopUI'
 import { Gutters } from '../components/Gutters'
 import { LocalSubnetConnect } from '../components/LocalSubnetConnect'
 import { isConsoleService } from '../helpers/sshHelper'
-import { useSubnetReach } from '../hooks/useLocalSubnetName'
+import { useLocalSignIn, useSubnetReach } from '../hooks/useLocalSubnetName'
+import { LocalSignInNotice } from '../components/LocalSignInNotice'
 import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
 import { ConsoleTerminalOption } from '../components/ConsoleTerminal'
 import { useApplication } from '../hooks/useApplication'
@@ -44,6 +45,9 @@ export const ServiceConnectButton: React.FC = () => {
     if (localPort.local && !localPort.local.open && !localPort.busy) setPortAsked(false)
   }, [localPort.local?.open, localPort.busy])
   const named = !onPort && ((!!local && !proxy) || gateway)
+  // remote.it is on this machine but does not act for this person (services/localSubnet localSignIn): Connect goes
+  // through this browser meanwhile, and signing in there is offered.
+  const signIn = useLocalSignIn(!local && reach.checked && !!reach.name && !onPort)
   const usePort = () => {
     setPortAsked(true)
     // A web service asks for https the first time (graphql serves it where it can); after that, as the person left it.
@@ -108,6 +112,11 @@ export const ServiceConnectButton: React.FC = () => {
             </>
           }
         >
+          {signIn && !local && !onPort && (
+            <Gutters size="md" top={null} bottom={null}>
+              <LocalSignInNotice signIn={signIn} />
+            </Gutters>
+          )}
           <Gutters size="md" sx={{ display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } }} bottom={null}>
             {onPort ? (
               <Box sx={{ width: '100%' }}>

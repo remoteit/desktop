@@ -2200,6 +2200,17 @@
   "localPortsListed": {
     "title": ""
   },
+  "localSignIn": {
+    "asked": "",
+    "body": "",
+    "checkAgain": "",
+    "nothingOpened": "",
+    "signIn": "",
+    "title": "",
+    "whereMac": "",
+    "whereOther": "",
+    "whereWindows": ""
+  },
   "localSubnetConnect": {
     "address": "",
     "launch": "",

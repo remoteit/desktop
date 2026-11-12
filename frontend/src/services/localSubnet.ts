@@ -96,6 +96,85 @@ async function sendProbe(): Promise<string | null> {
   return null
 }
 
+/* Signing in on this machine (graphql-api docs/PROXY-GROUPS.md §15, "The portal and an installed daemon"). A name is
+   the machine's but a connection is the OS account's: graphql names a service only where the daemon here would serve
+   this person, and otherwise says whether signing in on it would (signInNeeded) — then the page connects with its own
+   client and offers the app's own sign-in: signInLink, remoteit-<stage>://sign-in, which opens the installed app's
+   sign-in and carries nothing. Opened on the person's click alone; the app signs in with Permitteer itself. No link:
+   an older package, whose menu is where to sign in. In the Desktop app none of this: the name API answers for the
+   person signed in on the app's own account, and the app signs in itself. */
+export type LocalSignIn = { link?: string }
+
+let signInKept: { at: number; answer: Promise<LocalSignIn | null> } | undefined
+
+export function localSignIn(): Promise<LocalSignIn | null> {
+  if (browser.isElectron || Date.now() < absentUntil) return Promise.resolve(null)
+  if (signInKept && Date.now() - signInKept.at < KEPT_MS) return signInKept.answer
+  signInKept = { at: Date.now(), answer: askSignIn() }
+  return signInKept.answer
+}
+
+async function askSignIn(): Promise<LocalSignIn | null> {
+  if (!(await signInServed())) return null
+  const token = await seenProbe()
+  if (!token) return null
+  const response = await graphQLBasicRequest(
+    'query SubnetProbeSignIn($token: String!) { subnetProbe(token: $token) { seen signInNeeded signInLink } }',
+    { token },
+    true
+  )
+  const answer = response !== 'ERROR' ? response.data?.data?.subnetProbe : undefined
+  if (!answer?.signInNeeded) return null
+  const link = signInLinkOf(answer.signInLink)
+  return link ? { link } : {}
+}
+
+// Only a link of the app's own shape is ever opened from an answer: remoteit-<stage>://sign-in, nothing in it.
+export const signInLinkOf = (link: unknown): string | undefined =>
+  typeof link === 'string' && /^remoteit-[a-z0-9][a-z0-9-]{0,30}:\/\/sign-in$/.test(link) ? link : undefined
+
+// Opens the app's sign-in: the browser asks the person to open the app, which signs in itself.
+export function openSignInLink(link: string) {
+  window.location.href = link
+}
+
+/* Whether the API says signInNeeded: the portal is released apart from graphql, and a field it lacks would fail the
+   whole query — so read from the schema once; a failed read is read again next time. */
+let signInFields: Promise<boolean> | undefined
+
+function signInServed(): Promise<boolean> {
+  signInFields ??= graphQLBasicRequest(
+    'query SubnetProbeFields { answer: __type(name: "SubnetProbeAnswer") { fields { name } } }',
+    {},
+    true
+  ).then(response => {
+    if (response === 'ERROR') {
+      signInFields = undefined
+      return false
+    }
+    const fields: { name: string }[] = response.data?.data?.answer?.fields || []
+    return fields.some(f => f.name === 'signInNeeded') && fields.some(f => f.name === 'signInLink')
+  })
+  return signInFields
+}
+
+// Every answer of the daemon here forgotten and asked again — after a sign-in on this machine, whose next answer names
+// the service and hands Connect off.
+const forgotten = new Set<() => void>()
+
+export function forgetLocal() {
+  kept.clear()
+  signInKept = undefined
+  forgotten.forEach(listener => listener())
+}
+
+export function onLocalForgotten(listener: () => void): () => void {
+  forgotten.add(listener)
+  return () => {
+    forgotten.delete(listener)
+  }
+}
+
 async function askDaemon(name: string): Promise<LocalSubnetName | null> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
