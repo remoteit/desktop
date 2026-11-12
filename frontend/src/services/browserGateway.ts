@@ -15,10 +15,14 @@ export function gatewayURL(name: string): string {
 
 export type Handoff = { code: string; presence: string[]; reflector: string }
 
+// A browser's client is kept, and used again on the next visit; one never back — a browser given up, a profile deleted —
+// is disabled by graphql's expiry after this long offline (reason expired), and restores itself if it does come back.
+export const BROWSER_CLIENT_TIMEOUT_SECONDS = 30 * 24 * 60 * 60
+
 export async function handoff(): Promise<Handoff | null> {
   const response = await graphQLBasicRequest(`query BrowserClientHandoff {
     deviceSessionServers { presence reflector }
-    login { registrationCode(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true) }
+    login { registrationCode(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true, timeout: ${BROWSER_CLIENT_TIMEOUT_SECONDS}) }
   }`)
   if (response === 'ERROR') return null
   const data = response.data?.data

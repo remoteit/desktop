@@ -51,6 +51,7 @@ import { RootModel } from '.'
 import zendesk from '../services/zendesk'
 import i18n from '../i18n'
 import { withTimeout } from '../helpers/sleep'
+import { browserClientUsed, resetBrowserClient } from '../services/browserClient'
 import { parseAgentOwned } from '@common/agentOwner'
 
 export type SignInErrorCode = OidcErrorCode | 'agentOwned'
@@ -538,6 +539,10 @@ export default createModel<RootModel>()({
       // needs a live token — letting it run unawaited raced the oidcClearLocal() below and left
       // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
       await releaseSessionGrants(dispatch)
+      // This browser's remote.it client acts for the person who signed in — every device page they may reach opens
+      // through it with no session — so it forgets itself, and its device goes, while a token can still remove it.
+      // Bounded: a client that does not answer never holds the sign-out; it is forgotten all the same.
+      if (browserClientUsed()) await withTimeout(resetBrowserClient({ signingOut: true }).catch(() => {}), 15_000)
       await persistor.purge()
       // Drop this app's tokens. The AS is never called from here — the failure paths land here
       // too; the person's own sign-out ended the AS session in signOut before this.
