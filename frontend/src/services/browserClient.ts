@@ -12,6 +12,10 @@ export function clientOrigin(): string {
 
 let channel: Promise<MessagePort> | undefined
 
+// The frame lives as long as the page. It loads again by itself when a newer client is published (connectd
+// web/client-worker.js newerPublished: the old client tells its frames to reload, and ends), and says client-ready
+// again: connected anew, its new port is the channel from then on. A client that asks for a handoff — the first time,
+// or again after its device was deleted — is given a new one-time code each time it asks, one at a time.
 export function clientChannel(): Promise<MessagePort> {
   channel ??= new Promise<MessagePort>((resolve, reject) => {
     const origin = clientOrigin()
@@ -19,19 +23,26 @@ export function clientChannel(): Promise<MessagePort> {
     frame.src = `${origin}/client.html`
     frame.style.display = 'none'
     frame.setAttribute('aria-hidden', 'true')
-    let handedOff = false
+    let resolved = false
+    let handingOff = false
     const timer = setTimeout(() => reject(new Error('the remote.it client did not answer')), 20_000)
     window.addEventListener('message', async e => {
-      if (e.origin !== origin) return
+      if (e.origin !== origin || e.source !== frame.contentWindow) return
       const d = e.data
       if (d?.type === 'client-ready') frame.contentWindow?.postMessage({ type: 'connect' }, origin)
       else if (d?.type === 'port') {
         clearTimeout(timer)
+        if (resolved) channel = Promise.resolve(d.port)
+        resolved = true
         resolve(d.port)
-      } else if (d?.type === 'state' && d.state === 'needs-handoff' && !handedOff) {
-        handedOff = true
-        const h = await handoff()
-        if (h) frame.contentWindow?.postMessage({ type: 'handoff', handoff: h }, origin)
+      } else if (d?.type === 'state' && d.state === 'needs-handoff' && !handingOff) {
+        handingOff = true
+        try {
+          const h = await handoff()
+          if (h) frame.contentWindow?.postMessage({ type: 'handoff', handoff: h }, origin)
+        } finally {
+          handingOff = false
+        }
       }
     })
     document.body.appendChild(frame)
