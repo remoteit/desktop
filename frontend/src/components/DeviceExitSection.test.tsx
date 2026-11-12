@@ -46,8 +46,8 @@ vi.mock('./Notice', () => ({
 }))
 // A row: its label and sub-label, and its button (if any).
 vi.mock('./ListItemSetting', () => ({
-  ListItemSetting: ({ icon, label, subLabel, button, disabled, onButtonClick }: any) => (
-    <div data-item={icon}>
+  ListItemSetting: ({ icon, iconColor, label, subLabel, button, disabled, onButtonClick }: any) => (
+    <div data-item={icon} data-color={iconColor}>
       {label}
       {subLabel ? ` — ${subLabel}` : ''}
       {button ? (
@@ -92,6 +92,7 @@ import {
   choiceName,
   choiceOf,
   chosenLine,
+  exitErrorLine,
   lentLine,
   policyLine,
   throughLine,
@@ -638,6 +639,70 @@ describe('who chose the exit, and the machine’s policy', () => {
     const page = await render()
     expect(select(page).dataset.value).toBe('')
     expect(page.textContent).not.toContain('Set by')
+  })
+})
+
+// connectd's report while it cannot set the exit's routes on the machine (busybox's ip): graphql's Device.exitError.
+const FAILED =
+  "the exit's routes could not be set: ip -4 route replace blackhole default metric 4096 table 29801: invalid argument '29801' to 'table'; this machine's traffic goes out directly, not through the exit"
+const HELD =
+  "the exit's routes could not be set: ip -4 rule add fwmark 0x1: invalid argument; the kill switch holds this machine's traffic"
+const failingRows = (page: HTMLElement) =>
+  [...page.querySelectorAll('[data-item="triangle-exclamation"]')].map(
+    row => `${row.getAttribute('data-color')}: ${row.textContent}`
+  )
+
+describe('the exit not working on the device', () => {
+  it('its routes could not be set: where its traffic goes, in the danger or warning colour, with the device’s words', async () => {
+    deviceExit.mockResolvedValue(
+      exitOf({
+        usesExit: uses(office),
+        usesExitThrough: { id: 'MAC', name: 'Office Mac' },
+        exitError: { code: 'routes-failed', message: FAILED, at: '2026-11-11T20:00:00Z' },
+      })
+    )
+    let page = await render()
+    // Not going out through the exit's device: that is said only while it works.
+    expect(page.textContent).not.toContain('Going out through Office Mac now')
+    expect(failingRows(page)).toEqual([
+      `danger: Not working on this device: the exit’s routes could not be set — traffic goes out directly — ${FAILED}`,
+    ])
+    deviceExit.mockResolvedValue(
+      exitOf({ usesExit: uses(office), exitError: { code: 'routes-held', message: HELD, at: null } })
+    )
+    page = await render()
+    expect(failingRows(page)).toEqual([
+      `warning: Not working on this device: the exit’s routes could not be set — traffic is blocked — ${HELD}`,
+    ])
+  })
+
+  it('shown to one who does not manage the device too, should graphql say it; nothing while it works or where the API lacks it', async () => {
+    deviceExit.mockResolvedValue(
+      exitOf({ usesExit: uses(office), exitError: { code: 'routes-held', message: HELD, at: null } })
+    )
+    expect(failingRows(await render(['VIEW']))).toHaveLength(1)
+    for (const exitError of [null, undefined]) {
+      deviceExit.mockResolvedValue(
+        exitOf({ usesExit: uses(office), usesExitThrough: { id: 'MAC', name: 'Office Mac' }, exitError })
+      )
+      const page = await render()
+      expect(failingRows(page)).toEqual([])
+      expect(page.textContent).toContain('Going out through Office Mac now')
+    }
+  })
+
+  it('in words: a code it does not know is said as not working, in the device’s words; words that are only the code, not repeated', () => {
+    expect(exitErrorLine(t, null)).toBeNull()
+    expect(exitErrorLine(t, { code: 'routes-held', message: 'routes-held', at: null })).toEqual({
+      label: 'Not working on this device: the exit’s routes could not be set — traffic is blocked',
+      words: undefined,
+      color: 'warning',
+    })
+    expect(exitErrorLine(t, { code: 'dns-failed', message: 'its names could not be taken', at: null })).toEqual({
+      label: 'Not working on this device',
+      words: 'its names could not be taken',
+      color: 'danger',
+    })
   })
 })
 

@@ -11,6 +11,9 @@ import { graphQLGetErrors } from './graphQL'
    each: Device.exitSetOnDeviceSignedIn, exitSetOnDeviceAdmin and exitThroughPerson for the exit, DeviceSetting.signedIn
    and admin for Protect.
 
+   Why the exit chosen is not working on the device, by its own report (Device.exitError: its routes could not be set
+   there), is read from the same probe: a field of the device's exit, as these are.
+
    Offered only where the API has them, read from its schema once (as services/deviceDisable): the portal meets graphqls
    without them, where a query naming them would fail. */
 
@@ -24,9 +27,9 @@ export type DeviceSignIn = {
 
 export type PersonRef = { id: string; email: string | null }
 
-type Served = { signIns: boolean; exit: string; setting: string }
+type Served = { signIns: boolean; exit: string; setting: string; exitError: string }
 
-const NONE: Served = { signIns: false, exit: '', setting: '' }
+const NONE: Served = { signIns: false, exit: '', setting: '', exitError: '' }
 
 const PROBE = `query DeviceSignInFields {
   device: __type(name: "Device") { fields { name } }
@@ -53,6 +56,7 @@ export function parseDeviceSignIns(data: any): Served {
     setting: [setting.has('signedIn') && 'signedIn { id email }', setting.has('admin') && 'admin']
       .filter(Boolean)
       .join(' '),
+    exitError: device.has('exitError') ? 'exitError { code message at }' : '',
   }
 }
 
@@ -74,6 +78,9 @@ export const deviceSignInsServed = async () => (await served()).signIns
 // The fields a device's exit query adds (who chose it on the machine), and a device setting's: none where not served.
 export const exitSignInFields = async () => (await served()).exit
 export const settingSignInFields = async () => (await served()).setting
+
+// The field a device's exit query adds for why its exit is not working on it: none where not served.
+export const exitErrorFields = async () => (await served()).exitError
 
 // One read per device for every part of a page that asks in the same moment.
 const reading = new Map<string, Promise<DeviceSignIn[] | null>>()

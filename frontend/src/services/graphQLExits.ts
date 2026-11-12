@@ -2,7 +2,7 @@ import { post } from './post'
 import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { EXIT_DEVICE_FIELDS, ExitDevice } from './graphQLDeviceRuns'
-import { PersonRef, exitSignInFields } from './deviceSignIns'
+import { PersonRef, exitErrorFields, exitSignInFields } from './deviceSignIns'
 import { ExitServing, exitServingFields } from './exitServing'
 
 /* Exits (graphql-api docs/PROXY-GROUPS.md §13): what devices send their traffic out through, run by devices — remote.it
@@ -263,14 +263,20 @@ export type DeviceExit = {
   exitSetOnDeviceSignedIn?: PersonRef | null
   exitSetOnDeviceAdmin?: boolean | null
   exitThroughPerson?: PersonRef | null
+  exitError?: DeviceExitError | null
 }
+
+// Why the exit chosen is not working on the device, in its own words (its report): its routes could not be set there —
+// routes-held, the kill switch holding its traffic, or routes-failed, its traffic going out directly. Only where the API
+// has it.
+export type DeviceExitError = { code: string; message: string; at: string | null }
 
 export const graphQLDeviceExit = async (deviceId: string) =>
   read<DeviceExit | null>(
     `query DeviceExit($id: [String!]!) {
       login { device(id: $id) { id usesExit { id name remoteit owner { id email } offered dormant ${await exitServingFields()} }
         usesExitThrough { id name } exitDormant exitSetOnDevice exitSetOnDeviceBy exitSetBy { email } exitPolicy
-        exitAllowed exitPinned ${await exitSignInFields()} } }
+        exitAllowed exitPinned ${await exitSignInFields()} ${await exitErrorFields()} } }
     }`,
     { id: [deviceId] },
     'usesExit',

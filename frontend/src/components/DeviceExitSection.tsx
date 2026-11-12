@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { ListItem, ListItemIcon } from '@mui/material'
+import { Box, ListItem, ListItemIcon } from '@mui/material'
 import { refusalOf } from '../services/graphQL'
 import {
   DeviceExit,
+  DeviceExitError,
   OfferedExit,
   ProtectInfo,
   graphQLDeviceExit,
@@ -33,7 +34,10 @@ import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
    An exit is run by one device or several, and remote.it picks the one its new connections go through: each exit is
    offered with its devices counted (Exit.serving, where the API counts them), and the device of it in use is said with
    them. Only someone who manages the device chooses; anyone else sees the choice, read-only. The administrator's
-   policy shows in the list too: an exit it does not allow is there, and not chosen. */
+   policy shows in the list too: an exit it does not allow is there, and not chosen.
+   Where the exit is not working on the device — its routes could not be set there, by its own report (Device.exitError,
+   where the API has it) —, a line under the choice says so, and where its traffic goes, in the device's words; the
+   device of the exit its connections would go through is not said then. */
 export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const [info, setInfo] = useState<DeviceExit | null>()
@@ -94,6 +98,8 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const protectNote = route ? settingNote(t, protectSetting) : undefined
   const keptName = keptDormant ? protect?.routeName || keptDormant : null
 
+  const failing = exitErrorLine(t, info.exitError)
+
   const choose = async (via: string | null) => {
     if (saving) return
     setSaving(true)
@@ -130,6 +136,18 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
             'All of this device’s traffic leaves through the exit — and stops, rather than going its usual way, while the exit cannot be reached.'
           )}
           onChange={via => choose(via || null)}
+        />
+      )}
+      {failing && (
+        <ListItemSetting
+          icon="triangle-exclamation"
+          iconColor={failing.color}
+          label={
+            <Box component="span" sx={{ color: `${failing.color === 'danger' ? 'error' : 'warning'}.main` }}>
+              {failing.label}
+            </Box>
+          }
+          subLabel={failing.words}
         />
       )}
       {refusal && (
@@ -202,7 +220,8 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
           )}
         />
       )}
-      {exit && !info.exitDormant && exit.offered && info.usesExitThrough && (
+      {/* Not while it is not working on the device: its traffic is held, or goes out directly, not through it. */}
+      {exit && !info.exitDormant && exit.offered && info.usesExitThrough && !failing && (
         <ListItemSetting
           icon="route"
           label={t('deviceExit.through', 'Going out through {{device}} now', { device: info.usesExitThrough.name })}
@@ -216,6 +235,41 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
 }
 
 type T = TFunction
+
+// The exit not working on the device, by its report: its routes could not be set — its traffic going out directly
+// (routes-failed: not protected, the danger colour) or held by the kill switch (routes-held: blocked, a warning) —, as
+// connectd's menu says it ("Exit's routes not set — traffic goes out directly"), with the device's own words under it.
+// A code from a newer daemon is said as not working, in its words. None while it works.
+export function exitErrorLine(
+  t: T,
+  error: DeviceExitError | null | undefined
+): { label: string; words: string | undefined; color: 'danger' | 'warning' } | null {
+  if (!error) return null
+  const words = error.message && error.message !== error.code ? error.message : undefined
+  if (error.code === 'routes-held')
+    return {
+      label: t(
+        'deviceExit.errorHeld',
+        'Not working on this device: the exit’s routes could not be set — traffic is blocked'
+      ),
+      words,
+      color: 'warning',
+    }
+  if (error.code === 'routes-failed')
+    return {
+      label: t(
+        'deviceExit.errorFailed',
+        'Not working on this device: the exit’s routes could not be set — traffic goes out directly'
+      ),
+      words,
+      color: 'danger',
+    }
+  return {
+    label: t('deviceExit.error', 'Not working on this device'),
+    words: error.message || error.code,
+    color: 'danger',
+  }
+}
 
 // An exit offered, as the list shows it: named by why it is offered, its devices counted under it, and — where the
 // machine's administrator allows only some exits — one not among them there, not chosen (graphql would refuse it).

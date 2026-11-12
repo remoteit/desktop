@@ -11,6 +11,7 @@ vi.mock('axios', () => ({ default: { request, isAxiosError: () => false } }))
 
 import {
   deviceSignInsServed,
+  exitErrorFields,
   exitSignInFields,
   graphQLDeviceSignIns,
   resetDeviceSignIns,
@@ -106,5 +107,17 @@ describe('who set the exit and Protect on the machine', () => {
     expect(await exitSignInFields()).toBe('')
     expect(await settingSignInFields()).toBe('')
     expect(request).toHaveBeenCalledTimes(3)
+  })
+})
+
+describe('why the exit is not working on the device', () => {
+  it('asked for only where the API has Device.exitError, from the same probe', async () => {
+    request.mockResolvedValueOnce(schema(['signIns', 'exitError']))
+    expect(await exitErrorFields()).toBe('exitError { code message at }')
+    expect(await exitSignInFields()).toBe('')
+    resetDeviceSignIns()
+    request.mockResolvedValueOnce(schema(['signIns']))
+    expect(await exitErrorFields()).toBe('')
+    expect(request).toHaveBeenCalledTimes(2)
   })
 })

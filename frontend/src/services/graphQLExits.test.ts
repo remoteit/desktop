@@ -10,8 +10,11 @@ vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/grap
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
 // What a device's exit adds where the API has sign-ins per account: read from its schema there (deviceSignIns.test.ts).
-const { exitFields } = vi.hoisted(() => ({ exitFields: vi.fn(async () => '') }))
-vi.mock('./deviceSignIns', () => ({ exitSignInFields: exitFields }))
+const { exitFields, errorFields } = vi.hoisted(() => ({
+  exitFields: vi.fn(async () => ''),
+  errorFields: vi.fn(async () => ''),
+}))
+vi.mock('./deviceSignIns', () => ({ exitSignInFields: exitFields, exitErrorFields: errorFields }))
 // An exit's devices counted, where the API counts them: read from its schema there (exitServing.test.ts).
 const { servingFields } = vi.hoisted(() => ({ servingFields: vi.fn(async () => '') }))
 vi.mock('./exitServing', () => ({ exitServingFields: servingFields }))
@@ -280,6 +283,15 @@ describe('a device’s exit', () => {
     )
     await graphQLDeviceExit('DEV')
     expect(asked().query).not.toContain('exitSetOnDeviceSignedIn')
+  })
+
+  it('why it is not working on the device, where the API has it', async () => {
+    errorFields.mockResolvedValueOnce('exitError { code message at }')
+    request.mockResolvedValue(answer({ login: { device: [] } }))
+    await graphQLDeviceExit('DEV')
+    expect(asked().query).toContain('exitPinned  exitError { code message at }')
+    await graphQLDeviceExit('DEV')
+    expect(asked().query).not.toContain('exitError')
   })
 
   it('sends its traffic out through an exit, or none; a refusal comes back in graphql’s words', async () => {
