@@ -146,11 +146,12 @@ export default createModel<RootModel>()({
       return null
     },
 
-    // A new code becomes the product's current one; the earlier codes keep working until revoked. The product is read
-    // again after either change, so its command and its list of codes come from graphql together.
-    async rotateCode(productId: string, state) {
+    // A new code becomes the product's current one; the code it replaces keeps working until revoked, unless
+    // revokePrevious stops it now. The product is read again after either change, so its command and its list of codes
+    // come from graphql together.
+    async rotateCode({ productId, revokePrevious }: { productId: string; revokePrevious?: boolean }, state) {
       const accountId = selectActiveAccountId(state)
-      const response = await graphQLRotateDeviceProductCode(productId)
+      const response = await graphQLRotateDeviceProductCode(productId, revokePrevious)
       if (response === 'ERROR' || !response?.data?.data?.rotateDeviceProductCode) return false
       await dispatch.products.refreshCodes({ productId, accountId })
       return true

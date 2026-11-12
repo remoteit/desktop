@@ -157,16 +157,16 @@ export async function graphQLRemoveDeviceProductService(id: string) {
   )
 }
 
-export async function graphQLRotateDeviceProductCode(productId: string) {
+export async function graphQLRotateDeviceProductCode(productId: string, revokePrevious = false) {
   return await graphQLBasicRequest(
-    ` mutation RotateDeviceProductCode($productId: ID!) {
-        rotateDeviceProductCode(productId: $productId) {
+    ` mutation RotateDeviceProductCode($productId: ID!, $revokePrevious: Boolean) {
+        rotateDeviceProductCode(productId: $productId, revokePrevious: $revokePrevious) {
           code
           created
           revoked
         }
       }`,
-    { productId }
+    { productId, revokePrevious }
   )
 }
 
