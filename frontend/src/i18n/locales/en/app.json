@@ -2961,6 +2961,27 @@
     "productName": "Product Name",
     "title": "Create Product"
   },
+  "productApps": {
+    "consent": "Consent…",
+    "consentAction": "Consent to full control",
+    "consented": "Consented to run as root by {{by}}, {{when}}",
+    "hint": "An app left to each device is the device’s to turn on or off. One set here is locked on its devices while the product is synced or enforced.",
+    "hintEnforced": "An app set here is locked on its devices. One not set is turned off on them, as the product is enforced.",
+    "lockedEnforced": "Locked on its devices (enforced)",
+    "lockedSynced": "Locked on its devices (synced)",
+    "needsConsent": "A new version needs to run as root: its devices are not turned on until you consent",
+    "noRelease": "No release here yet",
+    "notChanged": "The app was not changed.",
+    "notLocked": "Given to its devices, not locked: this setting can’t be fixed",
+    "notLockedBool": "Given to its devices, not locked: this setting can’t be forced on",
+    "onDevices": "On its devices",
+    "pinned": "Pinned",
+    "rootBody": "{{app}}, published by {{publisher}}, runs as root: it gets full control of this device — every file, account and program on it — on every device in this product, now and later.",
+    "rootTitle": "Run {{app}} as root on this product’s devices?",
+    "rootTrust": "Turn it on only if you trust {{publisher}} with every device in this product.",
+    "title": "Apps",
+    "unsetEnforced": "Not set: off on its devices"
+  },
   "productDevices": {
     "more_one": "and {{count}} more",
     "more_other": "and {{count}} more",

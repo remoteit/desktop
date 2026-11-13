@@ -28,6 +28,7 @@ vi.mock('../../hooks/useProductPolicy', () => ({ useProductPolicy: () => hook.cu
 vi.mock('../../components/ProductHeaderMenu', () => ({ ProductHeaderMenu: part('header') }))
 vi.mock('../../components/ProductSyncLevel', () => ({ ProductSyncLevel: part('sync') }))
 vi.mock('../../components/ProductPolicySettings', () => ({ ProductPolicySettings: part('settings') }))
+vi.mock('../../components/ProductPolicyApps', () => ({ ProductPolicyApps: part('apps') }))
 vi.mock('../../components/ProductGrants', () => ({ ProductGrants: part('grants') }))
 vi.mock('../../components/ProductDevices', () => ({ ProductDevices: part('devices') }))
 vi.mock('../../components/Gutters', () => ({ Gutters: ({ children }: any) => <>{children}</> }))
@@ -107,6 +108,20 @@ describe('a product’s policy page', () => {
     hook.current = { served: { ...SERVED, product: false }, policy: null, reload }
     page = await render()
     expect(page.textContent).toBe('Product policy is not available here.')
+  })
+
+  it('its apps after its settings, where the API serves them, with its level', async () => {
+    const apps = [{ id: 'remoteit.console', name: 'Console' }]
+    hook.current = { served: SERVED, policy: { ...POLICY, apps }, reload }
+    const page = await render()
+    expect(parts(page)).toEqual(['header', 'sync', 'settings', 'apps', 'grants', 'devices'])
+    expect(children.apps).toMatchObject({ productId: 'P1', apps, sync: 'synced', manage: true })
+    await act(async () => children.apps.onChanged())
+    expect(reload).toHaveBeenCalled()
+    act(() => root.unmount())
+    permissions.current = ['VIEW']
+    await render()
+    expect(children.apps.manage).toBe(false)
   })
 
   it('only its managers change it', async () => {

@@ -2908,6 +2908,27 @@
     "productName": "プロダクト名",
     "title": "プロダクトを作成"
   },
+  "productApps": {
+    "consent": "",
+    "consentAction": "",
+    "consented": "",
+    "hint": "",
+    "hintEnforced": "",
+    "lockedEnforced": "",
+    "lockedSynced": "",
+    "needsConsent": "",
+    "noRelease": "",
+    "notChanged": "",
+    "notLocked": "",
+    "notLockedBool": "",
+    "onDevices": "",
+    "pinned": "",
+    "rootBody": "",
+    "rootTitle": "",
+    "rootTrust": "",
+    "title": "",
+    "unsetEnforced": ""
+  },
   "productDevices": {
     "more_other": "",
     "none": "",

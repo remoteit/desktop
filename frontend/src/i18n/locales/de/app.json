@@ -2961,6 +2961,27 @@
     "productName": "Produktname",
     "title": "Produkt erstellen"
   },
+  "productApps": {
+    "consent": "",
+    "consentAction": "",
+    "consented": "",
+    "hint": "",
+    "hintEnforced": "",
+    "lockedEnforced": "",
+    "lockedSynced": "",
+    "needsConsent": "",
+    "noRelease": "",
+    "notChanged": "",
+    "notLocked": "",
+    "notLockedBool": "",
+    "onDevices": "",
+    "pinned": "",
+    "rootBody": "",
+    "rootTitle": "",
+    "rootTrust": "",
+    "title": "",
+    "unsetEnforced": ""
+  },
   "productDevices": {
     "more_one": "",
     "more_other": "",
