@@ -20,6 +20,19 @@ export type AppSettingType = 'bool' | 'choice' | 'int' | 'string' | 'list'
 
 export type AppSettingChoice = { value: string; label: string }
 
+// A string's rules, and a list item's: at most max characters, and the whole value matching pattern where there is one.
+export type AppStringRules = { max: number; pattern: string | null }
+
+// What the release declares of a setting beyond its type and label: a string's or a list item's rules, a list's most
+// items, an int's bounds (graphql's DeviceAppSetting.declaration, as app-settings.ts parses it).
+export type AppSettingDeclaration = {
+  string?: AppStringRules
+  item?: AppStringRules
+  maxItems?: number
+  min?: number | null
+  max?: number | null
+}
+
 export type DeviceAppSetting = SettingState & {
   type: AppSettingType | string
   label: string
@@ -27,6 +40,7 @@ export type DeviceAppSetting = SettingState & {
   default: any
   choices: AppSettingChoice[] | null // a choice's
   deprecated: string | null // why, where its release deprecates it
+  declaration?: AppSettingDeclaration | null
 }
 
 // A consent to an app running as root (presence-server docs/device-apps-design.md, "Root, shown and consented to"): who,
@@ -52,7 +66,7 @@ export type DeviceApp = {
   version: string | null // the app installed there
   state: DeviceAppState
   detail: string | null
-  serviceId: string | null // the service it is reached as
+  serviceId: string | null // the service it is reached as, while it is on and served
   locked?: SettingLock | null // on or off as its product holds it: a synced or enforced product that sets it
   rootConsent?: DeviceAppRootConsent | null // the consent to root it runs under, where the API says
   // A newer release that newly runs as root, waiting for a consent: the device stays on its last restricted release
@@ -73,7 +87,7 @@ export const rootConsentOf = (consent: any): DeviceAppRootConsent | null =>
     : null
 
 const SETTING_FIELDS =
-  'name type label help default value at by onDevice control locked { product level } deprecated choices { value label }'
+  'name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration'
 const FIELDS = `id name publisher root on channel version state detail serviceId settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
@@ -84,6 +98,7 @@ function parsedSetting(setting: any): DeviceAppSetting {
     locked: setting.locked?.product || setting.locked?.level ? setting.locked : null,
     choices: setting.choices ?? null,
     deprecated: setting.deprecated ?? null,
+    declaration: setting.declaration ?? null,
   }
 }
 
@@ -107,6 +122,41 @@ export async function graphQLDeviceApps(deviceId: string): Promise<DeviceApp[] |
   if (graphQLGetErrors(response, true, { query, variables })) return null
   const apps = response.data?.data?.login?.device?.[0]?.apps
   return apps ? apps.map(parsed) : null
+}
+
+// What graphql says of a release a device's remote.it is too old to run — restricted, a script or bundle, one served on
+// a socket — where it is on: its state unavailable, this its detail.
+export const NEEDS_NEWER = 'Needs a newer remote.it on this device'
+export const needsNewer = (app: Pick<DeviceApp, 'state' | 'detail'>) => app.state === 'unavailable' && app.detail === NEEDS_NEWER
+
+/* What the catalogue offers a device under "Add an app" (graphql's Device.availableApps): remote.it's apps and its own
+   account's that it has no row for, each with whether it runs as root, the release its stage gives (none: it cannot be
+   turned on yet), why its administrator refuses it there, and whether its remote.it is too old to run it. */
+export type AvailableApp = {
+  id: string
+  name: string
+  publisher: string
+  description: string | null
+  root: boolean
+  version: string | null
+  refused: string | null
+  needsNewer: boolean
+}
+
+// [] where the API has none, or the device is not this person's to manage.
+export async function graphQLAvailableApps(deviceId: string): Promise<AvailableApp[]> {
+  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher description root version refused needsNewer } } } }`
+  const variables = { id: [deviceId] }
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return []
+  if (graphQLGetErrors(response, true, { query, variables })) return []
+  return (response.data?.data?.login?.device?.[0]?.availableApps ?? []).map((app: any) => ({
+    ...app,
+    description: app.description ?? null,
+    version: app.version ?? null,
+    refused: app.refused ?? null,
+    needsNewer: !!app.needsNewer,
+  }))
 }
 
 export type SetDeviceAppOptions = {

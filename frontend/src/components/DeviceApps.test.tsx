@@ -2,13 +2,15 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { apps, hostKey, name, openTerminal } = vi.hoisted(() => ({
+const { apps, hostKey, name, openTerminal, push } = vi.hoisted(() => ({
+  push: vi.fn(),
   apps: { value: {} as any },
   hostKey: vi.fn(),
   name: { value: 'pi-evan.on.remote.it' as string | undefined },
   openTerminal: vi.fn(),
 }))
 vi.mock('../services/post', () => ({ post: vi.fn() }))
+vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }) }))
 vi.mock('../services/graphQL', () => ({ graphQLBasicRequest: vi.fn(), graphQLGetErrors: vi.fn() }))
 vi.mock('../services/graphQLDeviceApps', async importOriginal => ({
   ...(await importOriginal<any>()),
@@ -128,6 +130,7 @@ beforeEach(() => {
   setSetting.mockReset().mockResolvedValue(true)
   hostKey.mockReset().mockResolvedValue('SHA256:abc')
   openTerminal.mockReset()
+  push.mockReset()
   name.value = 'pi-evan.on.remote.it'
   apps.value = { apps: [consoleApp(), backup()], switching: undefined, turn, setSetting }
 })
@@ -155,6 +158,8 @@ describe('the Apps section', () => {
     expect(other.textContent).toContain('Backup')
     expect(other.querySelector('[data-app-about]')?.textContent).toBe('By Acme')
     expect(other.querySelector('[data-app-root]')).toBeNull()
+    expect(other.querySelector('[data-app-restricted]')?.textContent).toBe('Runs restricted: an account of its own on this device')
+    expect(console.querySelector('[data-app-restricted]')).toBeNull()
     expect(other.querySelector('[data-app-state]')?.textContent).toBe('Off')
     expect(other.querySelector(':scope > .MuiListItem-root [data-icon]')?.getAttribute('data-icon')).toBe('cube')
   })
@@ -472,5 +477,152 @@ describe('root, consented to', () => {
     expect(appRow(page, 'remoteit.console').querySelector('[data-app-state]')?.textContent).toBe(
       'Not allowed here: this device’s administrator does not allow apps that run as root (apps_root_control off)'
     )
+  })
+})
+
+describe('build step 5: any app, restricted or root, opened by its type', () => {
+  const files = (more: Partial<DeviceApp> = {}): DeviceApp => ({
+    id: 'remoteit.files',
+    name: 'Files',
+    publisher: 'remote.it',
+    root: false,
+    on: true,
+    channel: null,
+    version: '1.0.0',
+    state: 'running',
+    detail: null,
+    serviceId: 'S7',
+    settings: [
+      setting({
+        name: 'root',
+        type: 'string',
+        label: 'Folder shown',
+        help: null,
+        default: '/',
+        value: '/',
+        declaration: { string: { max: 8, pattern: '/[a-z/]*' } },
+      }),
+    ],
+    ...more,
+  })
+  const type = async (field: HTMLInputElement, text: string) => {
+    await act(async () => {
+      const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+      set.call(field, text)
+      field.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await act(async () => field.dispatchEvent(new FocusEvent('focusout', { bubbles: true })))
+  }
+
+  it('Open, while it runs with a service: its connection started and launched by its type; none while off, or for the console', async () => {
+    apps.value.apps = [consoleApp(), files()]
+    let page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'remoteit.console').querySelector('[data-app-open]')).toBeNull()
+    await click(appRow(page, 'remoteit.files').querySelector('[data-app-open]'))
+    expect(push).toHaveBeenCalledWith({ pathname: '/devices/D1/S7/connect', state: { autoConnect: true, autoLaunch: true } })
+    act(() => root.unmount())
+    apps.value.apps = [files({ state: 'starting' }), backup({ on: true, state: 'running', serviceId: null })]
+    page = await render(<DeviceApps device={device()} />)
+    expect(page.querySelector('[data-app-open]')).toBeNull()
+  })
+
+  it('a release this device\'s remote.it is too old for: Needs a newer remote.it', async () => {
+    apps.value.apps = [files({ state: 'unavailable', detail: 'Needs a newer remote.it on this device', serviceId: null })]
+    const page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'remoteit.files').querySelector('[data-app-state]')?.textContent).toBe(
+      'Needs a newer remote.it on this device'
+    )
+  })
+
+  it('a string setting honours its max and pattern: another value is said and not sent', async () => {
+    apps.value.apps = [files()]
+    const page = await render(<DeviceApps device={device()} />)
+    const field = page.querySelector('[data-app-setting="root"] input') as HTMLInputElement
+    expect(field.maxLength).toBe(8)
+    await type(field, 'Data')
+    expect(setSetting).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-app-setting="root"]')?.textContent).toContain('Must match /[a-z/]*')
+    await type(field, '/srv')
+    expect(setSetting).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.files' }), 'root', '/srv')
+  })
+
+  it('an int\'s bounds and a list\'s most items', async () => {
+    apps.value.apps = [
+      backup({
+        settings: [
+          setting({ name: 'keep', type: 'int', label: 'Keep', help: null, default: 7, value: 7, declaration: { min: 1, max: 30 } }),
+          setting({ name: 'paths', type: 'list', label: 'Paths', help: null, default: [], value: [], declaration: { maxItems: 1, item: { max: 4, pattern: null } } }),
+        ],
+      }),
+    ]
+    const page = await render(<DeviceApps device={device()} />)
+    await type(page.querySelector('[data-app-setting="keep"] input') as HTMLInputElement, '99')
+    expect(page.querySelector('[data-app-setting="keep"]')?.textContent).toContain('From 1 to 30')
+    expect(setSetting).not.toHaveBeenCalled()
+  })
+})
+
+describe('Add an app', () => {
+  const available = (more: any = {}) => ({
+    id: 'remoteit.files',
+    name: 'Files',
+    publisher: 'remote.it',
+    description: 'Browse a folder',
+    root: false,
+    version: '1.0.0',
+    refused: null,
+    needsNewer: false,
+    ...more,
+  })
+  const dialog = () => document.body.querySelector('[data-add-app-dialog]') as HTMLElement
+
+  it('offered from Device.availableApps, even on a device with no app yet; Add turns a restricted one on at once', async () => {
+    apps.value = { ...apps.value, apps: [], available: [available()] }
+    const page = await render(<DeviceApps device={device()} />)
+    await click(page.querySelector('[data-add-app]'))
+    const offer = dialog().querySelector('[data-available-app="remoteit.files"]') as HTMLElement
+    expect(offer.textContent).toContain('By remote.it · 1.0.0')
+    expect(offer.querySelector('[data-available-runs]')?.textContent).toBe('Runs restricted: an account of its own on this device')
+    await click(offer.querySelector('[data-available-add]'))
+    expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.files', on: false }), true)
+  })
+
+  it('a root app asks first, in words; refused, no release, or a remote.it too old: said', async () => {
+    apps.value = {
+      ...apps.value,
+      apps: [],
+      available: [
+        available({ id: 'acme.agent', name: 'Agent', publisher: 'Acme', root: true }),
+        available({ id: 'acme.off', name: 'Off', refused: 'Not allowed on this device by its administrator: no apps (apps_control off)' }),
+        available({ id: 'acme.none', name: 'None', version: null }),
+        available({ id: 'acme.new', name: 'New', needsNewer: true }),
+      ],
+    }
+    const page = await render(<DeviceApps device={device()} />)
+    await click(page.querySelector('[data-add-app]'))
+    const offer = (id: string) => dialog().querySelector(`[data-available-app="${id}"]`) as HTMLElement
+    expect(offer('acme.agent').querySelector('[data-available-runs]')?.textContent).toBe('Runs as root: full control of this device')
+    expect(offer('acme.off').querySelector('[data-available-why]')?.textContent).toMatch(/apps_control off/)
+    expect((offer('acme.off').querySelector('[data-available-add]') as HTMLButtonElement).disabled).toBe(true)
+    expect(offer('acme.none').querySelector('[data-available-why]')?.textContent).toBe('No release of it here yet')
+    expect(offer('acme.new').querySelector('[data-available-newer]')).not.toBeNull()
+    expect((offer('acme.new').querySelector('[data-available-add]') as HTMLButtonElement).disabled).toBe(false)
+    await click(offer('acme.agent').querySelector('[data-available-add]'))
+    expect(turn).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Agent as root?')
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.agent' }), true, true)
+  })
+
+  it('needs Scripting to add; nothing offered, nothing shown', async () => {
+    apps.value = { ...apps.value, apps: [consoleApp()], available: [available()] }
+    let page = await render(<DeviceApps device={device(['VIEW', 'CONNECT', 'MANAGE'])} />)
+    await click(page.querySelector('[data-add-app]'))
+    expect((dialog().querySelector('[data-available-add]') as HTMLButtonElement).disabled).toBe(true)
+    expect(dialog().querySelector('[data-add-app-scripting]')).not.toBeNull()
+    act(() => root.unmount())
+    apps.value = { ...apps.value, available: [] }
+    page = await render(<DeviceApps device={device()} />)
+    expect(page.querySelector('[data-add-app]')).toBeNull()
   })
 })

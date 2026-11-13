@@ -2,7 +2,8 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { read, setApp, setSetting } = vi.hoisted(() => ({
+const { read, setApp, setSetting, available } = vi.hoisted(() => ({
+  available: vi.fn(),
   read: vi.fn(),
   setApp: vi.fn(),
   setSetting: vi.fn(),
@@ -10,6 +11,7 @@ const { read, setApp, setSetting } = vi.hoisted(() => ({
 vi.mock('../services/graphQLDeviceApps', () => ({
   CONSOLE: 'remoteit.console',
   graphQLDeviceApps: read,
+  graphQLAvailableApps: available,
   graphQLSetDeviceApp: setApp,
   graphQLSetDeviceAppSetting: setSetting,
 }))
@@ -61,12 +63,32 @@ async function render(children: React.ReactNode) {
 
 beforeEach(() => {
   read.mockReset().mockResolvedValue([app('off')])
+  available.mockReset().mockResolvedValue([])
   setApp.mockReset().mockResolvedValue(app('running'))
   setSetting.mockReset().mockResolvedValue(aiCommands(false))
 })
 afterEach(() => act(() => root.unmount()))
 
 describe('useDeviceApps', () => {
+  it('reads what the device may add once its apps are read, and again once its apps change; none where the API has no apps', async () => {
+    available.mockResolvedValue([{ id: 'remoteit.files', name: 'Files' }])
+    await render(<Apps deviceId="D1" name="a" />)
+    expect(available).toHaveBeenCalledWith('D1')
+    expect(seen.a.available).toEqual([{ id: 'remoteit.files', name: 'Files' }])
+    read.mockResolvedValue([app('off'), { ...app('running'), id: 'remoteit.files' }])
+    available.mockResolvedValue([])
+    await act(async () => {
+      await seen.a.turn(seen.a.console!, true)
+    })
+    expect(available).toHaveBeenCalledTimes(2)
+    expect(seen.a.available).toEqual([])
+    act(() => root.unmount())
+    available.mockClear()
+    read.mockResolvedValue(null)
+    await render(<Apps deviceId="D2" name="b" />)
+    expect(available).not.toHaveBeenCalled()
+  })
+
   it('reads a device’s apps once for every part asking in the same moment, and none without a device', async () => {
     await render(
       <>

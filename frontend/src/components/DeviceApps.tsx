@@ -12,10 +12,12 @@ import {
   Switch,
   Typography,
 } from '@mui/material'
-import { DeviceApp, DeviceAppRootConsent } from '../services/graphQLDeviceApps'
+import { useHistory } from 'react-router-dom'
+import { DeviceApp, DeviceAppRootConsent, needsNewer } from '../services/graphQLDeviceApps'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
 import { DeviceAppSetting } from './DeviceAppSetting'
+import { AddDeviceApp } from './AddDeviceApp'
 import { firstPartyApp } from './firstPartyApps'
 import { productLockNote } from '../helpers/productPolicyHelper'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
@@ -37,13 +39,13 @@ import { timeOptions } from './Timestamp'
    A deprecated setting with a value set says why, and offers Clear: back to the default, and then no longer shown. */
 export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
-  const { apps, switching, turn, setSetting } = useDeviceApps(device.id)
+  const { apps, available, switching, turn, setSetting } = useDeviceApps(device.id)
   const { flip, reconsent, consent } = useAppSwitch(turn)
   const [saving, setSaving] = useState<string>()
   const canManage = !!device.permissions?.includes('MANAGE')
   const canRun = canManage && !!device.permissions?.includes('SCRIPTING')
 
-  if (!apps?.length) return null
+  if (!apps || (!apps.length && !available?.length)) return null
 
   return (
     <List dense sx={{ paddingBottom: 1 }} data-device-apps>
@@ -67,9 +69,13 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                     <Typography variant="caption" component="div" color="textSecondary" data-app-about>
                       {about(t, app)}
                     </Typography>
-                    {app.root && (
+                    {app.root ? (
                       <Typography variant="caption" component="div" color="warning.main" data-app-root>
                         {t('deviceApps.runsAsRoot', 'Runs as root: full control of this device')}
+                      </Typography>
+                    ) : (
+                      <Typography variant="caption" component="div" color="textSecondary" data-app-restricted>
+                        {t('deviceApps.runsRestricted', 'Runs restricted: an account of its own on this device')}
                       </Typography>
                     )}
                     <Typography
@@ -123,7 +129,7 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                     {t('deviceApps.consent', 'Consent…')}
                   </Button>
                 )}
-                {own?.Actions && <own.Actions device={device} app={app} />}
+                {own?.Actions ? <own.Actions device={device} app={app} /> : <AppOpen device={device} app={app} />}
                 <Switch
                   checked={on}
                   disabled={switching !== undefined || !!app.locked || (app.on ? !canManage : !canRun)}
@@ -168,8 +174,33 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
           </Box>
         )
       })}
+      <AddDeviceApp available={available ?? []} canRun={canRun} busy={switching !== undefined} add={flip} />
       {consent}
     </List>
+  )
+}
+
+/* Open, for any app reached as a service (serviceId) while it runs: its service's connection, started and launched as its
+   application type launches — HTTP opens in the browser —, as any service's Connect page does. remote.it's own apps
+   with a part of their own (components/firstPartyApps: the console's Open terminal) have theirs instead. */
+export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device, app }) => {
+  const { t } = useTranslation()
+  const history = useHistory()
+  if (!app.on || app.state !== 'running' || !app.serviceId) return null
+  return (
+    <Button
+      size="small"
+      variant="contained"
+      data-app-open
+      onClick={() =>
+        history.push({
+          pathname: `/devices/${device.id}/${app.serviceId}/connect`,
+          state: { autoConnect: true, autoLaunch: true },
+        })
+      }
+    >
+      {t('deviceApps.open', 'Open')}
+    </Button>
   )
 }
 
@@ -213,6 +244,7 @@ function when(at: string) {
 const ROOT_REFUSED = /apps_root_control off|no apps that run as root/
 
 export function stateLine(t: TFunction, app: DeviceApp): string {
+  if (needsNewer(app)) return t('deviceApps.needsNewer', 'Needs a newer remote.it on this device')
   if (app.state === 'unavailable' && app.root && ROOT_REFUSED.test(app.detail ?? ''))
     return t(
       'deviceApps.rootRefused',

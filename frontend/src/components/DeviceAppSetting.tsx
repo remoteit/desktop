@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, ListItem, TextField } from '@mui/material'
-import { DeviceAppSetting as Setting } from '../services/graphQLDeviceApps'
+import type { TFunction } from 'i18next'
+import { AppStringRules, DeviceAppSetting as Setting } from '../services/graphQLDeviceApps'
 import { settingLocked } from '../services/graphQLDeviceSettings'
 import { DeviceSettingChoice, DeviceSettingRow, deprecatedLine, settingNote } from './DeviceSettingRow'
 import { spacing } from '../styling'
@@ -81,7 +82,56 @@ const AppSettingControl: React.FC<Props> = ({ setting, label, help, disabled, on
   }
 }
 
-// An int, a string or a list (one item a line): set when the field is left, or Enter pressed in a one-line one.
+// A string against its release's rules (app-settings.ts stringValue): at most max characters, and the whole value
+// matching its pattern; why not, else none. A pattern this browser cannot read is left to graphql.
+export function stringProblem(t: TFunction, value: string, rules?: AppStringRules | null): string | undefined {
+  if (!rules) return
+  if ([...value].length > rules.max) return t('deviceApps.tooLong', 'At most {{max}} characters', { max: rules.max })
+  if (rules.pattern) {
+    let pattern: RegExp
+    try {
+      pattern = new RegExp(`^(?:${rules.pattern})$`, 'u')
+    } catch {
+      return
+    }
+    if (!pattern.test(value)) return t('deviceApps.noMatch', 'Must match {{pattern}}', { pattern: rules.pattern })
+  }
+}
+
+// Why a field's text is not a value of the setting as its release declares it; none when it is.
+export function fieldProblem(t: TFunction, setting: Setting, text: string): string | undefined {
+  const declared = setting.declaration
+  switch (setting.type) {
+    case 'int': {
+      const number = Number(text)
+      if (text.trim() === '' || !Number.isInteger(number)) return t('deviceApps.wholeNumber', 'A whole number')
+      if ((declared?.min != null && number < declared.min) || (declared?.max != null && number > declared.max))
+        return t('deviceApps.between', 'From {{min}} to {{max}}', { min: declared?.min ?? '…', max: declared?.max ?? '…' })
+      return
+    }
+    case 'string':
+      return stringProblem(t, text, declared?.string)
+    case 'list': {
+      const items = listItems(text)
+      if (declared?.maxItems != null && items.length > declared.maxItems)
+        return t('deviceApps.tooMany', 'At most {{max}} items', { max: declared.maxItems })
+      for (const item of items) {
+        const problem = stringProblem(t, item, declared?.item)
+        if (problem) return problem
+      }
+    }
+  }
+}
+
+const listItems = (text: string) =>
+  text
+    .split('\n')
+    .map(item => item.trim())
+    .filter(Boolean)
+
+// An int, a string or a list (one item a line): set when the field is left, or Enter pressed in a one-line one — only
+// a value its release takes (its bounds, a string's most characters and pattern, a list's most items): another is
+// said under the field and not sent.
 const AppSettingField: React.FC<Props> = ({ setting, label, help, disabled, onChange }) => {
   const { t } = useTranslation()
   const list = setting.type === 'list'
@@ -90,25 +140,16 @@ const AppSettingField: React.FC<Props> = ({ setting, label, help, disabled, onCh
     list ? (Array.isArray(value) ? value.join('\n') : '') : value === null || value === undefined ? '' : String(value)
   const [text, setText] = useState(shown(setting.value))
   useEffect(() => setText(shown(setting.value)), [setting.value])
+  const problem = known && text !== shown(setting.value) ? fieldProblem(t, setting, text) : undefined
 
   const commit = () => {
-    if (text === shown(setting.value)) return
-    if (setting.type === 'int') {
-      const number = Number(text)
-      if (text.trim() === '' || !Number.isInteger(number)) return setText(shown(setting.value))
-      return onChange(number)
-    }
-    onChange(
-      list
-        ? text
-            .split('\n')
-            .map(item => item.trim())
-            .filter(Boolean)
-        : text
-    )
+    if (text === shown(setting.value) || problem) return
+    if (setting.type === 'int') return onChange(Number(text))
+    onChange(list ? listItems(text) : text)
   }
 
   const note = [deprecatedLine(t, setting.deprecated), settingNote(t, setting) || help].filter(Boolean).join(' · ')
+  const max = setting.type === 'string' ? setting.declaration?.string?.max : undefined
 
   return (
     <ListItem disableGutters dense sx={{ paddingLeft: `${spacing.sm}px` }} data-app-setting={setting.name}>
@@ -120,7 +161,14 @@ const AppSettingField: React.FC<Props> = ({ setting, label, help, disabled, onCh
         value={text}
         multiline={list}
         type={setting.type === 'int' ? 'number' : 'text'}
-        helperText={note || undefined}
+        helperText={problem || note || undefined}
+        error={!!problem}
+        inputProps={{
+          ...(max ? { maxLength: max } : {}),
+          ...(setting.type === 'int' && setting.declaration?.min != null ? { min: setting.declaration.min } : {}),
+          ...(setting.type === 'int' && setting.declaration?.max != null ? { max: setting.declaration.max } : {}),
+          'data-app-setting-input': setting.name,
+        }}
         disabled={disabled || settingLocked(setting) || !known}
         onChange={event => setText(event.target.value)}
         onBlur={commit}

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
+  AvailableApp,
   CONSOLE,
   DeviceApp,
+  graphQLAvailableApps,
   graphQLDeviceApps,
   graphQLSetDeviceApp,
   graphQLSetDeviceAppSetting,
@@ -28,6 +30,8 @@ const tell = (deviceId: string, apps: DeviceApp[] | null) => watchers.forEach(wa
 export type DeviceApps = {
   apps: DeviceApp[] | null | undefined // undefined while read; null where the API has no apps
   console?: DeviceApp
+  // What it may add (Add an app): read once its apps are, and again after one is turned on or off.
+  available?: AvailableApp[]
   switching?: string // the app being turned on or off, waited for
   // consentRoot: the person said yes to a root app's full control of the device (components/AppRootConsent)
   turn: (app: DeviceApp, on: boolean, consentRoot?: boolean) => Promise<boolean>
@@ -39,6 +43,18 @@ export type DeviceApps = {
 export function useDeviceApps(deviceId?: string): DeviceApps {
   const [apps, setApps] = useState<DeviceApp[] | null>()
   const [switching, setSwitching] = useState<string>()
+  const [available, setAvailable] = useState<AvailableApp[]>()
+  const ids = apps?.map(app => app.id).join(',')
+
+  useEffect(() => {
+    setAvailable(undefined)
+    if (!deviceId || apps === undefined || apps === null) return
+    let current = true
+    graphQLAvailableApps(deviceId).then(result => current && setAvailable(result))
+    return () => {
+      current = false
+    }
+  }, [deviceId, ids, apps === null])
 
   useEffect(() => {
     setApps(undefined)
@@ -89,5 +105,5 @@ export function useDeviceApps(deviceId?: string): DeviceApps {
     [deviceId, apps]
   )
 
-  return { apps, console: apps?.find(app => app.id === CONSOLE), switching, turn, setSetting }
+  return { apps, console: apps?.find(app => app.id === CONSOLE), available, switching, turn, setSetting }
 }

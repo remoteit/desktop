@@ -14,7 +14,7 @@ vi.mock('./productPolicy', async importOriginal => ({
   appPolicyFields: lockFields,
 }))
 
-import { graphQLDeviceApps, graphQLSetDeviceApp, graphQLSetDeviceAppSetting } from './graphQLDeviceApps'
+import { graphQLAvailableApps, graphQLDeviceApps, graphQLSetDeviceApp, graphQLSetDeviceAppSetting, needsNewer } from './graphQLDeviceApps'
 
 beforeEach(() => {
   post.mockReset()
@@ -64,7 +64,7 @@ describe('Device.apps', () => {
     for (const field of ['id', 'name', 'publisher', 'root', 'on', 'channel', 'version', 'state', 'detail', 'serviceId'])
       expect(query).toMatch(new RegExp(`\\b${field}\\b`))
     expect(query).toContain(
-      'settings { name type label help default value at by onDevice control locked { product level } deprecated choices { value label } }'
+      'settings { name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration }'
     )
     // The console's host key and port are not the app's: its own extras ask them (components/ConsoleApp).
     expect(query).not.toMatch(/hostKey|port/)
@@ -115,7 +115,7 @@ describe('Device.apps', () => {
     )
     const apps = (await graphQLDeviceApps('D1'))!
     expect(post.mock.calls[0][0].query).toMatch(
-      /serviceId settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} } locked \{ product level }/
+      /serviceId settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} declaration } locked \{ product level }/
     )
     expect(apps[0].locked).toEqual({ product: 'Acme', level: 'enforced' })
     expect(apps[1].locked).toBeNull()
@@ -206,5 +206,31 @@ describe('setDeviceApp and setDeviceAppSetting', () => {
     expect(query).toContain('$value: Any')
     expect(variables).toEqual({ deviceId: 'D1', app: 'remoteit.console', name: 'ai_commands', value: false })
     expect(setting?.value).toBe(false)
+  })
+})
+
+describe('build step 5: what a device may add, and a remote.it too old', () => {
+  it('graphQLAvailableApps reads Device.availableApps with needsNewer; [] on an error', async () => {
+    post.mockResolvedValue(
+      answer({ login: { device: [{ availableApps: [{ id: 'remoteit.files', name: 'Files', publisher: 'remote.it', root: false, version: '1.0.0', needsNewer: true }] }] } })
+    )
+    expect(await graphQLAvailableApps('D1')).toEqual([
+      { id: 'remoteit.files', name: 'Files', publisher: 'remote.it', description: null, root: false, version: '1.0.0', refused: null, needsNewer: true },
+    ])
+    expect(post.mock.calls[0][0].query).toContain('availableApps { id name publisher description root version refused needsNewer }')
+    post.mockResolvedValue('ERROR')
+    expect(await graphQLAvailableApps('D1')).toEqual([])
+  })
+
+  it('a setting\'s declaration is read, for a string\'s max and pattern', async () => {
+    post.mockResolvedValue(answer({ login: { device: [{ apps: [{ ...consoleApp, settings: [{ ...aiCommands, declaration: { string: { max: 8, pattern: null } } }] }] }] } }))
+    const [app] = (await graphQLDeviceApps('D1'))!
+    expect(app.settings[0].declaration).toEqual({ string: { max: 8, pattern: null } })
+    expect(post.mock.calls[0][0].query).toContain('choices { value label } declaration')
+  })
+
+  it('needsNewer: unavailable for that reason alone', () => {
+    expect(needsNewer({ state: 'unavailable', detail: 'Needs a newer remote.it on this device' })).toBe(true)
+    expect(needsNewer({ state: 'unavailable', detail: 'refused' })).toBe(false)
   })
 })
