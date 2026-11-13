@@ -394,3 +394,64 @@ describe('a product’s Apps block', () => {
     expect(page.querySelector('[data-notice]')!.textContent).toBe('The app was not changed.')
   })
 })
+
+describe('root, and a release that newly asks for it', () => {
+  it('who consented by their email, and that it covers every device in the product, now and later', async () => {
+    const page = await render([
+      consoleApp({
+        on: true,
+        rootConsent: { by: 'AAAA', email: 'pat@example.com', at: '2026-11-12T18:00:00Z', version: '1.4.0' },
+      }),
+    ])
+    expect(line(page, 'remoteit.console', 'consent')).toMatch(
+      /^Consented to run as root by pat@example.com, .*: for every device in this product, now and later$/
+    )
+  })
+
+  it('its devices stay on the release they run until someone consents; the dialog says which release, for every device', async () => {
+    const page = await render([
+      consoleApp({ on: true, version: '1.4.0', needsConsent: true, awaitingRoot: '1.5.0', rootConsent: null }),
+    ])
+    expect(line(page, 'remoteit.console', 'needs-consent')).toBe(
+      'A new version (1.5.0) needs to run as root: its devices stay on 1.4.0 until you consent'
+    )
+    await click(row(page, 'remoteit.console').querySelector('[data-product-app-consent-action]'))
+    const confirm = page.querySelector('[data-confirm]')!
+    expect(confirm.querySelector('[data-root-consent-update]')?.textContent).toBe(
+      'Console 1.5.0 needs to run as root. Its devices stay on the version they run until you consent.'
+    )
+    expect(confirm.textContent).toContain('on every device in this product, now and later')
+    await click(confirm.querySelector('[data-confirm-ok]'))
+    expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', true, {
+      channel: 'stable',
+      version: null,
+      consentRoot: true,
+    })
+  })
+})
+
+describe('a removed setting the product still sets', () => {
+  const removed = { name: 'colour', value: true, at: '2026-11-12T18:00:00Z', by: 'AAAA', removedIn: '1.5.0' }
+
+  it('listed as Removed in <version>, with no effect, and cleared with null', async () => {
+    const page = await render([
+      consoleApp({ on: true, removedSettings: [removed, { ...removed, name: 'quiet', removedIn: null }] }),
+    ])
+    const item = row(page, 'remoteit.console').querySelector('[data-product-app-removed="colour"]')!
+    expect(item.textContent).toContain('colour: true')
+    expect(item.textContent).toContain('Removed in 1.5.0: no effect on devices that run it')
+    expect(row(page, 'remoteit.console').querySelector('[data-product-app-removed="quiet"]')?.textContent).toContain(
+      'Removed: no effect on its devices'
+    )
+    await click(item.querySelector('[data-product-app-removed-clear="colour"]'))
+    expect(setAppSetting).toHaveBeenCalledWith('P1', 'remoteit.console', 'colour', null)
+  })
+
+  it('not cleared by one who may not manage the product', async () => {
+    const page = await render([consoleApp({ removedSettings: [removed] })], { manage: false })
+    expect(
+      (row(page, 'remoteit.console').querySelector('[data-product-app-removed-clear="colour"]') as HTMLButtonElement)
+        .disabled
+    ).toBe(true)
+  })
+})

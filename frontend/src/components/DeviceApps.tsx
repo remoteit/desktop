@@ -1,8 +1,18 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { Box, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Switch, Typography } from '@mui/material'
-import { DeviceApp } from '../services/graphQLDeviceApps'
+import {
+  Box,
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  Switch,
+  Typography,
+} from '@mui/material'
+import { DeviceApp, DeviceAppRootConsent } from '../services/graphQLDeviceApps'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
 import { DeviceAppSetting } from './DeviceAppSetting'
@@ -10,6 +20,7 @@ import { firstPartyApp } from './firstPartyApps'
 import { productLockNote } from '../helpers/productPolicyHelper'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 import { Icon } from './Icon'
+import { timeOptions } from './Timestamp'
 
 /* A device's apps on its Configure page (presence-server docs/device-apps-design.md, "The portal's Apps section"): a
    row each, with its switch, its state as the device says, its version and channel, its publisher, and Runs as root
@@ -18,11 +29,16 @@ import { Icon } from './Icon'
    the console's Open terminal and host key). Turning an app on runs code on the device, so it needs Scripting as well
    as Manage, and a root app the person's yes to its full control (components/AppRootConsent); turning one off, or
    changing its settings, needs Manage alone. An app its product turns on or off, as a setting its product sets, says
-   so and is held: graphql refuses a change to it, naming the product. Nothing where the API has no apps. */
+   so and is held: graphql refuses a change to it, naming the product. Nothing where the API has no apps.
+
+   Root, shown: who consented and when. A release that newly runs as root waits for a new consent, the device on its
+   last restricted release meanwhile — "A new version needs to run as root", with Consent… (its product's page asks,
+   where its product holds it). An app its administrator refuses (apps_root_control off) says so in words.
+   A deprecated setting with a value set says why, and offers Clear: back to the default, and then no longer shown. */
 export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const { apps, switching, turn, setSetting } = useDeviceApps(device.id)
-  const { flip, consent } = useAppSwitch(turn)
+  const { flip, reconsent, consent } = useAppSwitch(turn)
   const [saving, setSaving] = useState<string>()
   const canManage = !!device.permissions?.includes('MANAGE')
   const canRun = canManage && !!device.permissions?.includes('SCRIPTING')
@@ -71,11 +87,42 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                         {productLockNote(t, app.locked)}
                       </Typography>
                     )}
+                    {app.root && app.rootConsent && !app.awaitingRoot && (
+                      <Typography variant="caption" component="div" color="textSecondary" data-app-consent>
+                        {consentLine(t, app.rootConsent)}
+                      </Typography>
+                    )}
+                    {app.on && app.awaitingRoot && (
+                      <Typography variant="caption" component="div" color="warning.main" data-app-needs-consent>
+                        {app.locked
+                          ? t(
+                              'deviceApps.needsConsentProduct',
+                              'A new version ({{version}}) needs to run as root: its product’s page asks for consent',
+                              { version: app.awaitingRoot }
+                            )
+                          : t(
+                              'deviceApps.needsConsent',
+                              'A new version ({{version}}) needs to run as root: this device stays on the version it runs until you consent',
+                              { version: app.awaitingRoot }
+                            )}
+                      </Typography>
+                    )}
                     {own?.Lines && <own.Lines device={device} app={app} />}
                   </>
                 }
               />
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {app.on && app.awaitingRoot && !app.locked && (
+                  <Button
+                    size="small"
+                    color="warning"
+                    disabled={switching !== undefined || !canRun}
+                    onClick={() => reconsent(app)}
+                    data-app-consent-action
+                  >
+                    {t('deviceApps.consent', 'Consent…')}
+                  </Button>
+                )}
                 {own?.Actions && <own.Actions device={device} app={app} />}
                 <Switch
                   checked={on}
@@ -105,6 +152,15 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                       await setSetting(app, setting.name, value)
                       setSaving(undefined)
                     }}
+                    onClear={
+                      setting.deprecated !== null && setting.at
+                        ? async () => {
+                            setSaving(`${app.id}.${setting.name}`)
+                            await setSetting(app, setting.name, null)
+                            setSaving(undefined)
+                          }
+                        : undefined
+                    }
                   />
                 ))}
               </List>
@@ -130,7 +186,38 @@ function about(t: TFunction, app: DeviceApp) {
     .join(' · ')
 }
 
+// Who consented to its running as root, and when — or how it came to run as root without a person's word here.
+export function consentLine(t: TFunction, consent: DeviceAppRootConsent): string {
+  const words = { by: consent.email || consent.by, when: when(consent.at) }
+  switch (consent.via) {
+    case 'product':
+      return t('deviceApps.consentedProduct', 'Runs as root by its product’s consent: {{by}}, {{when}}', words)
+    case 'registration':
+      return t('deviceApps.consentedRegistration', 'Runs as root since this device registered, {{when}}', words)
+    case 'device':
+      return t('deviceApps.consentedDevice', 'Turned on as root on the device by {{by}}, {{when}}', words)
+    case 'carried':
+      return t('deviceApps.consentedCarried', 'Runs as root, as it did before consents were kept')
+    default:
+      return t('deviceApps.consented', 'Consented to run as root by {{by}}, {{when}}', words)
+  }
+}
+
+// A time as the person reads it.
+function when(at: string) {
+  const date = new Date(at)
+  return isNaN(date.getTime()) ? at : date.toLocaleDateString(navigator.language, timeOptions.minutes)
+}
+
+// The machine's administrator refusing root apps (apps_root_control off), as graphql or the device says it.
+const ROOT_REFUSED = /apps_root_control off|no apps that run as root/
+
 export function stateLine(t: TFunction, app: DeviceApp): string {
+  if (app.state === 'unavailable' && app.root && ROOT_REFUSED.test(app.detail ?? ''))
+    return t(
+      'deviceApps.rootRefused',
+      'Not allowed here: this device’s administrator does not allow apps that run as root (apps_root_control off)'
+    )
   switch (app.state) {
     case 'running':
       return t('deviceApps.running', 'Running')

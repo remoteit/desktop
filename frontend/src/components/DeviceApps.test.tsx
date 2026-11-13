@@ -364,3 +364,113 @@ describe('the console’s extras, keyed by remoteit.console', () => {
     expect(appRow(page, 'acme.backup').querySelector('[data-app-state]')?.textContent).toBe('Running')
   })
 })
+
+describe('a deprecated setting set: Clear', () => {
+  it('offered where a value is set, clearing it back to its default (null); not on a setting that is not deprecated', async () => {
+    apps.value.apps = [
+      backup({
+        settings: [
+          setting({ name: 'old', label: 'Old way', deprecated: 'use mode', at: '2026-11-13T18:00:00.000Z' }),
+          setting({ name: 'mode', label: 'Mode', at: '2026-11-13T18:00:00.000Z' }),
+        ],
+      }),
+    ]
+    const page = await render(<DeviceApps device={device()} />)
+    const list = options(appRow(page, 'acme.backup'))!
+    expect(list.querySelector('[data-app-setting-clear="mode"]')).toBeNull()
+    const clear = list.querySelector('[data-app-setting-clear="old"]') as HTMLButtonElement
+    expect(clear.textContent).toBe('Clear: back to its default')
+    await click(clear)
+    expect(setSetting).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), 'old', null)
+  })
+
+  it('held where its administrator or product holds it, and for one who does not manage the device', async () => {
+    const old = setting({ name: 'old', label: 'Old way', deprecated: 'use mode', at: '2026-11-13T18:00:00.000Z' })
+    apps.value.apps = [backup({ settings: [{ ...old, control: 'off' }] })]
+    let page = await render(<DeviceApps device={device()} />)
+    expect((page.querySelector('[data-app-setting-clear="old"]') as HTMLButtonElement).disabled).toBe(true)
+    act(() => root.unmount())
+    apps.value.apps = [backup({ settings: [old] })]
+    page = await render(<DeviceApps device={device(['VIEW', 'CONNECT'])} />)
+    expect((page.querySelector('[data-app-setting-clear="old"]') as HTMLButtonElement).disabled).toBe(true)
+  })
+})
+
+describe('root, consented to', () => {
+  const consent = (more: any = {}) => ({
+    by: 'AAAA',
+    email: 'pat@example.com',
+    at: '2026-11-13T18:00:00.000Z',
+    version: '1.4.0',
+    via: 'person',
+    ...more,
+  })
+
+  it('who consented and when; its product’s, the registration’s, the device’s own, said as such', async () => {
+    apps.value.apps = [consoleApp({ rootConsent: consent() })]
+    let page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'remoteit.console').querySelector('[data-app-consent]')?.textContent).toMatch(
+      /^Consented to run as root by pat@example.com, /
+    )
+    for (const [via, words] of [
+      ['product', /^Runs as root by its product’s consent: pat@example.com, /],
+      ['registration', /^Runs as root since this device registered, /],
+      ['device', /^Turned on as root on the device by root, /],
+    ] as const) {
+      act(() => root.unmount())
+      apps.value.apps = [
+        consoleApp({ rootConsent: consent({ via, ...(via === 'device' && { by: 'root', email: null }) }) }),
+      ]
+      page = await render(<DeviceApps device={device()} />)
+      expect(appRow(page, 'remoteit.console').querySelector('[data-app-consent]')?.textContent).toMatch(words)
+    }
+  })
+
+  it('a new version that needs to run as root: said, and Consent… asks in words — the yes turns it on again with consentRoot', async () => {
+    apps.value.apps = [consoleApp({ rootConsent: null, awaitingRoot: '1.5.0', version: '1.4.0' })]
+    const page = await render(<DeviceApps device={device()} />)
+    const row = appRow(page, 'remoteit.console')
+    expect(row.querySelector('[data-app-needs-consent]')?.textContent).toBe(
+      'A new version (1.5.0) needs to run as root: this device stays on the version it runs until you consent'
+    )
+    expect(row.querySelector('[data-app-consent]')).toBeNull()
+    await click(row.querySelector('[data-app-consent-action]'))
+    const confirm = page.querySelector('[data-confirm]')!
+    expect(confirm.querySelector('[data-root-consent-update]')?.textContent).toBe(
+      'Console 1.5.0 needs to run as root. This device stays on the version it runs until you consent.'
+    )
+    expect(confirm.textContent).toContain('runs as root: it gets full control of this device')
+    expect(confirm.querySelector('[data-confirm-ok]')?.textContent).toBe('Consent and update')
+    await click(confirm.querySelector('[data-confirm-ok]'))
+    expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.console' }), true, true)
+  })
+
+  it('needs Scripting to consent; one its product holds is consented to on the product’s page', async () => {
+    apps.value.apps = [consoleApp({ awaitingRoot: '1.5.0' })]
+    let page = await render(<DeviceApps device={device(['VIEW', 'CONNECT', 'MANAGE'])} />)
+    expect(
+      (appRow(page, 'remoteit.console').querySelector('[data-app-consent-action]') as HTMLButtonElement).disabled
+    ).toBe(true)
+    act(() => root.unmount())
+    apps.value.apps = [consoleApp({ awaitingRoot: '1.5.0', locked: { product: 'Fleet', level: 'synced' } })]
+    page = await render(<DeviceApps device={device()} />)
+    const row = appRow(page, 'remoteit.console')
+    expect(row.querySelector('[data-app-consent-action]')).toBeNull()
+    expect(row.querySelector('[data-app-needs-consent]')?.textContent).toBe(
+      'A new version (1.5.0) needs to run as root: its product’s page asks for consent'
+    )
+  })
+
+  it('its administrator refusing root apps (apps_root_control off): said plainly', async () => {
+    apps.value.apps = [
+      consoleApp({
+        state: 'unavailable',
+        detail: 'Not allowed on this device by its administrator: no apps that run as root (apps_root_control off)',
+      }),
+    ]
+    const page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'remoteit.console').querySelector('[data-app-state]')?.textContent).toBe(
+      'Not allowed here: this device’s administrator does not allow apps that run as root (apps_root_control off)'
+    )
+  })
+})

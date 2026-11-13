@@ -5,6 +5,7 @@ import { Box, Button, List, ListItem, ListItemIcon, ListItemText, TextField, Typ
 import {
   ProductApp,
   ProductAppSetting,
+  ProductRemovedSetting,
   ProductSync,
   graphQLSetDeviceProductApp,
   graphQLSetDeviceProductAppSetting,
@@ -38,8 +39,13 @@ const UNSET = ''
 
    A root app is turned on for the product only once the person says yes to its full control of every device in the
    product, now and later (components/AppRootConsent); graphql keeps that consent on the product, and asks for it again
-   when a new release newly runs as root, its devices not turned on meanwhile. Turning an app on needs Scripting in the
-   product's account as well as managing the product; graphql says so where it refuses, and its words are shown. */
+   when a new release newly runs as root, its devices staying on its last restricted release meanwhile (or not turned
+   on, where there is none). Turning an app on needs Scripting in the product's account as well as managing the
+   product; graphql says so where it refuses, and its words are shown.
+
+   A setting a release deprecates is shown, with why, only where the product sets a value; one a later release removed
+   is listed as Removed in <version>, with no effect on its devices, until graphql's daily sweep deletes it — or the
+   product clears it here. */
 export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, manage, onChanged }) => {
   const { t } = useTranslation()
   const [saving, setSaving] = useState<string>()
@@ -124,18 +130,28 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
                       {app.locked && <Line data="locked">{lockedLine(t, sync)}</Line>}
                       {app.rootConsent && !app.needsConsent && (
                         <Line data="consent">
-                          {t('productApps.consented', 'Consented to run as root by {{by}}, {{when}}', {
-                            by: app.rootConsent.by,
-                            when: when(app.rootConsent.at),
-                          })}
+                          {t(
+                            'productApps.consentedAll',
+                            'Consented to run as root by {{by}}, {{when}}: for every device in this product, now and later',
+                            {
+                              by: app.rootConsent.email || app.rootConsent.by,
+                              when: when(app.rootConsent.at),
+                            }
+                          )}
                         </Line>
                       )}
                       {app.needsConsent && (
                         <Line data="needs-consent" color="warning.main">
-                          {t(
-                            'productApps.needsConsent',
-                            'A new version needs to run as root: its devices are not turned on until you consent'
-                          )}
+                          {app.awaitingRoot && app.version
+                            ? t(
+                                'productApps.needsConsentStay',
+                                'A new version ({{version}}) needs to run as root: its devices stay on {{current}} until you consent',
+                                { version: app.awaitingRoot, current: app.version }
+                              )
+                            : t(
+                                'productApps.needsConsent',
+                                'A new version needs to run as root: its devices are not turned on until you consent'
+                              )}
                         </Line>
                       )}
                     </>
@@ -174,6 +190,14 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
                   hideIcon
                   onChange={key => key !== value && setApp(app, key === UNSET ? null : key === 'on')}
                 />
+                {(app.removedSettings ?? []).map(removed => (
+                  <ProductRemovedSettingRow
+                    key={removed.name}
+                    removed={removed}
+                    disabled={!manage || saving === `${app.id}.${removed.name}`}
+                    onClear={() => setSetting(app, removed.name, null)}
+                  />
+                ))}
                 {settings.map(setting => (
                   <ProductAppSettingRow
                     key={setting.name}
@@ -198,6 +222,7 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
       <RootConsent
         product
         app={asking}
+        version={asking?.on && asking.needsConsent ? asking.awaitingRoot : undefined}
         action={asking?.on ? t('productApps.consentAction', 'Consent to full control') : undefined}
         onConfirm={() => {
           const app = asking
@@ -220,6 +245,42 @@ const Line: React.FC<{ data: string; color?: string; children: React.ReactNode }
     {children}
   </Typography>
 )
+
+/* A value the product sets of a setting its devices' release no longer declares: no effect on them. Cleared here, or by
+   graphql's daily sweep once no device runs a release that declares it. */
+const ProductRemovedSettingRow: React.FC<{
+  removed: ProductRemovedSetting
+  disabled?: boolean
+  onClear: () => void
+}> = ({ removed, disabled, onClear }) => {
+  const { t } = useTranslation()
+  return (
+    <ListItem
+      disableGutters
+      dense
+      sx={{ paddingLeft: `${spacing.sm}px` }}
+      data-product-app-removed={removed.name}
+      secondaryAction={
+        <Button size="small" disabled={disabled} onClick={onClear} data-product-app-removed-clear={removed.name}>
+          {t('productApps.clearRemoved', 'Clear')}
+        </Button>
+      }
+    >
+      <ListItemText
+        primary={`${removed.name}: ${JSON.stringify(removed.value)}`}
+        secondary={
+          removed.removedIn
+            ? t('productApps.removedIn', 'Removed in {{version}}: no effect on devices that run it', {
+                version: removed.removedIn,
+              })
+            : t('productApps.removed', 'Removed: no effect on its devices')
+        }
+        primaryTypographyProps={{ variant: 'body2', color: 'textSecondary' }}
+        secondaryTypographyProps={{ variant: 'caption' }}
+      />
+    </ListItem>
+  )
+}
 
 /* One of an app's settings as the product sets it: unset (each device's own), or a value — a bool on or off, one of a
    choice's, an int, a string or a list (one item a line) typed and set when the field is left, cleared to unset. */

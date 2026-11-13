@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ListItem, TextField } from '@mui/material'
+import { Button, ListItem, TextField } from '@mui/material'
 import { DeviceAppSetting as Setting } from '../services/graphQLDeviceApps'
 import { settingLocked } from '../services/graphQLDeviceSettings'
 import { DeviceSettingChoice, DeviceSettingRow, deprecatedLine, settingNote } from './DeviceSettingRow'
@@ -12,14 +12,37 @@ type Props = {
   help?: string | null
   disabled?: boolean // not one who manages the device, or a change under way
   onChange: (value: any) => void
+  // A deprecated setting with a value set: clear it back to its default (then it is no longer shown).
+  onClear?: () => void
 }
 
 /* One of an app's settings, drawn from its release's declaration (presence-server docs/device-apps-design.md,
    "Settings") with the row a device setting uses: who set it from which side, its administrator's control, its
    product's lock, Deprecated. An option of its app's row, so without an icon of its own: its label lines up under the
    app's name. A bool is a switch, a choice a select, an int, a string or a list a field set when it is left; a type
-   this portal does not know is shown as it is. */
-export const DeviceAppSetting: React.FC<Props> = ({ setting, label, help, disabled, onChange }) => {
+   this portal does not know is shown as it is. A deprecated one with a value set offers Clear below it. */
+export const DeviceAppSetting: React.FC<Props> = props => {
+  const { t } = useTranslation()
+  const { setting, disabled, onClear } = props
+  if (!onClear) return <AppSettingControl {...props} />
+  return (
+    <>
+      <AppSettingControl {...props} />
+      <ListItem disableGutters dense sx={{ paddingLeft: `${spacing.sm}px`, paddingTop: 0 }}>
+        <Button
+          size="small"
+          disabled={disabled || settingLocked(setting) || setting.control === 'local'}
+          onClick={onClear}
+          data-app-setting-clear={setting.name}
+        >
+          {t('deviceApps.clearDeprecated', 'Clear: back to its default')}
+        </Button>
+      </ListItem>
+    </>
+  )
+}
+
+const AppSettingControl: React.FC<Props> = ({ setting, label, help, disabled, onChange }) => {
   const { t } = useTranslation()
   const deprecated = deprecatedLine(t, setting.deprecated)
 

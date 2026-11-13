@@ -12,11 +12,13 @@ export const RootConsent: React.FC<{
   app?: { name: string; publisher: string } // open while there is one
   product?: boolean // a product's consent, for every device in it
   action?: string // the confirm button's words, where they are not turning it on
+  // A release of an app already on that newly runs as root: the consent moves it there (a re-consent).
+  version?: string | null
   onConfirm: () => void
   onDeny: () => void
-}> = ({ app, product, action, onConfirm, onDeny }) => {
+}> = ({ app, product, action, version, onConfirm, onDeny }) => {
   const { t } = useTranslation()
-  const words = { app: app?.name, publisher: app?.publisher }
+  const words = { app: app?.name, publisher: app?.publisher, version }
   return (
     <Confirm
       open={!!app}
@@ -30,6 +32,21 @@ export const RootConsent: React.FC<{
       onConfirm={onConfirm}
       onDeny={onDeny}
     >
+      {version && (
+        <Typography variant="body2" gutterBottom data-root-consent-update>
+          {product
+            ? t(
+                'productApps.rootUpdate',
+                '{{app}} {{version}} needs to run as root. Its devices stay on the version they run until you consent.',
+                words
+              )
+            : t(
+                'deviceApps.rootUpdate',
+                '{{app}} {{version}} needs to run as root. This device stays on the version it runs until you consent.',
+                words
+              )}
+        </Typography>
+      )}
       <Typography variant="body2" gutterBottom data-root-consent>
         {product
           ? t(
@@ -58,8 +75,11 @@ export const RootConsent: React.FC<{
 
 /* Turning an app on or off, from wherever it is offered (the device's Apps section, the console's connect panel). A
    root app is turned on only once the person says yes (RootConsent); that yes is setDeviceApp's consentRoot, which
-   graphql refuses a root app without. Off, or a restricted app, at once. */
+   graphql refuses a root app without. Off, or a restricted app, at once. A release that newly runs as root while the
+   app is on (awaitingRoot) is asked for the same way (reconsent): the yes turns it on again with consentRoot, which
+   moves the device to that release. */
 export function useAppSwitch(turn: DeviceApps['turn']) {
+  const { t } = useTranslation()
   const [asking, setAsking] = useState<DeviceApp>()
 
   const flip = (app: DeviceApp, on: boolean) => {
@@ -67,9 +87,14 @@ export function useAppSwitch(turn: DeviceApps['turn']) {
     else turn(app, on)
   }
 
+  const reconsent = (app: DeviceApp) => setAsking(app)
+  const updating = asking?.on && asking.awaitingRoot ? asking.awaitingRoot : null
+
   const consent = (
     <RootConsent
       app={asking}
+      version={updating}
+      action={updating ? t('deviceApps.rootUpdateAction', 'Consent and update') : undefined}
       onConfirm={() => {
         const app = asking
         setAsking(undefined)
@@ -79,5 +104,5 @@ export function useAppSwitch(turn: DeviceApps['turn']) {
     />
   )
 
-  return { flip, consent }
+  return { flip, reconsent, consent }
 }
