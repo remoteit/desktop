@@ -89,6 +89,18 @@ export function itemCount(t: TFunction, kind: string, count: number): string {
         defaultValue_one: '{{count}} exit to run',
         defaultValue_other: '{{count}} exits to run',
       })
+    case 'app':
+      return t('productPolicy.appCount', {
+        count,
+        defaultValue_one: '{{count}} app',
+        defaultValue_other: '{{count}} apps',
+      })
+    case 'app_setting':
+      return t('productPolicy.appSettingCount', {
+        count,
+        defaultValue_one: '{{count}} app setting',
+        defaultValue_other: '{{count}} app settings',
+      })
     default:
       return t('productPolicy.itemCount', {
         count,
@@ -98,7 +110,17 @@ export function itemCount(t: TFunction, kind: string, count: number): string {
   }
 }
 
-// An item named with its kind: "Tag: dev".
+// A value a product gives, said plainly: on or off, a list's items, the value as it is.
+export function productValue(t: TFunction, value: any): string {
+  if (value === true) return t('productPolicy.valueOn', 'on')
+  if (value === false) return t('productPolicy.valueOff', 'off')
+  if (Array.isArray(value)) return value.join(', ')
+  if (value && typeof value === 'object') return JSON.stringify(value)
+  return String(value)
+}
+
+// An item named with its kind: "Tag: dev". An app with whether it is turned on or off, an app setting (graphql names it
+// "<app>: <setting>") with its value, where the preview gives them.
 export function itemName(t: TFunction, item: ProductItem): string {
   switch (item.kind) {
     case 'tag':
@@ -113,6 +135,19 @@ export function itemName(t: TFunction, item: ProductItem): string {
       return t('productPolicy.proxyItem', 'Proxy {{name}}', { name: item.name })
     case 'exit':
       return t('productPolicy.exitItem', 'Runs exit {{name}}', { name: item.name })
+    case 'app':
+      return item.value === true
+        ? t('productPolicy.appOnItem', 'App {{name}} on', { name: item.name })
+        : item.value === false
+        ? t('productPolicy.appOffItem', 'App {{name}} off', { name: item.name })
+        : t('productPolicy.appItem', 'App {{name}}', { name: item.name })
+    case 'app_setting':
+      return item.value === undefined || item.value === null
+        ? item.name
+        : t('productPolicy.appSettingItem', '{{name}}: {{value}}', {
+            name: item.name,
+            value: productValue(t, item.value),
+          })
     default:
       return item.name
   }

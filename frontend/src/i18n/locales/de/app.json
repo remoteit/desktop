@@ -3094,6 +3094,14 @@
     "unknown": "Unbekannt"
   },
   "productPolicy": {
+    "appCount_one": "",
+    "appCount_other": "",
+    "appItem": "",
+    "appOffItem": "",
+    "appOnItem": "",
+    "appSettingCount_one": "",
+    "appSettingCount_other": "",
+    "appSettingItem": "",
     "deviceCount_one": "",
     "deviceCount_other": "",
     "enforced": "",
@@ -3124,6 +3132,8 @@
     "tagItem": "",
     "template": "",
     "templateMeaning": "",
+    "valueOff": "",
+    "valueOn": "",
     "willGet": "",
     "willLock": "",
     "willLose": "",

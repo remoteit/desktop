@@ -3094,6 +3094,14 @@
     "unknown": "Unknown"
   },
   "productPolicy": {
+    "appCount_one": "{{count}} app",
+    "appCount_other": "{{count}} apps",
+    "appItem": "App {{name}}",
+    "appOffItem": "App {{name}} off",
+    "appOnItem": "App {{name}} on",
+    "appSettingCount_one": "{{count}} app setting",
+    "appSettingCount_other": "{{count}} app settings",
+    "appSettingItem": "{{name}}: {{value}}",
     "deviceCount_one": "{{count}} device",
     "deviceCount_other": "{{count}} devices",
     "enforced": "Enforced",
@@ -3124,6 +3132,8 @@
     "tagItem": "Tag {{name}}",
     "template": "Template",
     "templateMeaning": "Its items are copied to a device as it registers, then they are the device’s own.",
+    "valueOff": "off",
+    "valueOn": "on",
     "willGet": "{{devices}} will get {{items}}",
     "willLock": "{{devices}} will have {{items}} locked to the product",
     "willLose": "{{devices}} will lose {{items}}",

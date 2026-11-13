@@ -3038,6 +3038,12 @@
     "unknown": "不明"
   },
   "productPolicy": {
+    "appCount_other": "",
+    "appItem": "",
+    "appOffItem": "",
+    "appOnItem": "",
+    "appSettingCount_other": "",
+    "appSettingItem": "",
     "deviceCount_other": "",
     "enforced": "",
     "enforcedMeaning": "",
@@ -3060,6 +3066,8 @@
     "tagItem": "",
     "template": "",
     "templateMeaning": "",
+    "valueOff": "",
+    "valueOn": "",
     "willGet": "",
     "willLock": "",
     "willLose": "",
