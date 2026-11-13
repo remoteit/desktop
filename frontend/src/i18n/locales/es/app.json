@@ -1766,7 +1766,7 @@
     "endsServiceIds": "Revocar un código también impide que los dispositivos se registren con un ID de servicio de este producto.",
     "issued": "Emitido",
     "previous": "Anterior",
-    "replace": "Reemplazar código",
+    "replace": "Reemplazar",
     "replaceAction": "Reemplazar código",
     "replaceAndRevokeAction": "Reemplazar y revocar",
     "replaceBody": "El código nuevo pasa al comando de registro. El código actual {{code}} sigue registrando dispositivos hasta que lo revoque, para que los dispositivos que aún se están configurando con él no queden excluidos.",

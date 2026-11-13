@@ -8,7 +8,7 @@ vi.mock('./Icon', () => ({ Icon: () => null }))
 import { dispatch } from '../store'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { jssTheme } from '../styling/theme'
-import { ProductRegistrationCodes } from './ProductRegistrationCodes'
+import { ProductRegistrationCodes, ProductRevokedCodes } from './ProductRegistrationCodes'
 import { IDeviceProduct } from '../models/products'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
@@ -54,6 +54,7 @@ describe('ProductRegistrationCodes', () => {
       root.render(
         <ThemeProvider theme={theme}>
           <ProductRegistrationCodes product={shown} />
+          <ProductRevokedCodes product={shown} />
         </ThemeProvider>
       )
     )
@@ -63,24 +64,27 @@ describe('ProductRegistrationCodes', () => {
       b => b.textContent?.trim() === label
     ) as HTMLButtonElement
 
-  it('lists the current and previous codes in use, shortened, and the revoked ones under a collapsed history', () => {
+  it('lists the current and previous codes in use in full, and the revoked ones under a collapsed history', () => {
     const text = container.textContent || ''
-    expect(text).toContain('aaaaaaaa…0003Current')
-    expect(text).toContain('bbbbbbbb…0002Previous')
+    expect(text).toContain('Currentaaaaaaaa-0000-4000-8000-000000000003')
+    expect(text).toContain('Previousbbbbbbbb-0000-4000-8000-000000000002')
     expect(text).toContain('Still registers devices')
     expect(text).toContain('Revoked codes (1)')
     expect(container.querySelector('.MuiAccordion-root')?.classList.contains('Mui-expanded')).toBe(false)
     expect(button('Revoke')).toBeDefined()
+    expect(button('Replace')).toBeDefined()
   })
 
   it('replaces the code after a confirm, keeping the old one unless asked to stop it now', async () => {
-    act(() => button('Replace Code').click())
-    expect(document.body.textContent).toContain('The current code aaaaaaaa…0003 keeps registering devices')
-    expect(document.body.textContent).toContain('The older code bbbbbbbb…0002 will be revoked')
+    act(() => button('Replace').click())
+    expect(document.body.textContent).toContain(
+      'The current code aaaaaaaa-0000-4000-8000-000000000003 keeps registering devices'
+    )
+    expect(document.body.textContent).toContain('The older code bbbbbbbb-0000-4000-8000-000000000002 will be revoked')
     expect(rotateCode).not.toHaveBeenCalled()
 
     const stopNow = [...document.body.querySelectorAll('.MuiListItemButton-root')].find(item =>
-      item.textContent?.includes('Stop aaaaaaaa…0003 now too')
+      item.textContent?.includes('Stop aaaaaaaa-0000-4000-8000-000000000003 now too')
     ) as HTMLElement
     act(() => stopNow.click())
     await act(async () => button('Replace and Revoke').click())
@@ -94,11 +98,11 @@ describe('ProductRegistrationCodes', () => {
         item.textContent?.includes('now too')
       ) as HTMLElement
 
-    act(() => button('Replace Code').click())
+    act(() => button('Replace').click())
     act(() => stopNow().click())
     act(() => button('Cancel').click())
 
-    act(() => button('Replace Code').click())
+    act(() => button('Replace').click())
     await act(async () => button('Replace Code', true).click())
 
     expect(rotateCode).toHaveBeenCalledWith({ productId: 'P1', revokePrevious: false })
@@ -106,7 +110,7 @@ describe('ProductRegistrationCodes', () => {
 
   it('replaces once when the confirm is clicked twice before the first replace returns', () => {
     rotateCode.mockReturnValue(new Promise(() => {}))
-    act(() => button('Replace Code').click())
+    act(() => button('Replace').click())
     const confirm = button('Replace Code', true)
     act(() => confirm.click())
     act(() => confirm.click())
@@ -123,9 +127,11 @@ describe('ProductRegistrationCodes', () => {
         { code: 'dddddddd-0000-4000-8000-000000000004', created: at(9), revoked: null },
       ],
     } as unknown as IDeviceProduct)
-    act(() => button('Replace Code').click())
+    act(() => button('Replace').click())
 
-    expect(document.body.textContent).toContain('The older codes bbbbbbbb…0002, dddddddd…0004 will be revoked')
+    expect(document.body.textContent).toContain(
+      'The older codes bbbbbbbb-0000-4000-8000-000000000002, dddddddd-0000-4000-8000-000000000004 will be revoked'
+    )
     expect(document.body.textContent).toContain('also stops devices registering with a service ID')
   })
 })

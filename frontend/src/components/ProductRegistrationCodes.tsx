@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, List, ListItem, ListItemText, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, List, ListItem, ListItemText, Tooltip, Typography } from '@mui/material'
 import { IDeviceProduct, IDeviceProductCode } from '../models/products'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { ListItemCheckbox } from './ListItemCheckbox'
@@ -9,11 +9,10 @@ import { ColorChip } from './ColorChip'
 import { Duration } from './Duration'
 import { Timestamp } from './Timestamp'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
 import { dispatch } from '../store'
 
 type Props = { product: IDeviceProduct }
-
-const shortCode = (code: string) => `${code.slice(0, 8)}…${code.slice(-4)}`
 
 const issued = (label: string, created: string) => {
   const date = new Date(created)
@@ -26,15 +25,20 @@ const issued = (label: string, created: string) => {
   )
 }
 
-const codeText = (code: IDeviceProductCode, chip?: { label: string; color: Color }) => (
-  <Stack direction="row" alignItems="center" spacing={1}>
-    <Tooltip title={code.code} placement="top-start">
-      <Typography variant="body2" component="span" sx={{ fontFamily: "'Roboto Mono', monospace" }}>
-        {shortCode(code.code)}
-      </Typography>
-    </Tooltip>
-    {chip && <ColorChip label={chip.label} size="small" color={chip.color} variant="contained" />}
-  </Stack>
+const codeText = (code: IDeviceProductCode) => (
+  <Typography
+    variant="body2"
+    component="span"
+    sx={{ fontFamily: "'Roboto Mono', monospace", overflowWrap: 'anywhere' }}
+  >
+    {code.code}
+  </Typography>
+)
+
+const chipColumn = (label: string, color: Color) => (
+  <Box sx={{ width: 96, flexShrink: 0, alignSelf: 'flex-start', paddingTop: 0.75 }}>
+    <ColorChip label={label} size="small" color={color} variant="contained" />
+  </Box>
 )
 
 // The newest code in force is the one in the registration command. A product keeps at most one more in force, the code it
@@ -49,9 +53,8 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
   const busy = replacing || !!revoking
   const codes = product.registrationCodes || []
   const [current, ...previous] = codes.filter(code => !code.revoked)
-  const revoked = codes.filter(code => code.revoked)
-  const currentCode = current && shortCode(current.code)
-  const endsServiceIds = !revoked.length && (
+  const currentCode = current?.code
+  const endsServiceIds = !codes.some(code => code.revoked) && (
     <Typography variant="body2" color="textSecondary" gutterBottom>
       {t(
         'productRegistrationCodes.endsServiceIds',
@@ -72,6 +75,72 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
     setRevoking(undefined)
   }
 
+  const replaceButton = (
+    <ConfirmButton
+      confirm
+      confirmProps={{
+        color: revokePrevious ? 'error' : 'primary',
+        disabled: busy,
+        action: revokePrevious
+          ? t('productRegistrationCodes.replaceAndRevokeAction', 'Replace and Revoke')
+          : t('productRegistrationCodes.replaceAction', 'Replace Code'),
+        title: t('productRegistrationCodes.replaceTitle', 'Replace registration code?'),
+        children: (
+          <>
+            <Typography variant="body2" gutterBottom>
+              {revokePrevious
+                ? t('productRegistrationCodes.replaceBodyRevoke', {
+                    code: currentCode,
+                    defaultValue:
+                      'The new code goes in the registration command. {{code}} and any older code stop registering devices now.',
+                  })
+                : t('productRegistrationCodes.replaceBody', {
+                    code: currentCode,
+                    defaultValue:
+                      "The new code goes in the registration command. The current code {{code}} keeps registering devices until you revoke it, so devices still being set up with it aren't cut off.",
+                  })}
+            </Typography>
+            {previous.length > 0 && !revokePrevious && (
+              <Typography variant="body2" color="textSecondary" gutterBottom>
+                {t('productRegistrationCodes.replaceRevokesPrevious', {
+                  count: previous.length,
+                  code: previous.map(code => code.code).join(', '),
+                  defaultValue_one: 'The older code {{code}} will be revoked: only two codes stay in use.',
+                  defaultValue_other: 'The older codes {{code}} will be revoked: only two codes stay in use.',
+                })}
+              </Typography>
+            )}
+            {(previous.length > 0 || revokePrevious) && endsServiceIds}
+            <List disablePadding>
+              <ListItemCheckbox
+                checked={revokePrevious}
+                label={t('productRegistrationCodes.revokeNow', {
+                  code: currentCode,
+                  defaultValue: 'Stop {{code}} now too',
+                })}
+                subLabel={t(
+                  'productRegistrationCodes.revokeNowHelp',
+                  "If it leaked. Devices still being set up with it won't be able to register."
+                )}
+                onClick={setRevokePrevious}
+                disableGutters
+              />
+            </List>
+          </>
+        ),
+      }}
+      size="small"
+      variant="text"
+      color="grayDark"
+      title={t('productRegistrationCodes.replace', 'Replace')}
+      loading={replacing}
+      disabled={busy}
+      onClick={replace}
+      // The dialog's cancel can't reach this state, so each confirm starts unchecked here instead.
+      onClickCapture={() => setRevokePrevious(false)}
+    />
+  )
+
   return (
     <Box sx={{ marginTop: 3 }}>
       <Typography variant="subtitle2" color="textSecondary">
@@ -85,9 +154,10 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
       </Typography>
       <List dense disablePadding>
         {current && (
-          <ListItem disableGutters>
+          <ListItem disableGutters sx={{ paddingRight: 16 }} secondaryAction={replaceButton}>
+            {chipColumn(t('productRegistrationCodes.current', 'Current'), 'primary')}
             <ListItemText
-              primary={codeText(current, { label: t('productRegistrationCodes.current', 'Current'), color: 'primary' })}
+              primary={codeText(current)}
               secondary={issued(t('productRegistrationCodes.issued', 'Issued'), current.created)}
             />
           </ListItem>
@@ -96,7 +166,7 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
           <ListItem
             key={code.code}
             disableGutters
-            sx={{ paddingRight: 12 }}
+            sx={{ paddingRight: 16 }}
             secondaryAction={
               <ConfirmButton
                 confirm
@@ -127,8 +197,9 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
               />
             }
           >
+            {chipColumn(t('productRegistrationCodes.previous', 'Previous'), 'grayDark')}
             <ListItemText
-              primary={codeText(code, { label: t('productRegistrationCodes.previous', 'Previous'), color: 'grayDark' })}
+              primary={codeText(code)}
               secondary={
                 <>
                   {t('productRegistrationCodes.stillWorks', 'Still registers devices')}
@@ -140,96 +211,40 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
           </ListItem>
         ))}
       </List>
-      <ConfirmButton
-        confirm
-        confirmProps={{
-          color: revokePrevious ? 'error' : 'primary',
-          disabled: busy,
-          action: revokePrevious
-            ? t('productRegistrationCodes.replaceAndRevokeAction', 'Replace and Revoke')
-            : t('productRegistrationCodes.replaceAction', 'Replace Code'),
-          title: t('productRegistrationCodes.replaceTitle', 'Replace registration code?'),
-          children: (
-            <>
-              <Typography variant="body2" gutterBottom>
-                {revokePrevious
-                  ? t('productRegistrationCodes.replaceBodyRevoke', {
-                      code: currentCode,
-                      defaultValue:
-                        'The new code goes in the registration command. {{code}} and any older code stop registering devices now.',
-                    })
-                  : t('productRegistrationCodes.replaceBody', {
-                      code: currentCode,
-                      defaultValue:
-                        "The new code goes in the registration command. The current code {{code}} keeps registering devices until you revoke it, so devices still being set up with it aren't cut off.",
-                    })}
-              </Typography>
-              {previous.length > 0 && !revokePrevious && (
-                <Typography variant="body2" color="textSecondary" gutterBottom>
-                  {t('productRegistrationCodes.replaceRevokesPrevious', {
-                    count: previous.length,
-                    code: previous.map(code => shortCode(code.code)).join(', '),
-                    defaultValue_one: 'The older code {{code}} will be revoked: only two codes stay in use.',
-                    defaultValue_other: 'The older codes {{code}} will be revoked: only two codes stay in use.',
-                  })}
-                </Typography>
-              )}
-              {(previous.length > 0 || revokePrevious) && endsServiceIds}
-              <List disablePadding>
-                <ListItemCheckbox
-                  checked={revokePrevious}
-                  label={t('productRegistrationCodes.revokeNow', {
-                    code: currentCode,
-                    defaultValue: 'Stop {{code}} now too',
-                  })}
-                  subLabel={t(
-                    'productRegistrationCodes.revokeNowHelp',
-                    "If it leaked. Devices still being set up with it won't be able to register."
-                  )}
-                  onClick={setRevokePrevious}
-                  disableGutters
-                />
-              </List>
-            </>
-          ),
-        }}
-        size="small"
-        variant="text"
-        color="grayDark"
-        icon="rotate"
-        title={t('productRegistrationCodes.replace', 'Replace Code')}
-        loading={replacing}
-        disabled={busy}
-        onClick={replace}
-        // The dialog's cancel can't reach this state, so each confirm starts unchecked here instead.
-        onClickCapture={() => setRevokePrevious(false)}
-        sx={{ marginTop: 1 }}
-      />
-      {revoked.length > 0 && (
-        <Box sx={{ marginTop: 2 }}>
-          <AccordionMenuItem
-            subtitle={t('productRegistrationCodes.revokedHistory', {
-              total: revoked.length,
-              defaultValue: 'Revoked codes ({{total}})',
-            })}
-          >
-            <List dense disablePadding>
-              {revoked.map(code => (
-                <ListItem key={code.code} disableGutters>
-                  <ListItemText
-                    primary={codeText(code)}
-                    secondary={
-                      <>
-                        {t('productRegistrationCodes.revoked', 'Revoked')} <Timestamp date={new Date(code.revoked!)} />
-                      </>
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </AccordionMenuItem>
-        </Box>
-      )}
     </Box>
+  )
+}
+
+// Rendered outside the page's gutters, as the app's other accordions are, so its heading lines up with the sections above.
+export const ProductRevokedCodes: React.FC<Props> = ({ product }) => {
+  const { t } = useTranslation()
+  const revoked = (product.registrationCodes || []).filter(code => code.revoked)
+  if (!revoked.length) return null
+
+  return (
+    <AccordionMenuItem
+      gutters
+      subtitle={t('productRegistrationCodes.revokedHistory', {
+        total: revoked.length,
+        defaultValue: 'Revoked codes ({{total}})',
+      })}
+    >
+      <Gutters top={null} bottom={null}>
+        <List dense disablePadding>
+          {revoked.map(code => (
+            <ListItem key={code.code} disableGutters>
+              <ListItemText
+                primary={codeText(code)}
+                secondary={
+                  <>
+                    {t('productRegistrationCodes.revoked', 'Revoked')} <Timestamp date={new Date(code.revoked!)} />
+                  </>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      </Gutters>
+    </AccordionMenuItem>
   )
 }

@@ -1745,7 +1745,7 @@
     "endsServiceIds": "Revoking a code also stops devices registering with a service ID of this product.",
     "issued": "Issued",
     "previous": "Previous",
-    "replace": "Replace Code",
+    "replace": "Replace",
     "replaceAction": "Replace Code",
     "replaceAndRevokeAction": "Replace and Revoke",
     "replaceBody": "The new code goes in the registration command. The current code {{code}} keeps registering devices until you revoke it, so devices still being set up with it aren't cut off.",

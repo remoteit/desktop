@@ -1745,7 +1745,7 @@
     "endsServiceIds": "Das Widerrufen eines Codes verhindert außerdem, dass sich Geräte mit einer Dienst-ID dieses Produkts registrieren.",
     "issued": "Ausgegeben",
     "previous": "Vorheriger",
-    "replace": "Code ersetzen",
+    "replace": "Ersetzen",
     "replaceAction": "Code ersetzen",
     "replaceAndRevokeAction": "Ersetzen und widerrufen",
     "replaceBody": "Der neue Code wird in den Registrierungsbefehl übernommen. Der aktuelle Code {{code}} registriert weiterhin Geräte, bis Sie ihn widerrufen, damit Geräte, die gerade damit eingerichtet werden, nicht abgeschnitten werden.",
