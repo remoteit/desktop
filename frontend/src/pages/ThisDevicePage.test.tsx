@@ -516,7 +516,8 @@ describe('This device has what Settings has', () => {
     },
     { name: 'printers', value: true, source: 'machine' as const },
     { name: 'services', value: false, source: 'machine' as const },
-    { name: 'console', value: true, source: 'cloud' as const },
+    { name: 'remoteit.console', value: true, source: 'cloud' as const },
+    { name: 'remoteit.console.ai_commands', value: false, source: 'default' as const },
     {
       name: 'exit_node',
       value: { on: false, lan: false } as any,
@@ -596,10 +597,26 @@ describe('This device has what Settings has', () => {
     const row = (name: string) => container.querySelector(`[data-section="settings"] [data-setting="${name}"]`)!
     expect(row('exit_node').textContent).toContain('Turned off by this machine’s administrator')
     expect((row('exit_node').querySelector('input') as HTMLInputElement).disabled).toBe(true)
-    expect(row('console').textContent).toContain('Not served: remote access to services is off')
+    expect(row('remoteit.console').textContent).toContain('Console')
+    expect(row('remoteit.console').textContent).toContain('Not served: remote access to services is off')
     expect(row('websocket').textContent).toContain('Changed from the portal to Always')
     expect(row('websocket').textContent).toContain('In use now')
     expect(row('websocket').textContent).toContain('Automatic')
+  })
+
+  it('the console’s AI commands: an option of the console’s row, set by the console’s key', async () => {
+    const { container, bridge } = await render({ capabilities: caps, status, settings }, { part: 'advanced' })
+    const rows = [...container.querySelectorAll('[data-section="settings"] [data-setting]')]
+    const at = rows.findIndex(r => r.getAttribute('data-setting') === 'remoteit.console')
+    const option = rows[at + 1] as HTMLElement
+    expect(option.getAttribute('data-setting')).toBe('remoteit.console.ai_commands')
+    expect(option.textContent).toContain('Allow AI commands')
+    expect(getComputedStyle(option).paddingLeft).toBe('32px')
+    expect(option.querySelector('svg[data-icon], .MuiListItemIcon-root')).toBeNull()
+    await act(async () => (option.querySelector('input') as HTMLInputElement).click())
+    expect(bridge.calls.filter(c => c.method === 'settings.set').map(c => c.args)).toEqual([
+      { name: 'remoteit.console.ai_commands', value: true },
+    ])
   })
 
   it('the detailed connection logging, and the app’s own Open at login', async () => {

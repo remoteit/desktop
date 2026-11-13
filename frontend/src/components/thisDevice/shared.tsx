@@ -14,7 +14,7 @@ export const SETTING_TITLES: { [name: string]: string } = {
   printers: 'Show remote printers',
   services: 'Allow remote access to services',
   websocket: 'Relay',
-  console: 'Console',
+  'remoteit.console': 'Console',
   any_port: 'Connections to any port',
   proxy: 'Proxy',
   scripts: 'Scripts',
@@ -43,7 +43,15 @@ export const relayChoices = (t: T): { value: string; title: string; line: string
 ]
 
 // Settings served only while the services are: not served while they are off, whatever their own value says.
-export const UNDER_SERVICES = ['console', 'any_port']
+export const UNDER_SERVICES = ['remoteit.console', 'any_port']
+// An app's settings are options of its row, as on the device page's Apps: set in under it, labelled by what they allow.
+// Each option is named here with the setting whose row it sits under, and its words (the device page's).
+export const OPTIONS: { [name: string]: { of: string; title: (t: T) => string } } = {
+  'remoteit.console.ai_commands': {
+    of: 'remoteit.console',
+    title: t => t('deviceApps.consoleAiCommands', 'Allow AI commands'),
+  },
+}
 // A switch's words keep clear of the switch at the row's end, at a phone's width too.
 export const SWITCH_TEXT = { paddingRight: '72px' }
 // The relay's menu, at the row's end where a switch would be.
@@ -161,7 +169,7 @@ export const SettingRow: React.FC<{
   title?: string
   // websocket's: whether the relay carries the device's traffic now.
   relayUsing?: boolean
-  // Not served while the services are off (console, any port), whatever its own value says.
+  // Not served while the services are off (the console, any port), whatever its own value says.
   notServed?: boolean
   // An option of the switch above it (the printers, Access's): set in under it.
   indent?: boolean
