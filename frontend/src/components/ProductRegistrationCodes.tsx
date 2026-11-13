@@ -53,15 +53,14 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
   const busy = replacing || !!revoking
   const codes = product.registrationCodes || []
   const [current, ...previous] = codes.filter(code => !code.revoked)
-  const currentCode = current?.code
-  const endsServiceIds = !codes.some(code => code.revoked) && (
-    <Typography variant="body2" color="textSecondary" gutterBottom>
-      {t(
+  const endsServiceIds =
+    !codes.some(code => code.revoked) &&
+    ' ' +
+      t(
         'productRegistrationCodes.endsServiceIds',
         'Revoking a code also stops devices registering with a service ID of this product.'
-      )}
-    </Typography>
-  )
+      )
+  const replaceRevokes = previous.length + (revokePrevious ? 1 : 0)
 
   const replace = async () => {
     setReplacing(true)
@@ -79,7 +78,7 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
     <ConfirmButton
       confirm
       confirmProps={{
-        color: revokePrevious ? 'error' : 'primary',
+        color: 'error',
         disabled: busy,
         action: revokePrevious
           ? t('productRegistrationCodes.replaceAndRevokeAction', 'Replace and Revoke')
@@ -89,39 +88,32 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
           <>
             <Typography variant="body2" gutterBottom>
               {revokePrevious
-                ? t('productRegistrationCodes.replaceBodyRevoke', {
-                    code: currentCode,
-                    defaultValue:
-                      'The new code goes in the registration command. {{code}} and any older code stop registering devices now.',
-                  })
-                : t('productRegistrationCodes.replaceBody', {
-                    code: currentCode,
-                    defaultValue:
-                      "The new code goes in the registration command. The current code {{code}} keeps registering devices until you revoke it, so devices still being set up with it aren't cut off.",
-                  })}
+                ? t(
+                    'productRegistrationCodes.replaceBodyRevoke',
+                    'The new code goes in the registration command, and the current code stops registering devices now.'
+                  )
+                : t(
+                    'productRegistrationCodes.replaceBody',
+                    'The new code goes in the registration command. The current code keeps registering devices until you revoke it.'
+                  )}
             </Typography>
-            {previous.length > 0 && !revokePrevious && (
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                {t('productRegistrationCodes.replaceRevokesPrevious', {
-                  count: previous.length,
-                  code: previous.map(code => code.code).join(', '),
-                  defaultValue_one: 'The older code {{code}} will be revoked: only two codes stay in use.',
-                  defaultValue_other: 'The older codes {{code}} will be revoked: only two codes stay in use.',
+            {replaceRevokes > 0 && (
+              <Notice severity="error" gutterBottom fullWidth>
+                {t('productRegistrationCodes.revokesCodes', {
+                  count: replaceRevokes,
+                  defaultValue_one:
+                    "1 code will be revoked. Devices still being set up with it won't be able to register, and this can't be undone.",
+                  defaultValue_other:
+                    "{{count}} codes will be revoked. Devices still being set up with them won't be able to register, and this can't be undone.",
                 })}
-              </Typography>
+                {endsServiceIds}
+              </Notice>
             )}
-            {(previous.length > 0 || revokePrevious) && endsServiceIds}
             <List disablePadding>
               <ListItemCheckbox
                 checked={revokePrevious}
-                label={t('productRegistrationCodes.revokeNow', {
-                  code: currentCode,
-                  defaultValue: 'Stop {{code}} now too',
-                })}
-                subLabel={t(
-                  'productRegistrationCodes.revokeNowHelp',
-                  "If it leaked. Devices still being set up with it won't be able to register."
-                )}
+                label={t('productRegistrationCodes.revokeNow', 'Revoke the current code now too')}
+                subLabel={t('productRegistrationCodes.revokeNowHelp', 'If it leaked.')}
                 onClick={setRevokePrevious}
                 disableGutters
               />
@@ -182,8 +174,8 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
                           'productRegistrationCodes.revokeBody',
                           "Devices can no longer register with this code. Devices already registered aren't affected. This can't be undone."
                         )}
+                        {endsServiceIds}
                       </Notice>
-                      {endsServiceIds}
                     </>
                   ),
                 }}

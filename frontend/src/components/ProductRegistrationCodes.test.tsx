@@ -77,16 +77,15 @@ describe('ProductRegistrationCodes', () => {
 
   it('replaces the code after a confirm, keeping the old one unless asked to stop it now', async () => {
     act(() => button('Replace').click())
-    expect(document.body.textContent).toContain(
-      'The current code aaaaaaaa-0000-4000-8000-000000000003 keeps registering devices'
-    )
-    expect(document.body.textContent).toContain('The older code bbbbbbbb-0000-4000-8000-000000000002 will be revoked')
+    expect(document.body.textContent).toContain('The current code keeps registering devices until you revoke it')
+    expect(document.body.textContent).toContain('1 code will be revoked')
     expect(rotateCode).not.toHaveBeenCalled()
 
     const stopNow = [...document.body.querySelectorAll('.MuiListItemButton-root')].find(item =>
-      item.textContent?.includes('Stop aaaaaaaa-0000-4000-8000-000000000003 now too')
+      item.textContent?.includes('Revoke the current code now too')
     ) as HTMLElement
     act(() => stopNow.click())
+    expect(document.body.textContent).toContain('2 codes will be revoked')
     await act(async () => button('Replace and Revoke').click())
 
     expect(rotateCode).toHaveBeenCalledWith({ productId: 'P1', revokePrevious: true })
@@ -95,7 +94,7 @@ describe('ProductRegistrationCodes', () => {
   it('starts each confirm unchecked, so a box ticked and then cancelled does not revoke on the next replace', async () => {
     const stopNow = () =>
       [...document.body.querySelectorAll('.MuiListItemButton-root')].find(item =>
-        item.textContent?.includes('now too')
+        item.textContent?.includes('Revoke the current code now too')
       ) as HTMLElement
 
     act(() => button('Replace').click())
@@ -118,7 +117,7 @@ describe('ProductRegistrationCodes', () => {
     expect(rotateCode).toHaveBeenCalledTimes(1)
   })
 
-  it('names every older code a replace revokes, and warns that the first revocation ends service ID registration', () => {
+  it('counts every older code a replace revokes, and warns that the first revocation ends service ID registration', () => {
     render({
       id: 'P2',
       registrationCodes: [
@@ -129,9 +128,7 @@ describe('ProductRegistrationCodes', () => {
     } as unknown as IDeviceProduct)
     act(() => button('Replace').click())
 
-    expect(document.body.textContent).toContain(
-      'The older codes bbbbbbbb-0000-4000-8000-000000000002, dddddddd-0000-4000-8000-000000000004 will be revoked'
-    )
+    expect(document.body.textContent).toContain('2 codes will be revoked')
     expect(document.body.textContent).toContain('also stops devices registering with a service ID')
   })
 })
