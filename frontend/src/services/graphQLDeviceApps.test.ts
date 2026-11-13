@@ -215,9 +215,9 @@ describe('build step 5: what a device may add, and a remote.it too old', () => {
       answer({ login: { device: [{ availableApps: [{ id: 'remoteit.files', name: 'Files', publisher: 'remote.it', root: false, version: '1.0.0', needsNewer: true }] }] } })
     )
     expect(await graphQLAvailableApps('D1')).toEqual([
-      { id: 'remoteit.files', name: 'Files', publisher: 'remote.it', publisherVerifiedDomain: null, description: null, root: false, version: '1.0.0', refused: null, needsNewer: true },
+      { id: 'remoteit.files', name: 'Files', publisher: 'remote.it', publisherVerifiedDomain: null, description: null, root: false, version: '1.0.0', refused: null, needsNewer: true, oldInstall: false },
     ])
-    expect(post.mock.calls[0][0].query).toContain('availableApps { id name publisher publisherVerifiedDomain description root version refused needsNewer }')
+    expect(post.mock.calls[0][0].query).toContain('availableApps { id name publisher publisherVerifiedDomain description root version refused needsNewer oldInstall }')
     post.mockResolvedValue('ERROR')
     expect(await graphQLAvailableApps('D1')).toEqual([])
   })

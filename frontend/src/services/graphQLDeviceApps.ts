@@ -12,6 +12,8 @@ import { appPolicyFields, settingLockOf, SettingLock } from './productPolicy'
    product. graphql's Device.apps, setDeviceApp and setDeviceAppSetting. */
 
 export const CONSOLE = 'remoteit.console'
+// ScreenView as an app (build step 9): root, served on its socket as a type-48 service.
+export const SCREENVIEW = 'remoteit.screenview'
 
 export type DeviceAppState = 'off' | 'starting' | 'running' | 'unavailable'
 
@@ -76,6 +78,8 @@ export type DeviceApp = {
   // What the device says is wrong with its settings: its administrator's control of a setting since removed
   // (no-such-setting, "<key>_control: no such setting, removed in <version>"), or a value its manifest refuses.
   problems?: { name: string; error: string; detail: string | null }[]
+  // ScreenView installed the old way (installApp) on this device: the portal offers to switch to the app.
+  oldInstall?: boolean
   settings: DeviceAppSetting[]
 }
 
@@ -92,7 +96,7 @@ export const rootConsentOf = (consent: any): DeviceAppRootConsent | null =>
 
 const SETTING_FIELDS =
   'name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration'
-const FIELDS = `id name publisher publisherVerifiedDomain root on channel version state detail serviceId problems { name error detail } settings { ${SETTING_FIELDS} }`
+const FIELDS = `id name publisher publisherVerifiedDomain oldInstall root on channel version state detail serviceId problems { name error detail } settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
 function parsedSetting(setting: any): DeviceAppSetting {
@@ -147,11 +151,12 @@ export type AvailableApp = {
   version: string | null
   refused: string | null
   needsNewer: boolean
+  oldInstall?: boolean // ScreenView installed the old way here
 }
 
 // [] where the API has none, or the device is not this person's to manage.
 export async function graphQLAvailableApps(deviceId: string): Promise<AvailableApp[]> {
-  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher publisherVerifiedDomain description root version refused needsNewer } } } }`
+  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher publisherVerifiedDomain description root version refused needsNewer oldInstall } } } }`
   const variables = { id: [deviceId] }
   const response = await post({ query, variables })
   if (response === 'ERROR') return []
@@ -163,6 +168,7 @@ export async function graphQLAvailableApps(deviceId: string): Promise<AvailableA
     refused: app.refused ?? null,
     needsNewer: !!app.needsNewer,
     publisherVerifiedDomain: app.publisherVerifiedDomain ?? null,
+    oldInstall: !!app.oldInstall,
   }))
 }
 

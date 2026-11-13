@@ -655,3 +655,38 @@ describe('build step 8: Verified beside the publisher', () => {
     expect(document.body.querySelector('[data-available-app="acme.sync"]')?.textContent).toContain('By Acme · Verified: acme.com · 1.0.0')
   })
 })
+
+describe('build step 9: ScreenView installed the old way', () => {
+  const screenview = (more: any = {}) => ({ id: 'remoteit.screenview', name: 'ScreenView', publisher: 'remote.it', description: null, root: true,
+    version: '1.0.0', refused: null, needsNewer: false, oldInstall: true, ...more })
+
+  it('offers to switch to the app, which asks for the yes to root first — the old install is no consent', async () => {
+    apps.value = { ...apps.value, apps: [consoleApp()], available: [screenview()] }
+    const page = await render(<DeviceApps device={device()} />)
+    const offer = page.querySelector('[data-screenview-switch]')!
+    expect(offer.textContent).toContain('ScreenView was installed the old way.')
+    await click(offer.querySelector('[data-screenview-switch-action]'))
+    expect(turn).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run ScreenView as root?')
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.screenview' }), true, true)
+  })
+
+  it('a row of it off, flagged: offered too; on, or not flagged, or refused there: not', async () => {
+    apps.value = { ...apps.value, apps: [{ ...backup(), id: 'remoteit.screenview', name: 'ScreenView', root: true, oldInstall: true }], available: [] }
+    let page = await render(<DeviceApps device={device()} />)
+    expect(page.querySelector('[data-screenview-switch]')).not.toBeNull()
+    act(() => root.unmount())
+    container.remove()
+    for (const available of [[screenview({ oldInstall: false })], [screenview({ refused: 'Not allowed' })], [screenview({ version: null })]]) {
+      apps.value = { ...apps.value, apps: [consoleApp()], available }
+      page = await render(<DeviceApps device={device()} />)
+      expect(page.querySelector('[data-screenview-switch]')).toBeNull()
+      act(() => root.unmount())
+      container.remove()
+    }
+    apps.value = { ...apps.value, apps: [{ ...backup(), id: 'remoteit.screenview', on: true, oldInstall: true }], available: [] }
+    page = await render(<DeviceApps device={device(['VIEW', 'CONNECT', 'MANAGE'])} />)
+    expect(page.querySelector('[data-screenview-switch]')).toBeNull()
+  })
+})

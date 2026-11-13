@@ -12,8 +12,6 @@ import {
   graphQLAddService,
   graphQLUpdateService,
   graphQLRemoveService,
-  graphQLInstallApp,
-  graphQLRemoveApp,
   graphQLSetDeviceNotification,
   graphQLTransferDevice,
   graphQLTransferDevices,
@@ -490,7 +488,7 @@ export default createModel<RootModel>()({
 
     // `ports`, a multi-port service's list, only from the service form where the account has them
     // (services/multiPortServices): a caller changing the port alone leaves the rest of the list as it is.
-    async cloudAddService({ form, deviceId, ports }: { form: IService; deviceId: string; ports?: string[] }, state) {
+    async cloudAddService({ form, deviceId, ports }: { form: IService; deviceId: string; ports?: string[] }) {
       if (!form.host || !form.port) return
       const result = await graphQLAddService({
         deviceId,
@@ -509,14 +507,8 @@ export default createModel<RootModel>()({
           dispatch.devices.addService({ deviceId, service: { ...form, ports, id } })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
         }
-
-        const device = await selectDevice(state, undefined, deviceId)
-        if (device?.supportedAppInstalls.includes(form.typeID)) {
-          await graphQLInstallApp({
-            deviceIds: [deviceId],
-            application: form.typeID,
-          })
-        }
+        // ScreenView is an app now (remoteit.screenview, turned on in the device's Apps): adding a service never installs
+        // anything on the device.
       }
     },
 
@@ -546,7 +538,7 @@ export default createModel<RootModel>()({
       dispatch.ui.set({ setupServiceBusy: undefined })
     },
 
-    async cloudRemoveService({ serviceId, deviceId }: { serviceId: string; deviceId: string }, state) {
+    async cloudRemoveService({ serviceId, deviceId }: { serviceId: string; deviceId: string }) {
       console.log('REMOVING SERVICE', serviceId, deviceId)
       dispatch.ui.set({
         setupServiceBusy: serviceId,
@@ -560,14 +552,6 @@ export default createModel<RootModel>()({
         await dispatch.devices.cleanupService(serviceId)
         dispatch.ui.set({
           successMessage: i18n.t('notices:service.removed', { defaultValue: 'Service was successfully removed.' }),
-        })
-      }
-
-      let [service, device] = selectById(state, undefined, serviceId)
-      if (service && device?.supportedAppInstalls.includes(service.typeID)) {
-        await graphQLRemoveApp({
-          deviceIds: [deviceId],
-          application: service.typeID,
         })
       }
 

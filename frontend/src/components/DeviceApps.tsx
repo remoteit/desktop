@@ -13,11 +13,11 @@ import {
   Typography,
 } from '@mui/material'
 import { useHistory } from 'react-router-dom'
-import { DeviceApp, DeviceAppRootConsent, needsNewer } from '../services/graphQLDeviceApps'
+import { DeviceApp, DeviceAppRootConsent, needsNewer, SCREENVIEW } from '../services/graphQLDeviceApps'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
 import { DeviceAppSetting } from './DeviceAppSetting'
-import { AddDeviceApp, publisherLine } from './AddDeviceApp'
+import { AddDeviceApp, offered, publisherLine } from './AddDeviceApp'
 import { firstPartyApp } from './firstPartyApps'
 import { productLockNote } from '../helpers/productPolicyHelper'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
@@ -46,10 +46,38 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   const canRun = canManage && !!device.permissions?.includes('SCRIPTING')
 
   if (!apps || (!apps.length && !available?.length)) return null
+  // ScreenView installed the old way (build step 9): offered as the app, turned on only with the person's yes to its
+  // running as root — the old install is no consent.
+  const oldScreenView =
+    apps.find(app => app.id === SCREENVIEW && !app.on && app.oldInstall) ??
+    available?.filter(app => app.id === SCREENVIEW && app.oldInstall && app.version && !app.refused).map(offered)[0]
 
   return (
     <List dense sx={{ paddingBottom: 1 }} data-device-apps>
       <ListSubheader disableGutters>{t('deviceApps.title', 'Apps')}</ListSubheader>
+      {oldScreenView && (
+        <ListItem component="div" disableGutters data-screenview-switch>
+          <ListItemIcon>
+            <Icon name="android-screenview" size="md" platformIcon fixedWidth />
+          </ListItemIcon>
+          <ListItemText
+            primary={t('deviceApps.screenviewOld', 'ScreenView was installed the old way.')}
+            secondary={t(
+              'deviceApps.screenviewOldHelp',
+              'Switch to the ScreenView app: kept up to date by remote.it, with its settings here. It runs as root, so it asks first.'
+            )}
+          />
+          <Button
+            size="small"
+            variant="contained"
+            disabled={switching !== undefined || !canRun}
+            onClick={() => flip(oldScreenView, true)}
+            data-screenview-switch-action
+          >
+            {t('deviceApps.screenviewSwitch', 'Switch to the app')}
+          </Button>
+        </ListItem>
+      )}
       {apps.map(app => {
         const own = firstPartyApp(app.id)
         const words = own?.settings?.(t) ?? {}

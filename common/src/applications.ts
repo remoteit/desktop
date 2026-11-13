@@ -575,8 +575,9 @@ export function getApplicationType(typeId?: number) {
         ),
         appLaunchType: 'URL',
         autoLaunch: true,
-        visibility: (device?: IDevice) =>
-          !!(device?.targetPlatform === 1213 || device?.supportedAppInstalls.includes(typeId)),
+        // Added by hand as a service only on Android (1213), whose ScreenView app is its own; everywhere else ScreenView is
+        // the app remoteit.screenview, turned on in the device's Apps, which makes this service itself.
+        visibility: (device?: IDevice) => device?.targetPlatform === 1213,
       })
     case 49:
       return new Application({
