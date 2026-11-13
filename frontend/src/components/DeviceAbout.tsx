@@ -9,9 +9,12 @@ import { Box, List, ListItem, ListSubheader, Typography } from '@mui/material'
 import { getAllDevices } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { useKnownCopies } from '../hooks/useDeviceIdentity'
+import { useDeviceSignIns } from '../hooks/useDeviceSignIns'
+import { DeviceSignIn } from '../services/deviceSignIns'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import {
   DeviceAbout as About,
+  DeviceAboutAccount,
   DeviceAboutChange,
   DeviceAboutRead,
   graphQLDeviceAbout,
@@ -22,8 +25,10 @@ import { Timestamp } from './Timestamp'
 type Row = [label: string, value: React.ReactNode]
 
 /* What a device says it is (services/graphQLDeviceAbout) on its details page: System, Identifiers, the Product its
-   manufacturer declares, its Software, and the History of every field. Behind the device-sessions flag; nothing where
-   the API does not serve it or the device has said nothing (a legacy agent, or one from before `about`). */
+   manufacturer declares, its Software, the machine's Accounts, and the History of every field; a new administrator or
+   a change of hardware at the top. Behind the device-sessions flag; nothing where the API does not serve it or the
+   device has said nothing (a legacy agent, or one from before `about`). Someone the device is shared with is served its
+   OS, architecture and software alone: every other part is none, and is left out. */
 export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
   const { t } = useTranslation()
   const [read, setRead] = useState<DeviceAboutRead | 'ERROR' | typeof UNSUPPORTED>()
@@ -35,6 +40,10 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
     () => new Map<string, string>([...devices, ...copies].map(device => [device.id, device.name])),
     [devices, copies]
   )
+
+  // Who is signed in on each account, asked only where the device lists its accounts.
+  const listed = !!read && typeof read === 'object' && !!read.about?.accounts?.length
+  const signIns = useDeviceSignIns(listed ? deviceId : undefined)
 
   useEffect(() => {
     let current = true
@@ -109,6 +118,16 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
 
   return (
     <>
+      {!!about?.adminsAdded?.length && (
+        <Notice severity="warning" fullWidth>
+          {about.adminsAdded.map(added => (
+            <Box key={`${added.name} ${added.at}`}>
+              {t('deviceAbout.adminAdded', 'A new administrator on the machine: {{name}}', { name: added.name })}{' '}
+              <Timestamp date={new Date(added.at)} variant="minutes" />
+            </Box>
+          ))}
+        </Notice>
+      )}
       {about?.hardwareChanged && (
         <Notice severity="warning" fullWidth>
           {t(
@@ -122,7 +141,7 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
         title={t('deviceAbout.system', 'System')}
         rows={system}
         action={
-          about && (
+          about?.data && (
             <Button size="small" onClick={() => setDetails(true)}>
               {t('deviceAbout.viewDetails', 'View details')}
             </Button>
@@ -132,13 +151,14 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
       <Section title={t('deviceAbout.identifiers', 'Identifiers')} rows={identifiers} />
       <Section title={t('deviceAbout.declaredProduct', 'Product — declared by the manufacturer')} rows={product} />
       <Section title={t('deviceAbout.software', 'Software')} rows={software} />
-      {about && (
+      {about && <Accounts about={about} signIns={signIns} />}
+      {about?.reported && (
         <Typography variant="caption" color="grayDark.main" component="p" sx={{ paddingBottom: 1 }}>
           {t('deviceAbout.reported', 'As the device last reported it')}{' '}
           <Timestamp date={new Date(about.reported)} variant="minutes" />
         </Typography>
       )}
-      {about && <AboutDetails open={details} data={about.data} onClose={() => setDetails(false)} />}
+      {about?.data && <AboutDetails open={details} data={about.data} onClose={() => setDetails(false)} />}
       {!!history.length && (
         <List dense>
           <ListSubheader disableGutters>{t('deviceAbout.history', 'History')}</ListSubheader>
@@ -229,9 +249,14 @@ const AboutDetails: React.FC<{ open: boolean; data: ILookup<any>; onClose: () =>
   )
 }
 
-const Section: React.FC<{ title: string; rows: Row[]; action?: React.ReactNode }> = ({ title, rows, action }) => {
+const Section: React.FC<{ title: string; rows: Row[]; action?: React.ReactNode; children?: React.ReactNode }> = ({
+  title,
+  rows,
+  action,
+  children,
+}) => {
   const shown = rows.filter(([, value]) => value != null && value !== '')
-  if (!shown.length) return null
+  if (!shown.length && !React.Children.toArray(children).length) return null
   return (
     <List dense sx={{ paddingBottom: 1 }}>
       <ListSubheader disableGutters sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -248,8 +273,76 @@ const Section: React.FC<{ title: string; rows: Row[]; action?: React.ReactNode }
           </Box>
         </ListItem>
       ))}
+      {children}
     </List>
   )
+}
+
+/* The machine's OS accounts, administrators first: each by its name, its full name, local or domain, whether it
+   administers the machine, its flags, and who is signed in on it (Device.signIns, joined on the OS's id). Where the
+   machine's administrator turned the list off (account_report_control off), says so; nothing where there is no list —
+   a viewer, or a daemon from before it. */
+const Accounts: React.FC<{ about: About; signIns?: DeviceSignIn[] | null }> = ({ about, signIns }) => {
+  const { t } = useTranslation()
+  const accounts = about.accounts ?? []
+  const more = about.accountsMore ?? 0
+  const off = accountReportOff(about)
+  if (!accounts.length && !more && !off) return null
+
+  const rows: Row[] = accounts.map(account => [account.name, <Account account={account} signIns={signIns} />])
+  return (
+    <Section title={t('deviceAbout.accounts', 'Accounts')} rows={rows}>
+      {!!more && (
+        <ListItem disableGutters sx={{ color: 'grayDark.main' }}>
+          {t('deviceAbout.accountsMore', '+{{count}} more', { count: more })}
+        </ListItem>
+      )}
+      {off && !accounts.length && (
+        <ListItem disableGutters sx={{ color: 'grayDark.main' }}>
+          {t('deviceAbout.accountsOff', "The machine's administrator turned the account list off.")}
+        </ListItem>
+      )}
+    </Section>
+  )
+}
+
+const Account: React.FC<{ account: DeviceAboutAccount; signIns?: DeviceSignIn[] | null }> = ({ account, signIns }) => {
+  const { t } = useTranslation()
+  const how = [
+    account.kind === 'domain'
+      ? t('deviceAbout.accountDomain', 'Domain')
+      : account.kind === 'local'
+      ? t('deviceAbout.accountLocal', 'Local')
+      : null,
+    account.admin && t('deviceAbout.accountAdmin', 'Administrator'),
+    account.hidden && t('deviceAbout.accountHidden', 'Hidden'),
+    account.disabled && t('deviceAbout.accountDisabled', 'Disabled'),
+    account.remoteit && t('deviceAbout.accountRemoteit', "remote.it's own"),
+  ].filter(Boolean)
+  const signedIn = (signIns ?? []).filter(signIn => signIn.account === account.account)
+  return (
+    <Box component="span">
+      {account.fullName}
+      {account.fullName && !!how.length && ' — '}
+      <Typography component="span" variant="body2" color="grayDark.main">
+        {how.join(', ')}
+      </Typography>
+      {signedIn.map(signIn => (
+        <Box key={signIn.person.id} component="span" sx={{ display: 'block' }}>
+          {t('deviceAbout.accountSignedIn', 'Signed in as {{person}}', {
+            person: signIn.person.email || signIn.person.id,
+          })}
+        </Box>
+      ))}
+    </Box>
+  )
+}
+
+/* Whether the machine's administrator turned the account report off: its local policy's control, as the device said
+   it (about.policy.controls; connectd names a policy-only control without its _control suffix). */
+export function accountReportOff(about: About) {
+  const controls = about.data?.policy?.controls
+  return controls?.account_report === 'off' || controls?.account_report_control === 'off'
 }
 
 // The NAT the device measured itself behind, in a word and what makes it so — what decides whether another device
@@ -313,7 +406,9 @@ export function changeLabel(t: TFunction, change: DeviceAboutChange) {
     case 'duplicate':
       return t('deviceAbout.duplicate', 'Duplicate')
     default:
-      return fieldLabel(change.field)
+      return change.field.startsWith(ACCOUNT_FIELD)
+        ? t('deviceAbout.accountField', 'Account {{name}}', { name: change.field.slice(ACCOUNT_FIELD.length) })
+        : fieldLabel(change.field)
   }
 }
 
@@ -368,9 +463,18 @@ export function changeText(t: TFunction, change: DeviceAboutChange) {
           return [change.field, where].filter(Boolean).join(', ')
       }
     default:
+      // An account is its own field, its value the entry in one line (1001, local, admin, Jane Smith): one added is a
+      // row from nothing, one removed a row to nothing.
+      if (change.field.startsWith(ACCOUNT_FIELD) && (change.before == null) !== (change.after == null))
+        return change.before == null
+          ? t('deviceAbout.accountAdded', 'Added: {{entry}}', { entry: change.after })
+          : t('deviceAbout.accountRemoved', 'Removed: {{entry}}', { entry: change.before })
       return `${change.before ?? nothing} → ${change.after ?? nothing}`
   }
 }
+
+// A machine's account in its history: accounts.<name>.
+const ACCOUNT_FIELD = 'accounts.'
 
 const memory = (mb: number) => (mb >= 1024 ? `${Math.round((mb / 1024) * 10) / 10} GB` : `${mb} MB`)
 

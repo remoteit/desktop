@@ -6,7 +6,11 @@ import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
    presence-server docs/device-about.md): its OS, hardware, identifiers, the manufacturer's product and its agent's
    software, and the NAT it measured itself behind. Everything here is the device's claim — shown, never what identifies
    it. Only an API that serves device sessions has these fields; another answers UNSUPPORTED, for the page to hide them.
-   An API from before about.nat is asked again without it: the rest stands, and nat is none. */
+   An API from before about.nat, or the machine's accounts, is asked again without them: the rest stands, and they are
+   none.
+
+   graphql serves it by who asks: someone who manages the device has all of it; someone it is shared with has the OS,
+   the architecture and whether it is virtual, the software and the console — the rest none, and no history. */
 
 export type DeviceAbout = {
   os: {
@@ -54,9 +58,26 @@ export type DeviceAbout = {
     note: string | null
     why: string | null
   } | null
-  data: ILookup<any> // the document itself, as the device said it
-  reported: string
+  // The machine's OS accounts (device-about.md "The accounts on the machine"): at most 50, administrators first, and how
+  // many more there are; none from an API or a daemon before them, a policy that turned them off, or a viewer.
+  accounts?: DeviceAboutAccount[] | null
+  accountsMore?: number | null
+  adminsAdded?: { name: string; at: string }[] | null // the accounts that became administrators in the last 30 days
+  data: ILookup<any> | null // the document itself, as the device said it; none for a viewer
+  reported: string | null
   hardwareChanged: string | null
+}
+
+export type DeviceAboutAccount = {
+  account: string // the OS's id for it: a UID, or a SID on Windows — as Device.signIns names it
+  name: string
+  fullName: string | null
+  kind: 'local' | 'domain' | null
+  admin: boolean | null
+  hidden: boolean | null
+  disabled: boolean | null
+  guid: string | null
+  remoteit: boolean | null // one of the console's own r3-<name> accounts
 }
 
 // field: one of what the device says changed; update: an upgrade refused or failed; restore: brought back with a restore
@@ -74,7 +95,19 @@ export type DeviceAboutChange = {
 
 export type DeviceAboutRead = { about: DeviceAbout | null; history: DeviceAboutChange[] }
 
-const query = (nat: boolean) => `query DeviceAbout($id: [String!]!) {
+// The parts an older API may not have, each asked only while it answers for them.
+type Parts = { nat: boolean; accounts: boolean }
+
+const NAT = 'nat { mapping filtering since note why }'
+const ACCOUNTS = [
+  'accounts { account name fullName kind admin hidden disabled guid remoteit }',
+  'accountsMore',
+  'adminsAdded { name at }',
+]
+
+const query = ({ nat, accounts }: Parts) => {
+  const optional = [...(nat ? [NAT] : []), ...(accounts ? ACCOUNTS : [])].map(field => `\n        ${field}`).join('')
+  return `query DeviceAbout($id: [String!]!) {
   login {
     device(id: $id) {
       id
@@ -83,7 +116,7 @@ const query = (nat: boolean) => `query DeviceAbout($id: [String!]!) {
         hardware { arch cpu cores memoryMb manufacturer model board virtual }
         ids { serial hardwareUuid machineId macs { interface mac } diskSerial }
         oem { product productName manufacturer model hardwareRevision firmware serial }
-        software { connectd package format }${nat ? '\n        nat { mapping filtering since note why }' : ''}
+        software { connectd package format }${optional}
         data
         reported
         hardwareChanged
@@ -92,17 +125,27 @@ const query = (nat: boolean) => `query DeviceAbout($id: [String!]!) {
     }
   }
 }`
+}
 
 export async function graphQLDeviceAbout(
   deviceId: string,
-  nat = true
+  parts: Parts = { nat: true, accounts: true }
 ): Promise<DeviceAboutRead | 'ERROR' | typeof UNSUPPORTED> {
   const variables = { id: [deviceId] }
-  const QUERY = query(nat)
+  const QUERY = query(parts)
   const response = await post({ query: QUERY, variables })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query: QUERY, variables })
-  if (nat && withoutDeviceSessions(errors, 'nat')) return graphQLDeviceAbout(deviceId, false)
+  // An API says every field it lacks at once: one more ask, without all of them.
+  const without = {
+    nat: parts.nat && withoutDeviceSessions(errors, 'nat'),
+    accounts: parts.accounts && ['accounts', 'accountsMore', 'adminsAdded'].some(f => withoutDeviceSessions(errors, f)),
+  }
+  if (without.nat || without.accounts)
+    return graphQLDeviceAbout(deviceId, {
+      nat: parts.nat && !without.nat,
+      accounts: parts.accounts && !without.accounts,
+    })
   if (withoutDeviceSessions(errors, 'about')) return UNSUPPORTED
   if (errors) return 'ERROR'
   const device = response.data?.data?.login?.device?.[0]
