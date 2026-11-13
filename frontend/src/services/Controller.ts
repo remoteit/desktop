@@ -147,11 +147,11 @@ class Controller extends EventEmitter {
     return this
   }
 
-  emitWithAck = (event: SocketAction, timeout: number): Promise<unknown> =>
+  emitWithAck = (event: SocketAction, timeout: number, ...args: unknown[]): Promise<unknown> =>
     this.socket?.connected
       ? this.socket
           .timeout(timeout)
-          .emitWithAck(event)
+          .emitWithAck(event, ...args)
           .catch(() => undefined)
       : Promise.resolve(undefined)
 
