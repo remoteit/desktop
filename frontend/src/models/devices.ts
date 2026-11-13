@@ -1,4 +1,5 @@
 import structuredClone from '@ungap/structured-clone'
+import { browserArg, BrowsersShown } from '../services/browserClients'
 import i18n from '../i18n'
 import { graphQLRegistration, graphQLRestoreDevice } from '../services/graphQLRequest'
 import {
@@ -80,6 +81,8 @@ export type IDeviceState = {
   owner: 'all' | 'me' | 'others'
   platform?: number[]
   applicationTypes?: number[]
+  // Browsers' remote.it clients in the list (services/browserClients): left out unless shown.
+  browsers?: BrowsersShown
   size: number
   from: number
   eventsUrl: string
@@ -105,6 +108,7 @@ export const defaultState: IDeviceState = {
   owner: 'all',
   platform: undefined,
   applicationTypes: undefined,
+  browsers: 'hide',
   size: 50,
   from: 0,
   eventsUrl: '',
@@ -146,6 +150,7 @@ export default createModel<RootModel>()({
         sort: deviceModel.sort,
         platform: deviceModel.platform,
         applicationTypes: deviceModel.applicationTypes,
+        browser: browserArg(deviceModel.browsers),
         state: filter === 'all' ? undefined : filter,
         owner: owner === 'all' ? undefined : owner === 'me',
       }

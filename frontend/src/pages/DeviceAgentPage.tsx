@@ -20,6 +20,7 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { SelectSetting } from '../components/SelectSetting'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
+import { BROWSER_PLATFORM } from '../services/browserClients'
 import { useInterval } from '../hooks/useInterval'
 
 // How often an upgrade under way is looked at again: its states pass in seconds.
@@ -108,6 +109,10 @@ export const DeviceAgentPage: React.FC = () => {
     const blocked = held(daemon)
     const failed = !blocked && daemon.update && ['failed', 'refused'].includes(daemon.update.state)
     const running = runningVersion(daemon)
+    // A daemon with no package — the browser's client, a phone's app — is updated by what carries it: no release is
+    // its (connectd takes none), so nothing here upgrades it.
+    const packageless = !!running && !daemon.package?.version && daemon.distribution === 'none'
+    const browser = device.targetPlatform === BROWSER_PLATFORM
     const upToDate = !daemon.update && (!daemon.target || daemon.target.version === running)
 
     return (
@@ -129,105 +134,128 @@ export const DeviceAgentPage: React.FC = () => {
                   )
             }
           />
-          <ListItemSetting
-            icon="bullseye-arrow"
-            label={
-              daemon.target
-                ? daemon.target.rollback
-                  ? t('deviceAgent.targetRollback', '{{version}} (a rollback)', { version: daemon.target.version })
-                  : daemon.target.version
-                : t('deviceAgent.noTarget', 'What it runs')
-            }
-            subLabel={
-              daemon.target
-                ? t('deviceAgent.target', 'The version it should run')
-                : t('deviceAgent.noTargetHint', 'Its channel names no release')
-            }
-          />
-          {blocked ? (
+          {packageless ? (
             <ListItemSetting
-              icon="lock"
-              iconColor="warning"
-              label={t('deviceAgent.held', "Blocked — held by the device's admin")}
+              icon={browser ? 'browser' : 'mobile'}
+              label={
+                browser
+                  ? t('deviceAgent.withPortal', 'Updates with the portal')
+                  : t('deviceAgent.withApp', 'Updated by the app that carries it')
+              }
               subLabel={
-                daemon.update?.detail ||
-                t('deviceAgent.heldHint', 'A package hold or lock on the device. It upgrades once the hold is lifted.')
+                browser
+                  ? t(
+                      'deviceAgent.withPortalHint',
+                      "This browser's remote.it client loads from the portal: each new client is published there, and nothing here upgrades it"
+                    )
+                  : t('deviceAgent.withAppHint', 'It has no package of its own: nothing here upgrades it')
               }
             />
           ) : (
+            <>
             <ListItemSetting
-              icon={failed ? 'exclamation-triangle' : updating(daemon) ? 'spinner-third' : 'circle-check'}
-              iconColor={failed ? 'danger' : updating(daemon) ? 'primary' : 'success'}
+              icon="bullseye-arrow"
               label={
-                daemon.update
-                  ? stateLabel(daemon.update)
-                  : upToDate
-                  ? t('deviceAgent.upToDate', 'Up to date')
-                  : t('deviceAgent.noUpdate', 'No upgrade reported')
+                daemon.target
+                  ? daemon.target.rollback
+                    ? t('deviceAgent.targetRollback', '{{version}} (a rollback)', { version: daemon.target.version })
+                    : daemon.target.version
+                  : t('deviceAgent.noTarget', 'What it runs')
               }
-              subLabel={daemon.update?.detail || undefined}
+              subLabel={
+                daemon.target
+                  ? t('deviceAgent.target', 'The version it should run')
+                  : t('deviceAgent.noTargetHint', 'Its channel names no release')
+              }
             />
+            {blocked ? (
+              <ListItemSetting
+                icon="lock"
+                iconColor="warning"
+                label={t('deviceAgent.held', "Blocked — held by the device's admin")}
+                subLabel={
+                  daemon.update?.detail ||
+                  t('deviceAgent.heldHint', 'A package hold or lock on the device. It upgrades once the hold is lifted.')
+                }
+              />
+            ) : (
+              <ListItemSetting
+                icon={failed ? 'exclamation-triangle' : updating(daemon) ? 'spinner-third' : 'circle-check'}
+                iconColor={failed ? 'danger' : updating(daemon) ? 'primary' : 'success'}
+                label={
+                  daemon.update
+                    ? stateLabel(daemon.update)
+                    : upToDate
+                    ? t('deviceAgent.upToDate', 'Up to date')
+                    : t('deviceAgent.noUpdate', 'No upgrade reported')
+                }
+                subLabel={daemon.update?.detail || undefined}
+              />
+            )}
+            </>
           )}
         </List>
-        <List>
-          <ListSubheader>{t('deviceAgent.upgrades', 'Upgrades')}</ListSubheader>
-          <DevicePolicyRow deviceId={device.id} name="updates" label={t('deviceSetting.updates', 'Remote upgrades')} />
-          <SelectSetting
-            icon="code-branch"
-            label={t('deviceAgent.channel', 'Channel')}
-            value={daemon.channel}
-            values={DAEMON_CHANNELS.map(channel => ({ key: channel, name: channel }))}
-            disabled={!manage || saving}
-            onChange={channel => save({ channel })}
-          />
-          <ListItemSetting
-            icon="building"
-            label={t('deviceAgent.followAccount', "Follow the account's channel")}
-            subLabel={t('deviceAgent.followAccountHint', 'Drop a channel set for this device alone')}
-            button={t('deviceAgent.follow', 'Follow')}
-            disabled={!manage || saving}
-            onButtonClick={() => save({ channel: '' })}
-          />
-          {daemon.pinned ? (
-            <ListItemSetting
-              icon="clock-rotate-left"
-              label={t('deviceAgent.pinned', 'Rolled back to {{version}}', { version: daemon.pinned.version })}
-              subLabel={t('deviceAgent.pinnedHint', 'It stays there, whatever its channel says, until released')}
-              button={t('deviceAgent.release', 'Release')}
+        {!packageless && (
+          <List>
+            <ListSubheader>{t('deviceAgent.upgrades', 'Upgrades')}</ListSubheader>
+            <DevicePolicyRow deviceId={device.id} name="updates" label={t('deviceSetting.updates', 'Remote upgrades')} />
+            <SelectSetting
+              icon="code-branch"
+              label={t('deviceAgent.channel', 'Channel')}
+              value={daemon.channel}
+              values={DAEMON_CHANNELS.map(channel => ({ key: channel, name: channel }))}
               disabled={!manage || saving}
-              onButtonClick={() => save({ rollback: false })}
+              onChange={channel => save({ channel })}
             />
-          ) : (
-            daemon.rollbackTo && (
+            <ListItemSetting
+              icon="building"
+              label={t('deviceAgent.followAccount', "Follow the account's channel")}
+              subLabel={t('deviceAgent.followAccountHint', 'Drop a channel set for this device alone')}
+              button={t('deviceAgent.follow', 'Follow')}
+              disabled={!manage || saving}
+              onButtonClick={() => save({ channel: '' })}
+            />
+            {daemon.pinned ? (
               <ListItemSetting
                 icon="clock-rotate-left"
-                label={t('deviceAgent.rollback', 'Roll back to {{version}}', { version: daemon.rollbackTo.version })}
-                subLabel={t('deviceAgent.rollbackHint', 'The release before the one its channel gives it')}
+                label={t('deviceAgent.pinned', 'Rolled back to {{version}}', { version: daemon.pinned.version })}
+                subLabel={t('deviceAgent.pinnedHint', 'It stays there, whatever its channel says, until released')}
+                button={t('deviceAgent.release', 'Release')}
                 disabled={!manage || saving}
-                confirm
-                confirmProps={{
-                  title: t('deviceAgent.rollbackConfirm', 'Roll back to {{version}}?', {
-                    version: daemon.rollbackTo.version,
-                  }),
-                  children: t(
-                    'deviceAgent.rollbackConfirmBody',
-                    'The device goes back to {{version}} by a handover, and stays there until you release it.',
-                    { version: daemon.rollbackTo.version }
-                  ),
-                }}
-                onClick={() => save({ rollback: true })}
+                onButtonClick={() => save({ rollback: false })}
               />
-            )
-          )}
-          <ListItemSetting
-            icon="pause"
-            label={t('deviceAgent.hold', 'Hold at this version')}
-            subLabel={t('deviceAgent.holdHint', 'It takes no upgrades until released')}
-            toggle={daemon.hold}
-            disabled={!manage || saving}
-            onClick={() => save({ hold: !daemon.hold })}
-          />
-        </List>
+            ) : (
+              daemon.rollbackTo && (
+                <ListItemSetting
+                  icon="clock-rotate-left"
+                  label={t('deviceAgent.rollback', 'Roll back to {{version}}', { version: daemon.rollbackTo.version })}
+                  subLabel={t('deviceAgent.rollbackHint', 'The release before the one its channel gives it')}
+                  disabled={!manage || saving}
+                  confirm
+                  confirmProps={{
+                    title: t('deviceAgent.rollbackConfirm', 'Roll back to {{version}}?', {
+                      version: daemon.rollbackTo.version,
+                    }),
+                    children: t(
+                      'deviceAgent.rollbackConfirmBody',
+                      'The device goes back to {{version}} by a handover, and stays there until you release it.',
+                      { version: daemon.rollbackTo.version }
+                    ),
+                  }}
+                  onClick={() => save({ rollback: true })}
+                />
+              )
+            )}
+            <ListItemSetting
+              icon="pause"
+              label={t('deviceAgent.hold', 'Hold at this version')}
+              subLabel={t('deviceAgent.holdHint', 'It takes no upgrades until released')}
+              toggle={daemon.hold}
+              disabled={!manage || saving}
+              onClick={() => save({ hold: !daemon.hold })}
+            />
+          </List>
+        )}
       </>
     )
   }

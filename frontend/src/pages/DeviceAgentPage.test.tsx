@@ -4,7 +4,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // The device agent page: a device whose package its admin holds or locks reads blocked, with the mechanism — not as
 // a failed upgrade.
-const { daemon } = vi.hoisted(() => ({ daemon: vi.fn() }))
+const { daemon, context } = vi.hoisted(() => ({
+  daemon: vi.fn(),
+  context: { device: { id: '80:00:00:00:00:00:00:01', permissions: ['MANAGE'], targetPlatform: 769 } },
+}))
 vi.mock('../store', () => ({}))
 vi.mock('../services/post', () => ({ post: vi.fn() }))
 vi.mock('../services/graphQL', () => ({}))
@@ -14,7 +17,7 @@ vi.mock('../services/graphQLDaemon', async importOriginal => ({
   graphQLSetDeviceDaemon: vi.fn(),
 }))
 vi.mock('../services/Context', () => ({
-  DeviceContext: React.createContext({ device: { id: '80:00:00:00:00:00:00:01', permissions: ['MANAGE'] } }),
+  DeviceContext: React.createContext(context),
 }))
 vi.mock('../components/DeviceHeaderMenu', () => ({ DeviceHeaderMenu: ({ children }: any) => <div>{children}</div> }))
 vi.mock('../components/DeviceSettingRow', () => ({ DevicePolicyRow: () => null }))
@@ -59,6 +62,7 @@ async function render() {
 
 beforeEach(() => {
   document.body.innerHTML = ''
+  context.device.targetPlatform = 769
 })
 
 describe('DeviceAgentPage', () => {
@@ -92,5 +96,34 @@ describe('DeviceAgentPage', () => {
     daemon.mockResolvedValue('UNSUPPORTED')
     const el = await render()
     expect(el.querySelector('[data-notice]')!.textContent).toContain('does not serve Control Link devices')
+  })
+
+  // A daemon with no package is updated by what carries it: connectd takes no release, and nothing here upgrades it.
+  const PACKAGELESS = { ...DAEMON, running: 'connectd-go 5.6.1.20261113000137', package: null, target: null, distribution: 'none' }
+
+  it("a browser's client updates with the portal: no target, no update, no Upgrades", async () => {
+    context.device.targetPlatform = 1231
+    daemon.mockResolvedValue(PACKAGELESS)
+    const el = await render()
+    const row = el.querySelector('[data-setting="browser"]')!
+    expect(row.querySelector('[data-label]')!.textContent).toBe('Updates with the portal')
+    expect(el.querySelector('[data-setting="bullseye-arrow"]')).toBeNull()
+    expect(el.textContent).not.toContain('Upgrades')
+    // What it runs is connectd's version: it has no package.
+    expect(el.querySelector('[data-setting="microchip"] [data-label]')!.textContent).toBe('5.6.1.20261113000137')
+  })
+
+  it("another packageless daemon — a phone's app — is updated by what carries it", async () => {
+    daemon.mockResolvedValue(PACKAGELESS)
+    const el = await render()
+    expect(el.querySelector('[data-setting="mobile"] [data-label]')!.textContent).toBe('Updated by the app that carries it')
+    expect(el.textContent).not.toContain('Upgrades')
+  })
+
+  it('a packaged daemon keeps its target and Upgrades', async () => {
+    daemon.mockResolvedValue({ ...DAEMON, distribution: 'remoteit-device' })
+    const el = await render()
+    expect(el.querySelector('[data-setting="bullseye-arrow"]')).not.toBeNull()
+    expect(el.textContent).toContain('Upgrades')
   })
 })
