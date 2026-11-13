@@ -41,8 +41,8 @@ const chipColumn = (label: string, color: Color) => (
   </Box>
 )
 
-// The newest code in force is the one in the registration command. A product keeps at most one more in force, the code it
-// replaced, so devices still being set up with it are not cut off; replacing again revokes anything older.
+// The newest code in force is the one in the registration command. The app keeps one more in use, the code it replaced, so
+// devices still being set up with it are not cut off (products.rotateCode); graphql itself keeps any number.
 export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
   const { t } = useTranslation()
   const [replacing, setReplacing] = useState(false)
