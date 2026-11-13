@@ -72,6 +72,9 @@ export type DeviceApp = {
   // A newer release that newly runs as root, waiting for a consent: the device stays on its last restricted release
   // until someone consents (turning it on again with consentRoot).
   awaitingRoot?: string | null
+  // What the device says is wrong with its settings: its administrator's control of a setting since removed
+  // (no-such-setting, "<key>_control: no such setting, removed in <version>"), or a value its manifest refuses.
+  problems?: { name: string; error: string; detail: string | null }[]
   settings: DeviceAppSetting[]
 }
 
@@ -88,7 +91,7 @@ export const rootConsentOf = (consent: any): DeviceAppRootConsent | null =>
 
 const SETTING_FIELDS =
   'name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration'
-const FIELDS = `id name publisher root on channel version state detail serviceId settings { ${SETTING_FIELDS} }`
+const FIELDS = `id name publisher root on channel version state detail serviceId problems { name error detail } settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
 function parsedSetting(setting: any): DeviceAppSetting {
@@ -107,6 +110,7 @@ const parsed = (app: any): DeviceApp => ({
   locked: app.locked?.product || app.locked?.level ? settingLockOf(app.locked) : null,
   rootConsent: rootConsentOf(app.rootConsent),
   awaitingRoot: app.awaitingRoot ?? null,
+  problems: app.problems ?? [],
   settings: (app.settings ?? []).map(parsedSetting),
 })
 

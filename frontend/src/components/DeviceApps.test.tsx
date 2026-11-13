@@ -626,3 +626,21 @@ describe('Add an app', () => {
     expect(page.querySelector('[data-add-app]')).toBeNull()
   })
 })
+
+describe('build step 7: a publisher\'s app as the device reports it', () => {
+  it('the publisher\'s name on the row; a setting\'s problem said; the device refusing its signature said', async () => {
+    apps.value.apps = [
+      backup({
+        on: true,
+        state: 'unavailable',
+        detail: "Its publisher's signature did not verify on the device: the publisher certificate of acme expired",
+        problems: [{ name: 'retention', error: 'no-such-setting', detail: 'acme.backup.retention_control: no such setting, removed in 1.0.0' }],
+      }),
+    ]
+    const page = await render(<DeviceApps device={device()} />)
+    const row = appRow(page, 'acme.backup')
+    expect(row.querySelector('[data-app-about]')?.textContent).toBe('By Acme')
+    expect(row.querySelector('[data-app-problem="retention"]')?.textContent).toBe('acme.backup.retention_control: no such setting, removed in 1.0.0')
+    expect(row.querySelector('[data-app-state]')?.textContent).toMatch(/signature did not verify/)
+  })
+})

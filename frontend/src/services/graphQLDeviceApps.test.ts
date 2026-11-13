@@ -115,7 +115,7 @@ describe('Device.apps', () => {
     )
     const apps = (await graphQLDeviceApps('D1'))!
     expect(post.mock.calls[0][0].query).toMatch(
-      /serviceId settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} declaration } locked \{ product level }/
+      /serviceId problems \{ name error detail } settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} declaration } locked \{ product level }/
     )
     expect(apps[0].locked).toEqual({ product: 'Acme', level: 'enforced' })
     expect(apps[1].locked).toBeNull()

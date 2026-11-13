@@ -68,6 +68,7 @@ import { ProxyPage } from '../pages/ProxyPage'
 import { ProxyAddPage } from '../pages/ProxyAddPage'
 import { ChooseOne } from '../components/ChooseOne'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
+import { PublisherPage } from '../pages/PublisherPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
 import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
@@ -490,6 +491,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
               <Route path="/account/accessKey">
                 <AccessKeyPage />
+              </Route>
+              <Route path="/account/publisher">
+                <PublisherPage />
               </Route>
               {testUI && (
                 <Route path="/account/connected/:clientId">

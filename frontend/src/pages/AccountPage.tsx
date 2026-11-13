@@ -9,9 +9,11 @@ import { BillingUI } from '../components/BillingUI'
 import { TestUI } from '../components/TestUI'
 import { Logo } from '@common/brand/Logo'
 import { Icon } from '../components/Icon'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 
 export const AccountPage: React.FC = () => {
   const { t } = useTranslation()
+  const deviceSessions = useDeviceSessions()
   return (
     <Container
       gutterBottom
@@ -47,6 +49,9 @@ export const AccountPage: React.FC = () => {
         </BillingUI>
         <ListItemLocation title={t('settings.license', 'License')} to="/account/license" icon="id-badge" dense />
         <ListItemLocation title={t('settings.accessKeys', 'Access Keys')} to="/account/accessKey" icon="key" dense />
+        {deviceSessions && (
+          <ListItemLocation title={t('settings.appPublisher', 'App publisher')} to="/account/publisher" icon="cube" dense />
+        )}
         <TestUI>
           <ListItemLocation
             title={t('settings.connectedApps', 'Connected Apps')}

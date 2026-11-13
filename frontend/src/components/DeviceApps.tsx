@@ -113,6 +113,11 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                             )}
                       </Typography>
                     )}
+                    {app.problems?.map(problem => (
+                      <Typography key={problem.name} variant="caption" component="div" color="warning.main" data-app-problem={problem.name}>
+                        {problem.detail || `${problem.name}: ${problem.error}`}
+                      </Typography>
+                    ))}
                     {own?.Lines && <own.Lines device={device} app={app} />}
                   </>
                 }
