@@ -76,7 +76,9 @@ export const ConsoleTerminalOption: React.FC<{ device?: IDevice; service?: IServ
   const { flip, consent } = useAppSwitch(turn)
   const { app } = target
   if (!app) return null
-  const canTurnOn = !!device?.permissions?.includes('MANAGE') && !!device?.permissions?.includes('SCRIPTING')
+  // Not where its product holds it off: graphql refuses that, naming the product.
+  const canTurnOn =
+    !app.locked && !!device?.permissions?.includes('MANAGE') && !!device?.permissions?.includes('SCRIPTING')
 
   if (app.state === 'running' && !switching) {
     if (!app.serviceId || !target.port) return null

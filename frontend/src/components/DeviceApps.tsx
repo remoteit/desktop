@@ -7,6 +7,7 @@ import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
 import { DeviceAppSetting } from './DeviceAppSetting'
 import { firstPartyApp } from './firstPartyApps'
+import { productLockNote } from '../helpers/productPolicyHelper'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 import { Icon } from './Icon'
 
@@ -16,7 +17,8 @@ import { Icon } from './Icon'
    under its name — only apps get a row of their own. remote.it's own apps add their part (components/firstPartyApps:
    the console's Open terminal and host key). Turning an app on runs code on the device, so it needs Scripting as well
    as Manage, and a root app the person's yes to its full control (components/AppRootConsent); turning one off, or
-   changing its settings, needs Manage alone. Nothing where the API has no apps. */
+   changing its settings, needs Manage alone. An app its product turns on or off, as a setting its product sets, says
+   so and is held: graphql refuses a change to it, naming the product. Nothing where the API has no apps. */
 export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const { apps, switching, turn, setSetting } = useDeviceApps(device.id)
@@ -64,6 +66,11 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                         ? t('deviceApps.switching', 'Waiting for the device…')
                         : own?.state?.(t, app) ?? stateLine(t, app)}
                     </Typography>
+                    {app.locked && (
+                      <Typography variant="caption" component="div" color="textSecondary" data-app-locked>
+                        {productLockNote(t, app.locked)}
+                      </Typography>
+                    )}
                     {own?.Lines && <own.Lines device={device} app={app} />}
                   </>
                 }
@@ -72,7 +79,7 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                 {own?.Actions && <own.Actions device={device} app={app} />}
                 <Switch
                   checked={on}
-                  disabled={switching !== undefined || (app.on ? !canManage : !canRun)}
+                  disabled={switching !== undefined || !!app.locked || (app.on ? !canManage : !canRun)}
                   onChange={e => flip(app, e.target.checked)}
                   inputProps={{ 'aria-label': t('deviceApps.switch', '{{app}} on', { app: app.name }) }}
                 />

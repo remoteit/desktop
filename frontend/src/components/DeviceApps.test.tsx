@@ -223,6 +223,29 @@ describe('an app’s settings are its options', () => {
     await render(null)
   })
 
+  it('an app its product turns on or off: said as a setting’s product lock is, and its switch held', async () => {
+    apps.value.apps = [
+      consoleApp({ locked: { product: 'Acme', level: 'synced' } }),
+      backup({ locked: { product: 'Acme', level: 'enforced' } }),
+    ]
+    const page = await render(<DeviceApps device={device()} />)
+    const held = appRow(page, 'remoteit.console')
+    expect(held.querySelector('[data-app-locked]')!.textContent).toBe('Set by its product Acme')
+    expect(switchOf(held).disabled).toBe(true)
+    const enforced = appRow(page, 'acme.backup')
+    expect(enforced.querySelector('[data-app-locked]')!.textContent).toBe('Managed by product Acme (enforced)')
+    expect(switchOf(enforced).disabled).toBe(true)
+    // Its settings are their own: one its product does not set stays the device's to change.
+    expect((options(held)!.querySelector('input[type="checkbox"]') as HTMLInputElement).disabled).toBe(false)
+
+    apps.value.apps = [consoleApp({ locked: null })]
+    act(() => root.unmount())
+    container.remove()
+    const free = await render(<DeviceApps device={device()} />)
+    expect(appRow(free, 'remoteit.console').querySelector('[data-app-locked]')).toBeNull()
+    expect(switchOf(appRow(free, 'remoteit.console')).disabled).toBe(false)
+  })
+
   it('a deprecated setting: shown with why where a value is set, not offered where none is', async () => {
     apps.value.apps = [
       backup({
