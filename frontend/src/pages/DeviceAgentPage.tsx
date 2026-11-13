@@ -9,6 +9,7 @@ import {
   graphQLDeviceDaemon,
   graphQLSetDeviceDaemon,
   daemonVersion,
+  belowMinimum,
   held,
   managedElsewhere,
   runningVersion,
@@ -22,7 +23,7 @@ import { SelectSetting } from '../components/SelectSetting'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { BROWSER_PLATFORM } from '../services/browserClients'
-import { upkeepText, withAvailable } from '../services/upkeepText'
+import { belowMinimumText, upkeepText, withAvailable } from '../services/upkeepText'
 import { useInterval } from '../hooks/useInterval'
 
 // How often an upgrade under way is looked at again: its states pass in seconds.
@@ -122,8 +123,18 @@ export const DeviceAgentPage: React.FC = () => {
     const browser = device.targetPlatform === BROWSER_PLATFORM
     const upToDate = !daemon.update && (!daemon.target || daemon.target.version === running)
 
+    // Below the oldest build its kind may run: what the cloud no longer speaks may fail for it — said first, whoever
+    // updates it.
+    const tooOld = belowMinimum(daemon) && belowMinimumText(t, daemon.supported!, elsewhere, daemon.package?.format)
+
     return (
       <>
+        {tooOld && (
+          <Notice severity="warning" fullWidth>
+            {tooOld.label}
+            <em>{tooOld.hint}</em>
+          </Notice>
+        )}
         <List>
           <ListItemSetting
             icon="microchip"

@@ -32,6 +32,8 @@ let timer: ReturnType<typeof setTimeout> | undefined
 let unsupported = false
 // Who upgrades it (updatedBy, howToUpdate, available) only where the API has them: one without is asked again without.
 let withUpkeep = true
+// Whether it is at or above its kind's minimum build (supported) only where the API has it, the same way.
+let withSupport = true
 
 export const deviceSessionInfo = (deviceId: string): DeviceSessionInfo | undefined => info.get(deviceId)
 
@@ -56,7 +58,9 @@ async function flush() {
   timer = undefined
   if (!ids.length) return
 
-  const upkeep = withUpkeep ? ' updatedBy howToUpdate available' : ''
+  const upkeep = `${withUpkeep ? ' updatedBy howToUpdate available' : ''}${
+    withSupport ? ' supported { supported minimum kind message }' : ''
+  }`
   const query = `query DeviceSessionInfo { login { device(id: ${JSON.stringify(
     ids
   )}) { id subnetName actsFor { email } agent { running package { version format } update { version state detail }${upkeep} } services { id subnetName } } } }`
@@ -64,6 +68,11 @@ async function flush() {
   if (response !== 'ERROR') {
     if (withUpkeep && withoutDeviceSessions(response.data?.errors, 'howToUpdate')) {
       withUpkeep = false
+      ids.forEach(id => wanted.add(id))
+      return flush()
+    }
+    if (withSupport && withoutDeviceSessions(response.data?.errors, 'supported')) {
+      withSupport = false
       ids.forEach(id => wanted.add(id))
       return flush()
     }
@@ -104,6 +113,7 @@ export function resetDeviceSessionInfo() {
   wanted = new Set()
   unsupported = false
   withUpkeep = true
+  withSupport = true
   if (timer) clearTimeout(timer)
   timer = undefined
 }

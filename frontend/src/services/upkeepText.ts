@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import type { HowToUpdate } from './graphQLDaemon'
+import type { HowToUpdate, Support } from './graphQLDaemon'
 
 /* Who upgrades a device that our rollouts do not, said for people — in the words the fleet view's managed column uses
    (fleetVersionsModel managedText: "updated by container image", "updated by Home Assistant") — and what to do to update
@@ -74,3 +74,16 @@ export function upkeepText(
 // "…; 1.5.0 is available": what an update would bring.
 export const withAvailable = (t: TFunction, label: string, available?: string | null) =>
   available ? t('upkeep.available', '{{label}}; {{version}} is available', { label, version: available }) : label
+
+// Below its kind's minimum build: too old for what the cloud still speaks, so to be updated, and how — its own way, or
+// (our rollouts, or not known) by asking for the current release.
+export function belowMinimumText(t: TFunction, support: Support, how: HowToUpdate | null, format?: string | null) {
+  const label = t('upkeep.belowMinimum', 'Too old: remote.it needs {{minimum}} or newer here', {
+    minimum: support.minimum,
+  })
+  const hint =
+    how && how !== 'ROLLOUT'
+      ? upkeepText(t, how, format).hint
+      : t('upkeep.belowMinimumRollout', 'It upgrades with the next release its channel gives it, unless it is held.')
+  return { label, hint: [support.message, hint].filter(Boolean).join(' ') }
+}

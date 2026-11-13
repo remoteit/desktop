@@ -37,7 +37,15 @@ export type Upkeep = {
   available?: string | null // its channel's current, when newer than what it runs
   package?: { version: string; format?: string | null } | null
   update?: { state: string; detail?: string | null } | null
+  supported?: Support | null // against the oldest build its kind may run; none when no minimum applies
 }
+
+// Whether a device's daemon is at or above the oldest build its kind may run (graphql's DeviceSupport): the cloud stops
+// speaking what older builds need, so one below it is to be updated — howToUpdate says how.
+export type Support = { supported: boolean; minimum: string; kind: string; message?: string | null }
+
+// A device below its kind's minimum: to be updated, whoever updates it.
+export const belowMinimum = (device?: { supported?: Support | null } | null) => device?.supported?.supported === false
 
 export type DeviceDaemon = Upkeep & {
   deviceId: string
@@ -122,6 +130,7 @@ async function read<T>(
 let withUpdateState = true
 let withDistribution = true
 let withUpkeep = true
+let withSupport = true
 
 export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemon | null | 'ERROR' | typeof UNSUPPORTED> {
   const query = `query DeviceDaemon($deviceId: String!) {
@@ -136,7 +145,7 @@ export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemo
         pinned { version }
         rollbackTo { version }${withUpdateState ? '\n        updateState' : ''}${withDistribution ? '\n        distribution' : ''}${
     withUpkeep ? '\n        updatedBy\n        howToUpdate\n        available' : ''
-  }
+  }${withSupport ? '\n        supported { supported minimum kind message }' : ''}
       }
     }`
   const variables = { deviceId }
@@ -155,6 +164,10 @@ export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemo
     withUpkeep = false
     return graphQLDeviceDaemon(deviceId)
   }
+  if (withSupport && withoutDeviceSessions(errors, 'supported')) {
+    withSupport = false
+    return graphQLDeviceDaemon(deviceId)
+  }
   const reported = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(reported, 'deviceDaemon')) return UNSUPPORTED
   if (reported) return 'ERROR'
@@ -166,6 +179,7 @@ export const resetDeviceDaemonFields = () => {
   withUpdateState = true
   withDistribution = true
   withUpkeep = true
+  withSupport = true
 }
 
 export const graphQLDaemonSettings = (accountId?: string) =>

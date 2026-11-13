@@ -4,8 +4,8 @@ import { Box, Tooltip, Typography } from '@mui/material'
 import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
 import { useInterval } from '../hooks/useInterval'
 import { requestDeviceSessionInfo } from '../services/deviceSessionInfo'
-import { held, managedElsewhere, runningVersion, updating } from '../services/graphQLDaemon'
-import { upkeepText, withAvailable } from '../services/upkeepText'
+import { belowMinimum, held, managedElsewhere, runningVersion, updating } from '../services/graphQLDaemon'
+import { belowMinimumText, upkeepText, withAvailable } from '../services/upkeepText'
 import { Icon } from './Icon'
 
 /* A device's agent in the device list's Agent column: the version its daemon runs, and — while one is under way, or
@@ -36,12 +36,21 @@ export const AgentStatus: React.FC<{ deviceId?: string }> = ({ deviceId }) => {
     ? t('agentStatus.update', '{{state}} {{version}}', { state: update.state, version: update.version })
     : undefined
 
+  // Below its kind's minimum build: to be updated, said before anything else.
+  const tooOld = belowMinimum(agent) && belowMinimumText(t, agent.supported!, elsewhere, agent.package?.format)
+
   return (
     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, minWidth: 0 }}>
       <Typography component="span" variant="caption" noWrap>
         {runningVersion(agent)}
       </Typography>
-      {upkeep ? (
+      {tooOld ? (
+        <Tooltip title={`${tooOld.label} — ${tooOld.hint}`} arrow>
+          <span data-agent-state="too-old">
+            <Icon name="exclamation-triangle" size="xs" color="warning" />
+          </span>
+        </Tooltip>
+      ) : upkeep ? (
         <Tooltip title={`${label} — ${upkeep.hint}`} arrow>
           <span data-agent-state="managed">
             <Icon name={upkeep.icon} size="xs" color="grayDark" />

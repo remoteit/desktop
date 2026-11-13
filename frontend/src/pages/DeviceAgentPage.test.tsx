@@ -175,4 +175,26 @@ describe('DeviceAgentPage', () => {
     // Its admin's setting is the one to change: Upgrades stays.
     expect(el.textContent).toContain('Upgrades')
   })
+
+  it('below its kind\'s minimum: a warning first, with why and how its own updater brings it up to date', async () => {
+    daemon.mockResolvedValue({
+      ...DAEMON,
+      package: { version: '1.1.0.20261101000000', format: 'container' },
+      updatedBy: 'image',
+      howToUpdate: 'IMAGE',
+      supported: { supported: false, minimum: '1.1.0.20261108160000', kind: 'image', message: 'Its sign-in was retired.' },
+    })
+    const el = await render()
+    const notice = el.querySelector('[data-notice]')!
+    expect(notice.textContent).toContain('Too old: remote.it needs 1.1.0.20261108160000 or newer here')
+    expect(notice.textContent).toContain('Its sign-in was retired. Pull the image again and recreate the container to update it.')
+  })
+
+  it('at or above it, or with no minimum: no warning', async () => {
+    daemon.mockResolvedValue({ ...DAEMON, supported: { supported: true, minimum: '2026-11-01', kind: '*', message: null } })
+    expect((await render()).querySelector('[data-notice]')).toBeNull()
+    document.body.innerHTML = ''
+    daemon.mockResolvedValue({ ...DAEMON, supported: null })
+    expect((await render()).querySelector('[data-notice]')).toBeNull()
+  })
 })
