@@ -146,14 +146,21 @@ export default createModel<RootModel>()({
       return null
     },
 
-    // A new code becomes the product's current one; the earlier codes keep working until revoked. The product is read
-    // again after either change, so its command and its list of codes come from graphql together.
-    async rotateCode(productId: string, state) {
+    // graphql keeps every code until it is revoked, so the app's limit of two in use is applied here: a replacement revokes
+    // any code older than the one it replaces, and that one too with revokePrevious.
+    async rotateCode({ productId, revokePrevious }: { productId: string; revokePrevious?: boolean }, state) {
       const accountId = selectActiveAccountId(state)
+      const product = getProductModel(state, accountId).all.find(p => p.id === productId)
+      const retired = (product?.registrationCodes || []).filter(code => !code.revoked).slice(revokePrevious ? 0 : 1)
       const response = await graphQLRotateDeviceProductCode(productId)
       if (response === 'ERROR' || !response?.data?.data?.rotateDeviceProductCode) return false
+      let revoked = true
+      for (const { code } of retired) {
+        const result = await graphQLRevokeDeviceProductCode(productId, code)
+        if (result === 'ERROR' || !result?.data?.data?.revokeDeviceProductCode) revoked = false
+      }
       await dispatch.products.refreshCodes({ productId, accountId })
-      return true
+      return revoked
     },
 
     async revokeCode({ productId, code }: { productId: string; code: string }, state) {

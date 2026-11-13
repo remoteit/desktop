@@ -8,7 +8,7 @@ import { DataDisplay } from '../../components/DataDisplay'
 import { Container } from '../../components/Container'
 import { ProductHeaderMenu } from '../../components/ProductHeaderMenu'
 import { productDetailAttributes } from '../../components/ProductAttributes'
-import { ProductRegistrationCodes } from '../../components/ProductRegistrationCodes'
+import { ProductRegistrationCodes, ProductRevokedCodes } from '../../components/ProductRegistrationCodes'
 import { getProductModel } from '../../selectors/products'
 import { selectActiveAccountId } from '../../selectors/accounts'
 import { dispatch } from '../../store'
@@ -68,7 +68,9 @@ export const ProductSettingsPage: React.FC = () => {
         )}
 
         {!!product.registrationCodes?.length && <ProductRegistrationCodes product={product} />}
-
+      </Gutters>
+      <ProductRevokedCodes product={product} />
+      <Gutters>
         <Typography variant="subtitle2" color="textSecondary" gutterBottom sx={{ marginTop: 3 }}>
           Details
         </Typography>
