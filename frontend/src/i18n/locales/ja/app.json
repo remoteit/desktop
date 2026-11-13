@@ -1384,6 +1384,8 @@
     "controlLocal": "",
     "controlOff": "",
     "controlOn": "",
+    "deprecated": "",
+    "deprecatedWhy": "",
     "initiators": "",
     "inPortalBy": "",
     "onComputerBy": "",

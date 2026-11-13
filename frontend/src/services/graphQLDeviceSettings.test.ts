@@ -179,6 +179,9 @@ describe('a device’s settings', () => {
       true,
       true,
     ])
+    // An app's choice its administrator fixed is fixed too; a setting from an API with no control is not.
+    expect(settingLocked(as('hourly', 'nightly'))).toBe(true)
+    expect(settingLocked(as(undefined as any, true))).toBe(false)
   })
 })
 

@@ -83,6 +83,28 @@ describe('a device setting’s row', () => {
     expect(page.textContent).toBe('Subnet — Set on the device')
   })
 
+  it('deprecated: said first, with why, before what else is said of it', async () => {
+    let page = await render(
+      <DeviceSettingRow
+        setting={subnet('cloud+local')}
+        label="Subnet"
+        subLabel="x"
+        deprecated="use access"
+        onChange={vi.fn()}
+      />
+    )
+    expect(page.textContent).toBe('Subnet — Deprecated: use access · x')
+    page = await render(
+      <DeviceSettingRow
+        setting={subnet('cloud+local', { onDevice: true, by: 'bob' })}
+        label="Subnet"
+        deprecated=""
+        onChange={vi.fn()}
+      />
+    )
+    expect(page.textContent).toBe('Subnet — Deprecated · Set on the device by bob')
+  })
+
   it('set from the device’s configuration file: said as its configuration, not as a person', async () => {
     const page = await render(
       <DeviceSettingRow

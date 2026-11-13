@@ -1412,6 +1412,8 @@
     "controlLocal": "Set only on the device",
     "controlOff": "Turned off on the device by its administrator",
     "controlOn": "Turned on on the device by its administrator",
+    "deprecated": "Deprecated",
+    "deprecatedWhy": "Deprecated: {{why}}",
     "initiators": "Control Link connections from this device",
     "inPortalBy": "Set in the portal by {{name}}",
     "onComputerBy": "Set on this computer by {{name}} — ends when {{name}} signs out",

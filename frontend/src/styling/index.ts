@@ -38,6 +38,8 @@ export const spacing: { [key in Sizes]: number } = {
 
 export const LIST_ITEM_PADDING_Y = 5
 export const LIST_ITEM_MARGIN_Y = 1
+// A list row's icon column: where its words start.
+export const LIST_ITEM_ICON_WIDTH = 56
 
 export type Colors = { [key in Color]: string }
 

@@ -31,19 +31,27 @@ export type DeviceSettingName =
 // administrator — and, for a setting whose value is a choice, any of its values (websocket's auto).
 export type DeviceSettingControl = 'cloud+local' | 'local' | 'cloud' | 'off' | 'on' | 'auto'
 
-export type DeviceSetting = {
-  name: DeviceSettingName
-  value: any // the setting's JSON: a boolean; exit_node {on, lan}; any_port {tcp, udp} or null; websocket a mode
+// What a setting's row reads of a setting, a device setting's or an app's (services/graphQLDeviceApps): its value, who
+// set it from which side, the machine administrator's control and its product's lock.
+export type SettingState = {
+  name: string
+  value: any
   at: string | null
   by: string | null
   onDevice: boolean
-  control: DeviceSettingControl
-  fromProduct?: boolean // its product sets it
-  locked?: SettingLock | null // and holds it: a synced or enforced product's
+  control: string // an app setting's may also be a choice its administrator fixed
+  locked?: SettingLock | null // held by a synced or enforced product
   // The exit and Protect, where the API says (services/deviceSignIns): the person signed in on the device it was set on
   // the machine under, which ends at their sign-out; or its administrator, which no sign-in made.
   signedIn?: PersonRef | null
   admin?: boolean
+}
+
+export type DeviceSetting = SettingState & {
+  name: DeviceSettingName
+  value: any // the setting's JSON: a boolean; exit_node {on, lan}; any_port {tcp, udp} or null; websocket a mode
+  control: DeviceSettingControl
+  fromProduct?: boolean // its product sets it
 }
 
 const FIELDS = 'name value at by onDevice control'
@@ -54,7 +62,7 @@ const NOT_PRODUCTS = ['exit', 'protect']
 
 // The machine's, every account's on it (graphql-api docs/PROXY-GROUPS.md §15): chosen there only by a signed-in person
 // who manages the device, or its administrator; one a signed-in person chose ends at their sign-out.
-export const MACHINE_WIDE: DeviceSettingName[] = ['exit', 'protect']
+export const MACHINE_WIDE: string[] = ['exit', 'protect']
 
 // A setting as read: held by its product where graphql marks it so (fromProduct: its synced or enforced product sets
 // it), named with its level where graphql says (locked); an API that marks it without naming them leaves them unknown.
@@ -96,16 +104,20 @@ export async function graphQLSetDeviceSetting(
   return setting ? parsed(setting) : 'ERROR'
 }
 
-// Fixed by the machine's administrator, set only on the machine, or held by its product: not to be changed here.
-export const settingLocked = (setting?: DeviceSetting) =>
-  !!setting && (['local', 'off', 'on', 'auto'].includes(setting.control) || !!setting.locked)
+// The controls that leave a setting to be set here: either side's, or the cloud's alone.
+const SET_HERE = ['cloud+local', 'cloud']
+
+// Fixed by the machine's administrator (off, on, a choice), set only on the machine, or held by its product: not to be
+// changed here.
+export const settingLocked = (setting?: SettingState) =>
+  !!setting && ((!!setting.control && !SET_HERE.includes(setting.control)) || !!setting.locked)
 
 // Whether a device keeps services from being added: its services setting is there and off (graphql refuses addService
 // then). An API without it is as before.
 export const servicesClosed = (services?: DeviceSetting) => !!services && !settingOn(services)
 
 // Whether a setting is on: what its control fixes, else its value (exit_node's `on`, any_port's lists).
-export function settingOn(setting?: DeviceSetting): boolean {
+export function settingOn(setting?: SettingState): boolean {
   if (!setting) return false
   if (setting.control === 'off') return false
   if (setting.control === 'on') return true

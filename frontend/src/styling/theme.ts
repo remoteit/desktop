@@ -1,12 +1,20 @@
 import browser from '../services/browser'
 import brand from '@common/brand/config'
-import { lightColors, darkColors, spacing, radius, fontSizes, LIST_ITEM_PADDING_Y, LIST_ITEM_MARGIN_Y } from './'
+import {
+  lightColors,
+  darkColors,
+  spacing,
+  radius,
+  fontSizes,
+  LIST_ITEM_PADDING_Y,
+  LIST_ITEM_MARGIN_Y,
+  LIST_ITEM_ICON_WIDTH,
+} from './'
 import { createTheme, Theme, ThemeOptions, PaletteOptions, ComponentsOverrides } from '@mui/material/styles'
 import { ArrowIcon } from '../components/ArrowIcon'
 import { State } from '../store'
 
 export const jssTheme = (isDark: boolean): ThemeOptions => {
-  const LIST_ITEM_ICON_WIDTH = 56
   let colors = isDark ? darkColors : lightColors
 
   if (!browser.isApple) {
