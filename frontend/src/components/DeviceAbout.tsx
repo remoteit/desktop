@@ -23,7 +23,8 @@ type Row = [label: string, value: React.ReactNode]
 
 /* What a device says it is (services/graphQLDeviceAbout) on its details page: System, Identifiers, the Product its
    manufacturer declares, its Software, and the History of every field. Behind the device-sessions flag; nothing where
-   the API does not serve it or the device has said nothing (a legacy agent, or one from before `about`). */
+   the API does not serve it or the device has said nothing (a legacy agent, or one from before `about`). Someone the
+   device is shared with is served its OS, architecture and software alone: every other part is none, and is left out. */
 export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
   const { t } = useTranslation()
   const [read, setRead] = useState<DeviceAboutRead | 'ERROR' | typeof UNSUPPORTED>()
@@ -122,7 +123,7 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
         title={t('deviceAbout.system', 'System')}
         rows={system}
         action={
-          about && (
+          about?.data && (
             <Button size="small" onClick={() => setDetails(true)}>
               {t('deviceAbout.viewDetails', 'View details')}
             </Button>
@@ -132,13 +133,13 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
       <Section title={t('deviceAbout.identifiers', 'Identifiers')} rows={identifiers} />
       <Section title={t('deviceAbout.declaredProduct', 'Product — declared by the manufacturer')} rows={product} />
       <Section title={t('deviceAbout.software', 'Software')} rows={software} />
-      {about && (
+      {about?.reported && (
         <Typography variant="caption" color="grayDark.main" component="p" sx={{ paddingBottom: 1 }}>
           {t('deviceAbout.reported', 'As the device last reported it')}{' '}
           <Timestamp date={new Date(about.reported)} variant="minutes" />
         </Typography>
       )}
-      {about && <AboutDetails open={details} data={about.data} onClose={() => setDetails(false)} />}
+      {about?.data && <AboutDetails open={details} data={about.data} onClose={() => setDetails(false)} />}
       {!!history.length && (
         <List dense>
           <ListSubheader disableGutters>{t('deviceAbout.history', 'History')}</ListSubheader>

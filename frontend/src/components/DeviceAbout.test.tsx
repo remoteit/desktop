@@ -159,6 +159,55 @@ describe('DeviceAbout', () => {
     expect((await render()).textContent).toBe('')
   })
 
+  it('to someone it is shared with: the OS, architecture and software alone, no empty section', async () => {
+    // graphql's split: what helps a viewer connect, every other part none, and no history.
+    const os = {
+      family: 'darwin',
+      name: 'macOS',
+      id: 'macos',
+      version: '14.6',
+      build: null,
+      kernel: null,
+      edition: null,
+    }
+    const hardware = {
+      arch: 'arm64',
+      virtual: 'none',
+      cpu: null,
+      cores: null,
+      memoryMb: null,
+      manufacturer: null,
+      model: null,
+      board: null,
+    }
+    read.mockResolvedValue({
+      about: {
+        os,
+        hardware,
+        ids: null,
+        oem: null,
+        software: about.software,
+        nat: null,
+        accounts: null,
+        accountsMore: null,
+        adminsAdded: null,
+        data: null,
+        reported: '2026-10-02T03:26:16Z',
+        hardwareChanged: null,
+      },
+      history: [],
+    })
+    const container = await render()
+    const headings = [...container.querySelectorAll('li.MuiListSubheader-root')].map(h => h.textContent)
+    expect(headings).toEqual(['System', 'Software'])
+    const text = container.textContent
+    expect(text).toContain('OS:macOS 14.6')
+    expect(text).toContain('Architecture:arm64')
+    expect(text).toContain('1.0.1 (pkg)')
+    expect(text).not.toMatch(/undefined|null|View details|Accounts|History|other hardware/)
+    expect(container.querySelector('[data-notice]')).toBeNull()
+  })
+
   it('shows the document exactly as the device said it, the fields the page leaves out too', async () => {
     read.mockResolvedValue({ about, history: [] })
     const container = await render()
