@@ -409,9 +409,12 @@ describe('root, and a release that newly asks for it', () => {
   })
 
   it('its devices stay on the release they run until someone consents; the dialog says which release, for every device', async () => {
+    // What they are given (1.4.0) runs restricted — graphql's root is the release given — beside the root one waiting.
     const page = await render([
-      consoleApp({ on: true, version: '1.4.0', needsConsent: true, awaitingRoot: '1.5.0', rootConsent: null }),
+      consoleApp({ on: true, root: false, version: '1.4.0', needsConsent: true, awaitingRoot: '1.5.0', rootConsent: null }),
     ])
+    expect(line(page, 'remoteit.console', 'root')).toBeUndefined()
+    expect(line(page, 'remoteit.console', 'about')).toBe('By remote.it · 1.4.0 · Stable')
     expect(line(page, 'remoteit.console', 'needs-consent')).toBe(
       'A new version (1.5.0) needs to run as root: its devices stay on 1.4.0 until you consent'
     )

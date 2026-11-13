@@ -64,9 +64,10 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
     onChanged()
   }
 
-  // Turning a root app on without a consent that covers its release asks for one first.
+  // Turning a root app on without a consent that covers its release asks for one first — one whose devices stay on a
+  // restricted release (root says that one) while a root one waits (needsConsent) included.
   const setApp = (app: ProductApp, on: boolean | null, consentRoot?: boolean) => {
-    if (on === true && !consentRoot && app.root && (!app.rootConsent || app.needsConsent)) return setAsking(app)
+    if (on === true && !consentRoot && (app.root || app.needsConsent) && (!app.rootConsent || app.needsConsent)) return setAsking(app)
     write(app.id, t('productApps.notChanged', 'The app was not changed.'), () =>
       graphQLSetDeviceProductApp(
         productId,
