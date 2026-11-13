@@ -16,9 +16,30 @@ export type DaemonUpdateState =
   | 'installed'
   | 'failed'
   | 'refused'
-  | 'held' // a package hold or lock its admin set (apt-mark hold, versionlock, …): the detail names it
+  | 'held' // a package hold or lock its admin set (apt-mark hold, versionlock, …), or managed elsewhere: the detail says which
 
-export type DeviceDaemon = {
+// How a device is brought up to date (graphql's DeviceHowToUpdate), by what upgrades it.
+export type HowToUpdate =
+  | 'ROLLOUT' // our rollouts: nothing to do
+  | 'RELOAD' // the browser's client: loads from the portal
+  | 'IMAGE'
+  | 'HOME_ASSISTANT'
+  | 'APP_STORE'
+  | 'PACKAGE_MANAGER'
+  | 'CLI'
+  | 'DESKTOP'
+  | 'POLICY' // updates turned off on the device
+
+// What a device says of who upgrades it, where the API serves it.
+export type Upkeep = {
+  updatedBy?: string | null // what upgrades it (remoteit, image, home-assistant, app-store, policy, …)
+  howToUpdate?: HowToUpdate | null
+  available?: string | null // its channel's current, when newer than what it runs
+  package?: { version: string; format?: string | null } | null
+  update?: { state: string; detail?: string | null } | null
+}
+
+export type DeviceDaemon = Upkeep & {
   deviceId: string
   running: string | null // what the device reports it runs; none when no device-session daemon reports
   package?: { version: string; format?: string | null } | null // the package it came in: what releases name
@@ -33,9 +54,36 @@ export type DeviceDaemon = {
   distribution?: string | null
 }
 
+// A release held because the device takes no updates at all (connectd's updater): managed elsewhere, not a pin.
+const TAKES_NO_UPDATES = /^(this device does not take updates|this install cannot upgrade itself)/
+const takesNoUpdates = (update?: { state: string; detail?: string | null } | null) =>
+  update?.state === 'held' && TAKES_NO_UPDATES.test(update.detail ?? '')
+
 // Held by the device's admin: a package hold or lock (managed, but blocked), as the device reports it or graphql reads it.
-export const held = (daemon?: { update?: { state: string } | null; updateState?: string | null } | null) =>
-  daemon?.update?.state === 'held' || daemon?.updateState === 'held'
+export const held = (
+  daemon?: { update?: { state: string; detail?: string | null } | null; updateState?: string | null } | null
+) => !takesNoUpdates(daemon?.update) && (daemon?.update?.state === 'held' || daemon?.updateState === 'held')
+
+// An API before howToUpdate: by updatedBy, and a browser client by its format.
+const HOW_BY_UPDATED_BY: ILookup<HowToUpdate> = {
+  image: 'IMAGE',
+  'home-assistant': 'HOME_ASSISTANT',
+  'app-store': 'APP_STORE',
+  'package-manager': 'PACKAGE_MANAGER',
+  cli: 'CLI',
+  desktop: 'DESKTOP',
+  policy: 'POLICY',
+}
+
+// How a device that something other than our rollouts upgrades is updated — its image, Home Assistant, its store, the
+// portal that loads it, … — or null for one our rollouts upgrade, or when that is not known. A refusal is then not a
+// failure: it is said who upgrades it, never in red.
+export function managedElsewhere(device?: Upkeep | null): HowToUpdate | null {
+  if (!device) return null
+  if (device.howToUpdate) return device.howToUpdate === 'ROLLOUT' ? null : device.howToUpdate
+  if (device.package?.format === 'web') return 'RELOAD'
+  return HOW_BY_UPDATED_BY[device.updatedBy ?? ''] ?? (takesNoUpdates(device.update) ? 'POLICY' : null)
+}
 
 export type DaemonSettings = { autoUpdate: boolean; channel: string }
 
@@ -73,6 +121,7 @@ async function read<T>(
 // updateState and distribution only where the API has them: one without answers without them, and is not asked again.
 let withUpdateState = true
 let withDistribution = true
+let withUpkeep = true
 
 export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemon | null | 'ERROR' | typeof UNSUPPORTED> {
   const query = `query DeviceDaemon($deviceId: String!) {
@@ -85,7 +134,9 @@ export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemo
         channel
         hold
         pinned { version }
-        rollbackTo { version }${withUpdateState ? '\n        updateState' : ''}${withDistribution ? '\n        distribution' : ''}
+        rollbackTo { version }${withUpdateState ? '\n        updateState' : ''}${withDistribution ? '\n        distribution' : ''}${
+    withUpkeep ? '\n        updatedBy\n        howToUpdate\n        available' : ''
+  }
       }
     }`
   const variables = { deviceId }
@@ -100,6 +151,10 @@ export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemo
     withDistribution = false
     return graphQLDeviceDaemon(deviceId)
   }
+  if (withUpkeep && withoutDeviceSessions(errors, 'howToUpdate')) {
+    withUpkeep = false
+    return graphQLDeviceDaemon(deviceId)
+  }
   const reported = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(reported, 'deviceDaemon')) return UNSUPPORTED
   if (reported) return 'ERROR'
@@ -109,6 +164,8 @@ export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemo
 // For tests, and for a change of API.
 export const resetDeviceDaemonFields = () => {
   withUpdateState = true
+  withDistribution = true
+  withUpkeep = true
 }
 
 export const graphQLDaemonSettings = (accountId?: string) =>

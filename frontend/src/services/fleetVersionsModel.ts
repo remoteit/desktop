@@ -181,6 +181,9 @@ export const UPDATED_BY_NAMES: Record<string, string> = {
   image: 'container image',
   cli: 'remote.it CLI',
   desktop: 'remote.it Desktop',
+  'app-store': 'app store',
+  'home-assistant': 'Home Assistant',
+  policy: 'its admin (updates turned off)',
   none: 'none',
   unknown: 'unknown',
 }

@@ -126,4 +126,53 @@ describe('DeviceAgentPage', () => {
     expect(el.querySelector('[data-setting="bullseye-arrow"]')).not.toBeNull()
     expect(el.textContent).toContain('Upgrades')
   })
+
+  // Something other than our rollouts upgrades it: said who and how, neutral — never a failure, whatever it refused.
+  it('a container reads updated by its container image, the release available, no red', async () => {
+    daemon.mockResolvedValue({
+      ...DAEMON,
+      package: { version: '1.1.0.9', format: 'container' },
+      update: {
+        version: '1.1.0.10',
+        state: 'held',
+        detail: 'this device does not take updates (updates_control); updated by image',
+      },
+      updatedBy: 'image',
+      howToUpdate: 'IMAGE',
+      available: '1.1.0.10',
+    })
+    const el = await render()
+    const row = el.querySelector('[data-setting="box"]')!
+    expect(row.querySelector('[data-label]')!.textContent).toBe('Updated by its container image; 1.1.0.10 is available')
+    expect(row.querySelector('[data-sublabel]')!.textContent).toContain('Pull the image again')
+    expect(el.querySelector('[data-setting="exclamation-triangle"]')).toBeNull()
+    expect(el.querySelector('[data-setting="lock"]')).toBeNull()
+    expect(el.textContent).not.toContain('Upgrades')
+  })
+
+  it('an older daemon refusing as a container, on an API before howToUpdate: by its updatedBy, no red', async () => {
+    daemon.mockResolvedValue({
+      ...DAEMON,
+      package: { version: '1.1.0.9', format: 'container' },
+      update: { version: '1.1.0.10', state: 'refused', detail: 'this device does not take updates (updates_control)' },
+      updatedBy: 'image',
+    })
+    const el = await render()
+    expect(el.querySelector('[data-setting="box"] [data-label]')!.textContent).toBe('Updated by its container image')
+    expect(el.querySelector('[data-setting="exclamation-triangle"]')).toBeNull()
+  })
+
+  it('Home Assistant, a phone and updates turned off say who', async () => {
+    daemon.mockResolvedValue({ ...DAEMON, updatedBy: 'home-assistant', howToUpdate: 'HOME_ASSISTANT', available: null })
+    expect((await render()).querySelector('[data-setting="house"] [data-label]')!.textContent).toBe('Updated by Home Assistant')
+    document.body.innerHTML = ''
+    daemon.mockResolvedValue({ ...DAEMON, package: { version: '1.1.0.9', format: 'ios' }, updatedBy: 'app-store', howToUpdate: 'APP_STORE' })
+    expect((await render()).querySelector('[data-setting="mobile"] [data-label]')!.textContent).toBe('Updated by the App Store')
+    document.body.innerHTML = ''
+    daemon.mockResolvedValue({ ...DAEMON, updatedBy: 'policy', howToUpdate: 'POLICY' })
+    const el = await render()
+    expect(el.querySelector('[data-setting="toggle-off"] [data-label]')!.textContent).toBe('Updates turned off on the device')
+    // Its admin's setting is the one to change: Upgrades stays.
+    expect(el.textContent).toContain('Upgrades')
+  })
 })

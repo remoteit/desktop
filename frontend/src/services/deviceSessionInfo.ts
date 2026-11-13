@@ -1,17 +1,17 @@
 import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
-import { withoutDeviceSessions } from './graphQLDaemon'
+import { Upkeep, withoutDeviceSessions } from './graphQLDaemon'
 
 /* What the device-session API says of each device, for the device list and a device's pages: its name in device
    subnets (Device.subnetName, <name>-<owner slug>.on.remote.it), who it acts for in user mode (Device.actsFor), and
-   what its daemon last reported — the version it runs and where an upgrade stands (Device.agent).
+   what its daemon last reported — the version it runs, where an upgrade stands, and what upgrades it (Device.agent).
    Not in the device list's own query: that query runs on every API, and only one that serves device sessions has these
    fields. So they are read on their own — batched, one query for every row that asks in the same moment, kept for the
    session — and an API without them is asked once. */
 
-export type DeviceAgent = {
+export type DeviceAgent = Upkeep & {
   running: string | null
-  package?: { version: string } | null
+  package?: { version: string; format?: string | null } | null
   update: { version: string; state: string; detail?: string | null } | null
 }
 
@@ -30,6 +30,8 @@ const listeners = new Set<Listener>()
 let wanted = new Set<string>()
 let timer: ReturnType<typeof setTimeout> | undefined
 let unsupported = false
+// Who upgrades it (updatedBy, howToUpdate, available) only where the API has them: one without is asked again without.
+let withUpkeep = true
 
 export const deviceSessionInfo = (deviceId: string): DeviceSessionInfo | undefined => info.get(deviceId)
 
@@ -54,11 +56,17 @@ async function flush() {
   timer = undefined
   if (!ids.length) return
 
+  const upkeep = withUpkeep ? ' updatedBy howToUpdate available' : ''
   const query = `query DeviceSessionInfo { login { device(id: ${JSON.stringify(
     ids
-  )}) { id subnetName actsFor { email } agent { running package { version } update { version state detail } } services { id subnetName } } } }`
+  )}) { id subnetName actsFor { email } agent { running package { version format } update { version state detail }${upkeep} } services { id subnetName } } } }`
   const response = await post({ query })
   if (response !== 'ERROR') {
+    if (withUpkeep && withoutDeviceSessions(response.data?.errors, 'howToUpdate')) {
+      withUpkeep = false
+      ids.forEach(id => wanted.add(id))
+      return flush()
+    }
     const errors = graphQLGetErrors(response, true, { query, variables: {} })
     if (withoutDeviceSessions(errors, 'subnetName')) unsupported = true
     else if (!errors)
@@ -95,6 +103,7 @@ export function resetDeviceSessionInfo() {
   info.clear()
   wanted = new Set()
   unsupported = false
+  withUpkeep = true
   if (timer) clearTimeout(timer)
   timer = undefined
 }

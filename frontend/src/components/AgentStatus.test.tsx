@@ -57,4 +57,36 @@ describe('AgentStatus', () => {
     expect(el.textContent).toBe('1.1.0.9')
     expect(el.querySelector('[data-agent-state]')).toBeNull()
   })
+
+  it('a device something else upgrades: a grey mark saying who, the release available — not a failure', async () => {
+    info.mockReturnValue({
+      agent: {
+        running: 'connectd-go 5.6.1',
+        package: { version: '1.1.0.9', format: 'container' },
+        update: {
+          version: '1.1.0.10',
+          state: 'held',
+          detail: 'this device does not take updates (updates_control); updated by image',
+        },
+        updatedBy: 'image',
+        howToUpdate: 'IMAGE',
+        available: '1.1.0.10',
+      },
+    })
+    const el = await render()
+    const state = el.querySelector('[data-agent-state]')!
+    expect(state.getAttribute('data-agent-state')).toBe('managed')
+    expect(state.getAttribute('aria-label')).toContain('Updated by its container image; 1.1.0.10 is available')
+    expect(el.querySelector('[data-icon="exclamation-triangle"]')).toBeNull()
+    expect(el.querySelector('[data-icon="lock"]')).toBeNull()
+  })
+
+  it('a release held because the device takes no updates is not a hold by its admin', async () => {
+    info.mockReturnValue(
+      agent({ version: '1.1.0.10', state: 'held', detail: 'this device does not take updates (allow_updates)' })
+    )
+    const el = await render()
+    expect(el.querySelector('[data-agent-state]')!.getAttribute('data-agent-state')).toBe('managed')
+    expect(el.querySelector('[data-icon="lock"]')).toBeNull()
+  })
 })

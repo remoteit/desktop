@@ -95,4 +95,30 @@ describe('device session info', () => {
     await new Promise(resolve => setTimeout(resolve, 5))
     expect(request).toHaveBeenCalledTimes(1)
   })
+
+  it('asks who upgrades each agent where the API has it, and again without it where it does not', async () => {
+    request.mockResolvedValueOnce({
+      data: { errors: [{ message: 'Cannot query field "howToUpdate" on type "DeviceAgent".' }] },
+      headers: {},
+    })
+    request.mockResolvedValueOnce({
+      data: {
+        data: {
+          login: {
+            device: [
+              { id: 'A', subnetName: null, actsFor: null, agent: { running: 'connectd-go 5.6.1.1', update: null } },
+            ],
+          },
+        },
+      },
+      headers: {},
+    })
+    const done = settled()
+    requestDeviceSessionInfo('A')
+    await done
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(request.mock.calls[0][0].data.query).toContain('updatedBy howToUpdate available')
+    expect(request.mock.calls[1][0].data.query).not.toContain('howToUpdate')
+    expect(deviceSessionInfo('A')?.agent?.running).toBe('connectd-go 5.6.1.1')
+  })
 })

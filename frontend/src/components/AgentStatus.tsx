@@ -4,12 +4,14 @@ import { Box, Tooltip, Typography } from '@mui/material'
 import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
 import { useInterval } from '../hooks/useInterval'
 import { requestDeviceSessionInfo } from '../services/deviceSessionInfo'
-import { held, runningVersion, updating } from '../services/graphQLDaemon'
+import { held, managedElsewhere, runningVersion, updating } from '../services/graphQLDaemon'
+import { upkeepText, withAvailable } from '../services/upkeepText'
 import { Icon } from './Icon'
 
 /* A device's agent in the device list's Agent column: the version its daemon runs, and — while one is under way, or
-   when one failed, was refused or is held by the device's admin — where its upgrade stands, the reason on hover. Nothing for a device that has
-   reported nothing (a legacy agent, or one not yet signed in). */
+   when one failed, was refused or is held by the device's admin — where its upgrade stands, the reason on hover. A
+   device something else upgrades (its image, Home Assistant, its store) shows a grey mark saying who, never a failure.
+   Nothing for a device that has reported nothing (a legacy agent, or one not yet signed in). */
 export const AgentStatus: React.FC<{ deviceId?: string }> = ({ deviceId }) => {
   const { t } = useTranslation()
   const agent = useDeviceSessionInfo(deviceId)?.agent
@@ -21,10 +23,14 @@ export const AgentStatus: React.FC<{ deviceId?: string }> = ({ deviceId }) => {
   if (!agent?.running) return null
 
   const update = agent.update
+  const elsewhere = managedElsewhere(agent)
   // Held by the device's admin (a package hold or lock): blocked, not failed.
-  const blocked = held(agent)
-  const failed = !blocked && !!update && ['failed', 'refused'].includes(update.state)
-  const label = blocked
+  const blocked = !elsewhere && held(agent)
+  const failed = !elsewhere && !blocked && !!update && ['failed', 'refused'].includes(update.state)
+  const upkeep = elsewhere && upkeepText(t, elsewhere, agent.package?.format)
+  const label = upkeep
+    ? withAvailable(t, upkeep.label, agent.available)
+    : blocked
     ? t('agentStatus.held', "Blocked — held by the device's admin")
     : update
     ? t('agentStatus.update', '{{state}} {{version}}', { state: update.state, version: update.version })
@@ -35,17 +41,25 @@ export const AgentStatus: React.FC<{ deviceId?: string }> = ({ deviceId }) => {
       <Typography component="span" variant="caption" noWrap>
         {runningVersion(agent)}
       </Typography>
-      {(failed || moving || blocked) && (
-        <Tooltip title={[label, update?.detail].filter(Boolean).join(' — ')} arrow>
-          <span data-agent-state={blocked ? 'held' : failed ? 'failed' : 'updating'}>
-            <Icon
-              name={blocked ? 'lock' : failed ? 'exclamation-triangle' : 'spinner-third'}
-              spin={moving && !blocked}
-              size="xs"
-              color={blocked ? 'warning' : failed ? 'danger' : 'primary'}
-            />
+      {upkeep ? (
+        <Tooltip title={`${label} — ${upkeep.hint}`} arrow>
+          <span data-agent-state="managed">
+            <Icon name={upkeep.icon} size="xs" color="grayDark" />
           </span>
         </Tooltip>
+      ) : (
+        (failed || moving || blocked) && (
+          <Tooltip title={[label, update?.detail].filter(Boolean).join(' — ')} arrow>
+            <span data-agent-state={blocked ? 'held' : failed ? 'failed' : 'updating'}>
+              <Icon
+                name={blocked ? 'lock' : failed ? 'exclamation-triangle' : 'spinner-third'}
+                spin={moving && !blocked}
+                size="xs"
+                color={blocked ? 'warning' : failed ? 'danger' : 'primary'}
+              />
+            </span>
+          </Tooltip>
+        )
       )}
     </Box>
   )

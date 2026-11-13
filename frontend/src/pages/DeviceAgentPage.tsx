@@ -10,6 +10,7 @@ import {
   graphQLSetDeviceDaemon,
   daemonVersion,
   held,
+  managedElsewhere,
   runningVersion,
   updating,
 } from '../services/graphQLDaemon'
@@ -21,6 +22,7 @@ import { SelectSetting } from '../components/SelectSetting'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { BROWSER_PLATFORM } from '../services/browserClients'
+import { upkeepText, withAvailable } from '../services/upkeepText'
 import { useInterval } from '../hooks/useInterval'
 
 // How often an upgrade under way is looked at again: its states pass in seconds.
@@ -75,7 +77,9 @@ export const DeviceAgentPage: React.FC = () => {
       case 'refused':
         return t('deviceAgent.refused', 'Refused {{version}}', { version })
       case 'held':
-        return t('deviceAgent.held', "Blocked — held by the device's admin")
+        return held({ update })
+          ? t('deviceAgent.held', "Blocked — held by the device's admin")
+          : t('deviceAgent.notTaken', 'Not taken here: {{version}}', { version })
       default:
         return `${update.state} ${version}`
     }
@@ -105,6 +109,9 @@ export const DeviceAgentPage: React.FC = () => {
         </Notice>
       )
 
+    // Upgraded by something other than our rollouts — its container image, Home Assistant, its store, the portal that
+    // loads it, its admin who turned updates off: said who, and how to update it, in a neutral voice — never a failure.
+    const elsewhere = managedElsewhere(daemon)
     // Held by the device's admin (a package hold or lock): blocked, not failed — it upgrades once the hold is lifted.
     const blocked = held(daemon)
     const failed = !blocked && daemon.update && ['failed', 'refused'].includes(daemon.update.state)
@@ -134,7 +141,19 @@ export const DeviceAgentPage: React.FC = () => {
                   )
             }
           />
-          {packageless ? (
+          {elsewhere ? (
+            (() => {
+              const upkeep = upkeepText(t, elsewhere, daemon.package?.format)
+              return (
+                <ListItemSetting
+                  icon={upkeep.icon}
+                  iconColor="grayDark"
+                  label={withAvailable(t, upkeep.label, daemon.available)}
+                  subLabel={upkeep.hint}
+                />
+              )
+            })()
+          ) : packageless ? (
             <ListItemSetting
               icon={browser ? 'browser' : 'mobile'}
               label={
@@ -195,7 +214,7 @@ export const DeviceAgentPage: React.FC = () => {
             </>
           )}
         </List>
-        {!packageless && (
+        {(elsewhere ? elsewhere === 'POLICY' : !packageless) && (
           <List>
             <ListSubheader>{t('deviceAgent.upgrades', 'Upgrades')}</ListSubheader>
             <DevicePolicyRow deviceId={device.id} name="updates" label={t('deviceSetting.updates', 'Remote upgrades')} />
