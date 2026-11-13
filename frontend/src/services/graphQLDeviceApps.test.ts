@@ -1,8 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { post, request, errors } = vi.hoisted(() => ({ post: vi.fn(), request: vi.fn(), errors: vi.fn() }))
+const { post, request, errors, lockFields } = vi.hoisted(() => ({
+  post: vi.fn(),
+  request: vi.fn(),
+  errors: vi.fn(),
+  lockFields: vi.fn(),
+}))
 vi.mock('./post', () => ({ post }))
 vi.mock('./graphQL', () => ({ graphQLBasicRequest: request, graphQLGetErrors: errors }))
+// What the schema says of an app's product lock (services/productPolicy reads it): an API without product apps first.
+vi.mock('./productPolicy', async importOriginal => ({
+  ...(await importOriginal<typeof import('./productPolicy')>()),
+  appPolicyFields: lockFields,
+}))
 
 import { graphQLDeviceApps, graphQLSetDeviceApp, graphQLSetDeviceAppSetting } from './graphQLDeviceApps'
 
@@ -10,6 +20,7 @@ beforeEach(() => {
   post.mockReset()
   request.mockReset()
   errors.mockReset().mockReturnValue(undefined)
+  lockFields.mockReset().mockResolvedValue('')
 })
 
 const answer = (data: any) => ({ data: { data } })
@@ -84,6 +95,34 @@ describe('Device.apps', () => {
     expect(app.settings[0].value).toBe(false)
     expect(app.settings[0].locked).toBeNull()
     expect(app.settings[1].locked).toEqual({ product: 'Acme', level: 'synced' })
+  })
+
+  it('whether its product holds it on or off, where the API says: which product, how firmly', async () => {
+    lockFields.mockResolvedValue('locked { product level }')
+    post.mockResolvedValue(
+      answer({
+        login: {
+          device: [
+            {
+              apps: [
+                { ...consoleApp, locked: { product: 'Acme', level: 'enforced' } },
+                { ...consoleApp, id: 'acme.logs', locked: null },
+              ],
+            },
+          ],
+        },
+      })
+    )
+    const apps = (await graphQLDeviceApps('D1'))!
+    expect(post.mock.calls[0][0].query).toMatch(
+      /serviceId settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} } locked \{ product level }/
+    )
+    expect(apps[0].locked).toEqual({ product: 'Acme', level: 'enforced' })
+    expect(apps[1].locked).toBeNull()
+
+    lockFields.mockResolvedValue('')
+    await graphQLDeviceApps('D1')
+    expect(post.mock.calls[1][0].query).not.toMatch(/} locked/)
   })
 
   it('null where the API has no apps, or the request failed', async () => {

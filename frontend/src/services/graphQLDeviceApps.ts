@@ -1,13 +1,15 @@
 import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import type { SettingState } from './graphQLDeviceSettings'
+import { appPolicyFields, settingLockOf, SettingLock } from './productPolicy'
 
 /* A device's apps (presence-server docs/device-apps-design.md, "The portal's Apps section"): each a catalogue entry
    (`<publisher>.<app>`, the console `remoteit.console`) the device has a row for — on or off, its channel, the version
    installed there, whether it runs as root, and its state as the device says: off, starting, running, or unavailable
    with why. Its settings are declared by the app's release and set with the same version rule as a device setting:
-   who set each from which side, its administrator's control (`<app>.<name>_control`) and its product's lock. graphql's
-   Device.apps, setDeviceApp and setDeviceAppSetting. */
+   who set each from which side, its administrator's control (`<app>.<name>_control`) and its product's lock. Whether
+   it is on may be its product's too (locked), where the API says: graphql refuses a change to either, naming the
+   product. graphql's Device.apps, setDeviceApp and setDeviceAppSetting. */
 
 export const CONSOLE = 'remoteit.console'
 
@@ -38,6 +40,7 @@ export type DeviceApp = {
   state: DeviceAppState
   detail: string | null
   serviceId: string | null // the service it is reached as
+  locked?: SettingLock | null // on or off as its product holds it: a synced or enforced product that sets it
   settings: DeviceAppSetting[]
 }
 
@@ -56,11 +59,18 @@ function parsedSetting(setting: any): DeviceAppSetting {
   }
 }
 
-const parsed = (app: any): DeviceApp => ({ ...app, settings: (app.settings ?? []).map(parsedSetting) })
+const parsed = (app: any): DeviceApp => ({
+  ...app,
+  locked: app.locked?.product || app.locked?.level ? settingLockOf(app.locked) : null,
+  settings: (app.settings ?? []).map(parsedSetting),
+})
+
+// An app's fields, with its product's lock where the API has it.
+const appFields = async () => [FIELDS, await appPolicyFields()].filter(Boolean).join(' ')
 
 // null: an API without apps, or a device this person cannot see.
 export async function graphQLDeviceApps(deviceId: string): Promise<DeviceApp[] | null> {
-  const query = `query DeviceApps($id: [String!]!) { login { device(id: $id) { id apps { ${FIELDS} } } } }`
+  const query = `query DeviceApps($id: [String!]!) { login { device(id: $id) { id apps { ${await appFields()} } } } }`
   const variables = { id: [deviceId] }
   const response = await post({ query, variables })
   if (response === 'ERROR') return null
@@ -88,7 +98,7 @@ export async function graphQLSetDeviceApp(
       ) {
         setDeviceApp(
           deviceId: $deviceId, app: $app, on: $on, channel: $channel, version: $version, consentRoot: $consentRoot
-        ) { ${FIELDS} }
+        ) { ${await appFields()} }
       }`,
     { deviceId, app, on, channel, version, consentRoot }
   )
