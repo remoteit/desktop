@@ -52,8 +52,10 @@ describe('ProductRegistrationCodes', () => {
     container.remove()
   })
 
-  const button = (label: string) =>
-    [...document.body.querySelectorAll('button')].find(b => b.textContent?.trim() === label) as HTMLButtonElement
+  const button = (label: string, inDialog = false) =>
+    [...document.body.querySelectorAll(inDialog ? '[role=dialog] button' : 'button')].find(
+      b => b.textContent?.trim() === label
+    ) as HTMLButtonElement
 
   it('lists the current and previous codes in use, shortened, and the revoked ones under a collapsed history', () => {
     const text = container.textContent || ''
@@ -78,5 +80,21 @@ describe('ProductRegistrationCodes', () => {
     await act(async () => button('Replace and Revoke').click())
 
     expect(rotateCode).toHaveBeenCalledWith({ productId: 'P1', revokePrevious: true })
+  })
+
+  it('starts each confirm unchecked, so a box ticked and then cancelled does not revoke on the next replace', async () => {
+    const stopNow = () =>
+      [...document.body.querySelectorAll('.MuiListItemButton-root')].find(item =>
+        item.textContent?.includes('now too')
+      ) as HTMLElement
+
+    act(() => button('Replace Code').click())
+    act(() => stopNow().click())
+    act(() => button('Cancel').click())
+
+    act(() => button('Replace Code').click())
+    await act(async () => button('Replace Code', true).click())
+
+    expect(rotateCode).toHaveBeenCalledWith({ productId: 'P1', revokePrevious: false })
   })
 })

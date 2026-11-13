@@ -15,6 +15,28 @@ type Props = { product: IDeviceProduct }
 
 const shortCode = (code: string) => `${code.slice(0, 8)}…${code.slice(-4)}`
 
+const issued = (label: string, created: string) => {
+  const date = new Date(created)
+  return (
+    <Tooltip title={<Timestamp date={date} />} placement="bottom-start">
+      <span>
+        {label} <Duration startDate={date} ago humanizeOptions={{ largest: 1 }} />
+      </span>
+    </Tooltip>
+  )
+}
+
+const codeText = (code: IDeviceProductCode, chip?: { label: string; color: Color }) => (
+  <Stack direction="row" alignItems="center" spacing={1}>
+    <Tooltip title={code.code} placement="top-start">
+      <Typography variant="body2" component="span" sx={{ fontFamily: "'Roboto Mono', monospace" }}>
+        {shortCode(code.code)}
+      </Typography>
+    </Tooltip>
+    {chip && <ColorChip label={chip.label} size="small" color={chip.color} variant="contained" />}
+  </Stack>
+)
+
 // The newest code in force is the one in the registration command. A product keeps at most one more in force, the code it
 // replaced, so devices still being set up with it are not cut off; replacing again revokes anything older.
 export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
@@ -28,12 +50,12 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
   const codes = product.registrationCodes || []
   const [current, ...previous] = codes.filter(code => !code.revoked)
   const revoked = codes.filter(code => code.revoked)
+  const currentCode = current && shortCode(current.code)
 
   const replace = async () => {
     setReplacing(true)
     await dispatch.products.rotateCode({ productId: product.id, revokePrevious })
     setReplacing(false)
-    setRevokePrevious(false)
   }
 
   const revoke = async (code: string) => {
@@ -41,27 +63,6 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
     await dispatch.products.revokeCode({ productId: product.id, code })
     setRevoking(undefined)
   }
-
-  const when = (label: string, date: string) => (
-    <Tooltip title={<Timestamp date={new Date(date)} />} placement="bottom-start">
-      <span>
-        {label} <Duration startDate={new Date(date)} ago humanizeOptions={{ largest: 1 }} />
-      </span>
-    </Tooltip>
-  )
-
-  const codeText = (code: IDeviceProductCode) => (
-    <Tooltip title={code.code} placement="top-start">
-      <Typography
-        variant="body2"
-        component="span"
-        sx={{ fontFamily: "'Roboto Mono', monospace", textDecoration: code.revoked ? 'line-through' : undefined }}
-        color={code.revoked ? 'textSecondary' : undefined}
-      >
-        {shortCode(code.code)}
-      </Typography>
-    </Tooltip>
-  )
 
   return (
     <Box sx={{ marginTop: 3 }}>
@@ -78,18 +79,8 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
         {current && (
           <ListItem disableGutters>
             <ListItemText
-              primary={
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  {codeText(current)}
-                  <ColorChip
-                    label={t('productRegistrationCodes.current', 'Current')}
-                    size="small"
-                    color="primary"
-                    variant="contained"
-                  />
-                </Stack>
-              }
-              secondary={when(t('productRegistrationCodes.issued', 'Issued'), current.created)}
+              primary={codeText(current, { label: t('productRegistrationCodes.current', 'Current'), color: 'primary' })}
+              secondary={issued(t('productRegistrationCodes.issued', 'Issued'), current.created)}
             />
           </ListItem>
         )}
@@ -124,22 +115,12 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
             }
           >
             <ListItemText
-              primary={
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  {codeText(code)}
-                  <ColorChip
-                    label={t('productRegistrationCodes.previous', 'Previous')}
-                    size="small"
-                    color="grayDark"
-                    variant="contained"
-                  />
-                </Stack>
-              }
+              primary={codeText(code, { label: t('productRegistrationCodes.previous', 'Previous'), color: 'grayDark' })}
               secondary={
                 <>
                   {t('productRegistrationCodes.stillWorks', 'Still registers devices')}
                   {' · '}
-                  {when(t('productRegistrationCodes.issued', 'Issued'), code.created)}
+                  {issued(t('productRegistrationCodes.issued', 'Issued'), code.created)}
                 </>
               }
             />
@@ -158,7 +139,7 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
             <>
               <Typography variant="body2" gutterBottom>
                 {t('productRegistrationCodes.replaceBody', {
-                  code: current && shortCode(current.code),
+                  code: currentCode,
                   defaultValue:
                     "The new code goes in the registration command. The current code {{code}} keeps registering devices until you revoke it, so devices still being set up with it aren't cut off.",
                 })}
@@ -175,14 +156,14 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
                 <ListItemCheckbox
                   checked={revokePrevious}
                   label={t('productRegistrationCodes.revokeNow', {
-                    code: current && shortCode(current.code),
+                    code: currentCode,
                     defaultValue: 'Stop {{code}} now too',
                   })}
                   subLabel={t(
                     'productRegistrationCodes.revokeNowHelp',
                     "If it leaked. Devices still being set up with it won't be able to register."
                   )}
-                  onClick={checked => setRevokePrevious(checked)}
+                  onClick={setRevokePrevious}
                   disableGutters
                 />
               </List>
@@ -197,6 +178,8 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
         loading={replacing}
         disabled={busy}
         onClick={replace}
+        // The dialog's cancel can't reach this state, so each confirm starts unchecked here instead.
+        onClickCapture={() => setRevokePrevious(false)}
         sx={{ marginTop: 1 }}
       />
       {revoked.length > 0 && (
@@ -212,7 +195,11 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
                 <ListItem key={code.code} disableGutters>
                   <ListItemText
                     primary={codeText(code)}
-                    secondary={when(t('productRegistrationCodes.revoked', 'Revoked'), code.revoked!)}
+                    secondary={
+                      <>
+                        {t('productRegistrationCodes.revoked', 'Revoked')} <Timestamp date={new Date(code.revoked!)} />
+                      </>
+                    }
                   />
                 </ListItem>
               ))}
