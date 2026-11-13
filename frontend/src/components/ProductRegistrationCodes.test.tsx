@@ -2,8 +2,6 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { rotateCode, revokeCode } = vi.hoisted(() => ({ rotateCode: vi.fn(), revokeCode: vi.fn() }))
-
 vi.mock('../services/browser', () => ({ default: {}, getLocalStorage: vi.fn(), setLocalStorage: vi.fn() }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
 
@@ -14,6 +12,9 @@ import { ProductRegistrationCodes } from './ProductRegistrationCodes'
 import { IDeviceProduct } from '../models/products'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
+
+const rotateCode = vi.fn()
+const revokeCode = vi.fn()
 
 const theme = createTheme(jssTheme(false))
 const at = (minutes: number) => new Date(Date.now() - minutes * 60_000).toISOString()
@@ -34,23 +35,28 @@ describe('ProductRegistrationCodes', () => {
   beforeEach(() => {
     rotateCode.mockReset().mockResolvedValue(true)
     revokeCode.mockReset().mockResolvedValue(true)
-    Object.assign(dispatch.products, { rotateCode, revokeCode })
+    vi.spyOn(dispatch.products, 'rotateCode').mockImplementation(rotateCode)
+    vi.spyOn(dispatch.products, 'revokeCode').mockImplementation(revokeCode)
     container = document.createElement('div')
     document.body.appendChild(container)
     root = createRoot(container)
-    act(() =>
-      root.render(
-        <ThemeProvider theme={theme}>
-          <ProductRegistrationCodes product={product} />
-        </ThemeProvider>
-      )
-    )
+    render(product)
   })
 
   afterEach(() => {
     act(() => root.unmount())
     container.remove()
+    vi.restoreAllMocks()
   })
+
+  const render = (shown: IDeviceProduct) =>
+    act(() =>
+      root.render(
+        <ThemeProvider theme={theme}>
+          <ProductRegistrationCodes product={shown} />
+        </ThemeProvider>
+      )
+    )
 
   const button = (label: string, inDialog = false) =>
     [...document.body.querySelectorAll(inDialog ? '[role=dialog] button' : 'button')].find(
@@ -96,5 +102,30 @@ describe('ProductRegistrationCodes', () => {
     await act(async () => button('Replace Code', true).click())
 
     expect(rotateCode).toHaveBeenCalledWith({ productId: 'P1', revokePrevious: false })
+  })
+
+  it('replaces once when the confirm is clicked twice before the first replace returns', () => {
+    rotateCode.mockReturnValue(new Promise(() => {}))
+    act(() => button('Replace Code').click())
+    const confirm = button('Replace Code', true)
+    act(() => confirm.click())
+    act(() => confirm.click())
+
+    expect(rotateCode).toHaveBeenCalledTimes(1)
+  })
+
+  it('names every older code a replace revokes, and warns that the first revocation ends service ID registration', () => {
+    render({
+      id: 'P2',
+      registrationCodes: [
+        { code: 'aaaaaaaa-0000-4000-8000-000000000003', created: at(1), revoked: null },
+        { code: 'bbbbbbbb-0000-4000-8000-000000000002', created: at(5), revoked: null },
+        { code: 'dddddddd-0000-4000-8000-000000000004', created: at(9), revoked: null },
+      ],
+    } as unknown as IDeviceProduct)
+    act(() => button('Replace Code').click())
+
+    expect(document.body.textContent).toContain('The older codes bbbbbbbb…0002, dddddddd…0004 will be revoked')
+    expect(document.body.textContent).toContain('also stops devices registering with a service ID')
   })
 })

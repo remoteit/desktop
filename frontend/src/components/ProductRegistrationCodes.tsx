@@ -51,6 +51,14 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
   const [current, ...previous] = codes.filter(code => !code.revoked)
   const revoked = codes.filter(code => code.revoked)
   const currentCode = current && shortCode(current.code)
+  const endsServiceIds = !revoked.length && (
+    <Typography variant="body2" color="textSecondary" gutterBottom>
+      {t(
+        'productRegistrationCodes.endsServiceIds',
+        'Revoking a code also stops devices registering with a service ID of this product.'
+      )}
+    </Typography>
+  )
 
   const replace = async () => {
     setReplacing(true)
@@ -88,20 +96,25 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
           <ListItem
             key={code.code}
             disableGutters
+            sx={{ paddingRight: 12 }}
             secondaryAction={
               <ConfirmButton
                 confirm
                 confirmProps={{
                   color: 'error',
+                  disabled: busy,
                   action: t('productRegistrationCodes.revokeAction', 'Revoke Code'),
                   title: t('productRegistrationCodes.revokeTitle', 'Revoke registration code?'),
                   children: (
-                    <Notice severity="error" gutterBottom fullWidth>
-                      {t(
-                        'productRegistrationCodes.revokeBody',
-                        "Devices can no longer register with this code. Devices already registered aren't affected. This can't be undone."
-                      )}
-                    </Notice>
+                    <>
+                      <Notice severity="error" gutterBottom fullWidth>
+                        {t(
+                          'productRegistrationCodes.revokeBody',
+                          "Devices can no longer register with this code. Devices already registered aren't affected. This can't be undone."
+                        )}
+                      </Notice>
+                      {endsServiceIds}
+                    </>
                   ),
                 }}
                 size="small"
@@ -131,6 +144,7 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
         confirm
         confirmProps={{
           color: revokePrevious ? 'error' : 'primary',
+          disabled: busy,
           action: revokePrevious
             ? t('productRegistrationCodes.replaceAndRevokeAction', 'Replace and Revoke')
             : t('productRegistrationCodes.replaceAction', 'Replace Code'),
@@ -138,20 +152,29 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
           children: (
             <>
               <Typography variant="body2" gutterBottom>
-                {t('productRegistrationCodes.replaceBody', {
-                  code: currentCode,
-                  defaultValue:
-                    "The new code goes in the registration command. The current code {{code}} keeps registering devices until you revoke it, so devices still being set up with it aren't cut off.",
-                })}
+                {revokePrevious
+                  ? t('productRegistrationCodes.replaceBodyRevoke', {
+                      code: currentCode,
+                      defaultValue:
+                        'The new code goes in the registration command. {{code}} and any older code stop registering devices now.',
+                    })
+                  : t('productRegistrationCodes.replaceBody', {
+                      code: currentCode,
+                      defaultValue:
+                        "The new code goes in the registration command. The current code {{code}} keeps registering devices until you revoke it, so devices still being set up with it aren't cut off.",
+                    })}
               </Typography>
-              {previous.length > 0 && (
+              {previous.length > 0 && !revokePrevious && (
                 <Typography variant="body2" color="textSecondary" gutterBottom>
                   {t('productRegistrationCodes.replaceRevokesPrevious', {
-                    code: shortCode(previous[0].code),
-                    defaultValue: 'The older code {{code}} will be revoked: only two codes stay in use.',
+                    count: previous.length,
+                    code: previous.map(code => shortCode(code.code)).join(', '),
+                    defaultValue_one: 'The older code {{code}} will be revoked: only two codes stay in use.',
+                    defaultValue_other: 'The older codes {{code}} will be revoked: only two codes stay in use.',
                   })}
                 </Typography>
               )}
+              {(previous.length > 0 || revokePrevious) && endsServiceIds}
               <List disablePadding>
                 <ListItemCheckbox
                   checked={revokePrevious}
