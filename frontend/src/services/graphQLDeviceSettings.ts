@@ -13,12 +13,10 @@ import { PersonRef, settingSignInFields } from './deviceSignIns'
 export type DeviceSettingName =
   | 'exit_node'
   | 'subnet'
-  | 'console'
-  | 'mcp_exec' // AI commands through MCP on the console
   | 'any_port'
   | 'proxy'
   | 'websocket' // the reflector: 'auto', 'on' or 'off'
-  | 'services' // whether it serves its services (and its ports beyond them, and its console): on but on a phone
+  | 'services' // whether it serves its services (and its ports beyond them, and its apps): on but on a phone
   | 'printers' // a Mac's or an iPhone's
   | 'scripts' // running scripts on it: a daemon that serves scripts has it
   | 'updates' // policy only: no value, a control of on or off

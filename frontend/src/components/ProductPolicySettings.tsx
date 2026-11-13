@@ -27,8 +27,6 @@ function offered(t: TFunction): Offered[] {
   return [
     { name: 'services', label: t('productSettings.services', 'Allow remote access to services'), choices: onOff },
     { name: 'subnet', label: t('productSettings.subnet', 'Device subnet'), choices: onOff },
-    { name: 'console', label: t('productSettings.console', 'Console'), choices: onOff },
-    { name: 'mcp_exec', label: t('productSettings.mcpExec', 'AI commands through MCP'), choices: onOff },
     { name: 'scripts', label: t('productSettings.scripts', 'Allow scripts'), choices: onOff },
     {
       name: 'websocket',

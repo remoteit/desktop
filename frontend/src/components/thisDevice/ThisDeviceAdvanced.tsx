@@ -5,7 +5,7 @@ import { ThisDeviceModel } from './model'
 import { SettingRow, SWITCH_TEXT, UNDER_SERVICES } from './shared'
 
 /* This device's Advanced (pages/ThisDevicePage.tsx, /this-device/advanced): what is changed seldom — what the device
-   offers beyond the three switches (exit node, console, any port, proxy, AI commands, the relay), a phone's permissions,
+   offers beyond the three switches (exit node, console, any port, proxy, the relay), a phone's permissions,
    the app's own Open at login, the detailed logging and the diagnostics, and last its removal. */
 
 export const ThisDeviceAdvanced: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {

@@ -3126,9 +3126,7 @@
     "serviceNotFound": "サービスが見つかりません"
   },
   "productSettings": {
-    "console": "",
     "hint": "",
-    "mcpExec": "",
     "notChanged": "",
     "off": "",
     "on": "",

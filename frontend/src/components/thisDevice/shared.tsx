@@ -17,7 +17,6 @@ export const SETTING_TITLES: { [name: string]: string } = {
   console: 'Console',
   any_port: 'Connections to any port',
   proxy: 'Proxy',
-  mcp_exec: 'AI commands',
   scripts: 'Scripts',
 }
 

@@ -3260,9 +3260,7 @@
     "serviceNotFound": "Servicio no encontrado"
   },
   "productSettings": {
-    "console": "",
     "hint": "",
-    "mcpExec": "",
     "notChanged": "",
     "off": "",
     "on": "",

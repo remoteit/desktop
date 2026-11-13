@@ -3193,9 +3193,7 @@
     "serviceNotFound": "Service not found"
   },
   "productSettings": {
-    "console": "Console",
     "hint": "A setting left to each device is the device’s to choose. One set here is locked on its devices while the product is synced or enforced.",
-    "mcpExec": "AI commands through MCP",
     "notChanged": "The setting was not changed.",
     "off": "Off",
     "on": "On",
