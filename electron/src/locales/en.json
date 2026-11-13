@@ -21,5 +21,9 @@
     "findApplicationTitle": "Find application",
     "findApplicationMessage": "Select the application location",
     "findApplicationButton": "Select"
+  },
+  "authCallback": {
+    "title": "Return to {{appName}}",
+    "message": "Sign-in continues in the {{appName}} app. You can close this tab."
   }
 }

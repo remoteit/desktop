@@ -11,9 +11,10 @@ import Binary, { binaries, cliBinary } from './Binary'
 import { existsSync, lstatSync } from 'fs'
 import Logger from './Logger'
 
-// Refusals the running agent will give again: unsupported platform, a service definition that
-// predates staging, a signature it will not accept, and a daemon too old to know the command.
-const PERMANENT_REFUSAL_CODES = ['409', '410', '411']
+// Refusals the running agent will give again: unsupported platform, a daemon that came back on
+// another install, a signature it will not accept, a service definition that predates staging, and
+// a daemon too old to know the command.
+const PERMANENT_REFUSAL_CODES = ['409', '410', '411', '414']
 
 function permanentRefusal(error?: Error) {
   if (!error) return false
@@ -135,7 +136,7 @@ export class BinaryInstaller {
         })
       }
 
-      commands.push(`${this.envVar()} "${this.cliBinary.path}" ${strings.serviceInstall()}`)
+      commands.push(`"${this.cliBinary.path}" ${strings.serviceInstall()}`)
 
       await commands.exec()
       resolve()
@@ -194,20 +195,6 @@ export class BinaryInstaller {
         }
       })
     }
-  }
-
-  envVar(): string {
-    if (!preferences.get().switchApi) return ''
-
-    const remoteAPI = preferences.get().apiURL
-    const graphqlURL = preferences.get().apiGraphqlURL
-
-    let envVar = ''
-
-    if (remoteAPI) envVar += `ENVAR_REMOTEIT_API_URL=${remoteAPI} `
-    if (graphqlURL) envVar += `ENVAR_REMOTEIT_API_GRAPHQL_URL=${graphqlURL} `
-
-    return envVar
   }
 
   async cliUpdated(): Promise<boolean> {

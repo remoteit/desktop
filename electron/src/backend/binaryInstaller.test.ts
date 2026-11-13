@@ -211,6 +211,20 @@ describe('backend/binaryInstaller', () => {
       expect(binaryInstaller.reloadRefusedBy).toBe('2.0.0')
     })
 
+    test('latches a refusal from a service definition that predates staging', async () => {
+      agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
+      reloadSpy = jest
+        .spyOn(cli, 'agentReload')
+        .mockImplementation(() => Promise.resolve({ error: refusal('414', 'agent service predates reload support') }))
+
+      await binaryInstaller.check()
+      await binaryInstaller.check()
+
+      expect(reloadSpy).toBeCalledTimes(1)
+      expect(eventSpy).toBeCalledWith('binary/not-installed', expect.objectContaining({ agentMismatched: true }))
+      expect(binaryInstaller.reloadRefusedBy).toBe('2.0.0')
+    })
+
     test('treats a reload that leaves another version running as refused', async () => {
       agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('2.0.0'))
       reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ version: '2.0.0' }))

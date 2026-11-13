@@ -10,6 +10,7 @@ import {
   PopoutMainHandlers,
 } from '../services/chatPopout'
 import network from '../services/Network'
+import { useChatOpen } from './useChatEnabled'
 
 /* Re-probe the agent when the app's own detector says connectivity is back — the same
    'connect' event Heartbeat, CloudSync and Controller reconnect on. Without it an
@@ -27,11 +28,8 @@ const useAgentHealthOnReconnect = (check: () => void): void => {
 const currentHandoff = () => toChatHandoff(store.getState().chat)
 
 /* The identity the chat is scoped by. auth.user, NOT the persisted `user` model: auth.user is
-   fetched for the CURRENT tokens at sign-in (it is what lets App mount), while the user model
-   is restored from storage and only catches up when the cloud sync lands. Activating a saved
-   account swaps tokens and reloads without purging persisted models, so for that interval
-   (indefinitely, if the sync stalls) the user model still names the PREVIOUS account — and an
-   ownership check against it would keep that account's transcript on the new account's screen. */
+   fetched for the CURRENT tokens at sign-in (it is what lets App mount), while the rest of the
+   user model is restored from storage and only catches up when the cloud sync lands. */
 const useChatIdentity = (): string => useSelector((state: State) => state.auth.user?.id ?? '') // '' = not signed in: syncIdentity no-ops
 
 /* What both chat surfaces do on boot: follow the signed-in identity, clear what must not
@@ -72,16 +70,19 @@ const useChatBoot = (open: boolean): void => {
    the shared boot (useChatBoot), the popout handoff protocol, and re-checking agent health
    when the dock opens. */
 export const useChatMainSync = (): void => {
-  const open = useSelector((state: State) => state.chat.open)
+  const open = useChatOpen()
   const dispatch = useDispatch<Dispatch>()
   useChatBoot(open)
 
   useEffect(() => {
+    const setPoppedOut = (poppedOut: boolean) => {
+      if (poppedOut !== store.getState().ui.chatPoppedOut) dispatch.ui.setPersistent({ chatPoppedOut: poppedOut })
+    }
     const handlers: PopoutMainHandlers = {
       getHandoff: currentHandoff,
       adopt: payload => {
         dispatch.chat.adoptHandoff(payload)
-        dispatch.chat.set({ poppedOut: false, open: true })
+        setPoppedOut(false)
         // The handback carries only the partial response rendered when the popout closed; the
         // server journals the rest of the turn, so pull its copy or the remainder is missing
         // (and the partial looks complete) until a reload.
@@ -89,22 +90,22 @@ export const useChatMainSync = (): void => {
       },
       onPopoutOpened: () => {
         dispatch.chat.stop()
-        dispatch.chat.set({ open: false, poppedOut: true })
+        setPoppedOut(true)
       },
       // A lost popout leaves no handback at all — reconcile against the server so the dock
       // reopens on the true transcript rather than this window's stale copy.
       onPopoutLost: () => {
-        dispatch.chat.set({ poppedOut: false, open: true })
+        setPoppedOut(false)
         dispatch.chat.syncTranscript()
       },
-      onPresence: present => dispatch.chat.set(present ? { poppedOut: true, open: false } : { poppedOut: false }),
+      onPresence: setPoppedOut,
     }
     const unsubscribe = initChatPopoutMain(handlers)
     checkPopoutPresence(handlers)
     return () => {
       unsubscribe()
-      // This panel unmounts ONLY when the entitlement goes away — an org switch to an unlicensed
-      // account, or the Test feature turned off (closing it merely renders null; popping out
+      // This panel unmounts ONLY when the entitlement goes away — the user's licence revoked,
+      // or the Test feature turned off (closing it merely renders null; popping out
       // stops explicitly). A turn left streaming behind that runs on headless: the remount's
       // resetTransient() then clears streaming/pendingConfirmation while the old request is
       // still live, so the next send orphans its AbortController and two turns' events

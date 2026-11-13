@@ -1,5 +1,6 @@
 import { Chip, Typography } from '@mui/material'
 import React from 'react'
+import { IP_PRIVATE } from '@common/constants'
 import { Attribute } from './Attributes'
 import { Timestamp } from './Timestamp'
 
@@ -103,6 +104,13 @@ export const productServiceDetailAttributes: ProductServiceAttribute[] = [
     id: 'productServiceTypeDetail',
     label: 'Service Type',
     value: ({ productService }: IDataOptions) => productService?.type?.name || 'Unknown',
+  }),
+  new ProductServiceAttribute({
+    id: 'productServiceHostDetail',
+    label: 'Service Host',
+    // The API withholds host and port together, and a port it shows is never null.
+    value: ({ productService }: IDataOptions) =>
+      productService?.port == null ? undefined : productService.host || IP_PRIVATE,
   }),
   new ProductServiceAttribute({
     id: 'productServicePortDetail',

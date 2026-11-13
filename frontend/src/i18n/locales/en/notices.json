@@ -4,10 +4,17 @@
     "noService": "You don't have access to that service. ({{id}})"
   },
   "auth": {
+    "agentReleaseFailed": "Couldn't sign out of this computer, so the account wasn't switched.",
+    "callbackFailed": "Sign-in didn't complete, so nothing changed.",
     "emailModified": "Email modified successfully.",
     "invalidFormat": "Invalid format.",
     "loginFailed": "Login failed.",
-    "passwordChanged": "Password changed successfully."
+    "passwordChanged": "Password changed successfully.",
+    "passwordFailed": "Something went wrong — try again.",
+    "passwordIncorrect": "Current password is incorrect.",
+    "passwordLocked": "Too many wrong attempts. Try again in a few minutes.",
+    "passwordNotHeld": "This account has no password yet — set one from the link we email you.",
+    "passwordWeak": "Choose a stronger password."
   },
   "chat": {
     "authRequired": "Agent authentication required — sign in to continue.",

@@ -19,11 +19,11 @@ import { OAUTH_AGENT_RESOURCE, AGENT_URL } from '../constants'
    the Test Settings validation so what saves is exactly what engages. */
 export const isSecureAgentURL = (url: string): boolean => !!httpsOnly(url)
 
-/* Base URL for the agent service, resolved per request. A Test UI override
-   wins (Test Settings → Agent service URL, https only); otherwise the build's AGENT_URL. */
+/* Base URL for the agent service, resolved per request. A Test UI override wins while the API
+   target is Custom (Test Settings → API Target, https only); otherwise the build's AGENT_URL. */
 export function agentURL(): string {
-  const override = store.getState().ui.apis.agentURL
-  if (override && isSecureAgentURL(override)) return override.replace(/\/+$/, '')
+  const { agentURL: override, customTarget } = store.getState().ui.apis
+  if (customTarget && override && isSecureAgentURL(override)) return override.replace(/\/+$/, '')
   return AGENT_URL
 }
 
@@ -49,6 +49,15 @@ export class AgentStreamEndedError extends Error {
 export class UsageLimitError extends Error {
   constructor(message: string, readonly resetsAt: string | null) {
     super(message)
+  }
+}
+
+/* The signed-in user does not hold the ai-agent licence (403 not_licensed) — the turn was refused
+   before it ran, so this window's view of the licence is stale. */
+export class AgentNotLicensedError extends Error {
+  constructor() {
+    super('Remote.It Agent is not licensed for this user')
+    this.name = 'AgentNotLicensedError'
   }
 }
 
@@ -101,10 +110,11 @@ export async function streamChat(options: {
   const { conversationId, text, org, signal, onEvent } = options
   const path = `/api/conversations/${encodeURIComponent(conversationId)}/messages`
   const response = await agentRequest('POST', path, { body: org ? { text, org } : { text }, signal })
-  if (response.status === 429 || response.status === 503) {
+  if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { error?: string; code?: string; resetsAt?: string }
     if (body.code === 'usage_limit')
       throw new UsageLimitError(body.error || 'Usage limit reached', body.resetsAt ?? null)
+    if (body.code === 'not_licensed') throw new AgentNotLicensedError()
   }
   if (!response.ok || !response.body) throw new Error(`Agent request failed (${response.status})`)
 

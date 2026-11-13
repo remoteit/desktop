@@ -1,0 +1,18 @@
+export const PERSISTED_MODELS = [
+  'accounts',
+  'announcements',
+  'applicationTypes',
+  'chat',
+  'connections',
+  'contacts',
+  'devices',
+  'files',
+  'jobs',
+  'networks',
+  'organization',
+  'plans',
+  'products',
+  'sessions',
+  'tags',
+  'user',
+] as const

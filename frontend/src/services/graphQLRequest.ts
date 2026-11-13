@@ -138,6 +138,8 @@ export async function graphQLUser(accountId: string) {
               urlNotifications
               notificationEmail
               notificationUrl
+              pushNotifications
+              pushCategories
             }
             attributes
             info {
@@ -151,6 +153,24 @@ export async function graphQLUser(accountId: string) {
         }
       }`,
     { accountId }
+  )
+}
+
+// Silent and separate from graphQLUser: an API without the field errors, and the page then hides the section.
+export async function graphQLOrganizationNotificationSettings() {
+  return await graphQLBasicRequest(
+    ` query OrganizationNotificationSettings {
+        login {
+          notificationSettings {
+            organizations {
+              organizationId
+              pushNotifications
+            }
+          }
+        }
+      }`,
+    {},
+    true
   )
 }
 
@@ -206,6 +226,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
             owner {
               id
               email
+              picture
             }
             connections {
               service {
@@ -226,6 +247,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
               user {
                 id
                 email
+                picture
               }
             }
           }
@@ -378,6 +400,7 @@ export async function graphQLFetchOrganizations(ids: string[]) {
                   user {
                     id
                     email
+                    picture
                   }
                 }
                 reseller {
@@ -391,6 +414,7 @@ export async function graphQLFetchOrganizations(ids: string[]) {
                     user {
                       id
                       email
+                      picture
                       created
                       limits {
                         ${LIMITS_QUERY}
@@ -501,6 +525,7 @@ export async function graphQLFetchGuests(accountId: string) {
               user {
                 id
                 email
+                picture
               }
               devices {
                 id

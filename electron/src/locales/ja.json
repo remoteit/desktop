@@ -21,5 +21,9 @@
     "findApplicationTitle": "アプリケーションを検索",
     "findApplicationMessage": "アプリケーションの場所を選択してください",
     "findApplicationButton": "選択"
+  },
+  "authCallback": {
+    "title": "{{appName}}に戻る",
+    "message": "サインインは{{appName}}アプリで続行されます。このタブは閉じてかまいません。"
   }
 }

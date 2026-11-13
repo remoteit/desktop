@@ -5,11 +5,12 @@ import { Box, Theme } from '@mui/material'
 import { State, Dispatch } from '../../store'
 import { CHAT_PANEL_WIDTH_MIN } from '../../constants'
 import { radius } from '../../styling'
-import { useChatDocked, useChatWidth, layoutBreakpoints, chatMaxWidth } from '../../hooks/useChatEnabled'
+import { useChatOpen, useChatDocked, useChatWidth, layoutBreakpoints, chatMaxWidth } from '../../hooks/useChatEnabled'
 import { getViewportWidth } from '../../hooks/useViewportWidth'
 import { useChatMainSync } from '../../hooks/useChatSync'
 import { usePanelDrag } from '../../hooks/usePanelDrag'
 import { PanelHandle } from '../PanelHandle'
+import { SidebarMenuButton } from '../../buttons/SidebarMenuButton'
 import { IconButton } from '../../buttons/IconButton'
 import { ChatHeader, NewChatButton } from './ChatHeader'
 import { ChatBody } from './ChatBody'
@@ -23,10 +24,10 @@ import { selectTurnActive } from '../../models/chat'
 const INSET = 1
 
 /* Display-only: lifecycle, popout protocol, and org mirroring live in
-   useChatMainSync; user actions dispatch chat model effects */
+   useChatMainSync; user actions dispatch chat model effects, and the window state is the ui model's */
 export const ChatPanel: React.FC = () => {
   const { t } = useTranslation()
-  const open = useSelector((state: State) => state.chat.open)
+  const open = useChatOpen()
   const layout = useSelector((state: State) => state.ui.layout)
   const insets = layout.insets
   // Popping out hands the conversation to a second window and stop()s this one. While a turn is
@@ -34,6 +35,7 @@ export const ChatPanel: React.FC = () => {
   // couldn't action the approval and the server-side turn would strand — so block it until idle.
   const turnActive = useSelector(selectTurnActive)
   const docked = useChatDocked()
+  const overBottomMenu = !docked && layout.showBottomMenu
   const chatWidth = useChatWidth()
   const sidebarWidth = layout.sidePanelWidth
   const dispatch = useDispatch<Dispatch>()
@@ -57,7 +59,14 @@ export const ChatPanel: React.FC = () => {
   const setWidth = useCallback(
     (width: number) => {
       published.current = width
-      dispatch.chat.set({ width })
+      dispatch.ui.set({ chatWidth: width })
+    },
+    [dispatch]
+  )
+  const saveWidth = useCallback(
+    (width: number) => {
+      published.current = width
+      dispatch.ui.setPersistent({ chatWidth: width })
     },
     [dispatch]
   )
@@ -73,7 +82,7 @@ export const ChatPanel: React.FC = () => {
     minWidth: CHAT_PANEL_WIDTH_MIN,
     getMaxWidth,
     onChange: publishIfLayoutChanges,
-    onPersist: setWidth,
+    onPersist: saveWidth,
     layoutDep: layout,
     anchor: 'right',
   })
@@ -124,14 +133,13 @@ export const ChatPanel: React.FC = () => {
         borderLeft: !docked && sidebarWidth ? 1 : 0,
         borderColor: 'grayLighter.main',
         boxShadow: docked || sidebarWidth ? 3 : 0,
-        // The chat reaches the window's bottom edge in both modes now — a full-height
-        // column beside the bottom menu when docked, over it when it overlays — so it
-        // owns its safe-area inset rather than leaving it to the menu below it
-        paddingBottom: insets?.bottomPx || 1.5,
+        // The chat owns the safe-area inset wherever it reaches the window's bottom edge — docked
+        // beside the bottom menu, or overlaying with no menu. An overlay stops above the menu, which carries it
+        paddingBottom: overBottomMenu ? 1.5 : insets?.bottomPx || 1.5,
       }}
     >
       {docked && <PanelHandle inset onMouseDown={drag.onDown} grab={drag.grab} />}
-      <ChatHeader>
+      <ChatHeader start={overBottomMenu && <SidebarMenuButton />}>
         {!browser.isMobile && !layout.mobile && chatPopoutSupported && (
           <IconButton
             icon="arrow-up-right-from-square"
@@ -144,11 +152,14 @@ export const ChatPanel: React.FC = () => {
         {/* "Close chat", not "Close": the title is this icon-only button's accessible name, and a
             bare "Close" is ambiguous beside every other close on the page — for a screen reader,
             and for the e2e suite, which dismisses a docked chat by that name (helpers/app.ts). */}
-        <IconButton
-          icon="times"
-          title={t('chat.closeChat', 'Close chat')}
-          onClick={() => dispatch.chat.set({ open: false })}
-        />
+        {/* With the bottom menu showing, the chat is one of its tabs: picking another tab closes it */}
+        {!layout.showBottomMenu && (
+          <IconButton
+            icon="times"
+            title={t('chat.closeChat', 'Close chat')}
+            onClick={() => dispatch.ui.setPersistent({ chatOpen: false })}
+          />
+        )}
       </ChatHeader>
       <ChatBody />
     </Box>

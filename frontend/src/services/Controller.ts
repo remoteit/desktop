@@ -147,6 +147,14 @@ class Controller extends EventEmitter {
     return this
   }
 
+  emitWithAck = (event: SocketAction, timeout: number): Promise<unknown> =>
+    this.socket?.connected
+      ? this.socket
+          .timeout(timeout)
+          .emitWithAck(event)
+          .catch(() => undefined)
+      : Promise.resolve(undefined)
+
   emit = (event: SocketAction, ...args: any[]): boolean => {
     if (!this.socket?.connected) {
       if (browser.hasBackend) this.log('EMIT CANCELED - LOCAL SOCKET DISCONNECTED', event, ...args)
@@ -210,6 +218,9 @@ function getEventHandlers() {
     },
 
     'signed-out': () => auth.signedOut(),
+
+    // The tray's Sign out: the same sign-out as the avatar menu, AS session included.
+    'sign-out': () => auth.signOut(),
 
     pool: (result: IConnection[]) => {
       controller.log('event: socket pool', result)

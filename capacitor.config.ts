@@ -26,6 +26,9 @@ const config: CapacitorConfig = {
         noDeviceFound: 'No device found',
       },
     },
+    PushNotifications: {
+      presentationOptions: ['badge', 'sound', 'alert'],
+    },
   },
   appendUserAgent: ` remoteit/${version}`,
 }

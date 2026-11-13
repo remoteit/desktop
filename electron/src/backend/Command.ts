@@ -32,7 +32,8 @@ const EXPECTED_CLI_CODES = [
   '101', // agent not reachable
   '101001', // agent version mismatch
   '409', // control - reload not supported on this platform
-  '410', // control - agent service predates reload support
+  '410', // control - agent came back from another install
+  '414', // control - agent service predates reload support
   '7003', // cmd - you must run this command with elevated privileges
 ]
 

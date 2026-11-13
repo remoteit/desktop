@@ -47,6 +47,7 @@ declare global {
     | 'user/lock'
     | 'user/sign-out'
     | 'user/quit'
+    | 'agent/release'
 
     // binaries
     | 'binaries/install'
@@ -72,6 +73,7 @@ declare global {
     // App/settings
     | 'navigate'
     | 'maximize'
+    | 'open'
     | 'showFolder'
     | 'filePrompt'
     | 'cancelBluetooth'
@@ -390,6 +392,8 @@ declare global {
     notificationSettings: {
       emailNotifications?: boolean | null
       desktopNotifications?: boolean | null
+      pushNotifications?: boolean | null
+      pushCategories?: IPushCategory[] | null
     }
   }
 
@@ -552,7 +556,13 @@ declare global {
     urlNotifications?: boolean
     notificationEmail?: string
     notificationUrl?: string
+    pushNotifications?: boolean | null
+    pushCategories?: IPushCategory[] | null
   }
+
+  type IPushCategory = 'state' | 'connect' | 'access' | 'jobs' | 'account'
+
+  type IApnsEnvironment = 'sandbox' | 'production'
 
   type IUserRef = {
     id: string
@@ -970,7 +980,6 @@ declare global {
 
   type IOverrides = {
     apiURL?: string
-    betaApiURL?: string
   }
 
   type IScanDataRaw = {
@@ -1042,10 +1051,6 @@ declare global {
     disableLocalNetwork?: boolean
     allowPrerelease?: boolean
     useCertificate?: boolean
-    switchApi?: boolean
-    apiURL?: string
-    apiGraphqlURL?: string
-    webSocketURL?: string
     windowState?: { x?: number; y?: number; width: number; height: number }
     disableDeepLinks?: boolean
     sshConfig?: boolean

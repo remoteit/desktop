@@ -2,23 +2,35 @@ import cloudSync from '../services/CloudSync'
 import cloudController from '../services/cloudController'
 import Controller, { emit } from '../services/Controller'
 import network from '../services/Network'
+import pushNotifications from '../services/pushNotifications'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
-import { SIGN_OUT_BACKEND_TIMEOUT, SIGN_OUT_EVERYWHERE_TIMEOUT } from '../constants'
-import { persistor, store } from '../store'
+import {
+  AGENT_RELEASE_TIMEOUT,
+  SIGN_OUT_BACKEND_TIMEOUT,
+  SIGN_OUT_EVERYWHERE_TIMEOUT,
+  SIGN_OUT_SESSION_TIMEOUT,
+  StageName,
+} from '../constants'
+import { chooseStage, reloadIfStageChanged } from '../helpers/stageHelper'
+import { persistor, persistsState, store } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
-import { selfChangePassword, selfChallenge } from '../services/passportSelf'
+import { changePassword as changeAccountPassword } from '../services/accountSecurity'
 import { signOutEverywhere } from '../services/permitteerAccount'
+import { broadcastChatSignout } from '../services/chatPopout'
 import {
   oidcConfigured,
   oidcSignedIn,
   oidcClaims,
   oidcStart,
   oidcClearLocal,
+  oidcReconcileIssuer,
+  oidcEndSession,
   oidcCompleteFromUrl,
   oidcActivateAccount,
+  oidcIsSavedAccount,
   oidcActivationHint,
   invalidateOidcToken,
   oidcGrantStale,
@@ -27,6 +39,8 @@ import {
   oidcTakeSupportTicket,
   oidcSelectKnownAccount,
   oidcClearAutoStarts,
+  oidcCallbackReason,
+  oidcTakeSwitched,
   OidcError,
   OidcErrorCode,
 } from '../services/oidc'
@@ -35,11 +49,16 @@ import { RootModel } from '.'
 import zendesk from '../services/zendesk'
 import i18n from '../i18n'
 import { withTimeout } from '../helpers/sleep'
+import { parseAgentOwned } from '@common/agentOwner'
+
+export type SignInErrorCode = OidcErrorCode | 'agentOwned'
 
 export interface AuthState {
   initialized: boolean
   authenticated: boolean
   backendAuthenticated: boolean
+  /** This window has signed the agent out for an account switch; it no longer owns it. */
+  agentReleased?: boolean
   /** A sign-in attempt failed. Deliberately SEPARATE from the message: this is what stops
    *  the web app starting another authorize by itself, and a brake that reads a display
    *  string is a brake that vanishes the moment the string is empty or suppressed. */
@@ -48,12 +67,33 @@ export interface AuthState {
    *  the server's own wording, so it is untranslated and often meaningless to a person. */
   signInError?: string
   /** What the failure MEANS, which is what the screen actually translates and acts on. */
-  signInErrorCode?: OidcErrorCode
+  signInErrorCode?: SignInErrorCode
   /** Seconds the server asked us to wait, when it said so (429). */
   signInRetryAfter?: number
   signingIn?: boolean
-  passwordChallenge?: { challenge: string; hint?: string }
   user?: IUser
+}
+
+/** What a refused password change means, in the person's words. The AS's own sentence is the
+ *  fallback: it names the policy a weak password missed. */
+function passwordError(error: string, description?: string): string {
+  switch (error) {
+    case 'bad_password':
+      return i18n.t('notices:auth.passwordIncorrect', { defaultValue: 'Current password is incorrect.' })
+    case 'locked':
+      return i18n.t('notices:auth.passwordLocked', {
+        defaultValue: 'Too many wrong attempts. Try again in a few minutes.',
+      })
+    case 'weak_password':
+      return description || i18n.t('notices:auth.passwordWeak', { defaultValue: 'Choose a stronger password.' })
+    case 'no_password_set':
+    case 'no_credential':
+      return i18n.t('notices:auth.passwordNotHeld', {
+        defaultValue: 'This account has no password yet — set one from the link we email you.',
+      })
+    default:
+      return description || i18n.t('notices:auth.passwordFailed', { defaultValue: 'Something went wrong — try again.' })
+  }
 }
 
 const defaultState: AuthState = {
@@ -79,11 +119,28 @@ const signInFailure = (error: any): Partial<AuthState> => ({
   signInRetryAfter: error instanceof OidcError ? error.retryAfter : undefined,
 })
 
+// auth.init is not gated on rehydration, and an owner read before it sees the empty default.
+const rehydrated = () =>
+  new Promise<void>(resolve => {
+    if (persistor.getState().bootstrapped) return resolve()
+    const unsubscribe = persistor.subscribe(() => {
+      if (!persistor.getState().bootstrapped) return
+      unsubscribe()
+      resolve()
+    })
+  })
+
 const signInCleared = {
   signInFailed: false,
   signInError: undefined,
   signInErrorCode: undefined,
   signInRetryAfter: undefined,
+}
+
+// This phone's push token goes with the agent's grant: both calls mint from the session, so they run
+// before it ends, and each runs once, so a later sign-out path's call is a no-op.
+function releaseSessionGrants(dispatch: { chat: { signOut: () => Promise<unknown> } }) {
+  return Promise.all([dispatch.chat.signOut(), pushNotifications.unregister()])
 }
 
 export default createModel<RootModel>()({
@@ -100,9 +157,12 @@ export default createModel<RootModel>()({
        could reload, until the AS rate-limited the address for everyone behind it. A
        failure is always recorded now; being unattended is not a reason to forget it. */
     async init(_: void, state) {
+      oidcReconcileIssuer()
       const { user } = state.auth
       console.log('AUTH INIT START', { user })
       if (!user) {
+        const healing = oidcCallbackReason() === 'heal'
+        const switched = oidcTakeSwitched()
         try {
           // A boot with ?code&state in the URL IS the sign-in completing (web return, or
           // the desktop deep-link reload); otherwise restore a stored session.
@@ -113,7 +173,12 @@ export default createModel<RootModel>()({
             await oidcStart({ supportTicket: ticket })
             return
           }
-          const claims = await oidcCompleteFromUrl()
+          const previous = oidcClaims()?.sub
+          // A different account arriving on this phone: the leaving one's push token goes while its session can still mint
+          const claims = await oidcCompleteFromUrl(undefined, async returned => {
+            if (previous && returned?.sub !== previous) await pushNotifications.unregister()
+            return true
+          })
           if (claims) await dispatch.auth.handleSignInSuccess()
           else if (oidcSignedIn()) {
             // Stored tokens are a CLAIM of a session, not proof of one: the AS may have
@@ -123,7 +188,9 @@ export default createModel<RootModel>()({
             const alive = await getToken()
             if (alive) {
               await dispatch.auth.handleSignInSuccess()
-              await dispatch.auth.healGrant() // refused by oidcStart in a support tab
+              // Desktop and mobile authorize in the system browser, which opening the app must never show, so
+              // there only the boot a switch causes heals. A support tab's heal is refused by oidcStart.
+              if (!browser.isNative || switched) await dispatch.auth.healGrant()
             } else {
               invalidateOidcToken()
               // A JUST-ACTIVATED saved account whose refresh family died: one silent
@@ -131,7 +198,7 @@ export default createModel<RootModel>()({
               // session-set member the hint names (permitteer silent selection), so the
               // person lands back signed in with zero screens. The marker is one-shot;
               // a refused silent round falls to the ordinary sign-in screen.
-              const hint = oidcActivationHint()
+              const hint = switched && oidcActivationHint()
               if (hint) await oidcStart({ prompt: 'none', loginHint: hint, auto: `activate:${hint}` })
             }
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
@@ -139,11 +206,12 @@ export default createModel<RootModel>()({
           console.error('AUTH INIT: sign-in completion failed', error)
           // A REFUSED silent selection (a known account signed out elsewhere meanwhile) must not
           // strand a signed-in person on the sign-in screen: the stored session is intact — restore
-          // it, say why, and let the menu re-learn the browser's accounts. Otherwise fall through
-          // to this branch's richer error mapping (signInFailure).
-          if (error?.oauthError === 'login_required' && oidcSignedIn() && (await getToken())) {
-            await dispatch.auth.handleSignInSuccess()
-            dispatch.ui.set({ errorMessage: 'That account is no longer signed in on this browser.' })
+          // it, say why, and let the menu re-learn the browser's accounts. A failed heal restores it
+          // without a word: the session never stopped working. Otherwise fall through to this
+          // branch's richer error mapping (signInFailure).
+          if ((healing || error?.oauthError === 'login_required') && oidcSignedIn() && (await getToken())) {
+            await dispatch.auth.handleSignInSuccess({ keepAutoStarts: healing })
+            if (!healing) dispatch.ui.set({ errorMessage: 'That account is no longer signed in on this browser.' })
           } else dispatch.auth.set(signInFailure(error))
         }
       }
@@ -159,7 +227,10 @@ export default createModel<RootModel>()({
      *
      *  Automatic attempts are bounded by oidcStart's ledger (reason `heal`); a person pressing the
      *  chat's "Refresh permissions" is their own loop-breaker, so `force` skips both the ledger and
-     *  the stale check — a resource server's refusal is a runtime fact this stamp cannot see. */
+     *  the stale check — a resource server's refusal is a runtime fact this stamp cannot see.
+     *
+     *  A failed automatic heal says nothing (init, completeCallback): the session still works, and the
+     *  feature that needs the slice offers "Refresh permissions", whose failure the person is told. */
     async healGrant(options?: { force?: boolean }) {
       try {
         // The freshness check compares against the MCP detail type; on the first load after a
@@ -167,18 +238,25 @@ export default createModel<RootModel>()({
         // (bounded, resolved instantly thereafter) so this cannot call a renamed-away grant current.
         await oidcMcpDetailReady()
         if (!options?.force && !oidcGrantStale()) return
+        const email = oidcClaims()?.email
+        if (!email) return console.warn('AUTH: this session has no email to name, so its grant is not healed')
         console.log('AUTH: re-authorizing for this build’s declaration')
-        await oidcStart(options?.force ? {} : { auto: 'heal' })
+        // Only prompt=none makes the AS serve the session login_hint names; without it, the AS serves
+        // the browser's active account.
+        await oidcStart({ prompt: 'none', loginHint: email, auto: options?.force ? undefined : 'heal' })
       } catch (error) {
         console.warn('AUTH: grant heal check failed (leaving the session as it is)', error)
       }
     },
     /** Account switch: re-run authorize with select_account — the AS chooser shows the
-     * real session chips; nothing is torn down locally, so a canceled chooser costs
-     * nothing. Completion replaces the session like any sign-in (a SAME-account re-auth
-     * revokes the old family; a DIFFERENT account files the old one in the registry —
-     * services/oidc.ts). */
+     * real session chips. Completion replaces the session like any sign-in (a SAME-account
+     * re-auth revokes the old family; a DIFFERENT account files the old one in the registry —
+     * services/oidc.ts). On desktop the chooser returns through a deep link that the live
+     * window completes (completeCallback), so the agent is released only for a different account.
+     * Any other shell with a local backend (the browser UI on the backend's own port) returns
+     * through a fresh page load that cannot release it, so that shell still releases first. */
     async switchAccount(_: void) {
+      if (!browser.isElectron && !(await dispatch.auth.releaseAgent())) return
       try {
         await oidcStart({ prompt: 'select_account' })
       } catch (error) {
@@ -193,23 +271,52 @@ export default createModel<RootModel>()({
      * menu row that somehow outlived its registry entry still lands somewhere sensible. */
     async activateAccount(sub: string) {
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
-      if (oidcActivateAccount(sub)) return window.location.assign('/')
+      if (oidcIsSavedAccount(sub)) {
+        if (!(await dispatch.auth.releaseAgent())) return
+        await pushNotifications.unregister()
+        if (oidcActivateAccount(sub)) return window.location.assign('/')
+      }
       // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
       // the AS serves the live set member the hint names, no chooser (docs/browser-accounts.md).
+      // Outside desktop it returns through a page load that cannot release the agent (switchAccount).
+      if (!browser.isElectron && !(await dispatch.auth.releaseAgent())) return
       if (await oidcSelectKnownAccount(sub)) return
       await dispatch.auth.switchAccount()
     },
+    /** Desktop: a chooser's deep link delivered to this still signed-in window (liveAuthCallback).
+     *  A DIFFERENT account is stored only once this window has released the agent. */
+    async completeCallback(search: string) {
+      const previous = oidcClaims()?.sub
+      const healing = oidcCallbackReason(search) === 'heal'
+      try {
+        const claims = await oidcCompleteFromUrl(
+          search,
+          async returned => returned?.sub === previous || dispatch.auth.releaseAgent()
+        )
+        if (claims) window.location.assign('/')
+      } catch (error: any) {
+        console.error('AUTH: sign-in callback did not complete', error)
+        if (healing) return
+        dispatch.ui.set({
+          errorMessage:
+            error?.oauthError === 'login_required'
+              ? 'That account is no longer signed in on this browser.'
+              : i18n.t('notices:auth.callbackFailed', { defaultValue: "Sign-in didn't complete, so nothing changed." }),
+        })
+      }
+    },
     /** `auto` names a sign-in nobody clicked for (the web sign-in screen's own start) so the
      *  ledger in oidcStart can bound it; a refused one leaves the screen as it was. */
-    async signIn(options?: { auto?: string }) {
+    async signIn(options?: { auto?: string; idpHint?: string; signUp?: boolean }) {
       dispatch.auth.set({ signingIn: true, ...signInCleared })
       try {
-        // Sign-in ALWAYS offers the CHOOSER (prompt=select_account), web and desktop alike.
-        // A "Sign in" button should let the person pick; and with a live AS cookie a
+        // Every sign-in but sign-up offers the CHOOSER (prompt=select_account), web and desktop
+        // alike. A sign-in button should let the person pick; and with a live AS cookie a
         // PROMPTLESS authorize would silently SSO the last user straight back in — which is
         // exactly the "sign-out doesn't stick" bug. select_account also means that signing
         // out and reloading always lands on the picker, never a silent re-login.
-        if (!(await oidcStart({ prompt: 'select_account', auto: options?.auto })))
+        const prompt = options?.signUp ? 'create' : 'select_account'
+        if (!(await oidcStart({ prompt, idpHint: options?.idpHint, auto: options?.auto })))
           dispatch.auth.set({ signingIn: false })
       } catch (error: any) {
         console.error('SIGN IN FAILED', error)
@@ -223,6 +330,17 @@ export default createModel<RootModel>()({
 
       const user = response?.data?.data?.login
 
+      // Switching accounts reloads without signing out, so a window's persisted state, and any chat popout still paired
+      // with it, can be the last account's. With no owner recorded neither can be trusted.
+      await rehydrated()
+      const owner = store.getState().user.id
+      if (persistsState && user?.id && owner !== user.id) {
+        auth.resetAccountData()
+        broadcastChatSignout()
+      }
+      // Stamped here rather than when user.fetch lands, so a second switch before then still sees an owner.
+      if (user?.id) dispatch.user.set({ id: user.id })
+
       auth.set({ user, ...signInCleared })
       if (user.authhash && user.yoicsId) {
         Controller.setupConnection({ username: user.yoicsId, authHash: user.authhash, guid: user.id })
@@ -232,49 +350,18 @@ export default createModel<RootModel>()({
         dispatch.ui.set({ errorMessage: i18n.t('notices:auth.loginFailed', { defaultValue: 'Login failed.' }) })
       }
     },
-    // Native password change over the Passport self-API (Phase 2b): the current password
-    // is the proof of possession; accounts whose store challenges (pool MFA) get a code
-    // continuation the ChangePassword form renders.
+    // The password, on the AS's account API (permitteer docs/unified-idp.md): the current password
+    // is the proof, and nothing is relayed — a store that would challenge a factor here is taken as
+    // having accepted the password. It signs no other session out; the confirm dialog says so.
     async changePassword(passwordValues: IPasswordValue): Promise<boolean> {
-      const r = await selfChangePassword(passwordValues.currentPassword ?? '', passwordValues.password ?? '')
-      if (r.status === 'ok') {
-        dispatch.auth.set({ passwordChallenge: undefined })
+      const r = await changeAccountPassword(passwordValues.currentPassword ?? '', passwordValues.password ?? '')
+      if (r.ok) {
         dispatch.ui.set({
           successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
         })
         return true
       }
-      if (r.status === 'mfa' && r.challenge) {
-        dispatch.auth.set({ passwordChallenge: { challenge: r.challenge, hint: r.hint } })
-        return false
-      }
-      dispatch.ui.set({
-        errorMessage:
-          r.error === 'invalid_password'
-            ? 'Current password is incorrect.'
-            : r.error === 'weak_password'
-            ? r.error_description || 'New password does not meet the requirements.'
-            : r.error_description || 'An unexpected error occurred. Please try again.',
-      })
-      return false
-    },
-    /** Answer the store's second-factor challenge raised by changePassword. */
-    async completePasswordChallenge(code: string, state): Promise<boolean> {
-      const pending = state.auth.passwordChallenge
-      if (!pending) return false
-      const r = await selfChallenge(pending.challenge, { code })
-      if (r.status === 'ok') {
-        dispatch.auth.set({ passwordChallenge: undefined })
-        dispatch.ui.set({
-          successMessage: i18n.t('notices:auth.passwordChanged', { defaultValue: 'Password changed successfully.' }),
-        })
-        return true
-      }
-      // invalid_code re-arms the SAME step under a fresh handle — a typo never restarts.
-      dispatch.auth.set({ passwordChallenge: r.challenge ? { challenge: r.challenge, hint: pending.hint } : undefined })
-      dispatch.ui.set({
-        errorMessage: r.challenge ? 'That code didn’t match — try again.' : 'The request expired — start over.',
-      })
+      dispatch.ui.set({ errorMessage: passwordError(r.error, r.description) })
       return false
     },
     // The 401 recovery path (services/post.ts): drop the renderer cache and let the
@@ -296,19 +383,20 @@ export default createModel<RootModel>()({
         await dispatch.auth.signedOut()
       }
     },
-    async handleSignInSuccess(): Promise<void> {
+    async handleSignInSuccess(options?: { keepAutoStarts?: boolean }): Promise<void> {
       // A session — freshly exchanged OR restored from stored tokens — is proof the
       // automatic path works, so it clears the auto-start budget. Doing it only at the
       // code exchange left a tab that had spent its budget unable to auto sign-in again
-      // after a perfectly healthy restore.
-      oidcClearAutoStarts()
+      // after a perfectly healthy restore. A restore after a failed heal is no such proof:
+      // clearing there sent every page load back through the AS.
+      if (!options?.keepAutoStarts) oidcClearAutoStarts()
       await dispatch.auth.set({ authenticated: true })
       await dispatch.auth.fetchUser()
       console.log('AUTHENTICATED SUCCESS')
     },
     async backendAuthenticated(_: void, state) {
       if (state.auth.authenticated) {
-        dispatch.auth.set({ backendAuthenticated: true })
+        dispatch.auth.set({ backendAuthenticated: true, agentReleased: false })
         console.log('BACKEND AUTHENTICATED')
         if (!state.backend.initialized) {
           emit('init')
@@ -316,38 +404,43 @@ export default createModel<RootModel>()({
         }
       }
     },
-    async disconnect(_: void, state) {
-      if (!state.auth.authenticated && !state.auth.backendAuthenticated && browser.hasBackend) {
-        // Read the LIVE store, not the invocation-time snapshot: backendSignInError records its
-        // failure after its own teardown and this handler fires right behind it when the
-        // rejected socket drops, so the snapshot predates that message. Carry an existing
-        // failure through this teardown (signedOut()'s signInCleared would wipe it) and only
-        // otherwise fall back to the generic one — either way through the signInFailure shape,
-        // so signInFailed is set and SignInApp actually renders the message.
-        const live = store.getState().auth
-        const failure: Partial<AuthState> = live.signInFailed
-          ? {
-              signInFailed: true,
-              signInError: live.signInError,
-              signInErrorCode: live.signInErrorCode,
-              signInRetryAfter: live.signInRetryAfter,
-            }
-          : signInFailure(new Error('Sign in failed, please try again.'))
-        await dispatch.auth.signedOut()
-        dispatch.auth.set(failure)
-      }
+    async disconnect() {
+      // No teardown here: a signed-out window's socket only drops from signedOut()'s own close(),
+      // and a second teardown from that echo wipes backendSignInError's agent-owned notice.
       dispatch.ui.set({ connected: false })
       dispatch.auth.set({ backendAuthenticated: false })
     },
     async backendSignInError(signInError: string) {
       console.error(signInError)
+      const owner = parseAgentOwned(signInError)
       // Tear down FIRST, then record the failure: signedOut() deliberately clears
       // signInFailed/signInError (a failure logged while signed in must not survive into the
       // signed-out screen), so a set() before it was wiped and SignInApp — which renders its
       // message only while signInFailed is true — showed a bare sign-in screen with no word of
       // the backend's rejection. signInFailure is the one shape every failure takes.
       await dispatch.auth.signedOut()
-      dispatch.auth.set(signInFailure(new Error(signInError)))
+      dispatch.auth.set({
+        ...signInFailure(new Error(signInError)),
+        ...(owner && { signInErrorCode: 'agentOwned' as const }),
+      })
+    },
+    /** Desktop: the account leaving signs this computer's agent out from its own window before a switch,
+     *  so the agent only ever moves on its owner's credentials. Its saved session stays in the switcher. */
+    async releaseAgent(_: void, state): Promise<boolean> {
+      if (!browser.hasBackend || !state.auth.user || state.auth.agentReleased) return true
+      const ask = () => Controller.emitWithAck('agent/release', AGENT_RELEASE_TIMEOUT)
+      // The backend only answers agent/release from a window it has finished signing in; asked sooner, it never does.
+      const ready = state.auth.backendAuthenticated || (await Controller.reconnectNow(AGENT_RELEASE_TIMEOUT))
+      if (ready && ((await ask()) || ((await Controller.reconnectNow(SIGN_OUT_BACKEND_TIMEOUT)) && (await ask())))) {
+        dispatch.auth.set({ backendAuthenticated: false, agentReleased: true })
+        return true
+      }
+      dispatch.ui.set({
+        errorMessage: i18n.t('notices:auth.agentReleaseFailed', {
+          defaultValue: "Couldn't sign out of this computer, so the account wasn't switched.",
+        }),
+      })
+      return false
     },
     async appReady(_: void, state) {
       // Temp migration of state
@@ -379,14 +472,32 @@ export default createModel<RootModel>()({
       cloudController.init()
       cloudSync.init()
       network.tick()
+      pushNotifications.register()
       if (!browser.hasBackend) dispatch.auth.appReady()
     },
-    async signOut(_: void, state) {
-      // Sign-out is LOCAL to this app: drop this app's tokens/session (dispatch.auth.signedOut
-      // below). The AS browser session belongs to the user and is NOT ended here — a true
-      // "sign out everywhere" is a separate, explicit action (globalSignOut). Because signIn
-      // always uses prompt=select_account, the next sign-in and any reload land on the AS
-      // chooser rather than silently SSO-ing back in, so no login-prompt guard is needed.
+    async signOut(options: { keepSession?: boolean } | void, state) {
+      // The person signing out ends this account's single sign-on too: the AS session its
+      // id_token names, so the next sign-in here — or in any app that shared that session —
+      // asks who they are instead of passing them straight through. Only THIS account's
+      // session: the browser's other accounts, this app's other saved accounts and the
+      // account's other devices each hold their own. It runs first, while the id_token is
+      // still stored, and it is BOUNDED and best-effort: an unreachable AS must never leave
+      // the person signed in here, so the local sign-out always follows.
+      // The failure paths (dead refresh token, backend sign-out) go straight to signedOut()
+      // and never reach the AS; globalSignOut has already ended every session and passes
+      // keepSession so a down AS is not waited on twice.
+      if (!options?.keepSession) {
+        // The agent's background grant goes FIRST, as in globalSignOut: its revoke mints a token
+        // from the session about to end. It revokes once per identity, so the chat.signOut in
+        // signedOut() is a no-op afterwards.
+        await releaseSessionGrants(dispatch)
+        try {
+          const status = await withTimeout(oidcEndSession(), SIGN_OUT_SESSION_TIMEOUT)
+          if (status && status !== 204) console.warn('SIGN OUT: AS session end refused', status)
+        } catch (error) {
+          console.warn('SIGN OUT: AS session end failed — signing out locally', error)
+        }
+      }
       // emit returns false when the local socket isn't connected, and
       // backendAuthenticated can still be true at that moment - the flag is only
       // cleared once the socket's disconnect event lands. Without checking the
@@ -415,11 +526,10 @@ export default createModel<RootModel>()({
       // AWAIT the chat sign-out: it revokes the background-agent grant, whose authenticated DELETE
       // needs a live token — letting it run unawaited raced the oidcClearLocal() below and left
       // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
-      await dispatch.chat.signOut()
+      await releaseSessionGrants(dispatch)
       await persistor.purge()
-      // LOCAL-ONLY: drop this app's tokens. The AS session is never ended from here —
-      // signing out of the app must not sign the user out of login.* (their browser
-      // session is theirs; the explicit "sign out everywhere" is globalSignOut).
+      // Drop this app's tokens. The AS is never called from here — the failure paths land here
+      // too; the person's own sign-out ended the AS session in signOut before this.
       oidcClearLocal()
       /* signInCleared as well as the user: a failure recorded while SIGNED IN — a refused
          account switch, say — would otherwise survive into the signed-out screen, where
@@ -427,29 +537,14 @@ export default createModel<RootModel>()({
          a stale error and no redirect, for something that happened in someone else's
          session. */
       await dispatch.auth.set({ user: undefined, ...signInCleared })
-      dispatch.chat.reset()
+      dispatch.auth.resetAccountData()
       dispatch.agents.reset()
-      dispatch.user.reset()
-      dispatch.organization.reset()
-      dispatch.networks.reset()
-      dispatch.accounts.reset()
-      dispatch.connections.reset()
-      dispatch.devices.reset()
-      dispatch.sessions.reset()
       dispatch.logs.reset()
       dispatch.search.reset()
-      dispatch.announcements.reset()
-      dispatch.applicationTypes.reset()
-      dispatch.plans.reset()
-      dispatch.contacts.reset()
       dispatch.billing.reset()
       dispatch.backend.reset()
-      dispatch.files.reset()
       dispatch.keys.reset()
-      dispatch.jobs.reset()
-      dispatch.tags.reset()
       dispatch.ui.reset()
-      dispatch.products.reset()
       dispatch.partnerStats.reset()
       dispatch.adminUsers.reset()
       dispatch.adminPartners.reset()
@@ -469,6 +564,43 @@ export default createModel<RootModel>()({
       emit('user/sign-out-complete')
       cloudController.reset()
       Controller.close()
+      reloadIfStageChanged()
+    },
+    /** Every persisted model: what sign-out clears, and what a sign-in finding another account's state clears. */
+    resetAccountData() {
+      dispatch.chat.reset()
+      dispatch.user.reset()
+      dispatch.organization.reset()
+      dispatch.networks.reset()
+      dispatch.accounts.reset()
+      dispatch.connections.reset()
+      dispatch.devices.reset()
+      dispatch.sessions.reset()
+      dispatch.announcements.reset()
+      dispatch.applicationTypes.reset()
+      dispatch.plans.reset()
+      dispatch.contacts.reset()
+      dispatch.files.reset()
+      dispatch.jobs.reset()
+      dispatch.tags.reset()
+      dispatch.products.reset()
+    },
+    /** Test Settings' stage switch. This signs out of the old login server; the reload at the end of
+     *  signedOut boots every endpoint on the new stage, where init drops the old stage's accounts. */
+    async switchStage(stage: StageName, state) {
+      chooseStage(stage)
+      await dispatch.ui.setPersistent({
+        apis: {
+          ...state.ui.apis,
+          switchApi: false,
+          customTarget: false,
+          apiGraphqlURL: '',
+          webSocketURL: '',
+          agentURL: '',
+        },
+      })
+      if (state.auth.user) await dispatch.auth.signOut()
+      else reloadIfStageChanged()
     },
     async globalSignOut() {
       // "Sign out everywhere" (SecurityPage) is the EXPLICIT, account-wide action, distinct from
@@ -479,8 +611,8 @@ export default createModel<RootModel>()({
       // security control does what it reports, and it needs only the access token this app
       // already holds. Best-effort by design: the refusal or outage that a person hits while
       // reaching for the panic button must not leave them signed in here, so the local sign-out
-      // always follows — a miss is logged, never fatal. signOut itself stays LOCAL — a
-      // failure-path or menu sign-out must never end the AS sessions.
+      // always follows — a miss is logged, never fatal. The menu sign-out ends only THIS
+      // account's session (signOut).
       //
       // A SUPPORT session (an operator viewing as the person) holds no refresh token and can
       // mint for nothing but the data plane, and the account API refuses writes from an acted
@@ -488,14 +620,14 @@ export default createModel<RootModel>()({
       // and this is the backstop: straight to the local teardown. Ending the support session
       // itself is the operator's console or the person's account page, never this button.
       if (oidcActor()) {
-        dispatch.auth.signOut()
+        dispatch.auth.signOut({ keepSession: true })
         return
       }
       // The agent's background grant goes FIRST: chat.signOut revokes it through the agent
       // service with a token minted from THIS session, and once the AS has ended the session no
       // token can be minted for that call. It revokes once per identity, so the chat.signOut
       // inside signedOut() is a real no-op on the far side.
-      await dispatch.chat.signOut()
+      await releaseSessionGrants(dispatch)
       // BOUNDED, like the revoke above. Audience mints serialize through one shared promise
       // (services/oidc), so a mint the revoke abandoned mid-stall would otherwise queue this call
       // behind it indefinitely — and the panic button must never leave the person signed in here
@@ -509,7 +641,7 @@ export default createModel<RootModel>()({
       } catch (error) {
         console.warn('SIGN OUT EVERYWHERE FAILED', error)
       }
-      dispatch.auth.signOut()
+      dispatch.auth.signOut({ keepSession: true })
     },
   }),
   reducers: {
@@ -519,3 +651,14 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+let completing: Promise<void> | undefined
+
+/** The desktop main process hands an auth deep link here before falling back to reloading the
+ *  window with it. True means this signed-in window owns the callback; a reload instead would
+ *  sign the new account in while this window still holds the agent. */
+export function liveAuthCallback(search: string): boolean {
+  if (!store.getState().auth.user) return false
+  completing ??= store.dispatch.auth.completeCallback(search).finally(() => (completing = undefined))
+  return true
+}

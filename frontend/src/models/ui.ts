@@ -7,7 +7,7 @@ import i18n, { resolveLanguage, LanguageMode } from '../i18n'
 import { Settings as LuxonSettings } from 'luxon'
 import { NoticeProps } from '../components/Notice'
 import { createModel } from '@rematch/core'
-import { SIDEBAR_WIDTH } from '../constants'
+import { OAUTH_ISSUER, SIDEBAR_WIDTH, CHAT_PANEL_WIDTH } from '../constants'
 import { selectActiveAccountId } from '../selectors/accounts'
 import browser, { getLocalStorage, setLocalStorage } from '../services/browser'
 
@@ -35,6 +35,9 @@ const SAVED_ACROSS_LOGOUT = [
   'serviceTimeSeries',
   'showDesktopNotice',
   'logsFilters',
+  'chatOpen',
+  'chatWidth',
+  'chatPoppedOut',
 ]
 
 export type UIState = {
@@ -43,12 +46,15 @@ export type UIState = {
   language: LanguageMode
   testUI?: 'ON' | 'HIGHLIGHT'
   apis: {
-    switchApi?: IPreferences['switchApi']
-    apiGraphqlURL?: IPreferences['apiGraphqlURL']
-    webSocketURL?: IPreferences['webSocketURL']
-    apiURL?: IPreferences['apiURL']
+    switchApi?: boolean
+    apiGraphqlURL?: string
+    webSocketURL?: string
+    apiURL?: string
     // Test UI: point the Remote.It AI chat at a deployed agent (https only)
     agentURL?: string
+    issuer?: string
+    customTarget?: boolean
+    apnsEnvironment?: IApnsEnvironment
   }
   layout: ILayout
   silent: string | null
@@ -96,6 +102,9 @@ export type UIState = {
   noticeMessage: React.ReactNode
   errorMessage: React.ReactNode
   panelWidth: ILookup<number>
+  chatOpen: boolean
+  chatWidth: number
+  chatPoppedOut: boolean
   poppedBubbles: string[]
   /** WHEN the user last chose "dismiss all", as a timestamp — not whether they did.
    *  A bubble introduced after that moment still gets shown. `true` is the legacy
@@ -121,6 +130,7 @@ export type UIState = {
   scriptRunForms: ILookup<IFileForm>
   logsFilters: LogsFiltersByAccount
   announcementPresentationTest?: number
+  announcementsFetched: boolean
 }
 
 export const defaultState: UIState = {
@@ -195,6 +205,9 @@ export const defaultState: UIState = {
   noticeMessage: '',
   errorMessage: '',
   panelWidth: {},
+  chatOpen: true,
+  chatWidth: CHAT_PANEL_WIDTH,
+  chatPoppedOut: false,
   poppedBubbles: [],
   expireBubbles: false,
   guidesResetDate: undefined,
@@ -213,6 +226,7 @@ export const defaultState: UIState = {
   scriptRunForms: {},
   logsFilters: {},
   announcementPresentationTest: undefined,
+  announcementsFetched: false,
 }
 
 export default createModel<RootModel>()({
@@ -237,6 +251,7 @@ export default createModel<RootModel>()({
       })
       console.log('RESTORE UI STATE', states)
       states = migrateColumnStates(states)
+      states = migrateApiTarget(states)
       dispatch.ui.set(states)
       dispatch.ui.setTheme(states.themeMode)
       dispatch.ui.setLanguage(states.language)
@@ -275,6 +290,7 @@ export default createModel<RootModel>()({
       dispatch.ui.setPersistent({ columnWidths })
     },
     async pop(bubble: string, state) {
+      if (state.ui.poppedBubbles.includes(bubble)) return
       let poppedBubbles = [...state.ui.poppedBubbles]
       poppedBubbles.push(bubble)
       dispatch.ui.setPersistent({ poppedBubbles })
@@ -363,6 +379,17 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+// Overrides saved before they carried a login server cannot be trusted on any stage: one account's
+// stage switch cannot reach another account's saved settings.
+function migrateApiTarget(states: ILookup<any>): ILookup<any> {
+  const apis = states.apis
+  const chosen = apis?.switchApi || apis?.apiGraphqlURL || apis?.webSocketURL || apis?.agentURL
+  if (!chosen || apis.issuer === OAUTH_ISSUER) return states
+  console.log('MIGRATE API TARGET from', apis.issuer ?? 'an unstamped save', apis.apiGraphqlURL)
+  const cleared = { switchApi: false, customTarget: false, apiGraphqlURL: '', webSocketURL: '', agentURL: '' }
+  return { ...states, apis: { ...apis, ...cleared, issuer: OAUTH_ISSUER } }
+}
 
 function migrateColumnStates(states: ILookup<any>): ILookup<any> {
   if (!states.columns || states.columns.includes('serviceName')) return states

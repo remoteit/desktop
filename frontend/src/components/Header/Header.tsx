@@ -1,18 +1,17 @@
-import { REGEX_FIRST_PATH, CHAT_GUIDE_DATE, ADMIN_ADDONS_ROUTE } from '../../constants'
+import { REGEX_FIRST_PATH, ADMIN_ADDONS_ROUTE } from '../../constants'
 import { useMobile } from '../../hooks/useMobile'
-import { useChatEnabled } from '../../hooks/useChatEnabled'
-import { GuideBubble } from '../GuideBubble'
+import { useChatToggle } from '../../hooks/useChatEnabled'
+import { ChatAgentGuide } from '../Chat/ChatAgentGuide'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
 import browser from '../../services/browser'
 import { State } from '../../store'
-import { Dispatch } from '../../store'
 import { Typography } from '@mui/material'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { selectPermissions } from '../../selectors/organizations'
 import { useLocation, Switch, Route } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { HeaderDeviceOptionMenu } from '../HeaderDeviceOptionMenu'
 import { ProductsHeaderButtons } from './ProductsHeaderButtons'
 import { UpgradeNotice } from '../UpgradeNotice'
@@ -21,6 +20,7 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { GlobalSearch } from '../GlobalSearch'
 import { FilterButton } from '../../buttons/FilterButton'
 import { IconButton } from '../../buttons/IconButton'
+import { SidebarMenuButton } from '../../buttons/SidebarMenuButton'
 import { Title } from '../Title'
 import { Box } from '@mui/material'
 
@@ -32,9 +32,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const { t } = useTranslation()
   const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
-  const chatOpen = useSelector((state: State) => state.chat.open)
-  const chatPoppedOut = useSelector((state: State) => state.chat.poppedOut)
-  const chatEnabled = useChatEnabled()
+  const chat = useChatToggle()
   const layout = useSelector((state: State) => state.ui.layout)
   const overlapHeader = layout.hideSidebar && browser.isElectron && browser.isMac
 
@@ -42,8 +40,8 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const [showSearch, setShowSearch] = useState<boolean>(false)
   const sidebarHidden = layout.hideSidebar
   const mobile = useMobile()
+  const agentInBottomMenu = (mobile || browser.isMobile) && sidebarHidden
   const inputRef = useRef<HTMLInputElement>(null)
-  const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
 
   const manager = permissions.includes('MANAGE')
@@ -79,9 +77,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
           marginTop: overlapHeader ? 3.5 : 1.5,
         }}
       >
-        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && (
-          <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
-        )}
+        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && <SidebarMenuButton />}
         {(layout.hideSidebar || browser.isMobile) && (
           <Route path="/add" exact>
             <IconButton
@@ -102,39 +98,17 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             color="grayDarker"
           />
         )}
-        {/* Step 1 of the chat tour. Deliberately no startDate — this is new to everyone,
-            including long-standing accounts, so the usual "only for recent signups" cohort
-            gate would hide it from the people who most need it. The delay lets the app
-            settle before it speaks up. */}
-        {chatEnabled && !chatPoppedOut && (
-          <GuideBubble
-            guide="chatAgent"
-            added={CHAT_GUIDE_DATE}
-            placement="bottom"
-            enterDelay={1200}
-            instructions={
-              <>
-                <Typography variant="h3" gutterBottom>
-                  <b>{t('chat.guideAgentTitle', 'Meet Remote.It AI')}</b>
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  {t(
-                    'chat.guideAgentBody',
-                    'Ask about your devices, connections and services — or tell it to make changes. Open and close it here any time.'
-                  )}
-                </Typography>
-              </>
-            }
-          >
+        {chat.show && !agentInBottomMenu && (
+          <ChatAgentGuide placement="bottom">
             <IconButton
               fixedWidth
               icon="remote-ai"
               size="lg"
-              color={chatOpen ? 'primary' : 'grayDarker'}
-              title={t('header.aiAgent', 'AI Agent')}
-              onClick={() => dispatch.chat.set({ open: !chatOpen })}
+              color={chat.open ? 'primary' : 'grayDarker'}
+              title={t('nav.agent', 'Agent')}
+              onClick={chat.toggle}
             />
-          </GuideBubble>
+          </ChatAgentGuide>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         {sidebarHidden && (

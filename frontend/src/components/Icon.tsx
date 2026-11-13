@@ -10,8 +10,9 @@ import { far } from '@fortawesome/pro-regular-svg-icons'
 import { fas } from '@fortawesome/pro-solid-svg-icons'
 import { R3gray } from '../assets/R3gray'
 import { RemoteAI } from '../assets/RemoteAI'
+import { faEnvelopeSlash, faWebhookSlash } from '../assets/slashedIcons'
 
-library.add(fal, fab, far, fas)
+library.add(fal, fab, far, fas, faEnvelopeSlash, faWebhookSlash)
 
 export interface IconProps {
   name?: string

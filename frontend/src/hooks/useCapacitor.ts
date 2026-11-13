@@ -1,4 +1,5 @@
 import network from '../services/Network'
+import pushNotifications from '../services/pushNotifications'
 import browser, { windowClose } from '../services/browser'
 import { PROTOCOL } from '../constants'
 import { Dispatch } from '../store'
@@ -22,10 +23,12 @@ function useCapacitor() {
     console.log('INITIALIZING CAPACITOR')
     await App.addListener('appUrlOpen', urlOpen)
     await App.addListener('appStateChange', handleAppStateChange)
+    await pushNotifications.listen()
   }
 
   function teardown() {
     App.removeAllListeners()
+    pushNotifications.teardown()
   }
 
   function handleAppStateChange(state: AppState) {
@@ -34,6 +37,7 @@ function useCapacitor() {
       network.focus()
       setTimeout(() => dispatch.ui.setTheme(undefined), 1000)
       if (state.isActive) dispatch.bluetooth.restartNotifications()
+      pushNotifications.refresh()
     }
   }
 
@@ -52,7 +56,7 @@ function useCapacitor() {
     if (path.includes('authCallback')) {
       await windowClose()
       SplashScreen.show()
-      console.log('AUTH CALLBACK', window.origin + path.replace('authCallback', ''))
+      console.log('AUTH CALLBACK')
       location.href = window.origin + path.replace('authCallback', '')
       return
     }
@@ -63,8 +67,12 @@ function useCapacitor() {
       return
     }
 
+    // Back from the AS's page (an added passkey, a confirmation) or any other deep link: the in-app
+    // browser that page ran in closes, and the path is the app's ROUTE — absolute, or the router would
+    // resolve `account/security` against wherever the app happens to be.
     console.log('APP URL OPENED', path)
-    history.push(path)
+    await windowClose()
+    history.push(path.startsWith('/') ? path : `/${path}`)
   }
 
   return hideSplashScreen

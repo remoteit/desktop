@@ -56,7 +56,7 @@ export const ChatIntro: React.FC = () => {
       >
         <Icon name="remote-ai" size="xxxl" color="grayDarker" />
         <Typography variant="h3" sx={{ marginTop: 1.5 }}>
-          {t('chat.introTitle', 'Remote.It AI')}
+          {t('chat.introTitle', 'Remote.It Agent')}
         </Typography>
         <Typography variant="body2" color="textSecondary" sx={{ maxWidth: 280, marginTop: 1 }}>
           {t('chat.introBody', 'Manage your devices, connections, and services \u2014 just ask.')}

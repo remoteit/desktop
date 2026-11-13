@@ -68,6 +68,7 @@ import { AdminNoticesPage } from '../pages/AdminNoticesPage/AdminNoticesPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
+import { showPendingNotice } from '../services/openNotification'
 import { AdminRouteGuard } from './AdminRouteGuard'
 import { ADMIN_ADDONS_ROUTE } from '../constants'
 
@@ -85,11 +86,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const testUI = useSelector((state: State) => !!state.ui.testUI)
 
   useEffect(() => {
-    const initialRoute = window.localStorage.getItem('initialRoute')
+    const initialRoute = showPendingNotice()
     if (initialRoute) {
       if (initialRoute !== location.pathname) history.push(initialRoute)
       console.log('UI REDIRECT INIT', initialRoute)
-      window.localStorage.removeItem('initialRoute')
     }
   }, [])
 
@@ -98,6 +98,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       console.log('UI REDIRECT', redirect)
       history.push(redirect)
       ui.set({ redirect: undefined })
+      // A notification tap writes both; left behind, the next cold start would replay it
+      showPendingNotice(redirect)
     }
     analytics.pageView(location.pathname)
   }, [history.location, ui, redirect])
