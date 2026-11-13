@@ -644,3 +644,14 @@ describe('build step 7: a publisher\'s app as the device reports it', () => {
     expect(row.querySelector('[data-app-state]')?.textContent).toMatch(/signature did not verify/)
   })
 })
+
+describe('build step 8: Verified beside the publisher', () => {
+  it('on the app\'s row and where it is offered', async () => {
+    apps.value = { ...apps.value, apps: [backup({ publisherVerifiedDomain: 'acme.com' })],
+      available: [{ id: 'acme.sync', name: 'Sync', publisher: 'Acme', publisherVerifiedDomain: 'acme.com', description: null, root: false, version: '1.0.0', refused: null, needsNewer: false }] }
+    const page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'acme.backup').querySelector('[data-app-about]')?.textContent).toBe('By Acme · Verified: acme.com')
+    await click(page.querySelector('[data-add-app]'))
+    expect(document.body.querySelector('[data-available-app="acme.sync"]')?.textContent).toContain('By Acme · Verified: acme.com · 1.0.0')
+  })
+})

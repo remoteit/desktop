@@ -15,8 +15,11 @@ import {
   graphQLAddAppPublisherKey,
   graphQLAppPublisher,
   graphQLClaimAppPublisher,
+  graphQLRemoveAppPublisherDomain,
   graphQLRenameAppPublisher,
+  graphQLRequestAppPublisherDomain,
   graphQLRevokeAppPublisherKey,
+  graphQLVerifyAppPublisherDomain,
   PublisherChange,
   releasesSignedBy,
 } from '../services/graphQLAppPublishers'
@@ -40,6 +43,7 @@ export const PublisherPage: React.FC = () => {
   const [rename, setRename] = useState<string>()
   const [newKey, setNewKey] = useState('')
   const [revoking, setRevoking] = useState<string>()
+  const [newDomain, setNewDomain] = useState('')
 
   useEffect(() => {
     let current = true
@@ -213,6 +217,83 @@ export const PublisherPage: React.FC = () => {
               data-add-key
             >
               {t('publisherPage.add', 'Add key')}
+            </Button>
+          </Gutters>
+
+          <Typography variant="subtitle1">{t('publisherPage.domains', 'Verified domain')}</Typography>
+          <Gutters>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              {t(
+                'publisherPage.domainsIntro',
+                'Optional: prove you control a domain, and your apps show “Verified: example.com” beside your name. It says who controls the domain, nothing about your apps, and it is checked daily: without the record for three days it lapses.'
+              )}
+            </Typography>
+          </Gutters>
+          <List dense data-publisher-domains>
+            {(publisher.domains ?? []).map(domain => (
+              <ListItem
+                key={domain.domain}
+                data-domain={domain.domain}
+                sx={{ display: 'block' }}
+                secondaryAction={
+                  <>
+                    {(!domain.verified || domain.lapsed) && (
+                      <Button
+                        size="small"
+                        disabled={busy}
+                        onClick={() => apply(() => graphQLVerifyAppPublisherDomain(domain.domain, account))}
+                        data-verify={domain.domain}
+                      >
+                        {t('publisherPage.verify', 'Verify')}
+                      </Button>
+                    )}
+                    <Button
+                      size="small"
+                      color="error"
+                      disabled={busy}
+                      onClick={() => apply(() => graphQLRemoveAppPublisherDomain(domain.domain, account))}
+                      data-remove-domain={domain.domain}
+                    >
+                      {t('publisherPage.removeDomain', 'Remove')}
+                    </Button>
+                  </>
+                }
+              >
+                <ListItemText
+                  primary={domain.domain}
+                  secondary={
+                    domain.lapsed
+                      ? t('publisherPage.domainLapsed', 'Lapsed {{when}}: the record was gone for three days. Add it again and verify.', {
+                          when: day(domain.lapsed),
+                        })
+                      : domain.verified
+                      ? t('publisherPage.domainVerified', 'Verified {{when}} · checked daily', { when: day(domain.verified) })
+                      : t('publisherPage.domainPending', 'Not verified yet: add this TXT record, then Verify')
+                  }
+                />
+                {(!domain.verified || domain.lapsed) && (
+                  <Box component="code" sx={{ display: 'block', fontSize: 12, wordBreak: 'break-all' }} data-domain-record={domain.domain}>
+                    {domain.record} TXT "{domain.value}"
+                  </Box>
+                )}
+              </ListItem>
+            ))}
+          </List>
+          <Gutters>
+            <TextField
+              size="small"
+              variant="filled"
+              label={t('publisherPage.addDomain', 'Domain')}
+              value={newDomain}
+              onChange={e => setNewDomain(e.target.value.trim().toLowerCase())}
+              inputProps={{ 'data-new-domain': true }}
+            />
+            <Button
+              disabled={busy || !newDomain.includes('.')}
+              onClick={async () => (await apply(() => graphQLRequestAppPublisherDomain(newDomain, account))) && setNewDomain('')}
+              data-add-domain
+            >
+              {t('publisherPage.addDomainAction', 'Add domain')}
             </Button>
           </Gutters>
 

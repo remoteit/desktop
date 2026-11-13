@@ -2,7 +2,10 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { read, claim, rename, addKey, revoke, state } = vi.hoisted(() => ({
+const { read, claim, rename, addKey, revoke, state, requestDomain, verifyDomain, removeDomain } = vi.hoisted(() => ({
+  requestDomain: vi.fn(),
+  verifyDomain: vi.fn(),
+  removeDomain: vi.fn(),
   read: vi.fn(),
   claim: vi.fn(),
   rename: vi.fn(),
@@ -19,6 +22,9 @@ vi.mock('../services/graphQLAppPublishers', async importOriginal => ({
   graphQLRenameAppPublisher: rename,
   graphQLAddAppPublisherKey: addKey,
   graphQLRevokeAppPublisherKey: revoke,
+  graphQLRequestAppPublisherDomain: requestDomain,
+  graphQLVerifyAppPublisherDomain: verifyDomain,
+  graphQLRemoveAppPublisherDomain: removeDomain,
 }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select(state.value) }))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: (s: any) => s.active }))
@@ -82,7 +88,7 @@ afterEach(() => {
   container.remove()
 })
 beforeEach(() => {
-  for (const fn of [read, claim, rename, addKey, revoke]) fn.mockReset()
+  for (const fn of [read, claim, rename, addKey, revoke, requestDomain, verifyDomain, removeDomain]) fn.mockReset()
   state.value = { user: { id: 'U1' }, active: 'U1' }
   read.mockResolvedValue({ publisher: acme(), publishing: { certifies: true, downloads: null } })
 })
@@ -165,5 +171,45 @@ describe('the account’s app publisher', () => {
     read.mockResolvedValue(undefined)
     page = await render()
     expect(page.querySelector('[data-notice="info"]')?.textContent).toBe('Publishing apps is not available here.')
+  })
+})
+
+describe('build step 8: a verified domain', () => {
+  const pending = { domain: 'acme.com', record: '_remoteit-publisher.acme.com', value: 'remoteit-publisher=acme:0123', requested: '2026-11-13', verified: null, checked: null, lapsed: null }
+
+  it('added: the TXT record to add shown; Verify looks it up, and the publisher shows Verified: acme.com', async () => {
+    read.mockResolvedValue({ publisher: acme({ domains: [] }), publishing: { certifies: true, downloads: null } })
+    requestDomain.mockResolvedValue({ publisher: acme({ domains: [pending] }) })
+    verifyDomain.mockResolvedValue({ publisher: acme({ verifiedDomain: 'acme.com', domains: [{ ...pending, verified: '2026-11-13', checked: '2026-11-13' }] }) })
+    const page = await render()
+    await type(page.querySelector('[data-new-domain]'), 'Acme.com')
+    await click(page.querySelector('[data-add-domain]'))
+    expect(requestDomain).toHaveBeenCalledWith('acme.com', undefined)
+    expect(page.querySelector('[data-domain-record="acme.com"]')?.textContent).toBe('_remoteit-publisher.acme.com TXT "remoteit-publisher=acme:0123"')
+    await click(page.querySelector('[data-verify="acme.com"]'))
+    expect(verifyDomain).toHaveBeenCalledWith('acme.com', undefined)
+    expect(page.querySelector('[data-publisher-verified]')?.textContent).toBe('Verified: acme.com')
+    expect(page.querySelector('[data-domain="acme.com"]')?.textContent).toContain('checked daily')
+    expect(page.querySelector('[data-domain-record]')).toBeNull()
+    expect(page.querySelector('[data-verify]')).toBeNull()
+  })
+
+  it('a lapsed one says why and offers Verify again; removed', async () => {
+    read.mockResolvedValue({ publisher: acme({ domains: [{ ...pending, verified: '2026-11-01', lapsed: '2026-11-13' }] }), publishing: { certifies: true, downloads: null } })
+    removeDomain.mockResolvedValue({ publisher: acme({ domains: [] }) })
+    const page = await render()
+    expect(page.querySelector('[data-domain="acme.com"]')?.textContent).toMatch(/Lapsed .*gone for three days/)
+    expect(page.querySelector('[data-verify="acme.com"]')).not.toBeNull()
+    await click(page.querySelector('[data-remove-domain="acme.com"]'))
+    expect(removeDomain).toHaveBeenCalledWith('acme.com', undefined)
+    expect(page.querySelector('[data-domain]')).toBeNull()
+  })
+
+  it('a refusal said: the record not found yet, or another publisher\'s domain', async () => {
+    read.mockResolvedValue({ publisher: acme({ domains: [pending] }), publishing: { certifies: true, downloads: null } })
+    verifyDomain.mockResolvedValue({ reason: 'No TXT record _remoteit-publisher.acme.com was found yet' })
+    const page = await render()
+    await click(page.querySelector('[data-verify="acme.com"]'))
+    expect(page.querySelector('[data-notice="error"]')?.textContent).toMatch(/was found yet/)
   })
 })

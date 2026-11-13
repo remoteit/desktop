@@ -1017,6 +1017,7 @@
     "tooMany": "At most {{max}} items",
     "unavailable": "Not available here: {{detail}}",
     "unavailableNoDetail": "Not available here",
+    "verified": "Verified: {{domain}}",
     "wholeNumber": "A whole number"
   },
   "deviceBulkTransferPage": {
@@ -4427,11 +4428,18 @@
   },
   "publisherPage": {
     "add": "Add key",
+    "addDomain": "Domain",
+    "addDomainAction": "Add domain",
     "addKey": "Add a key: its Ed25519 public half, base64",
     "addKeyHelp": "Keep the private half on your machine. To rotate, add the new key, sign new releases with it, then revoke the old one.",
     "apps": "Apps",
     "claim": "Claim",
     "claimIntro": "Publish your own apps for your own devices. Choose a publisher id: every app you publish is named <id>.<app>. Ids are first come, first served; remote.it’s and well-known names are reserved, and an id is yours for good.",
+    "domainLapsed": "Lapsed {{when}}: the record was gone for three days. Add it again and verify.",
+    "domainPending": "Not verified yet: add this TXT record, then Verify",
+    "domainVerified": "Verified {{when}} · checked daily",
+    "domains": "Verified domain",
+    "domainsIntro": "Optional: prove you control a domain, and your apps show “Verified: example.com” beside your name. It says who controls the domain, nothing about your apps, and it is checked daily: without the record for three days it lapses.",
     "failed": "That did not go through",
     "id": "Publisher id",
     "idHelp": "1 to 32 of a–z, 0–9 and -",
@@ -4442,6 +4450,7 @@
     "noApps": "No apps yet. Publish one with the publishing tool: its files are hosted by remote.it, and it reaches this account’s own devices.",
     "noCatalogueKey": "This stage cannot certify keys yet, so its devices take no published app.",
     "private": "Private: this account’s devices",
+    "removeDomain": "Remove",
     "rename": "Rename",
     "restricted": "restricted",
     "revoke": "Revoke",
@@ -4455,6 +4464,7 @@
     "title": "App publisher",
     "unavailable": "Publishing apps is not available here.",
     "verified": "Verified: {{domain}}",
+    "verify": "Verify",
     "withdrawn": "withdrawn"
   }
 }

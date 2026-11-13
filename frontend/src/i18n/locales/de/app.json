@@ -1017,6 +1017,7 @@
     "tooMany": "Höchstens {{max}} Einträge",
     "unavailable": "",
     "unavailableNoDetail": "",
+    "verified": "Verifiziert: {{domain}}",
     "wholeNumber": "Eine ganze Zahl"
   },
   "deviceBulkTransferPage": {
@@ -4427,11 +4428,18 @@
   },
   "publisherPage": {
     "add": "Schlüssel hinzufügen",
+    "addDomain": "Domain",
+    "addDomainAction": "Domain hinzufügen",
     "addKey": "Schlüssel hinzufügen: sein öffentlicher Ed25519-Teil, Base64",
     "addKeyHelp": "Behalten Sie den privaten Teil auf Ihrem Rechner. Zum Wechseln fügen Sie den neuen Schlüssel hinzu, signieren neue Versionen damit und widerrufen dann den alten.",
     "apps": "Apps",
     "claim": "Beanspruchen",
     "claimIntro": "Veröffentlichen Sie eigene Apps für Ihre eigenen Geräte. Wählen Sie eine Herausgeber-ID: Jede App, die Sie veröffentlichen, heißt <id>.<app>. IDs werden in der Reihenfolge der Anmeldung vergeben; die Namen von remote.it und bekannte Namen sind reserviert, und eine ID gehört dauerhaft Ihnen.",
+    "domainLapsed": "Erloschen am {{when}}: Der Eintrag fehlte drei Tage lang. Fügen Sie ihn wieder hinzu und prüfen Sie erneut.",
+    "domainPending": "Noch nicht verifiziert: Fügen Sie diesen TXT-Eintrag hinzu und klicken Sie dann auf Prüfen",
+    "domainVerified": "Verifiziert am {{when}} · täglich geprüft",
+    "domains": "Verifizierte Domain",
+    "domainsIntro": "Optional: Weisen Sie nach, dass Sie eine Domain kontrollieren, und Ihre Apps zeigen „Verifiziert: example.com“ neben Ihrem Namen. Das sagt nur, wer die Domain kontrolliert, nichts über Ihre Apps, und es wird täglich geprüft: Fehlt der Eintrag drei Tage lang, erlischt es.",
     "failed": "Das hat nicht geklappt",
     "id": "Herausgeber-ID",
     "idHelp": "1 bis 32 Zeichen aus a–z, 0–9 und -",
@@ -4442,6 +4450,7 @@
     "noApps": "Noch keine Apps. Veröffentlichen Sie eine mit dem Veröffentlichungswerkzeug: Ihre Dateien werden von remote.it bereitgestellt, und sie erreicht die eigenen Geräte dieses Kontos.",
     "noCatalogueKey": "Diese Umgebung kann noch keine Schlüssel zertifizieren; ihre Geräte nehmen daher keine veröffentlichte App an.",
     "private": "Privat: die Geräte dieses Kontos",
+    "removeDomain": "Entfernen",
     "rename": "Umbenennen",
     "restricted": "eingeschränkt",
     "revoke": "Widerrufen",
@@ -4455,6 +4464,7 @@
     "title": "App-Herausgeber",
     "unavailable": "Apps zu veröffentlichen ist hier nicht verfügbar.",
     "verified": "Verifiziert: {{domain}}",
+    "verify": "Prüfen",
     "withdrawn": "zurückgezogen"
   }
 }

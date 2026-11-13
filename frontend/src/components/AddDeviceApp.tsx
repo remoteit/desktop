@@ -74,7 +74,7 @@ export const AddDeviceApp: React.FC<Props> = ({ available, canRun, busy, add }) 
                     secondary={
                       <>
                         <Typography variant="caption" component="div" color="textSecondary">
-                          {[t('deviceApps.publisher', 'By {{publisher}}', { publisher: app.publisher }), app.version]
+                          {[publisherLine(t, app), app.version]
                             .filter(Boolean)
                             .join(' · ')}
                         </Typography>
@@ -138,6 +138,16 @@ export const AddDeviceApp: React.FC<Props> = ({ available, canRun, busy, add }) 
     </>
   )
 }
+
+// Its publisher, and the domain it proved where it has (build step 8): "By Acme · Verified: acme.com". The mark says who
+// controls the domain, nothing about the code.
+export const publisherLine = (t: TFunction, app: { publisher: string; publisherVerifiedDomain?: string | null }) =>
+  [
+    t('deviceApps.publisher', 'By {{publisher}}', { publisher: app.publisher }),
+    app.publisherVerifiedDomain && t('deviceApps.verified', 'Verified: {{domain}}', { domain: app.publisherVerifiedDomain }),
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
 // Why an app cannot be added to this device now; none when it can: its administrator's refusal, or no release on its
 // stage. One its remote.it is too old for can be added — graphql gives it the release once remote.it is upgraded.

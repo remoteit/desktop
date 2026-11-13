@@ -1009,6 +1009,7 @@
     "tooMany": "最大 {{max}} 項目",
     "unavailable": "",
     "unavailableNoDetail": "",
+    "verified": "確認済み: {{domain}}",
     "wholeNumber": "整数"
   },
   "deviceBulkTransferPage": {
@@ -4325,11 +4326,18 @@
   },
   "publisherPage": {
     "add": "鍵を追加",
+    "addDomain": "ドメイン",
+    "addDomainAction": "ドメインを追加",
     "addKey": "鍵を追加: Ed25519 公開鍵 (base64)",
     "addKeyHelp": "秘密鍵は自分のマシンに保管してください。鍵を切り替えるには、新しい鍵を追加して新しいリリースに署名し、その後で古い鍵を失効させます。",
     "apps": "アプリ",
     "claim": "取得",
     "claimIntro": "自分のデバイス向けに自分のアプリを公開できます。発行者 ID を選んでください: 公開するアプリはすべて <id>.<app> という名前になります。ID は先着順です。remote.it の名前やよく知られた名前は予約されており、ID は永久にあなたのものになります。",
+    "domainLapsed": "{{when}} に失効: レコードが 3 日間見つかりませんでした。もう一度追加して確認してください。",
+    "domainPending": "未確認: この TXT レコードを追加してから「確認」を押してください",
+    "domainVerified": "{{when}} に確認 · 毎日確認",
+    "domains": "確認済みドメイン",
+    "domainsIntro": "任意: ドメインを管理していることを証明すると、アプリの名前の横に「確認済み: example.com」と表示されます。これはドメインの管理者を示すだけで、アプリについては何も示しません。毎日確認され、レコードが 3 日間見つからないと失効します。",
     "failed": "完了できませんでした",
     "id": "発行者 ID",
     "idHelp": "a–z、0–9、- を 1〜32 文字",
@@ -4340,6 +4348,7 @@
     "noApps": "まだアプリはありません。公開ツールで公開してください: ファイルは remote.it がホストし、このアカウントのデバイスに届きます。",
     "noCatalogueKey": "この環境はまだ鍵を認証できないため、デバイスは公開されたアプリを受け取りません。",
     "private": "非公開: このアカウントのデバイス",
+    "removeDomain": "削除",
     "rename": "名前を変更",
     "restricted": "制限付き",
     "revoke": "失効",
@@ -4353,6 +4362,7 @@
     "title": "アプリ発行者",
     "unavailable": "ここではアプリを公開できません。",
     "verified": "確認済み: {{domain}}",
+    "verify": "確認",
     "withdrawn": "取り下げ済み"
   }
 }

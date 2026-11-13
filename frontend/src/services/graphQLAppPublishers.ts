@@ -34,6 +34,18 @@ export type AppPublisherApp = {
   channels: { stage: string; channel: string; current: string | null }[]
 }
 
+// A domain the publisher names, and proves with a DNS TXT record (build step 8): record, value — the record to add —, and
+// whether it is verified (first seen), when it was last looked up, and lapsed (missing three days running).
+export type AppPublisherDomain = {
+  domain: string
+  record: string
+  value: string
+  requested: string
+  verified: string | null
+  checked: string | null
+  lapsed: string | null
+}
+
 export type AppPublisher = {
   id: string
   name: string
@@ -41,12 +53,14 @@ export type AppPublisher = {
   created: string
   keys: AppPublisherKey[]
   apps: AppPublisherApp[]
+  domains?: AppPublisherDomain[]
 }
 
 export type AppPublishing = { certifies: boolean; downloads: string | null }
 
 const FIELDS = `id name verifiedDomain created
   keys { keyId publicKey notAfter added revoked }
+  domains { domain record value requested verified checked lapsed }
   apps { id name description visibility releases { version manifest root keyId created withdrawn } channels { stage channel current } }`
 
 // undefined: the API has no publishers (or the read failed); null: the account has not claimed one.
@@ -90,6 +104,24 @@ export const graphQLAddAppPublisherKey = (publicKey: string, accountId?: string)
 export const graphQLRevokeAppPublisherKey = (keyId: string, accountId?: string) =>
   change('RevokeAppPublisherKey($keyId: String!, $accountId: String)', 'revokeAppPublisherKey(keyId: $keyId, accountId: $accountId)', {
     keyId,
+    accountId,
+  })
+
+export const graphQLRequestAppPublisherDomain = (domain: string, accountId?: string) =>
+  change('RequestAppPublisherDomain($domain: String!, $accountId: String)', 'requestAppPublisherDomain(domain: $domain, accountId: $accountId)', {
+    domain,
+    accountId,
+  })
+
+export const graphQLVerifyAppPublisherDomain = (domain: string, accountId?: string) =>
+  change('VerifyAppPublisherDomain($domain: String!, $accountId: String)', 'verifyAppPublisherDomain(domain: $domain, accountId: $accountId)', {
+    domain,
+    accountId,
+  })
+
+export const graphQLRemoveAppPublisherDomain = (domain: string, accountId?: string) =>
+  change('RemoveAppPublisherDomain($domain: String!, $accountId: String)', 'removeAppPublisherDomain(domain: $domain, accountId: $accountId)', {
+    domain,
     accountId,
   })
 

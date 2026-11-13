@@ -17,7 +17,7 @@ import { DeviceApp, DeviceAppRootConsent, needsNewer } from '../services/graphQL
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
 import { DeviceAppSetting } from './DeviceAppSetting'
-import { AddDeviceApp } from './AddDeviceApp'
+import { AddDeviceApp, publisherLine } from './AddDeviceApp'
 import { firstPartyApp } from './firstPartyApps'
 import { productLockNote } from '../helpers/productPolicyHelper'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
@@ -217,7 +217,7 @@ function about(t: TFunction, app: DeviceApp) {
       : app.channel === 'stable'
       ? t('deviceApps.stable', 'Stable')
       : app.channel
-  return [t('deviceApps.publisher', 'By {{publisher}}', { publisher: app.publisher }), app.version, channel]
+  return [publisherLine(t, app), app.version, channel]
     .filter(Boolean)
     .join(' · ')
 }

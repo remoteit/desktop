@@ -1025,6 +1025,7 @@
     "tooMany": "Como máximo {{max}} elementos",
     "unavailable": "",
     "unavailableNoDetail": "",
+    "verified": "Verificado: {{domain}}",
     "wholeNumber": "Un número entero"
   },
   "deviceBulkTransferPage": {
@@ -4529,11 +4530,18 @@
   },
   "publisherPage": {
     "add": "Añadir clave",
+    "addDomain": "Dominio",
+    "addDomainAction": "Añadir dominio",
     "addKey": "Añadir una clave: su mitad pública Ed25519, en base64",
     "addKeyHelp": "Guarde la mitad privada en su equipo. Para rotar, añada la clave nueva, firme con ella las versiones nuevas y luego revoque la anterior.",
     "apps": "Apps",
     "claim": "Reclamar",
     "claimIntro": "Publique sus propias apps para sus propios dispositivos. Elija un id de editor: cada app que publique se llama <id>.<app>. Los ids se asignan por orden de llegada; los nombres de remote.it y los nombres conocidos están reservados, y un id es suyo para siempre.",
+    "domainLapsed": "Caducado el {{when}}: el registro faltó durante tres días. Añádalo de nuevo y verifique.",
+    "domainPending": "Aún sin verificar: añada este registro TXT y pulse Verificar",
+    "domainVerified": "Verificado el {{when}} · se comprueba a diario",
+    "domains": "Dominio verificado",
+    "domainsIntro": "Opcional: demuestre que controla un dominio y sus apps mostrarán «Verificado: example.com» junto a su nombre. Solo indica quién controla el dominio, nada sobre sus apps, y se comprueba a diario: sin el registro durante tres días, caduca.",
     "failed": "No se pudo completar",
     "id": "Id de editor",
     "idHelp": "De 1 a 32 caracteres de a–z, 0–9 y -",
@@ -4544,6 +4552,7 @@
     "noApps": "Aún no hay apps. Publique una con la herramienta de publicación: remote.it aloja sus archivos y llega a los dispositivos de esta cuenta.",
     "noCatalogueKey": "Este entorno aún no puede certificar claves, así que sus dispositivos no aceptan apps publicadas.",
     "private": "Privada: los dispositivos de esta cuenta",
+    "removeDomain": "Quitar",
     "rename": "Cambiar nombre",
     "restricted": "restringida",
     "revoke": "Revocar",
@@ -4557,6 +4566,7 @@
     "title": "Editor de apps",
     "unavailable": "Publicar apps no está disponible aquí.",
     "verified": "Verificado: {{domain}}",
+    "verify": "Verificar",
     "withdrawn": "retirada"
   }
 }

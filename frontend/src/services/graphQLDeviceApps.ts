@@ -60,6 +60,7 @@ export type DeviceApp = {
   id: string // <publisher>.<app>
   name: string
   publisher: string // the publisher's name, shown with the app
+  publisherVerifiedDomain?: string | null // the domain its publisher proved: "Verified: example.com"
   root: boolean // runs as root: full control of the device
   on: boolean
   channel: string | null // stable or beta
@@ -91,7 +92,7 @@ export const rootConsentOf = (consent: any): DeviceAppRootConsent | null =>
 
 const SETTING_FIELDS =
   'name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration'
-const FIELDS = `id name publisher root on channel version state detail serviceId problems { name error detail } settings { ${SETTING_FIELDS} }`
+const FIELDS = `id name publisher publisherVerifiedDomain root on channel version state detail serviceId problems { name error detail } settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
 function parsedSetting(setting: any): DeviceAppSetting {
@@ -140,6 +141,7 @@ export type AvailableApp = {
   id: string
   name: string
   publisher: string
+  publisherVerifiedDomain?: string | null
   description: string | null
   root: boolean
   version: string | null
@@ -149,7 +151,7 @@ export type AvailableApp = {
 
 // [] where the API has none, or the device is not this person's to manage.
 export async function graphQLAvailableApps(deviceId: string): Promise<AvailableApp[]> {
-  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher description root version refused needsNewer } } } }`
+  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher publisherVerifiedDomain description root version refused needsNewer } } } }`
   const variables = { id: [deviceId] }
   const response = await post({ query, variables })
   if (response === 'ERROR') return []
@@ -160,6 +162,7 @@ export async function graphQLAvailableApps(deviceId: string): Promise<AvailableA
     version: app.version ?? null,
     refused: app.refused ?? null,
     needsNewer: !!app.needsNewer,
+    publisherVerifiedDomain: app.publisherVerifiedDomain ?? null,
   }))
 }
 
