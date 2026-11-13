@@ -65,7 +65,17 @@ export type ProductPolicy = {
    device in it, now and later; a release that newly runs as root needs it again (needsConsent). graphql's
    DeviceProduct.apps, setDeviceProductApp and setDeviceProductAppSetting. */
 
-export type ProductRootConsent = { by: string; at: string; version: string | null }
+export type ProductRootConsent = { by: string; email?: string | null; at: string; version: string | null }
+
+// A value the product sets of a setting the release its devices are given no longer declares: no effect on them,
+// "Removed in <version>", until graphql's daily sweep deletes it — or the product unsets it.
+export type ProductRemovedSetting = {
+  name: string
+  value: any
+  at: string | null
+  by: string | null
+  removedIn: string | null
+}
 
 export type ProductAppSetting = {
   name: string
@@ -93,11 +103,15 @@ export type ProductApp = {
   channel: string | null
   pinned: string | null
   rootConsent: ProductRootConsent | null
-  needsConsent: boolean // set on, runs as root, and no consent covers it: its devices are not turned on
+  // Set on, and a new release newly runs as root with no consent that covers it: its devices stay on its last restricted
+  // release (version) — or are not turned on, where there is none — until someone consents. awaitingRoot: that release.
+  needsConsent: boolean
+  awaitingRoot?: string | null
   locked: boolean // held on its devices: set, and the product synced or enforced
   at: string | null
   by: string | null
   settings: ProductAppSetting[]
+  removedSettings?: ProductRemovedSetting[]
 }
 
 export type DeviceProductRef = { id: string; name: string; sync: ProductSync; lifecycle: string | null }
@@ -215,6 +229,7 @@ const FIRST = [
   'DeviceProductApp',
   'DeviceProductAppSetting',
   'DeviceProductRootConsent',
+  'DeviceAppRootConsent',
   'ProductPlanItem',
 ]
 
@@ -412,12 +427,14 @@ const APP: Want = {
   on: true,
   channel: true,
   pinned: true,
-  rootConsent: { by: true, at: true, version: true },
+  rootConsent: { by: true, at: true, version: true, user: 'email' },
   needsConsent: true,
+  awaitingRoot: true,
   locked: true,
   at: true,
   by: true,
   settings: APP_SETTING,
+  removedSettings: 'name value at by removedIn',
 }
 
 export const productAppOf = (app: any): ProductApp => ({
@@ -431,9 +448,15 @@ export const productAppOf = (app: any): ProductApp => ({
   channel: app.channel ?? null,
   pinned: app.pinned ?? null,
   rootConsent: app.rootConsent?.by
-    ? { by: app.rootConsent.by, at: app.rootConsent.at, version: app.rootConsent.version ?? null }
+    ? {
+        by: app.rootConsent.by,
+        email: app.rootConsent.user?.email ?? null,
+        at: app.rootConsent.at,
+        version: app.rootConsent.version ?? null,
+      }
     : null,
   needsConsent: !!app.needsConsent,
+  awaitingRoot: app.awaitingRoot ?? null,
   locked: !!app.locked,
   at: app.at ?? null,
   by: app.by ?? null,
@@ -451,6 +474,15 @@ export const productAppOf = (app: any): ProductApp => ({
       locked: !!setting.locked,
       deprecated: setting.deprecated ?? null,
       choices: setting.choices ?? null,
+    })
+  ),
+  removedSettings: (app.removedSettings || []).map(
+    (removed: any): ProductRemovedSetting => ({
+      name: removed.name,
+      value: removed.value ?? null,
+      at: removed.at ?? null,
+      by: removed.by ?? null,
+      removedIn: removed.removedIn ?? null,
     })
   ),
 })
@@ -472,11 +504,15 @@ export async function memberPolicyFields(): Promise<string> {
   return select(schema, 'NetworkDevice', { fromProduct: true })
 }
 
-// The field a device's app adds where its product may hold whether it is on (locked: which product, how firmly): none
-// where the API does not say.
+// The fields a device's app adds where the API says them: whether its product holds it on or off (locked: which
+// product, how firmly), the consent to root it runs under and a release waiting for one (rootConsent, awaitingRoot).
 export async function appPolicyFields(): Promise<string> {
   const { schema } = await read()
-  return select(schema, 'DeviceApp', { locked: 'product level' })
+  return select(schema, 'DeviceApp', {
+    locked: 'product level',
+    rootConsent: { by: true, at: true, version: true, via: true, user: 'email' },
+    awaitingRoot: true,
+  })
 }
 
 // A setting's lock as graphql names it: the product's name and its level, where they are known.

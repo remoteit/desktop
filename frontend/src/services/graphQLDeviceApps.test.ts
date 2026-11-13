@@ -125,6 +125,48 @@ describe('Device.apps', () => {
     expect(post.mock.calls[1][0].query).not.toMatch(/} locked/)
   })
 
+  it('the consent to root it runs under — who, their email, when, which release, how — and a release waiting for one', async () => {
+    lockFields.mockResolvedValue('rootConsent { by at version via user { email } } awaitingRoot')
+    const consent = {
+      by: 'AAAA',
+      at: '2026-11-13T18:00:00.000Z',
+      version: '1.4.0',
+      via: 'product',
+      user: { email: 'pat@example.com' },
+    }
+    post.mockResolvedValue(
+      answer({
+        login: {
+          device: [
+            {
+              apps: [
+                { ...consoleApp, rootConsent: consent, awaitingRoot: null },
+                { ...consoleApp, id: 'acme.logs', root: false, rootConsent: null, awaitingRoot: '2.0.0' },
+              ],
+            },
+          ],
+        },
+      })
+    )
+    const apps = (await graphQLDeviceApps('D1'))!
+    expect(post.mock.calls[0][0].query).toContain('rootConsent { by at version via user { email } } awaitingRoot')
+    expect(apps[0]).toMatchObject({
+      rootConsent: {
+        by: 'AAAA',
+        email: 'pat@example.com',
+        at: '2026-11-13T18:00:00.000Z',
+        version: '1.4.0',
+        via: 'product',
+      },
+      awaitingRoot: null,
+    })
+    expect(apps[1]).toMatchObject({ rootConsent: null, awaitingRoot: '2.0.0' })
+    // An API that says neither: none.
+    lockFields.mockResolvedValue('')
+    post.mockResolvedValue(answer({ login: { device: [{ apps: [consoleApp] }] } }))
+    expect((await graphQLDeviceApps('D1'))![0]).toMatchObject({ rootConsent: null, awaitingRoot: null })
+  })
+
   it('null where the API has no apps, or the request failed', async () => {
     post.mockResolvedValue('ERROR')
     expect(await graphQLDeviceApps('D1')).toBeNull()

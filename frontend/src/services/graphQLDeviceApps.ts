@@ -29,6 +29,19 @@ export type DeviceAppSetting = SettingState & {
   deprecated: string | null // why, where its release deprecates it
 }
 
+// A consent to an app running as root (presence-server docs/device-apps-design.md, "Root, shown and consented to"): who,
+// when, the release it was given to, and how — a person's (person), its product's (product, for every device in it),
+// the console on as the device registered (registration), turned on on the device itself (device), or one kept from
+// before consents were (carried).
+export type RootConsentVia = 'person' | 'product' | 'registration' | 'device' | 'carried'
+export type DeviceAppRootConsent = {
+  by: string // a person's id; the OS user for one made on the device
+  email: string | null // the person's, where a person consented
+  at: string
+  version: string | null
+  via: RootConsentVia | string
+}
+
 export type DeviceApp = {
   id: string // <publisher>.<app>
   name: string
@@ -41,8 +54,23 @@ export type DeviceApp = {
   detail: string | null
   serviceId: string | null // the service it is reached as
   locked?: SettingLock | null // on or off as its product holds it: a synced or enforced product that sets it
+  rootConsent?: DeviceAppRootConsent | null // the consent to root it runs under, where the API says
+  // A newer release that newly runs as root, waiting for a consent: the device stays on its last restricted release
+  // until someone consents (turning it on again with consentRoot).
+  awaitingRoot?: string | null
   settings: DeviceAppSetting[]
 }
+
+export const rootConsentOf = (consent: any): DeviceAppRootConsent | null =>
+  consent?.by
+    ? {
+        by: consent.by,
+        email: consent.user?.email ?? null,
+        at: consent.at,
+        version: consent.version ?? null,
+        via: consent.via ?? 'person',
+      }
+    : null
 
 const SETTING_FIELDS =
   'name type label help default value at by onDevice control locked { product level } deprecated choices { value label }'
@@ -62,10 +90,12 @@ function parsedSetting(setting: any): DeviceAppSetting {
 const parsed = (app: any): DeviceApp => ({
   ...app,
   locked: app.locked?.product || app.locked?.level ? settingLockOf(app.locked) : null,
+  rootConsent: rootConsentOf(app.rootConsent),
+  awaitingRoot: app.awaitingRoot ?? null,
   settings: (app.settings ?? []).map(parsedSetting),
 })
 
-// An app's fields, with its product's lock where the API has it.
+// An app's fields, with its product's lock and its root consent where the API has them.
 const appFields = async () => [FIELDS, await appPolicyFields()].filter(Boolean).join(' ')
 
 // null: an API without apps, or a device this person cannot see.

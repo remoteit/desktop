@@ -684,7 +684,62 @@ describe('product apps', () => {
       'apps { id name publisher description root version on channel pinned rootConsent { by at version } needsConsent locked at by settings { name type label help default value at by forcible locked deprecated choices { value label } } }'
     )
     expect(call.query).not.toContain('declaration')
-    expect(policy.apps).toEqual([consoleApp])
+    // An API from before consents named their person, releases waiting for root, or removed settings: none of them.
+    expect(policy.apps).toEqual([
+      {
+        ...consoleApp,
+        rootConsent: { ...consoleApp.rootConsent, email: null },
+        awaitingRoot: null,
+        removedSettings: [],
+      },
+    ])
+  })
+
+  it('where the API has them: the consent’s person, a release waiting for root, and removed settings with the release that removed them', async () => {
+    const schema = {
+      ...APPS,
+      DeviceProductApp: {
+        ...APPS.DeviceProductApp,
+        awaitingRoot: { type: scalar() },
+        removedSettings: { type: nonNull(list(nonNull(object('DeviceProductRemovedAppSetting')))) },
+      },
+      DeviceProductRootConsent: { ...APPS.DeviceProductRootConsent, user: { type: object('UserReference') } },
+    }
+    const removed = { name: 'colour', value: true, at: '2026-11-12T18:00:00Z', by: 'AAAA', removedIn: '1.5.0' }
+    serve(schema, () => ({
+      login: {
+        account: {
+          deviceProducts: {
+            items: [
+              {
+                id: 'P1',
+                sync: 'synced',
+                apps: [
+                  {
+                    ...consoleApp,
+                    version: '1.4.0',
+                    needsConsent: true,
+                    awaitingRoot: '1.5.0',
+                    rootConsent: { ...consoleApp.rootConsent, by: 'AAAA', user: { email: 'pat@example.com' } },
+                    removedSettings: [removed],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    }))
+    const [app] = ((await graphQLProductPolicy('P1')) as any).apps
+    const call = asked(request.mock.calls.length - 1)
+    expect(call.query).toContain('rootConsent { by at version user { email } } needsConsent awaitingRoot')
+    expect(call.query).toContain('removedSettings { name value at by removedIn }')
+    expect(app).toMatchObject({
+      needsConsent: true,
+      awaitingRoot: '1.5.0',
+      rootConsent: { by: 'AAAA', email: 'pat@example.com', version: '1.4.0' },
+      removedSettings: [removed],
+    })
   })
 
   it('an app unset, and a consent not yet given, read as null', async () => {
@@ -762,6 +817,24 @@ describe('product apps', () => {
   it('a device’s app adds which product holds it, where the API says', async () => {
     serve(APPS)
     expect(await appPolicyFields()).toBe('locked { product level }')
+    resetProductPolicy()
+    // And the consent to root it runs under, and a release waiting for one, where the API says those.
+    serve({
+      ...APPS,
+      DeviceApp: {
+        ...APPS.DeviceApp,
+        rootConsent: { type: object('DeviceAppRootConsent') },
+        awaitingRoot: { type: scalar() },
+      },
+      DeviceAppRootConsent: Object.fromEntries(
+        ['by', 'at', 'version', 'via']
+          .map(name => [name, { type: scalar() }])
+          .concat([['user', { type: object('UserReference') }]])
+      ),
+    })
+    expect(await appPolicyFields()).toBe(
+      'locked { product level } rootConsent { by at version via user { email } } awaitingRoot'
+    )
     resetProductPolicy()
     serve(WAVE4)
     expect(await appPolicyFields()).toBe('')
