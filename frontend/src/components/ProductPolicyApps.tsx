@@ -362,7 +362,6 @@ const ProductAppSettingField: React.FC<{
       <TextField
         fullWidth
         variant="standard"
-        size="small"
         label={label}
         value={text}
         multiline={list}

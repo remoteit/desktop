@@ -156,7 +156,6 @@ const AppSettingField: React.FC<Props> = ({ setting, label, help, disabled, onCh
       <TextField
         fullWidth
         variant="standard"
-        size="small"
         label={label}
         value={text}
         multiline={list}
