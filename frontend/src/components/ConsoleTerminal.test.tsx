@@ -14,7 +14,16 @@ vi.mock('../hooks/useLocalSubnetName', () => ({
 }))
 vi.mock('../helpers/terminalHelper', () => ({ openTerminal }))
 vi.mock('../services/browser', () => ({ default: env, windowOpen: vi.fn() }))
-vi.mock('../services/graphQLDeviceSettings', () => ({ settingLocked: (s: any) => !!s?.locked }))
+vi.mock('./Confirm', () => ({
+  Confirm: ({ open, title, children, onConfirm, onDeny }: any) =>
+    open ? (
+      <span data-confirm>
+        {title} {children}
+        <button data-confirm-ok onClick={onConfirm} />
+        <button data-confirm-deny onClick={onDeny} />
+      </span>
+    ) : null,
+}))
 vi.mock('./Icon', () => ({ Icon: () => null }))
 vi.mock('../buttons/IconButton', () => ({
   IconButton: ({ onClick, title }: any) => <button data-terminal title={title} onClick={onClick} />,
@@ -28,18 +37,22 @@ vi.mock('react-i18next', () => ({
 import { ConsoleTerminalButton, ConsoleTerminalOption } from './ConsoleTerminal'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
-const consoleService = { id: 'S1', name: 'Console', typeID: 28, host: 'remoteit-console', port: 22 } as IService
+const consoleService = { id: 'S1', name: 'Console', typeID: 28, host: 'remoteit-console', port: 2222 } as IService
 const sshService = { id: 'S2', name: 'SSH', typeID: 28, host: 'localhost', port: 22 } as IService
-const device = (permissions = ['CONNECT', 'MANAGE']) => ({ id: 'D1', name: 'Pi', permissions } as unknown as IDevice)
+const device = (permissions = ['CONNECT', 'MANAGE', 'SCRIPTING']) =>
+  ({ id: 'D1', name: 'Pi', permissions } as unknown as IDevice)
 const app = (state: string, extra: any = {}) => ({
-  id: 'console',
+  id: 'remoteit.console',
+  name: 'Console',
+  publisher: 'remote.it',
+  root: true,
   on: state !== 'off',
+  channel: 'stable',
   state,
   detail: null,
   serviceId: state === 'off' ? null : 'S1',
-  port: state === 'off' ? null : 2222,
-  hostKey: null,
   version: null,
+  settings: [],
   ...extra,
 })
 const turn = vi.fn()
@@ -54,7 +67,7 @@ async function render(node: React.ReactNode) {
 const click = (el: Element | null) => act(() => (el as HTMLElement).click())
 
 beforeEach(() => {
-  apps.value = { console: app('running'), switching: undefined, turn, consoleSetting: undefined }
+  apps.value = { console: app('running'), switching: undefined, turn }
   name.value = 'pi-evan.on.remote.it'
   env.isNative = false
   openTerminal.mockReset()
@@ -63,7 +76,7 @@ beforeEach(() => {
 afterEach(() => act(() => root.unmount()))
 
 describe('ConsoleTerminalOption — the console’s connect panel', () => {
-  it('offers web SSH while the console runs, opening it as the Apps section does', async () => {
+  it('offers web SSH while the console runs, opening it on its service’s port as the Apps section does', async () => {
     const container = await render(<ConsoleTerminalOption device={device()} service={consoleService} />)
     expect(container.textContent).toBe('Open in web SSH')
     await click(container.querySelector('a'))
@@ -97,23 +110,37 @@ describe('ConsoleTerminalOption — the console’s connect panel', () => {
     expect((await render(<ConsoleTerminalOption device={device()} service={consoleService} />)).textContent).toBe('')
   })
 
-  it('says the console is off, and offers turning it on to those who manage the device', async () => {
+  it('says the console is off, and turns it on — it runs as root — once the person says yes to that', async () => {
     apps.value.console = app('off')
     const container = await render(<ConsoleTerminalOption device={device()} service={consoleService} />)
     expect(container.textContent).toBe('The console is off: turn it on to open it in web SSH Turn it on')
     await click(container.querySelector('a'))
-    expect(turn).toHaveBeenCalledWith(apps.value.console, true)
+    expect(turn).not.toHaveBeenCalled()
+    expect(container.querySelector('[data-confirm]')?.textContent).toContain(
+      'Console, published by remote.it, runs as root: it gets full control of this device'
+    )
+    await click(container.querySelector('[data-confirm-ok]'))
+    expect(turn).toHaveBeenCalledWith(apps.value.console, true, true)
   })
 
-  it('does not offer turning it on to those who do not manage it, or when its setting is locked', async () => {
+  it('not turned on when the person says no', async () => {
     apps.value.console = app('off')
-    let container = await render(<ConsoleTerminalOption device={device(['CONNECT'])} service={consoleService} />)
-    expect(container.textContent).toBe('The console is off: turn it on to open it in web SSH')
-    expect(container.querySelector('a')).toBeNull()
-    act(() => root.unmount())
-    apps.value.consoleSetting = { name: 'console', locked: { product: 'Pumps' } }
-    container = await render(<ConsoleTerminalOption device={device()} service={consoleService} />)
-    expect(container.querySelector('a')).toBeNull()
+    const container = await render(<ConsoleTerminalOption device={device()} service={consoleService} />)
+    await click(container.querySelector('a'))
+    await click(container.querySelector('[data-confirm-deny]'))
+    expect(turn).not.toHaveBeenCalled()
+    expect(container.querySelector('[data-confirm]')).toBeNull()
+  })
+
+  it('does not offer turning it on to those who may not run code on the device: Manage and Scripting', async () => {
+    apps.value.console = app('off')
+    for (const permissions of [['CONNECT'], ['CONNECT', 'MANAGE'], ['CONNECT', 'SCRIPTING']]) {
+      const container = await render(<ConsoleTerminalOption device={device(permissions)} service={consoleService} />)
+      expect(container.textContent).toBe('The console is off: turn it on to open it in web SSH')
+      expect(container.querySelector('a')).toBeNull()
+      act(() => root.unmount())
+    }
+    await render(null)
   })
 
   it('says what the device is doing: starting, unavailable, or waited for', async () => {
@@ -127,7 +154,7 @@ describe('ConsoleTerminalOption — the console’s connect panel', () => {
       'Not available here: no sshd'
     )
     act(() => root.unmount())
-    apps.value = { console: app('running'), switching: 'console', turn }
+    apps.value = { console: app('running'), switching: 'remoteit.console', turn }
     expect((await render(<ConsoleTerminalOption device={device()} service={consoleService} />)).textContent).toBe(
       'Waiting for the device…'
     )

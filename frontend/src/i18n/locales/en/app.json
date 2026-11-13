@@ -967,16 +967,30 @@
     "udp": "Any port (UDP)"
   },
   "deviceApps": {
+    "beta": "Beta",
     "console": "Console",
-    "off": "Off — a terminal on this device, from this app, by certificate",
+    "consoleAiCommands": "Allow AI commands",
+    "consoleAiCommandsHelp": "AI assistants you authorize may run commands on this device's console through remote.it's MCP server. The device's administrator can turn this off on the machine.",
+    "consoleOff": "Off — a terminal on this device, from this app, by certificate",
+    "consoleRunning": "Running — logins by certificate, nothing listening on the device",
+    "hostKey": "Host key {{key}}",
+    "off": "Off",
     "openTerminal": "Open terminal",
-    "running": "Running — logins by certificate, nothing listening on the device",
+    "publisher": "By {{publisher}}",
+    "rootAction": "Turn on with full control",
+    "rootBody": "{{app}}, published by {{publisher}}, runs as root: it gets full control of this device — every file, account and program on it.",
+    "rootTitle": "Run {{app}} as root?",
+    "rootTrust": "Turn it on only if you trust {{publisher}} with this device.",
+    "running": "Running",
+    "runsAsRoot": "Runs as root: full control of this device",
+    "stable": "Stable",
     "starting": "Starting — waiting for the device to say so",
     "startingDetail": "Starting — {{detail}}",
-    "switch": "Console on",
+    "switch": "{{app}} on",
     "switching": "Waiting for the device…",
     "title": "Apps",
-    "unavailable": "Not available here: {{detail}}"
+    "unavailable": "Not available here: {{detail}}",
+    "unavailableNoDetail": "Not available here"
   },
   "deviceBulkTransferPage": {
     "blockedCount_one": "{{count}} of the selected device cannot be transferred.",
@@ -1118,10 +1132,6 @@
     "selected": "Selected",
     "selectToRestore": "Please select a device to restore.",
     "tagsLabel": "tags"
-  },
-  "deviceMcpExec": {
-    "hint": "Let AI assistants you authorize run commands on this device's console through remote.it's MCP server. The device's administrator can turn this off on the machine.",
-    "label": "AI commands"
   },
   "deviceName": {
     "new": "NEW",

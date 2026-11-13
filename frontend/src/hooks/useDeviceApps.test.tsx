@@ -2,29 +2,49 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { read, setApp, settings } = vi.hoisted(() => ({
+const { read, setApp, setSetting } = vi.hoisted(() => ({
   read: vi.fn(),
   setApp: vi.fn(),
-  settings: { console: undefined as any, set: vi.fn() },
+  setSetting: vi.fn(),
 }))
-vi.mock('../services/graphQLDeviceApps', () => ({ graphQLDeviceApps: read, graphQLSetDeviceApp: setApp }))
-vi.mock('../services/graphQLDeviceSettings', () => ({ settingOn: (s: any) => s.value === true }))
-vi.mock('./useDeviceSettings', () => ({
-  useDeviceSettings: () => ({ setting: () => settings.console, set: settings.set }),
+vi.mock('../services/graphQLDeviceApps', () => ({
+  CONSOLE: 'remoteit.console',
+  graphQLDeviceApps: read,
+  graphQLSetDeviceApp: setApp,
+  graphQLSetDeviceAppSetting: setSetting,
 }))
 
 import { DeviceApps, useDeviceApps } from './useDeviceApps'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
+const aiCommands = (value: boolean) => ({
+  name: 'ai_commands',
+  type: 'bool',
+  label: 'AI commands',
+  help: null,
+  default: true,
+  value,
+  at: null,
+  by: null,
+  onDevice: false,
+  control: 'cloud+local',
+  locked: null,
+  choices: null,
+  deprecated: null,
+})
+
 const app = (state: string, on = state !== 'off') => ({
-  id: 'console',
+  id: 'remoteit.console',
+  name: 'Console',
+  publisher: 'remote.it',
+  root: true,
   on,
+  channel: 'stable',
   state,
   detail: null,
   serviceId: on ? 'S1' : null,
-  port: on ? 22 : null,
-  hostKey: null,
   version: null,
+  settings: [aiCommands(true)],
 })
 
 let root: Root
@@ -42,8 +62,7 @@ async function render(children: React.ReactNode) {
 beforeEach(() => {
   read.mockReset().mockResolvedValue([app('off')])
   setApp.mockReset().mockResolvedValue(app('running'))
-  settings.console = undefined
-  settings.set.mockReset().mockResolvedValue(true)
+  setSetting.mockReset().mockResolvedValue(aiCommands(false))
 })
 afterEach(() => act(() => root.unmount()))
 
@@ -62,7 +81,7 @@ describe('useDeviceApps', () => {
     expect(seen.none.apps).toBeUndefined()
   })
 
-  it('turns the console on by its app where there is no setting, and every part sees what the device said', async () => {
+  it('turns an app on by setDeviceApp, and every part sees what the device said', async () => {
     await render(
       <>
         <Apps deviceId="D1" name="a" />
@@ -70,21 +89,72 @@ describe('useDeviceApps', () => {
       </>
     )
     read.mockResolvedValue([app('running')])
-    await act(async () => seen.a.turn(seen.a.console!, true))
-    expect(setApp).toHaveBeenCalledWith('D1', 'console', true)
-    expect(settings.set).not.toHaveBeenCalled()
+    let done: boolean | undefined
+    await act(async () => {
+      done = await seen.a.turn(seen.a.console!, true)
+    })
+    expect(done).toBe(true)
+    expect(setApp).toHaveBeenCalledWith('D1', 'remoteit.console', true, {})
     expect(seen.a.console?.state).toBe('running')
     expect(seen.b.console?.state).toBe('running')
     expect(seen.a.switching).toBeUndefined()
   })
 
-  it('turns it on by its device setting where there is one, whose override holds', async () => {
-    settings.console = { name: 'console', value: false, control: 'off' }
+  it('passes the person’s consent to a root app’s full control', async () => {
     await render(<Apps deviceId="D1" name="a" />)
-    expect(seen.a.isOn(app('running') as any)).toBe(false)
     read.mockResolvedValue([app('running')])
-    await act(async () => seen.a.turn(seen.a.console!, true))
-    expect(settings.set).toHaveBeenCalledWith('console', true)
-    expect(setApp).not.toHaveBeenCalled()
+    await act(async () => {
+      await seen.a.turn(seen.a.console!, true, true)
+    })
+    expect(setApp).toHaveBeenCalledWith('D1', 'remoteit.console', true, { consentRoot: true })
+  })
+
+  it('waits while the device says the app is starting', async () => {
+    vi.useFakeTimers()
+    try {
+      await render(<Apps deviceId="D1" name="a" />)
+      read.mockResolvedValueOnce([app('starting')]).mockResolvedValue([app('running')])
+      let turning: Promise<boolean> | undefined
+      act(() => {
+        turning = seen.a.turn(seen.a.console!, true)
+      })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2_000)
+      })
+      await act(async () => {
+        await turning
+      })
+      expect(read).toHaveBeenCalledTimes(3) // the first read, then starting, then running
+      expect(seen.a.console?.state).toBe('running')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('nothing re-read when the API refused the change', async () => {
+    await render(<Apps deviceId="D1" name="a" />)
+    setApp.mockResolvedValue(null)
+    let done: boolean | undefined
+    await act(async () => {
+      done = await seen.a.turn(seen.a.console!, true)
+    })
+    expect(done).toBe(false)
+    expect(read).toHaveBeenCalledTimes(1)
+    expect(seen.a.switching).toBeUndefined()
+  })
+
+  it('sets an app’s setting by setDeviceAppSetting, every part seeing the answer', async () => {
+    await render(
+      <>
+        <Apps deviceId="D1" name="a" />
+        <Apps deviceId="D1" name="b" />
+      </>
+    )
+    await act(async () => {
+      await seen.a.setSetting(seen.a.console!, 'ai_commands', false)
+    })
+    expect(setSetting).toHaveBeenCalledWith('D1', 'remoteit.console', 'ai_commands', false)
+    expect(seen.a.console?.settings[0].value).toBe(false)
+    expect(seen.b.console?.settings[0].value).toBe(false)
   })
 })

@@ -959,16 +959,30 @@
     "udp": ""
   },
   "deviceApps": {
+    "beta": "",
     "console": "",
+    "consoleAiCommands": "",
+    "consoleAiCommandsHelp": "",
+    "consoleOff": "",
+    "consoleRunning": "",
+    "hostKey": "",
     "off": "",
     "openTerminal": "",
+    "publisher": "",
+    "rootAction": "",
+    "rootBody": "",
+    "rootTitle": "",
+    "rootTrust": "",
     "running": "",
+    "runsAsRoot": "",
+    "stable": "",
     "starting": "",
     "startingDetail": "",
     "switch": "",
     "switching": "",
     "title": "",
-    "unavailable": ""
+    "unavailable": "",
+    "unavailableNoDetail": ""
   },
   "deviceBulkTransferPage": {
     "blockedCount_other": "選択したデバイスのうち{{count}}台は譲渡できません。",
@@ -1107,10 +1121,6 @@
     "selected": "選択中",
     "selectToRestore": "復元するデバイスを選択してください。",
     "tagsLabel": "タグ"
-  },
-  "deviceMcpExec": {
-    "hint": "",
-    "label": ""
   },
   "deviceName": {
     "new": "新規",

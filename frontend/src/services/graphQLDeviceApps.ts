@@ -1,21 +1,62 @@
 import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
+import type { SettingState } from './graphQLDeviceSettings'
 
-// A device's apps (graphql services/device-apps.ts): the console first — SSH by OpenSSH, run by the device's daemon.
-// Its state is what the device says: off, starting, running, or unavailable with why.
+/* A device's apps (presence-server docs/device-apps-design.md, "The portal's Apps section"): each a catalogue entry
+   (`<publisher>.<app>`, the console `remoteit.console`) the device has a row for — on or off, its channel, the version
+   installed there, whether it runs as root, and its state as the device says: off, starting, running, or unavailable
+   with why. Its settings are declared by the app's release and set with the same version rule as a device setting:
+   who set each from which side, its administrator's control (`<app>.<name>_control`) and its product's lock. graphql's
+   Device.apps, setDeviceApp and setDeviceAppSetting. */
 
-export type DeviceApp = {
-  id: string
-  on: boolean
-  state: 'off' | 'starting' | 'running' | 'unavailable'
-  detail: string | null
-  serviceId: string | null
-  port: number | null
-  hostKey: string | null
-  version: string | null // the app installed there
+export const CONSOLE = 'remoteit.console'
+
+export type DeviceAppState = 'off' | 'starting' | 'running' | 'unavailable'
+
+// The declaration's types; the list is open, so one this portal does not know is shown and left alone.
+export type AppSettingType = 'bool' | 'choice' | 'int' | 'string' | 'list'
+
+export type AppSettingChoice = { value: string; label: string }
+
+export type DeviceAppSetting = SettingState & {
+  type: AppSettingType | string
+  label: string
+  help: string | null
+  default: any
+  choices: AppSettingChoice[] | null // a choice's
+  deprecated: string | null // why, where its release deprecates it
 }
 
-const FIELDS = 'id on state detail serviceId port hostKey version'
+export type DeviceApp = {
+  id: string // <publisher>.<app>
+  name: string
+  publisher: string // the publisher's name, shown with the app
+  root: boolean // runs as root: full control of the device
+  on: boolean
+  channel: string | null // stable or beta
+  version: string | null // the app installed there
+  state: DeviceAppState
+  detail: string | null
+  serviceId: string | null // the service it is reached as
+  settings: DeviceAppSetting[]
+}
+
+const SETTING_FIELDS =
+  'name type label help default value at by onDevice control locked { product level } deprecated choices { value label }'
+const FIELDS = `id name publisher root on channel version state detail serviceId settings { ${SETTING_FIELDS} }`
+
+// A setting as read: its value the declared default where none was set, and its lock only where it names a product.
+function parsedSetting(setting: any): DeviceAppSetting {
+  return {
+    ...setting,
+    value: setting.value ?? setting.default ?? null,
+    locked: setting.locked?.product || setting.locked?.level ? setting.locked : null,
+    choices: setting.choices ?? null,
+    deprecated: setting.deprecated ?? null,
+  }
+}
+
+const parsed = (app: any): DeviceApp => ({ ...app, settings: (app.settings ?? []).map(parsedSetting) })
 
 // null: an API without apps, or a device this person cannot see.
 export async function graphQLDeviceApps(deviceId: string): Promise<DeviceApp[] | null> {
@@ -24,15 +65,62 @@ export async function graphQLDeviceApps(deviceId: string): Promise<DeviceApp[] |
   const response = await post({ query, variables })
   if (response === 'ERROR') return null
   if (graphQLGetErrors(response, true, { query, variables })) return null
-  return response.data?.data?.login?.device?.[0]?.apps ?? null
+  const apps = response.data?.data?.login?.device?.[0]?.apps
+  return apps ? apps.map(parsed) : null
 }
 
-export async function graphQLSetDeviceApp(deviceId: string, app: string, on: boolean): Promise<DeviceApp | null> {
+export type SetDeviceAppOptions = {
+  channel?: string
+  version?: string
+  // A root app is turned on only with this: the person said yes to it having full control of the device.
+  consentRoot?: boolean
+}
+
+export async function graphQLSetDeviceApp(
+  deviceId: string,
+  app: string,
+  on: boolean,
+  { channel, version, consentRoot }: SetDeviceAppOptions = {}
+): Promise<DeviceApp | null> {
   const response = await graphQLBasicRequest(
-    ` mutation SetDeviceApp($deviceId: String!, $app: String!, $on: Boolean!) {
-        setDeviceApp(deviceId: $deviceId, app: $app, on: $on) { ${FIELDS} }
+    ` mutation SetDeviceApp(
+        $deviceId: String!, $app: String!, $on: Boolean!, $channel: String, $version: String, $consentRoot: Boolean
+      ) {
+        setDeviceApp(
+          deviceId: $deviceId, app: $app, on: $on, channel: $channel, version: $version, consentRoot: $consentRoot
+        ) { ${FIELDS} }
       }`,
-    { deviceId, app, on }
+    { deviceId, app, on, channel, version, consentRoot }
   )
-  return response === 'ERROR' ? null : response?.data?.data?.setDeviceApp ?? null
+  const answer = response === 'ERROR' ? null : response?.data?.data?.setDeviceApp
+  return answer ? parsed(answer) : null
+}
+
+export async function graphQLSetDeviceAppSetting(
+  deviceId: string,
+  app: string,
+  name: string,
+  value: any
+): Promise<DeviceAppSetting | null> {
+  const response = await graphQLBasicRequest(
+    ` mutation SetDeviceAppSetting($deviceId: String!, $app: String!, $name: String!, $value: Any) {
+        setDeviceAppSetting(deviceId: $deviceId, app: $app, name: $name, value: $value) { ${SETTING_FIELDS} }
+      }`,
+    { deviceId, app, name, value }
+  )
+  const answer = response === 'ERROR' ? null : response?.data?.data?.setDeviceAppSetting
+  return answer ? parsedSetting(answer) : null
+}
+
+// The host key the console's service should show, as its device reports it: the console's own extra (graphql
+// sshHostKey). null where the device has not said, or for a service that is not the console's.
+export async function graphQLSshHostKey(serviceId: string): Promise<string | null> {
+  const response = await graphQLBasicRequest(
+    ` query SshHostKey($serviceId: String!) {
+        sshHostKey(serviceId: $serviceId)
+      }`,
+    { serviceId },
+    true
+  )
+  return response === 'ERROR' ? null : response?.data?.data?.sshHostKey ?? null
 }

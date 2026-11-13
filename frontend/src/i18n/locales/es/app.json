@@ -975,16 +975,30 @@
     "udp": ""
   },
   "deviceApps": {
+    "beta": "",
     "console": "",
+    "consoleAiCommands": "",
+    "consoleAiCommandsHelp": "",
+    "consoleOff": "",
+    "consoleRunning": "",
+    "hostKey": "",
     "off": "",
     "openTerminal": "",
+    "publisher": "",
+    "rootAction": "",
+    "rootBody": "",
+    "rootTitle": "",
+    "rootTrust": "",
     "running": "",
+    "runsAsRoot": "",
+    "stable": "",
     "starting": "",
     "startingDetail": "",
     "switch": "",
     "switching": "",
     "title": "",
-    "unavailable": ""
+    "unavailable": "",
+    "unavailableNoDetail": ""
   },
   "deviceBulkTransferPage": {
     "blockedCount_one": "{{count}} del dispositivo seleccionado no se puede transferir.",
@@ -1129,10 +1143,6 @@
     "selected": "Seleccionado",
     "selectToRestore": "Selecciona un dispositivo para restaurar.",
     "tagsLabel": "etiquetas"
-  },
-  "deviceMcpExec": {
-    "hint": "",
-    "label": ""
   },
   "deviceName": {
     "new": "NUEVO",

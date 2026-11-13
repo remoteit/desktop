@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
-import { DeviceApp, graphQLDeviceApps, graphQLSetDeviceApp } from '../services/graphQLDeviceApps'
-import { DeviceSetting, settingOn } from '../services/graphQLDeviceSettings'
-import { DeviceSettings, useDeviceSettings } from './useDeviceSettings'
+import {
+  CONSOLE,
+  DeviceApp,
+  graphQLDeviceApps,
+  graphQLSetDeviceApp,
+  graphQLSetDeviceAppSetting,
+} from '../services/graphQLDeviceApps'
 
 type Read = ReturnType<typeof graphQLDeviceApps>
 
@@ -17,27 +21,24 @@ function read(deviceId: string): Read {
   return answer
 }
 
-// Every part of a page showing a device's apps, told what the device said after one was turned on or off here.
+// Every part of a page showing a device's apps, told what the device said after one was changed here.
 const watchers = new Set<(deviceId: string, apps: DeviceApp[] | null) => void>()
+const tell = (deviceId: string, apps: DeviceApp[] | null) => watchers.forEach(watcher => watcher(deviceId, apps))
 
 export type DeviceApps = {
   apps: DeviceApp[] | null | undefined // undefined while read; null where the API has no apps
   console?: DeviceApp
   switching?: string // the app being turned on or off, waited for
-  turn: (app: DeviceApp, on: boolean) => Promise<void>
-  isOn: (app: DeviceApp) => boolean
-  consoleSetting?: DeviceSetting
-  settings: DeviceSettings
+  // consentRoot: the person said yes to a root app's full control of the device (components/AppRootConsent)
+  turn: (app: DeviceApp, on: boolean, consentRoot?: boolean) => Promise<boolean>
+  setSetting: (app: DeviceApp, name: string, value: any) => Promise<boolean>
 }
 
-/* A device's apps (services/graphQLDeviceApps) and turning one on or off: the console's on or off is its device setting
-   where the API has device settings — so who set it on the device, or the administrator's refusal of it, holds — and
-   the app's otherwise. The device turns it on or off within seconds: what it says is waited for, up to half a minute. */
+/* A device's apps (services/graphQLDeviceApps): turning one on or off, and setting its settings. The device turns an
+   app on or off within seconds: what it says is waited for, up to half a minute. */
 export function useDeviceApps(deviceId?: string): DeviceApps {
   const [apps, setApps] = useState<DeviceApp[] | null>()
   const [switching, setSwitching] = useState<string>()
-  const settings = useDeviceSettings(deviceId)
-  const consoleSetting = settings.setting('console')
 
   useEffect(() => {
     setApps(undefined)
@@ -55,35 +56,38 @@ export function useDeviceApps(deviceId?: string): DeviceApps {
   }, [deviceId])
 
   const turn = useCallback(
-    async (app: DeviceApp, on: boolean) => {
-      if (!deviceId) return
+    async (app: DeviceApp, on: boolean, consentRoot?: boolean) => {
+      if (!deviceId) return false
       setSwitching(app.id)
-      const changed =
-        app.id === 'console' && consoleSetting
-          ? await settings.set('console', on)
-          : await graphQLSetDeviceApp(deviceId, app.id, on)
+      const changed = await graphQLSetDeviceApp(deviceId, app.id, on, consentRoot ? { consentRoot } : {})
       if (changed) {
         for (let waited = 0; waited < 30_000; waited += 2_000) {
           const now = await graphQLDeviceApps(deviceId)
-          watchers.forEach(watcher => watcher(deviceId, now))
+          tell(deviceId, now)
           const it = now?.find(a => a.id === app.id)
           if (!it || it.state !== 'starting') break
           await new Promise(resolve => setTimeout(resolve, 2_000))
         }
       }
       setSwitching(undefined)
+      return !!changed
     },
-    [deviceId, consoleSetting, settings.set]
+    [deviceId]
   )
 
-  // The administrator's override holds over what is set here: under off the console is off, whatever apps says.
-  const isOn = useCallback(
-    (app: DeviceApp) =>
-      app.id === 'console' && consoleSetting && ['off', 'on'].includes(consoleSetting.control)
-        ? settingOn(consoleSetting)
-        : app.on,
-    [consoleSetting]
+  const setSetting = useCallback(
+    async (app: DeviceApp, name: string, value: any) => {
+      if (!deviceId) return false
+      const setting = await graphQLSetDeviceAppSetting(deviceId, app.id, name, value)
+      if (!setting) return false
+      const now = (apps ?? []).map(a =>
+        a.id === app.id ? { ...a, settings: a.settings.map(s => (s.name === name ? setting : s)) } : a
+      )
+      tell(deviceId, now)
+      return true
+    },
+    [deviceId, apps]
   )
 
-  return { apps, console: apps?.find(app => app.id === 'console'), switching, turn, isOn, consoleSetting, settings }
+  return { apps, console: apps?.find(app => app.id === CONSOLE), switching, turn, setSetting }
 }
