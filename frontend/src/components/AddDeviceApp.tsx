@@ -20,7 +20,8 @@ import { Icon } from './Icon'
 /* "Add an app" (presence-server docs/device-apps-design.md, "The portal's Apps section"): the catalogue's apps this
    device may take and does not have (graphql's Device.availableApps) — remote.it's and its own account's —, each with
    its publisher, Runs as root or Runs restricted, and why it cannot be added here where it cannot: its administrator
-   refuses it, or its stage has no release of it yet; and where its remote.it is too old to run it yet. Adding one turns it on, as its
+   refuses it, or its stage has no release of it yet; and where its remote.it is too old to run it yet. Shown only where
+   at least one of them can be added. Adding one turns it on, as its
    switch would — a root app only with the person's yes (components/AppRootConsent), so `add` is the Apps section's
    flip. Turning one on runs code on the device: Scripting as well as Manage. */
 type Props = {
@@ -48,7 +49,9 @@ export const offered = (app: AvailableApp): DeviceApp => ({
 export const AddDeviceApp: React.FC<Props> = ({ available, canRun, busy, add }) => {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
-  if (!available.length) return null
+  // Nothing it could add — none offered, or every one refused here or with no release here yet —: nothing shown, not a
+  // button that opens onto nothing to add.
+  if (!available.some(app => !whyNot(t, app))) return null
 
   return (
     <>

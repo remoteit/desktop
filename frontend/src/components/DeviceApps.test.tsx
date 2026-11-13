@@ -624,6 +624,15 @@ describe('Add an app', () => {
     apps.value = { ...apps.value, available: [] }
     page = await render(<DeviceApps device={device()} />)
     expect(page.querySelector('[data-add-app]')).toBeNull()
+    // Only ones it cannot add — refused here, or no release here yet —: nothing to add, so no Add an app either.
+    act(() => root.unmount())
+    apps.value = {
+      ...apps.value,
+      available: [available({ refused: 'Not allowed on this device by its administrator: no apps (apps_control off)' }), available({ id: 'acme.none', version: null })],
+    }
+    page = await render(<DeviceApps device={device()} />)
+    expect(page.querySelector('[data-add-app]')).toBeNull()
+    expect(page.querySelector('[data-app="remoteit.console"]')).not.toBeNull()
   })
 })
 
