@@ -29,6 +29,8 @@ export type DeviceDaemon = {
   pinned?: { version: string } | null // rolled back: pinned to this release until released
   rollbackTo?: { version: string } | null // where a rollback would take it
   updateState?: string | null // held where graphql finds a hold, from an older daemon's refusal too; where it serves it
+  // Who shipped it: 'none' for a daemon with no package — the browser's client, a phone's app; where the API serves it.
+  distribution?: string | null
 }
 
 // Held by the device's admin: a package hold or lock (managed, but blocked), as the device reports it or graphql reads it.
@@ -68,8 +70,9 @@ async function read<T>(
   return response.data?.data?.[field] ?? null
 }
 
-// updateState only where the API has it: one without answers without it, and is not asked again.
+// updateState and distribution only where the API has them: one without answers without them, and is not asked again.
 let withUpdateState = true
+let withDistribution = true
 
 export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemon | null | 'ERROR' | typeof UNSUPPORTED> {
   const query = `query DeviceDaemon($deviceId: String!) {
@@ -82,7 +85,7 @@ export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemo
         channel
         hold
         pinned { version }
-        rollbackTo { version }${withUpdateState ? '\n        updateState' : ''}
+        rollbackTo { version }${withUpdateState ? '\n        updateState' : ''}${withDistribution ? '\n        distribution' : ''}
       }
     }`
   const variables = { deviceId }
@@ -91,6 +94,10 @@ export async function graphQLDeviceDaemon(deviceId: string): Promise<DeviceDaemo
   const errors = response.data?.errors
   if (withUpdateState && withoutDeviceSessions(errors, 'updateState')) {
     withUpdateState = false
+    return graphQLDeviceDaemon(deviceId)
+  }
+  if (withDistribution && withoutDeviceSessions(errors, 'distribution')) {
+    withDistribution = false
     return graphQLDeviceDaemon(deviceId)
   }
   const reported = graphQLGetErrors(response, true, { query, variables })

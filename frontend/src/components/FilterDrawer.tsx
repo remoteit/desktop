@@ -38,6 +38,12 @@ const ownerFilters = [
   { value: 'others', name: 'Others' },
 ]
 let platformFilter = [{ value: -1, name: 'All' }]
+// Browsers' remote.it clients (services/browserClients): the person's own browsers, left out unless asked for.
+const browserFilters = [
+  { value: 'hide', name: 'Hide' },
+  { value: 'show', name: 'Show' },
+  { value: 'only', name: 'Only' },
+]
 
 export const FilterDrawer: React.FC = () => {
   const { devices } = useDispatch<Dispatch>()
@@ -78,6 +84,9 @@ export const FilterDrawer: React.FC = () => {
   const onState = value => update({ filter: value })
 
   const onOwner = value => update({ owner: value })
+
+  const onBrowsers = value => update({ browsers: value })
+  const browsers = state.browsers ?? 'hide'
 
   const platformOptions = React.useMemo(() => {
     const ids: Record<string, number[]> = {}
@@ -153,6 +162,12 @@ export const FilterDrawer: React.FC = () => {
                 filterList={platformFilter.concat(platformOptions)}
               />
             ),
+          },
+          {
+            key: 'browsers',
+            subtitle: 'Browsers',
+            onClear: browsers === 'hide' ? undefined : () => update({ browsers: 'hide' }),
+            children: <FilterSelector icon="check" value={browsers} onSelect={onBrowsers} filterList={browserFilters} />,
           },
         ]}
       />

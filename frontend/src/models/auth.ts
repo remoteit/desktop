@@ -52,6 +52,12 @@ import zendesk from '../services/zendesk'
 import i18n from '../i18n'
 import { withTimeout } from '../helpers/sleep'
 import { browserClientUsed, resetBrowserClient } from '../services/browserClient'
+
+// Bounded: a client that does not answer never holds the sign-out. Only in a browser that ran one; once done, the mark is
+// gone, so the second call of a sign-out does nothing.
+const forgetBrowserClientAtSignOut = async () => {
+  if (browserClientUsed()) await withTimeout(resetBrowserClient({ signingOut: true }).catch(() => {}), 15_000)
+}
 import { parseAgentOwned } from '@common/agentOwner'
 
 export type SignInErrorCode = OidcErrorCode | 'agentOwned'
@@ -503,6 +509,10 @@ export default createModel<RootModel>()({
         // from the session about to end. It revokes once per identity, so the chat.signOut in
         // signedOut() is a no-op afterwards.
         await releaseSessionGrants(dispatch)
+        // This browser's remote.it client too, while the session lives: its device is removed as the person, which a
+        // token of a session already ended cannot do (solo, 2026-11-12: the client forgot itself at sign-out, its device
+        // stayed). Done here, signedOut finds nothing left to do; its own call stays for the paths that never come here.
+        await forgetBrowserClientAtSignOut()
         try {
           const status = await withTimeout(oidcEndSession(), SIGN_OUT_SESSION_TIMEOUT)
           if (status && status !== 204) console.warn('SIGN OUT: AS session end refused', status)
@@ -540,9 +550,9 @@ export default createModel<RootModel>()({
       // background AI access alive. chat.signOut bounds itself so this never hangs the sign-out.
       await releaseSessionGrants(dispatch)
       // This browser's remote.it client acts for the person who signed in — every device page they may reach opens
-      // through it with no session — so it forgets itself, and its device goes, while a token can still remove it.
-      // Bounded: a client that does not answer never holds the sign-out; it is forgotten all the same.
-      if (browserClientUsed()) await withTimeout(resetBrowserClient({ signingOut: true }).catch(() => {}), 15_000)
+      // through it with no session — so it forgets itself: in signOut while the session lives, else here, its device
+      // then left to its expiry if no token can remove it.
+      await forgetBrowserClientAtSignOut()
       await persistor.purge()
       // Drop this app's tokens. The AS is never called from here — the failure paths land here
       // too; the person's own sign-out ended the AS session in signOut before this.
@@ -644,6 +654,8 @@ export default createModel<RootModel>()({
       // token can be minted for that call. It revokes once per identity, so the chat.signOut
       // inside signedOut() is a real no-op on the far side.
       await releaseSessionGrants(dispatch)
+      // This browser's remote.it client, while a token can still remove its device (signOut says why).
+      await forgetBrowserClientAtSignOut()
       // BOUNDED, like the revoke above. Audience mints serialize through one shared promise
       // (services/oidc), so a mint the revoke abandoned mid-stall would otherwise queue this call
       // behind it indefinitely — and the panic button must never leave the person signed in here

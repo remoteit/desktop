@@ -1,4 +1,5 @@
 import { graphQLBasicRequest } from './graphQL'
+import { BROWSER_PLATFORM } from './browserClients'
 
 /* A device's web service opened in its own tab with nothing installed here (presence-server
    docs/browser-client-plan.md §5): the browser's one shared client — connectd built for the browser — carries the
@@ -22,7 +23,7 @@ export const BROWSER_CLIENT_TIMEOUT_SECONDS = 30 * 24 * 60 * 60
 export async function handoff(): Promise<Handoff | null> {
   const response = await graphQLBasicRequest(`query BrowserClientHandoff {
     deviceSessionServers { presence reflector }
-    login { registrationCode(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true, timeout: ${BROWSER_CLIENT_TIMEOUT_SECONDS}) }
+    login { registrationCode(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true, timeout: ${BROWSER_CLIENT_TIMEOUT_SECONDS}, platform: ${BROWSER_PLATFORM}) }
   }`)
   if (response === 'ERROR') return null
   const data = response.data?.data

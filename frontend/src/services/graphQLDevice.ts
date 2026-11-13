@@ -15,6 +15,7 @@ import {
   withSampleList,
 } from './graphQLVirtualDevices'
 import { multiPortServicesServed } from './multiPortServices'
+import { browserFilterServed } from './browserClients'
 import { deviceDisableFields, disabledAdaptor } from './deviceDisable'
 import { deviceIdentityFields, identityAdaptor } from './deviceIdentity'
 import { protectAdaptor, protectListFields } from './deviceProtect'
@@ -218,15 +219,21 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
   const virtual = await virtualDevicesMode()
   const ports = await multiPortServicesServed()
   const probed = await probedDeviceFields()
+  // Browsers' clients in or out, where the API can say (services/browserClients); elsewhere every device, as before.
+  const browser = params.browser !== undefined && (await browserFilterServed())
   const response = await graphQLBasicRequest(
     ` query DeviceList($size: Int, $from: Int, $name: String, $state: String, $tag: ListFilter, $accountId: String, $sort: String, $owner: Boolean, $application: [Int!], $platform: [Int!]${
+      browser ? ', $browser: Boolean' : ''
+    }${
       (params.columns.includes('deviceTimeSeries') ? DEVICE_TIME_SERIES_PARAMS : '') +
       (params.columns.includes('serviceTimeSeries') ? SERVICE_TIME_SERIES_PARAMS : '')
     }) {
         login {
           id
           account(id: $accountId) {
-            devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, application: $application, platform: $platform) {
+            devices(size: $size, from: $from, name: $name, state: $state, tag: $tag, sort: $sort, owner: $owner, application: $application, platform: $platform${
+              browser ? ', browser: $browser' : ''
+            }) {
               total
               items {
                 ${deviceQueryColumns(params.columns, undefined, virtual, ports)}${probed}
@@ -245,6 +252,7 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
       application: params.applicationTypes,
       accountId: params.accountId,
       platform: params.platform,
+      ...(browser ? { browser: params.browser } : {}),
       name: params.name?.trim() || undefined,
       ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries, true),
     }
@@ -348,12 +356,14 @@ export async function graphQLFetchFullDevice(
   )
 }
 
+// Browsers' clients are not counted where the API can leave them out: the person's own browsers are not devices they have.
 export async function graphQLFetchDeviceCount({ size, tag, owner, accountId }: gqlOptions) {
+  const browser = await browserFilterServed()
   return await graphQLBasicRequest(
-    ` query DeviceCount($size: Int, $tag: ListFilter, $accountId: String, $owner: Boolean) {
+    ` query DeviceCount($size: Int, $tag: ListFilter, $accountId: String, $owner: Boolean${browser ? ', $browser: Boolean' : ''}) {
         login {
           account(id: $accountId) {
-            devices(tag: $tag, owner: $owner, size: $size) {
+            devices(tag: $tag, owner: $owner, size: $size${browser ? ', browser: $browser' : ''}) {
               total
             }
           }
@@ -364,6 +374,7 @@ export async function graphQLFetchDeviceCount({ size, tag, owner, accountId }: g
       tag,
       owner,
       accountId,
+      ...(browser ? { browser: false } : {}),
     }
   )
 }

@@ -35,7 +35,7 @@ describe('openThroughGateway', () => {
     expect(decoded).toEqual({ code: 'CODE-1', presence: ['198.51.100.1:5960'], reflector: 'wss://wsp.remote.it' })
     expect(tab.opener).toBeNull()
     // A browser's client is kept for its next visit; one never back is disabled by graphql's expiry after 30 days.
-    expect(request.mock.calls[0][0]).toMatch(/registrationCode\(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true, timeout: 2592000\)/)
+    expect(request.mock.calls[0][0]).toMatch(/registrationCode\(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true, timeout: 2592000, platform: 1231\)/)
   })
   it('closes the tab when there is no code to give it', async () => {
     const tab = { location: { href: '' }, opener: {}, close: vi.fn() }

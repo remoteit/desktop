@@ -1044,6 +1044,8 @@ declare global {
     name?: string
     applicationTypes?: number[]
     platform?: number[]
+    // Browsers' remote.it clients: false leaves them out, true lists only them, absent both (services/browserClients).
+    browser?: boolean
     deviceTimeSeries?: ITimeSeriesOptions
     serviceTimeSeries?: ITimeSeriesOptions
   }

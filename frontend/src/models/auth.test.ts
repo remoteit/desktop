@@ -1009,4 +1009,23 @@ describe('auth model — sign-out forgets this browser’s remote.it client', ()
     await effectsFor(dispatch).signedOut()
     expect(dispatch.auth.set).toHaveBeenCalledWith(expect.objectContaining({ authenticated: false }))
   })
+
+  // The device's removal needs a live session: the person's sign-out ends it, so the client is forgotten first
+  // (solo, 2026-11-12: forgotten in signedOut, after the session ended, its device stayed).
+  it('the menu sign-out forgets it before the AS session ends', async () => {
+    browserClient.browserClientUsed.mockReturnValue(true)
+    browserClient.resetBrowserClient.mockReset().mockResolvedValue(undefined)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).signOut(undefined, { auth: { backendAuthenticated: false } })
+    expect(browserClient.resetBrowserClient).toHaveBeenCalledWith({ signingOut: true })
+    expect(browserClient.resetBrowserClient.mock.invocationCallOrder[0]).toBeLessThan(oidcEndSession.mock.invocationCallOrder[0])
+  })
+
+  it('sign out everywhere forgets it before every session ends', async () => {
+    browserClient.browserClientUsed.mockReturnValue(true)
+    browserClient.resetBrowserClient.mockReset().mockResolvedValue(undefined)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).globalSignOut()
+    expect(browserClient.resetBrowserClient.mock.invocationCallOrder[0]).toBeLessThan(signOutEverywhere.mock.invocationCallOrder[0])
+  })
 })
