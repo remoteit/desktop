@@ -211,6 +211,51 @@ describe('the device’s Apps section', () => {
     expect(appRow(page, 'acme.backup').querySelector('[data-app-locked]')?.textContent).toBe('Managed by its product Kiosks')
     expect(switchOf(appRow(page, 'acme.backup')).disabled).toBe(true)
   })
+
+  it('kept local by its administrator (adminControl local): said, its switch held either way', async () => {
+    apps.value = { ...apps.value, apps: [consoleApp({ adminControl: 'local' }), backup({ adminControl: 'local' })] }
+    const page = await render(<DeviceApps device={device()} />)
+    for (const id of ['remoteit.console', 'acme.backup']) {
+      expect(appRow(page, id).querySelector('[data-app-admin="local"]')?.textContent).toBe(
+        'Kept local by this device’s administrator: changed on the device only'
+      )
+      expect(switchOf(appRow(page, id)).disabled).toBe(true)
+    }
+  })
+
+  it('turned off by its administrator (adminControl off): said, enabling held — disabling taken', async () => {
+    apps.value = {
+      ...apps.value,
+      apps: [consoleApp({ adminControl: 'off', state: 'disabled', detail: 'stopped' }), backup({ adminControl: 'off' })],
+    }
+    const page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'acme.backup').querySelector('[data-app-admin="off"]')?.textContent).toBe(
+      'Turned off on this device by its administrator'
+    )
+    expect(switchOf(appRow(page, 'acme.backup')).disabled).toBe(true)
+    expect(switchOf(appRow(page, 'remoteit.console')).disabled).toBe(false)
+  })
+
+  it('turned off, where graphql’s detail already says so: said once', async () => {
+    apps.value = {
+      ...apps.value,
+      apps: [
+        consoleApp({
+          adminControl: 'off',
+          state: 'unavailable',
+          detail: 'Turned off on this device by its administrator (remoteit.console_control off)',
+        }),
+      ],
+    }
+    const page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'remoteit.console').querySelector('[data-app-admin]')).toBeNull()
+  })
+
+  it('the default control (cloud+local, cloud): nothing said', async () => {
+    apps.value = { ...apps.value, apps: [consoleApp({ adminControl: 'cloud+local' }), backup({ adminControl: 'cloud' })] }
+    const page = await render(<DeviceApps device={device()} />)
+    expect(page.querySelector('[data-app-admin]')).toBeNull()
+  })
 })
 
 describe('the switch enables and disables', () => {

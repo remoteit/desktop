@@ -74,7 +74,7 @@ describe('Device.apps', () => {
     const apps = await graphQLDeviceApps('D1')
     const { query, variables } = post.mock.calls[0][0]
     expect(variables).toEqual({ id: ['D1'] })
-    for (const field of ['id', 'name', 'publisher', 'root', 'enabled', 'added', 'channel', 'pinned', 'version', 'release', 'latest', 'upToDate', 'grantUntil', 'state', 'detail', 'serviceId'])
+    for (const field of ['id', 'name', 'publisher', 'root', 'enabled', 'added', 'channel', 'pinned', 'version', 'release', 'latest', 'upToDate', 'grantUntil', 'adminControl', 'state', 'detail', 'serviceId'])
       expect(query).toMatch(new RegExp(`\\b${field}\\b`))
     expect(query).toContain(
       'settings { name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration }'
@@ -83,6 +83,12 @@ describe('Device.apps', () => {
     expect(query).not.toMatch(/hostKey|port|\bon\b/)
     expect(query).toContain('heldBack { reason detail }')
     expect(apps?.[0].settings[0].value).toBe(true)
+    expect(apps?.[0].adminControl).toBe('cloud+local') // none said: the default
+  })
+
+  it('its administrator’s control as graphql says it', async () => {
+    post.mockResolvedValue(answer({ login: { device: [{ id: 'D1', apps: [{ ...consoleApp, adminControl: 'local' }] }] } }))
+    expect((await graphQLDeviceApps('D1'))?.[0].adminControl).toBe('local')
   })
 
   it('a setting’s lock only where it names a product or a level', async () => {

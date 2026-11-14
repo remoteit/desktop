@@ -379,6 +379,43 @@ describe('enable, disable and remove', () => {
       expect((page.querySelector(control) as HTMLInputElement).disabled).toBe(true)
   })
 
+  it('kept local by its administrator: said up front; switch, Disable and Remove greyed — the channel and pin stay', async () => {
+    apps.value.apps = [backup({ adminControl: 'local' })]
+    const page = await render()
+    expect(page.querySelector('[data-app-admin="local"]')?.textContent).toBe(
+      'Kept local by this device’s administrator: changed on the device only'
+    )
+    for (const control of ['[data-app-enabled] input', '[data-app-toggle]', '[data-app-remove]'])
+      expect((page.querySelector(control) as HTMLInputElement).disabled).toBe(true)
+    for (const control of ['[data-app-channel]', '[data-app-pin]'])
+      expect((page.querySelector(control) as HTMLSelectElement).disabled).toBe(false)
+  })
+
+  it('turned off by its administrator: said; Enable greyed — Remove stays; an enabled one may be disabled', async () => {
+    apps.value.apps = [backup({ adminControl: 'off', enabled: false, state: 'disabled', release: null, serviceId: null, grantUntil: null })]
+    let page = await render()
+    expect(page.querySelector('[data-app-admin="off"]')?.textContent).toBe('Turned off on this device by its administrator')
+    expect(enabledSwitch(page).disabled).toBe(true)
+    expect((page.querySelector('[data-app-toggle]') as HTMLButtonElement).disabled).toBe(true)
+    expect((page.querySelector('[data-app-remove]') as HTMLButtonElement).disabled).toBe(false)
+    act(() => root.unmount())
+    container.remove()
+    // Enabled here, turned off there: graphql's detail says it — not said twice — and Disable is taken.
+    apps.value.apps = [
+      backup({
+        adminControl: 'off',
+        state: 'unavailable',
+        detail: 'Turned off on this device by its administrator (acme.backup_control off)',
+      }),
+    ]
+    page = await render()
+    expect(page.querySelector('[data-app-admin]')).toBeNull()
+    expect(text(page, 'state')).toContain('Turned off on this device by its administrator (acme.backup_control off)')
+    expect(enabledSwitch(page).disabled).toBe(false)
+    expect((page.querySelector('[data-app-toggle]') as HTMLButtonElement).textContent).toBe('Disable')
+    expect((page.querySelector('[data-app-toggle]') as HTMLButtonElement).disabled).toBe(false)
+  })
+
   it('without Scripting: no enable, channel or pin — Disable and Remove stay; without Manage, nothing', async () => {
     apps.value.apps = [backup({ enabled: false, state: 'disabled' })]
     let page = await render(['VIEW', 'CONNECT', 'MANAGE'])

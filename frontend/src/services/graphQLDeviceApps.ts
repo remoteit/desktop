@@ -24,6 +24,13 @@ export const SCREENVIEW = 'remoteit.screenview'
    the device still reports it until it says it is gone (listed enabled false, with no settings and no actions). */
 export type DeviceAppState = 'disabled' | 'starting' | 'running' | 'unavailable' | 'removing'
 
+/* The machine's administrator's control of an app (graphql's DeviceApp.adminControl, the device's `<app>_control`;
+   presence-server docs/device-apps-design.md, "The machine's administrator: <app>_control"): cloud+local (the default)
+   and cloud take every change from here; local keeps it local — graphql refuses an add, enable, disable or remove from
+   here (its channel and pin are taken); off holds it disabled — graphql refuses an add or enable, and takes a disable
+   or remove. */
+export type AppAdminControl = 'cloud+local' | 'cloud' | 'local' | 'off'
+
 
 // The declaration's types; the list is open, so one this portal does not know is shown and left alone.
 export type AppSettingType = 'bool' | 'choice' | 'int' | 'string' | 'list'
@@ -82,6 +89,7 @@ export type DeviceApp = {
   upToDate?: boolean // enabled, and the device runs latest
   heldBack?: AppHeldBack | null // why not, while enabled and not up to date
   grantUntil?: string | null // when the delivery grant last given lapses; none while disabled
+  adminControl?: AppAdminControl | string // its administrator's control there (AppAdminControl)
   state: DeviceAppState
   detail: string | null
   serviceId: string | null // the service it is reached as
@@ -128,7 +136,7 @@ export const rootConsentOf = (consent: any): DeviceAppRootConsent | null =>
 const SETTING_FIELDS =
   'name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration'
 // The lifecycle's fields (enabled, added, latest, upToDate, heldBack, grantUntil) as the design pins them.
-const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil state detail serviceId problems { name error detail } settings { ${SETTING_FIELDS} }`
+const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil adminControl state detail serviceId problems { name error detail } settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
 function parsedSetting(setting: any): DeviceAppSetting {
@@ -152,6 +160,7 @@ export const parsedDeviceApp = (app: any): DeviceApp => ({
   upToDate: !!app.upToDate,
   heldBack: app.heldBack?.reason ? { reason: app.heldBack.reason, detail: app.heldBack.detail ?? '' } : null,
   grantUntil: app.grantUntil ?? null,
+  adminControl: app.adminControl ?? 'cloud+local',
   locked: app.locked?.product || app.locked?.level ? settingLockOf(app.locked) : null,
   rootConsent: rootConsentOf(app.rootConsent),
   awaitingRoot: app.awaitingRoot ?? null,

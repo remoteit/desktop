@@ -20,6 +20,8 @@ import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
 import {
+  adminLine,
+  adminRefuses,
   channelName,
   consentLine,
   day,
@@ -47,6 +49,8 @@ import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 
    Enabling, updating, the channel and the pin run code on the device: Scripting as well as Manage. Without Manage
    nothing changes. An app its product holds is greyed, "Managed by its product <name>": graphql refuses a change. One
+   its machine's administrator keeps local says so up front, its switch and Remove greyed (its channel and pin stay);
+   one turned off there, its Enable greyed (Disable and Remove stay): graphql refuses what they would ask. One
    being removed shows its state and version, and nothing to change. The releases offered for a pin are the
    catalogue's (catalogApp); where the API has no catalogue, only the pin it has. */
 export const DeviceAppPage: React.FC = () => {
@@ -116,6 +120,9 @@ export const DeviceAppPage: React.FC = () => {
   const busy = switching !== undefined
   const runLocked = !canRun || held || gone || busy
   const enabled = switching === app.id ? !app.enabled : app.enabled
+  // The machine's administrator refuses the switch either way (local), or enabling it (off); and its removal (local).
+  const adminHeld = adminRefuses(app, app.enabled ? 'disable' : 'enable')
+  const admin = adminLine(t, app)
   const settings = app.settings.filter(setting => !setting.deprecated || setting.at)
   const accountChannel = catalog?.accountChannel ?? 'stable'
   const channel = app.channel || accountChannel
@@ -159,6 +166,11 @@ export const DeviceAppPage: React.FC = () => {
                 {managedLine(t, app.locked)}
               </Typography>
             )}
+            {!gone && admin && (
+              <Typography variant="body2" color="textSecondary" data-app-admin={app.adminControl}>
+                {admin}
+              </Typography>
+            )}
           </Box>
         </Box>
         {refusal && (
@@ -185,7 +197,7 @@ export const DeviceAppPage: React.FC = () => {
               </Typography>
               <Switch
                 checked={enabled}
-                disabled={busy || held || (app.enabled ? !canManage : !canRun)}
+                disabled={busy || held || adminHeld || (app.enabled ? !canManage : !canRun)}
                 onChange={e => flip(app, e.target.checked)}
                 inputProps={{ 'aria-label': t('apps.enabledSwitch', '{{app}} enabled', { app: app.name }) }}
                 data-app-enabled
@@ -350,7 +362,7 @@ export const DeviceAppPage: React.FC = () => {
             <Button
               variant="outlined"
               size="small"
-              disabled={busy || held || (app.enabled ? !canManage : !canRun)}
+              disabled={busy || held || adminHeld || (app.enabled ? !canManage : !canRun)}
               onClick={() => flip(app, !app.enabled)}
               data-app-toggle
             >
@@ -360,7 +372,7 @@ export const DeviceAppPage: React.FC = () => {
               variant="outlined"
               size="small"
               color="error"
-              disabled={busy || held}
+              disabled={busy || held || adminRefuses(app, 'remove')}
               onClick={() => setRemoving(true)}
               data-app-remove
             >

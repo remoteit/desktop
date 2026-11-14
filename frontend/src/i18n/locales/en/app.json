@@ -207,6 +207,8 @@
     "addToCount_other": "Add to {{count}} devices",
     "addToDevice": "Add an app to {{device}}",
     "addToProduct": "Set Enabled on {{product}}",
+    "adminLocal": "Kept local by this device’s administrator: changed on the device only",
+    "adminOff": "Turned off on this device by its administrator",
     "allowRootDevices": "I allow {{publisher}}’s {{app}} full control of these devices",
     "allowRootProduct": "I allow {{publisher}}’s {{app}} full control of every device in this product",
     "allTags": "All of these",

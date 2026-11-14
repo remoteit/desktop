@@ -6,6 +6,7 @@ vi.mock('./graphQL', () => ({ graphQLGetErrors: errors, graphQLRequestWithReason
 
 import {
   graphQLAppCatalog,
+  graphQLAppTargets,
   graphQLCatalogApp,
   graphQLSetAccountAppChannel,
   resetAppCatalog,
@@ -130,5 +131,30 @@ describe('setAccountAppChannel', () => {
     expect(reasoned.mock.calls[0][1]).toEqual({ app: 'acme.backup', channel: 'beta', accountId: 'A1' })
     reasoned.mockResolvedValue({ reason: 'Only an admin may' })
     expect(await graphQLSetAccountAppChannel('acme.backup', '')).toEqual({ reason: 'Only an admin may' })
+  })
+})
+
+describe('the devices an app may be added to', () => {
+  it('each with whether it has the app, and its administrator’s control of it there', async () => {
+    post.mockResolvedValue(
+      answer({
+        login: {
+          account: {
+            devices: {
+              items: [
+                { id: 'D1', name: 'pi', permissions: ['MANAGE', 'SCRIPTING'], apps: [{ id: 'acme.backup', enabled: false, adminControl: 'off' }], availableApps: [] },
+                { id: 'D2', name: 'nas', permissions: ['MANAGE'], apps: [], availableApps: [{ id: 'acme.backup', refused: null, version: '1.4.0', needsNewer: false }] },
+              ],
+            },
+          },
+        },
+      })
+    )
+    const targets = await graphQLAppTargets('acme.backup')
+    expect(post.mock.calls[0][0].query).toContain('apps { id enabled adminControl }')
+    expect(targets).toEqual([
+      { id: 'D1', name: 'pi', canRun: true, has: 'disabled', adminControl: 'off', offer: null },
+      { id: 'D2', name: 'nas', canRun: false, has: null, adminControl: null, offer: { refused: null, version: '1.4.0', needsNewer: false } },
+    ])
   })
 })

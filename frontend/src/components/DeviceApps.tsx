@@ -18,7 +18,7 @@ import { DeviceApp, SCREENVIEW } from '../services/graphQLDeviceApps'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
 import { firstPartyApp } from './firstPartyApps'
-import { heldBackLine, managedLine, offered, runsAsWord, stateWord } from '../helpers/appsHelper'
+import { adminLine, adminRefuses, heldBackLine, managedLine, offered, runsAsWord, stateWord } from '../helpers/appsHelper'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
@@ -31,8 +31,9 @@ import { Icon } from './Icon'
 
    Enabling runs code on the device, so it needs Scripting as well as Manage, and a root release no consent covers asks
    first (components/AppRootConsent); disabling needs Manage alone. An app its product holds says "Managed by its
-   product" and its switch is held: graphql refuses a change to it. One being removed is listed until the device says it
-   is gone, with no switch and no page. Nothing where the API has no apps.
+   product" and its switch is held: graphql refuses a change to it. One its machine's administrator keeps local, or
+   turned off, says so, and its switch is held where graphql refuses the change (adminRefuses). One being removed is
+   listed until the device says it is gone, with no switch and no page. Nothing where the API has no apps.
 
    ScreenView installed the old way converts by itself once its daemon can run the app; where it will not, why; where
    nothing refuses it but it did not, the switch to the app, after the yes to root. */
@@ -138,6 +139,11 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                       {managedLine(t, app.locked)}
                     </Typography>
                   )}
+                  {!removing && adminLine(t, app) && (
+                    <Typography variant="caption" component="div" color="textSecondary" data-app-admin={app.adminControl}>
+                      {adminLine(t, app)}
+                    </Typography>
+                  )}
                   {app.enabled && app.heldBack && app.heldBack.reason !== 'pending' && (
                     <Typography
                       variant="caption"
@@ -159,7 +165,12 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
             {own?.Actions && <own.Actions device={device} app={app} />}
             <Switch
               checked={enabled}
-              disabled={switching !== undefined || !!app.locked || (app.enabled ? !canManage : !canRun)}
+              disabled={
+                switching !== undefined ||
+                !!app.locked ||
+                adminRefuses(app, app.enabled ? 'disable' : 'enable') ||
+                (app.enabled ? !canManage : !canRun)
+              }
               onChange={e => flip(app, e.target.checked)}
               inputProps={{ 'aria-label': t('apps.enabledSwitch', '{{app}} enabled', { app: app.name }) }}
               data-app-switch={app.id}

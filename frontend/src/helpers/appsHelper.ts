@@ -54,6 +54,24 @@ export function releaseChannelName(
     : t('apps.channelCandidate', '{{channel}} candidate', { channel: channelName(t, channel) })
 }
 
+/* What the machine's administrator refuses of an app here (DeviceApp.adminControl), as graphql refuses it: under
+   local, enabling, disabling and removing it (its channel and pin are taken); under off, enabling it (an add too). */
+export type AppAdminAction = 'enable' | 'disable' | 'remove'
+export const adminRefuses = (app: Pick<DeviceApp, 'adminControl'>, action: AppAdminAction): boolean =>
+  app.adminControl === 'local' || (app.adminControl === 'off' && action === 'enable')
+
+// What graphql and the device say of an app its administrator turned off (`<app>_control off`).
+const TURNED_OFF = /turned off on this device by its administrator/i
+
+// The administrator's control in words, said up front where it refuses something — none where its state already says
+// it (graphql's "Turned off on this device by its administrator (<app>_control off)").
+export function adminLine(t: TFunction, app: Pick<DeviceApp, 'adminControl' | 'detail'>): string | undefined {
+  if (app.adminControl === 'local')
+    return t('apps.adminLocal', 'Kept local by this device’s administrator: changed on the device only')
+  if (app.adminControl === 'off' && !TURNED_OFF.test(app.detail ?? ''))
+    return t('apps.adminOff', 'Turned off on this device by its administrator')
+}
+
 // A product holding an app: its enable, disable, remove, channel and pin are the product's.
 export const managedLine = (t: TFunction, locked: SettingLock) =>
   locked.product

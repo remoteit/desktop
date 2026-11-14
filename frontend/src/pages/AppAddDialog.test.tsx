@@ -67,6 +67,8 @@ const TARGETS = [
   target('D6', 'viewer', { canRun: false }),
   target('D7', 'locked', { offer: { refused: 'Not allowed on this device by its administrator', version: '1.4.0', needsNewer: false } }),
   target('D8', 'ancient', { offer: { refused: null, version: '1.4.0', needsNewer: true } }),
+  target('D9', 'kept', { has: 'disabled', adminControl: 'local' }),
+  target('D10', 'off', { has: 'disabled', adminControl: 'off' }),
 ]
 
 let root: Root
@@ -126,6 +128,11 @@ describe('Add, to devices', () => {
     expect(row('D7').textContent).toContain('Not allowed on this device by its administrator')
     expect(row('D8').textContent).toContain('Needs a newer remote.it: it runs once remote.it is upgraded')
     expect(disabled('D8')).toBe(false)
+    // Disabled there, under its administrator's local or off: adding would enable it, which graphql refuses.
+    expect(row('D9').textContent).toContain('Kept local by this device’s administrator: changed on the device only')
+    expect(disabled('D9')).toBe(true)
+    expect(row('D10').textContent).toContain('Turned off on this device by its administrator')
+    expect(disabled('D10')).toBe(true)
   })
 
   it('bulk add: addDeviceApps with the devices ticked, then each device’s result', async () => {
