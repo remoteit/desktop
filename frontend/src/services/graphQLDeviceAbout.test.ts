@@ -41,6 +41,72 @@ describe('graphQLDeviceAbout', () => {
     expect(await graphQLDeviceAbout('A')).toEqual({ about, history: [] })
     expect(request.mock.calls[0][0].data.query).toMatch(/nat \{ mapping filtering since note why \}/)
     expect(request.mock.calls[1][0].data.query).not.toMatch(/nat \{/)
+    expect(request.mock.calls[1][0].data.query).toMatch(/accounts \{/)
+  })
+
+  it('asks for the machine’s accounts and its new administrators', async () => {
+    const about = {
+      os: { name: 'Ubuntu' },
+      accounts: [
+        {
+          account: '1001',
+          name: 'jsmith',
+          fullName: 'Jane Smith',
+          kind: 'local',
+          admin: true,
+          hidden: null,
+          disabled: null,
+          guid: null,
+          remoteit: null,
+        },
+      ],
+      accountsMore: 3,
+      adminsAdded: [{ name: 'jsmith', at: '2026-11-12T10:00:00Z' }],
+      reported: '2026-11-12T10:00:00Z',
+      hardwareChanged: null,
+    }
+    request.mockResolvedValue({ data: { data: { login: { device: [{ id: 'A', about, aboutHistory: [] }] } } } })
+    expect(await graphQLDeviceAbout('A')).toEqual({ about, history: [] })
+    const query = request.mock.calls[0][0].data.query
+    expect(query).toMatch(/accounts \{ account name fullName kind admin hidden disabled guid remoteit \}/)
+    expect(query).toMatch(/accountsMore/)
+    expect(query).toMatch(/adminsAdded \{ name at \}/)
+  })
+
+  it('asks again without the accounts of an API from before them, keeping the NAT class', async () => {
+    const about = { os: { name: 'macOS' }, reported: '2026-10-01T20:00:00Z', hardwareChanged: null }
+    request
+      .mockResolvedValueOnce({
+        data: {
+          errors: [
+            { message: 'Cannot query field "accounts" on type "DeviceAbout".' },
+            { message: 'Cannot query field "accountsMore" on type "DeviceAbout".' },
+            { message: 'Cannot query field "adminsAdded" on type "DeviceAbout".' },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({ data: { data: { login: { device: [{ id: 'A', about, aboutHistory: [] }] } } } })
+    expect(await graphQLDeviceAbout('A')).toEqual({ about, history: [] })
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(request.mock.calls[1][0].data.query).not.toMatch(/accounts|adminsAdded/)
+    expect(request.mock.calls[1][0].data.query).toMatch(/nat \{/)
+  })
+
+  it('an API without either is asked once more, without both', async () => {
+    const about = { os: { name: 'macOS' }, reported: '2026-10-01T20:00:00Z', hardwareChanged: null }
+    request
+      .mockResolvedValueOnce({
+        data: {
+          errors: [
+            { message: 'Cannot query field "nat" on type "DeviceAbout".' },
+            { message: 'Cannot query field "accounts" on type "DeviceAbout".' },
+          ],
+        },
+      })
+      .mockResolvedValueOnce({ data: { data: { login: { device: [{ id: 'A', about, aboutHistory: [] }] } } } })
+    expect(await graphQLDeviceAbout('A')).toEqual({ about, history: [] })
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(request.mock.calls[1][0].data.query).not.toMatch(/nat \{|accounts/)
   })
 
   it('answers UNSUPPORTED where the API does not serve device sessions', async () => {

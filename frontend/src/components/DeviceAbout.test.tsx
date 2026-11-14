@@ -2,13 +2,15 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi } from 'vitest'
 
-const { read, devices, copies } = vi.hoisted(() => ({
+const { read, signIns, devices, copies } = vi.hoisted(() => ({
   read: vi.fn(),
+  signIns: vi.fn(),
   devices: { current: [] as { id: string; name: string }[] },
   copies: { current: [] as { id: string; name: string }[] },
 }))
 vi.mock('../services/graphQLDeviceAbout', () => ({ graphQLDeviceAbout: read }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
+vi.mock('../hooks/useDeviceSignIns', () => ({ useDeviceSignIns: signIns }))
 vi.mock('../buttons/CopyIconButton', () => ({ CopyIconButton: () => null }))
 vi.mock('./Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
 // The devices the portal has read, and the copies awaiting a decision: what a history entry may link.
@@ -159,12 +161,152 @@ describe('DeviceAbout', () => {
     expect((await render()).textContent).toBe('')
   })
 
+  it('to someone it is shared with: the OS, architecture and software alone, no empty section', async () => {
+    // graphql's split: what helps a viewer connect, every other part none, and no history.
+    const os = {
+      family: 'darwin',
+      name: 'macOS',
+      id: 'macos',
+      version: '14.6',
+      build: null,
+      kernel: null,
+      edition: null,
+    }
+    const hardware = {
+      arch: 'arm64',
+      virtual: 'none',
+      cpu: null,
+      cores: null,
+      memoryMb: null,
+      manufacturer: null,
+      model: null,
+      board: null,
+    }
+    read.mockResolvedValue({
+      about: {
+        os,
+        hardware,
+        ids: null,
+        oem: null,
+        software: about.software,
+        nat: null,
+        accounts: null,
+        accountsMore: null,
+        adminsAdded: null,
+        data: null,
+        reported: '2026-10-02T03:26:16Z',
+        hardwareChanged: null,
+      },
+      history: [],
+    })
+    const container = await render()
+    const headings = [...container.querySelectorAll('li.MuiListSubheader-root')].map(h => h.textContent)
+    expect(headings).toEqual(['System', 'Software'])
+    const text = container.textContent
+    expect(text).toContain('OS:macOS 14.6')
+    expect(text).toContain('Architecture:arm64')
+    expect(text).toContain('1.0.1 (pkg)')
+    expect(text).not.toMatch(/undefined|null|View details|Accounts|History|other hardware/)
+    expect(container.querySelector('[data-notice]')).toBeNull()
+    expect(signIns).not.toHaveBeenCalledWith('A') // no accounts to join them to
+  })
+
   it('shows the document exactly as the device said it, the fields the page leaves out too', async () => {
     read.mockResolvedValue({ about, history: [] })
     const container = await render()
     const button = [...container.querySelectorAll('button')].find(b => b.textContent === 'View details')!
     await act(async () => button.click())
     expect(JSON.parse(document.querySelector('[data-about-json]')!.textContent!)).toEqual(about.data)
+  })
+})
+
+describe('the machine’s accounts', () => {
+  const account = (name: string, id: string, rest: any = {}) => ({
+    account: id,
+    name,
+    fullName: null,
+    kind: 'local',
+    admin: false,
+    hidden: null,
+    disabled: null,
+    guid: null,
+    remoteit: null,
+    ...rest,
+  })
+  const accounts = [
+    account('jsmith', '1001', { fullName: 'Jane Smith', admin: true }),
+    account('CORP\\bob', '1500002', { kind: 'domain', disabled: true }),
+    account('r3-console', '1002', { hidden: true, remoteit: true }),
+  ]
+  const sections = (container: HTMLElement) =>
+    [...container.querySelectorAll('li.MuiListSubheader-root')].map(h => h.textContent)
+
+  it('lists each with its kind, admin and flags, and the person signed in on it', async () => {
+    signIns.mockReturnValue([
+      { account: '1001', name: 'jsmith', person: { id: 'P1', email: 'pat@example.com' }, since: '', manages: true },
+      { account: '9999', name: 'gone', person: { id: 'P2', email: 'sam@example.com' }, since: '', manages: false },
+    ])
+    read.mockResolvedValue({ about: { ...about, accounts, accountsMore: 12 }, history: [] })
+    const container = await render()
+    expect(sections(container)).toEqual(['SystemView details', 'Identifiers', 'Software', 'Accounts'])
+    const rows = [...container.querySelectorAll('li')].map(li => li.textContent)
+    expect(rows).toContain('jsmith:Jane Smith — Local, AdministratorSigned in as pat@example.com')
+    expect(rows).toContain('CORP\\bob:Domain, Disabled')
+    expect(rows).toContain("r3-console:Local, Hidden, remote.it's own")
+    expect(rows).toContain('+12 more')
+    expect(container.textContent).not.toContain('sam@example.com') // on an account the device does not list
+    expect(signIns).toHaveBeenLastCalledWith('A')
+    signIns.mockReset()
+  })
+
+  it('says the machine’s administrator turned the list off, and nothing where there is no list', async () => {
+    const off = { ...about.data, policy: { controls: { account_report: 'off' } } }
+    read.mockResolvedValue({ about: { ...about, accounts: null, data: off }, history: [] })
+    let container = await render()
+    expect(sections(container)).toContain('Accounts')
+    expect(container.textContent).toContain("The machine's administrator turned the account list off.")
+
+    read.mockResolvedValue({ about: { ...about, accounts: null }, history: [] })
+    container = await render()
+    expect(sections(container)).not.toContain('Accounts')
+    read.mockResolvedValue({ about: { ...about, accounts: [], accountsMore: null }, history: [] })
+    container = await render()
+    expect(sections(container)).not.toContain('Accounts')
+  })
+
+  it('shows a new administrator at the top of the page', async () => {
+    read.mockResolvedValue({
+      about: { ...about, accounts, adminsAdded: [{ name: 'jsmith', at: '2026-11-12T10:00:00Z' }] },
+      history: [],
+    })
+    const container = await render()
+    const notice = container.querySelector('[data-notice]')
+    expect(notice?.textContent).toContain('A new administrator on the machine: jsmith')
+    expect(container.firstElementChild).toBe(notice)
+  })
+
+  it('reads an account’s history as the account, added and removed as such', async () => {
+    const entry = (before: string | null, after: string | null) => ({
+      at: '2026-11-12T10:00:00Z',
+      kind: 'field',
+      field: 'accounts.jsmith',
+      before,
+      after,
+      detail: null,
+      generation: 7,
+    })
+    read.mockResolvedValue({
+      about: null,
+      history: [
+        entry(null, '1001, local, admin, Jane Smith'),
+        entry('1001, local, Jane Smith', '1001, local, admin, Jane Smith'),
+        entry('1001, local, admin, Jane Smith', null),
+      ],
+    })
+    const items = [...(await render()).querySelectorAll('li')].map(li => li.textContent).filter(t => t !== 'History')
+    expect(items[0]).toContain('Account jsmithAdded: 1001, local, admin, Jane Smith')
+    expect(items[1]).toContain('Account jsmith1001, local, Jane Smith → 1001, local, admin, Jane Smith')
+    expect(items[2]).toContain('Account jsmithRemoved: 1001, local, admin, Jane Smith')
   })
 })
 
