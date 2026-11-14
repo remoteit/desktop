@@ -3116,8 +3116,8 @@
     "consent": "Consent…",
     "consentAction": "Consent to full control",
     "consentedAll": "Consented to run as root by {{by}}, {{when}}: for every device in this product, now and later",
-    "hint": "An app left to each device is the device’s to turn on or off. One set here is locked on its devices while the product is synced or enforced.",
-    "hintEnforced": "An app set here is locked on its devices. One not set is turned off on them, as the product is enforced.",
+    "hintEnforcedStates": "An app set here is locked on its devices. One not listed is removed from them, as the product is enforced.",
+    "hintStates": "Enabled adds and runs it on the product’s devices, Disabled adds it stopped, Removed takes it off them. One left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.",
     "lockedEnforced": "Locked on its devices (enforced)",
     "lockedSynced": "Locked on its devices (synced)",
     "needsConsent": "A new version needs to run as root: its devices are not turned on until you consent",
@@ -3134,8 +3134,12 @@
     "rootTitle": "Run {{app}} as root on this product’s devices?",
     "rootTrust": "Turn it on only if you trust {{publisher}} with every device in this product.",
     "rootUpdate": "{{app}} {{version}} needs to run as root. Its devices stay on the version they run until you consent.",
+    "stateDisabled": "Disabled",
+    "stateEnabled": "Enabled",
+    "stateRemoved": "Removed",
     "title": "Apps",
-    "unsetEnforced": "Not set: off on its devices"
+    "unset": "Unset: each device’s own",
+    "unsetRemoved": "Removed (not listed)"
   },
   "productDevices": {
     "more_one": "and {{count}} more",
@@ -3272,9 +3276,10 @@
   "productPolicy": {
     "appCount_one": "{{count}} app",
     "appCount_other": "{{count}} apps",
+    "appDisabledItem": "App {{name}} disabled",
+    "appEnabledItem": "App {{name}} enabled",
     "appItem": "App {{name}}",
-    "appOffItem": "App {{name}} off",
-    "appOnItem": "App {{name}} on",
+    "appRemovedItem": "App {{name}} removed",
     "appSettingCount_one": "{{count}} app setting",
     "appSettingCount_other": "{{count}} app settings",
     "appSettingItem": "{{name}}: {{value}}",

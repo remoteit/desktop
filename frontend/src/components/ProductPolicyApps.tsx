@@ -4,6 +4,7 @@ import type { TFunction } from 'i18next'
 import { Box, Button, List, ListItem, ListItemIcon, ListItemText, TextField, Typography } from '@mui/material'
 import {
   ProductApp,
+  ProductAppState,
   ProductAppSetting,
   ProductRemovedSetting,
   ProductSync,
@@ -30,14 +31,15 @@ type Props = {
 // A select's key for unset: each device's own.
 const UNSET = ''
 
-/* The apps a product sets on its devices (presence-server docs/device-apps-design.md, "Product policy"): every
-   catalogue app its account may take, a row each as on a device's Apps section — its publisher, its version and
-   channel, Runs as root where it does — with its settings as its options, inside its row and lined up under its name.
-   Each is on, off or left to each device; under enforced, one left unset is off on its devices. One the product sets
-   is locked on its devices while it is synced or enforced; a setting the release says may not be forced is given to
-   them but not locked, and is said so.
+/* The apps a product sets on its devices (presence-server docs/device-apps-design.md, "Product policy" under
+   "Lifecycle: add, disable, remove", and "The Apps pages"): every catalogue app its account may take, a row each — its
+   publisher, its version and channel or pin, Runs as root where it does — with a select: Unset (each device's own),
+   Enabled (added and enabled), Disabled (added, nothing installed) or Removed (taken off its devices, and kept off);
+   under enforced, Unset reads "Removed (not listed)", as an app the product does not list is removed. Its settings are
+   its options, inside its row and lined up under its name. One the product sets is locked on its devices while it is
+   synced or enforced; a setting the release says may not be forced is given to them but not locked, and is said so.
 
-   A root app is turned on for the product only once the person says yes to its full control of every device in the
+   A root app is enabled for the product only once the person says yes to its full control of every device in the
    product, now and later (components/AppRootConsent); graphql keeps that consent on the product, and asks for it again
    when a new release newly runs as root, its devices staying on its last restricted release meanwhile (or not turned
    on, where there is none). Turning an app on needs Scripting in the product's account as well as managing the
@@ -64,16 +66,19 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
     onChanged()
   }
 
-  // Turning a root app on without a consent that covers its release asks for one first — one whose devices stay on a
+  // Enabling a root app without a consent that covers its release asks for one first — one whose devices stay on a
   // restricted release (root says that one) while a root one waits (needsConsent) included.
-  const setApp = (app: ProductApp, on: boolean | null, consentRoot?: boolean) => {
-    if (on === true && !consentRoot && (app.root || app.needsConsent) && (!app.rootConsent || app.needsConsent)) return setAsking(app)
+  const setApp = (app: ProductApp, state: ProductAppState | null, consentRoot?: boolean) => {
+    if (state === 'enabled' && !consentRoot && (app.root || app.needsConsent) && (!app.rootConsent || app.needsConsent))
+      return setAsking(app)
     write(app.id, t('productApps.notChanged', 'The app was not changed.'), () =>
       graphQLSetDeviceProductApp(
         productId,
         app.id,
-        on,
-        on ? { channel: app.channel, version: app.pinned, ...(consentRoot && { consentRoot }) } : {}
+        state,
+        state && state !== 'removed'
+          ? { channel: app.channel, version: app.pinned, ...(consentRoot && { consentRoot }) }
+          : {}
       )
     )
   }
@@ -85,8 +90,8 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
 
   const unsetName =
     sync === 'enforced'
-      ? t('productApps.unsetEnforced', 'Not set: off on its devices')
-      : t('productSettings.unset', 'Each device’s own')
+      ? t('productApps.unsetRemoved', 'Removed (not listed)')
+      : t('productApps.unset', 'Unset: each device’s own')
 
   return (
     <Box marginTop={3} data-product-apps>
@@ -96,12 +101,12 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
       <Typography variant="caption" color="textSecondary" component="p">
         {sync === 'enforced'
           ? t(
-              'productApps.hintEnforced',
-              'An app set here is locked on its devices. One not set is turned off on them, as the product is enforced.'
+              'productApps.hintEnforcedStates',
+              'An app set here is locked on its devices. One not listed is removed from them, as the product is enforced.'
             )
           : t(
-              'productApps.hint',
-              'An app left to each device is the device’s to turn on or off. One set here is locked on its devices while the product is synced or enforced.'
+              'productApps.hintStates',
+              'Enabled adds and runs it on the product’s devices, Disabled adds it stopped, Removed takes it off them. One left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.'
             )}
       </Typography>
       <List dense disablePadding>
@@ -109,7 +114,7 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
           const own = firstPartyApp(app.id)
           const words = own?.settings?.(t) ?? {}
           const settings = app.settings.filter(setting => !setting.deprecated || setting.value !== null)
-          const value = app.on === null ? UNSET : app.on ? 'on' : 'off'
+          const value = app.state ?? UNSET
           return (
             <Box component="li" key={app.id} data-product-app={app.id} sx={{ listStyle: 'none' }}>
               <ListItem component="div" disableGutters sx={{ alignItems: 'flex-start' }}>
@@ -178,18 +183,19 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
                 sx={{ paddingLeft: `${LIST_ITEM_ICON_WIDTH - spacing.sm}px` }}
               >
                 <SelectSetting
-                  data-product-app-on={app.id}
+                  data-product-app-state={app.id}
                   label={t('productApps.onDevices', 'On its devices')}
                   value={value}
                   values={[
                     { key: UNSET, name: unsetName },
-                    { key: 'on', name: t('productSettings.on', 'On') },
-                    { key: 'off', name: t('productSettings.off', 'Off') },
+                    { key: 'enabled', name: t('productApps.stateEnabled', 'Enabled') },
+                    { key: 'disabled', name: t('productApps.stateDisabled', 'Disabled') },
+                    { key: 'removed', name: t('productApps.stateRemoved', 'Removed') },
                   ]}
                   disabled={!manage || saving === app.id}
                   disableGutters
                   hideIcon
-                  onChange={key => key !== value && setApp(app, key === UNSET ? null : key === 'on')}
+                  onChange={key => key !== value && setApp(app, key === UNSET ? null : (key as ProductAppState))}
                 />
                 {(app.removedSettings ?? []).map(removed => (
                   <ProductRemovedSettingRow
@@ -223,12 +229,12 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
       <RootConsent
         product
         app={asking}
-        version={asking?.on && asking.needsConsent ? asking.awaitingRoot : undefined}
-        action={asking?.on ? t('productApps.consentAction', 'Consent to full control') : undefined}
+        version={asking?.state === 'enabled' && asking.needsConsent ? asking.awaitingRoot : undefined}
+        action={asking?.state === 'enabled' ? t('productApps.consentAction', 'Consent to full control') : undefined}
         onConfirm={() => {
           const app = asking
           setAsking(undefined)
-          if (app) setApp(app, true, true)
+          if (app) setApp(app, 'enabled', true)
         }}
         onDeny={() => setAsking(undefined)}
       />

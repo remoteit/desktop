@@ -3116,8 +3116,8 @@
     "consent": "",
     "consentAction": "",
     "consentedAll": "Als root zugestimmt von {{by}}, {{when}}: für jedes Gerät in diesem Produkt, jetzt und künftig",
-    "hint": "",
-    "hintEnforced": "",
+    "hintEnforcedStates": "",
+    "hintStates": "",
     "lockedEnforced": "",
     "lockedSynced": "",
     "needsConsent": "",
@@ -3134,8 +3134,12 @@
     "rootTitle": "",
     "rootTrust": "",
     "rootUpdate": "{{app}} {{version}} muss als root laufen. Seine Geräte bleiben auf ihrer Version, bis Sie zustimmen.",
+    "stateDisabled": "",
+    "stateEnabled": "",
+    "stateRemoved": "",
     "title": "",
-    "unsetEnforced": ""
+    "unset": "",
+    "unsetRemoved": ""
   },
   "productDevices": {
     "more_one": "",
@@ -3272,9 +3276,10 @@
   "productPolicy": {
     "appCount_one": "",
     "appCount_other": "",
+    "appDisabledItem": "",
+    "appEnabledItem": "",
     "appItem": "",
-    "appOffItem": "",
-    "appOnItem": "",
+    "appRemovedItem": "",
     "appSettingCount_one": "",
     "appSettingCount_other": "",
     "appSettingItem": "",

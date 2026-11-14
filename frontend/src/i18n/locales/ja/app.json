@@ -3062,8 +3062,8 @@
     "consent": "",
     "consentAction": "",
     "consentedAll": "{{by}} が root での実行に同意 ({{when}}): このプロダクトのすべてのデバイス (今後追加されるものも含む)",
-    "hint": "",
-    "hintEnforced": "",
+    "hintEnforcedStates": "",
+    "hintStates": "",
     "lockedEnforced": "",
     "lockedSynced": "",
     "needsConsent": "",
@@ -3080,8 +3080,12 @@
     "rootTitle": "",
     "rootTrust": "",
     "rootUpdate": "{{app}} {{version}} は root での実行が必要です。同意するまで、デバイスは現在のバージョンのままです。",
+    "stateDisabled": "",
+    "stateEnabled": "",
+    "stateRemoved": "",
     "title": "",
-    "unsetEnforced": ""
+    "unset": "",
+    "unsetRemoved": ""
   },
   "productDevices": {
     "more_other": "",
@@ -3214,9 +3218,10 @@
   },
   "productPolicy": {
     "appCount_other": "",
+    "appDisabledItem": "",
+    "appEnabledItem": "",
     "appItem": "",
-    "appOffItem": "",
-    "appOnItem": "",
+    "appRemovedItem": "",
     "appSettingCount_other": "",
     "appSettingItem": "",
     "deviceCount_other": "",

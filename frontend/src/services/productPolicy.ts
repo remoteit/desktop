@@ -58,9 +58,10 @@ export type ProductPolicy = {
   apps: ProductApp[] | null
 }
 
-/* The apps a product sets on its devices (presence-server docs/device-apps-design.md, "Product policy"): every
-   catalogue app the product's account may take, each on, off or unset (each device's own) — under enforced, an app the
-   product does not set is turned off on its devices —, with its channel or a pinned version, and its settings, each
+/* The apps a product sets on its devices (presence-server docs/device-apps-design.md, "Product policy" under
+   "Lifecycle: add, disable, remove"): every catalogue app the product's account may take, each enabled, disabled,
+   removed or unset (each device's own) — under enforced, an app the product does not set is removed from its devices
+   —, with its channel or a pinned version, and its settings, each
    set or unset the same way. A root app is turned on only with a consent kept on the product, which covers every
    device in it, now and later; a release that newly runs as root needs it again (needsConsent). graphql's
    DeviceProduct.apps, setDeviceProductApp and setDeviceProductAppSetting. */
@@ -92,6 +93,11 @@ export type ProductAppSetting = {
   choices: { value: string; label: string }[] | null
 }
 
+// What a product sets of an app on its devices (r3_DeviceProductApps.state): added and enabled, added and disabled
+// (nothing installed), or removed; null, no row: unset.
+export type ProductAppState = 'enabled' | 'disabled' | 'removed'
+export const PRODUCT_APP_STATES: ProductAppState[] = ['enabled', 'disabled', 'removed']
+
 export type ProductApp = {
   id: string
   name: string
@@ -99,7 +105,7 @@ export type ProductApp = {
   description: string | null
   root: boolean // the release its devices are given runs as root
   version: string | null // the release this stage gives on its channel, or its pin; null none here yet
-  on: boolean | null // null unset: each device's own
+  state: ProductAppState | null // null unset: each device's own
   channel: string | null
   pinned: string | null
   rootConsent: ProductRootConsent | null
@@ -424,7 +430,7 @@ const APP: Want = {
   description: true,
   root: true,
   version: true,
-  on: true,
+  state: true,
   channel: true,
   pinned: true,
   rootConsent: { by: true, at: true, version: true, user: 'email' },
@@ -444,7 +450,7 @@ export const productAppOf = (app: any): ProductApp => ({
   description: app.description ?? null,
   root: !!app.root,
   version: app.version ?? null,
-  on: typeof app.on === 'boolean' ? app.on : null,
+  state: PRODUCT_APP_STATES.includes(app.state) ? app.state : null,
   channel: app.channel ?? null,
   pinned: app.pinned ?? null,
   rootConsent: app.rootConsent?.by
@@ -603,13 +609,13 @@ export type SetProductAppOptions = {
   consentRoot?: boolean
 }
 
-// on null unsets it: each device's own again (its channel and version go with it). Turning one on, or choosing its
+// state null unsets it: each device's own again (its channel and version go with it). Enabling it, or choosing its
 // channel or version, needs Scripting in the product's account as well; a root app without a consent on the product,
 // consentRoot. Refused in graphql's words.
 export const graphQLSetDeviceProductApp = (
   productId: string,
   app: string,
-  on: boolean | null,
+  state: ProductAppState | null,
   { channel, version, consentRoot }: SetProductAppOptions = {}
 ) =>
   ask<true>(
@@ -618,9 +624,9 @@ export const graphQLSetDeviceProductApp = (
     {
       productId,
       app,
-      on,
-      ...(on !== null && channel !== undefined && { channel }),
-      ...(on !== null && version !== undefined && { version }),
+      state,
+      ...(state && state !== 'removed' && channel !== undefined && { channel }),
+      ...(state && state !== 'removed' && version !== undefined && { version }),
       ...(consentRoot && { consentRoot }),
     },
     () => true

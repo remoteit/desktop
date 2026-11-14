@@ -119,7 +119,7 @@ export function productValue(t: TFunction, value: any): string {
   return String(value)
 }
 
-// An item named with its kind: "Tag: dev". An app with whether it is turned on or off, an app setting (graphql names it
+// An item named with its kind: "Tag: dev". An app with its state (enabled, disabled, removed), an app setting (graphql names it
 // "<app>: <setting>") with its value, where the preview gives them.
 export function itemName(t: TFunction, item: ProductItem): string {
   switch (item.kind) {
@@ -136,10 +136,13 @@ export function itemName(t: TFunction, item: ProductItem): string {
     case 'exit':
       return t('productPolicy.exitItem', 'Runs exit {{name}}', { name: item.name })
     case 'app':
-      return item.value === true
-        ? t('productPolicy.appOnItem', 'App {{name}} on', { name: item.name })
-        : item.value === false
-        ? t('productPolicy.appOffItem', 'App {{name}} off', { name: item.name })
+      // Its state where the preview gives one (enabled, disabled, removed); on or off from an API before them.
+      return item.value === 'enabled' || item.value === true
+        ? t('productPolicy.appEnabledItem', 'App {{name}} enabled', { name: item.name })
+        : item.value === 'disabled' || item.value === false
+        ? t('productPolicy.appDisabledItem', 'App {{name}} disabled', { name: item.name })
+        : item.value === 'removed'
+        ? t('productPolicy.appRemovedItem', 'App {{name}} removed', { name: item.name })
         : t('productPolicy.appItem', 'App {{name}}', { name: item.name })
     case 'app_setting':
       return item.value === undefined || item.value === null

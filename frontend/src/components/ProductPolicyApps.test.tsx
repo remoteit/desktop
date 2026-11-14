@@ -24,7 +24,7 @@ vi.mock('./SelectSetting', () => ({
       data-select={label}
       data-value={value}
       data-disabled={String(!!disabled)}
-      data-on={props['data-product-app-on']}
+      data-on={props['data-product-app-state']}
       data-setting={props['data-product-app-setting']}
     >
       {values.map((v: any) => (
@@ -83,7 +83,7 @@ const consoleApp = (more: Partial<ProductApp> = {}): ProductApp => ({
   description: null,
   root: true,
   version: '1.4.0',
-  on: null,
+  state: null,
   channel: 'stable',
   pinned: null,
   rootConsent: null,
@@ -102,7 +102,7 @@ const logs = (more: Partial<ProductApp> = {}): ProductApp => ({
   description: 'Reads the device’s logs',
   root: false,
   version: null,
-  on: null,
+  state: null,
   channel: null,
   pinned: null,
   rootConsent: null,
@@ -181,35 +181,44 @@ describe('a product’s Apps block', () => {
     expect(page.querySelector('[data-product-apps]')).toBeNull()
   })
 
-  it('on, off or each device’s own; under enforced, unset says it is off on its devices', async () => {
+  it('enabled, disabled, removed or unset (each device’s own); under enforced, unset reads Removed (not listed)', async () => {
     let page = await render([
-      consoleApp({ on: true, rootConsent: { by: 'evan', at: '2026-11-12T18:00:00Z', version: '1.4.0' } }),
-      logs({ on: false }),
+      consoleApp({ state: 'enabled', rootConsent: { by: 'evan', at: '2026-11-12T18:00:00Z', version: '1.4.0' } }),
+      logs({ state: 'disabled' }),
     ])
-    expect(onOf(page, 'remoteit.console').getAttribute('data-value')).toBe('on')
-    expect(onOf(page, 'acme.logs').getAttribute('data-value')).toBe('off')
-    expect(onOf(page, 'acme.logs').querySelector('[data-choice=""]')!.textContent).toBe('Each device’s own')
+    expect(onOf(page, 'remoteit.console').getAttribute('data-value')).toBe('enabled')
+    expect(onOf(page, 'acme.logs').getAttribute('data-value')).toBe('disabled')
+    expect([...onOf(page, 'acme.logs').querySelectorAll('[data-choice]')].map(c => c.textContent)).toEqual([
+      'Unset: each device’s own',
+      'Enabled',
+      'Disabled',
+      'Removed',
+    ])
+    page = await render([logs({ state: 'removed' })])
+    expect(onOf(page, 'acme.logs').getAttribute('data-value')).toBe('removed')
     page = await render([logs()], { sync: 'enforced' })
     expect(onOf(page, 'acme.logs').getAttribute('data-value')).toBe('')
-    expect(onOf(page, 'acme.logs').querySelector('[data-choice=""]')!.textContent).toBe('Not set: off on its devices')
-    expect(page.textContent).toContain('One not set is turned off on them, as the product is enforced.')
+    expect(onOf(page, 'acme.logs').querySelector('[data-choice=""]')!.textContent).toBe('Removed (not listed)')
+    expect(page.textContent).toContain('One not listed is removed from them, as the product is enforced.')
   })
 
-  it('a restricted app turned on at once, keeping its channel and pin; off, and unset with null', async () => {
+  it('a restricted app enabled at once, keeping its channel and pin; disabled likewise; removed and unset with neither', async () => {
     const page = await render([logs({ channel: 'beta', pinned: '2.0.0' })])
-    await pick(onOf(page, 'acme.logs'), 'on')
-    expect(setApp).toHaveBeenLastCalledWith('P1', 'acme.logs', true, { channel: 'beta', version: '2.0.0' })
-    await pick(onOf(page, 'acme.logs'), 'off')
-    expect(setApp).toHaveBeenLastCalledWith('P1', 'acme.logs', false, {})
-    expect(onChanged).toHaveBeenCalledTimes(2)
-    const set = await render([logs({ on: true })])
+    await pick(onOf(page, 'acme.logs'), 'enabled')
+    expect(setApp).toHaveBeenLastCalledWith('P1', 'acme.logs', 'enabled', { channel: 'beta', version: '2.0.0' })
+    await pick(onOf(page, 'acme.logs'), 'disabled')
+    expect(setApp).toHaveBeenLastCalledWith('P1', 'acme.logs', 'disabled', { channel: 'beta', version: '2.0.0' })
+    await pick(onOf(page, 'acme.logs'), 'removed')
+    expect(setApp).toHaveBeenLastCalledWith('P1', 'acme.logs', 'removed', {})
+    expect(onChanged).toHaveBeenCalledTimes(3)
+    const set = await render([logs({ state: 'enabled' })])
     await pick(onOf(set, 'acme.logs'), '')
     expect(setApp).toHaveBeenLastCalledWith('P1', 'acme.logs', null, {})
   })
 
   it('a root app with no consent: asked in words naming it, its publisher, full control and every device in the product, now and later', async () => {
     const page = await render([consoleApp()])
-    await pick(onOf(page, 'remoteit.console'), 'on')
+    await pick(onOf(page, 'remoteit.console'), 'enabled')
     expect(setApp).not.toHaveBeenCalled()
     const confirm = page.querySelector('[data-confirm]')!
     expect(confirm.querySelector('[data-confirm-title]')!.textContent).toBe(
@@ -221,7 +230,7 @@ describe('a product’s Apps block', () => {
     expect(body).toContain('every device in this product, now and later')
     expect(confirm.textContent).toContain('Turn it on only if you trust remote.it with every device in this product.')
     await click(confirm.querySelector('[data-confirm-ok]'))
-    expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', true, {
+    expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', {
       channel: 'stable',
       version: null,
       consentRoot: true,
@@ -231,7 +240,7 @@ describe('a product’s Apps block', () => {
 
   it('a root app not turned on when the person says no', async () => {
     const page = await render([consoleApp()])
-    await pick(onOf(page, 'remoteit.console'), 'on')
+    await pick(onOf(page, 'remoteit.console'), 'enabled')
     await click(page.querySelector('[data-confirm-deny]'))
     expect(setApp).not.toHaveBeenCalled()
     expect(page.querySelector('[data-confirm]')).toBeNull()
@@ -239,18 +248,18 @@ describe('a product’s Apps block', () => {
 
   it('a consent kept: shown with who and when, and the app turned on without asking again', async () => {
     const page = await render([
-      consoleApp({ on: false, rootConsent: { by: 'evan@example.com', at: '2026-11-12T18:00:00Z', version: '1.4.0' } }),
+      consoleApp({ state: 'disabled', rootConsent: { by: 'evan@example.com', at: '2026-11-12T18:00:00Z', version: '1.4.0' } }),
     ])
     expect(line(page, 'remoteit.console', 'consent')).toMatch(/^Consented to run as root by evan@example.com, .*2026/)
-    await pick(onOf(page, 'remoteit.console'), 'on')
+    await pick(onOf(page, 'remoteit.console'), 'enabled')
     expect(page.querySelector('[data-confirm]')).toBeNull()
-    expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', true, { channel: 'stable', version: null })
+    expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', { channel: 'stable', version: null })
   })
 
   it('a new release that needs root: said, and consented to from its row', async () => {
     const page = await render([
       consoleApp({
-        on: true,
+        state: 'enabled',
         needsConsent: true,
         rootConsent: { by: 'evan@example.com', at: '2026-11-01T18:00:00Z', version: '1.3.0' },
       }),
@@ -263,7 +272,7 @@ describe('a product’s Apps block', () => {
     const confirm = page.querySelector('[data-confirm]')!
     expect(confirm.querySelector('[data-confirm-ok]')!.textContent).toBe('Consent to full control')
     await click(confirm.querySelector('[data-confirm-ok]'))
-    expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', true, {
+    expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', {
       channel: 'stable',
       version: null,
       consentRoot: true,
@@ -271,11 +280,11 @@ describe('a product’s Apps block', () => {
   })
 
   it('locked on its devices, with the product’s level', async () => {
-    let page = await render([consoleApp({ on: false, locked: true })])
+    let page = await render([consoleApp({ state: 'disabled', locked: true })])
     expect(line(page, 'remoteit.console', 'locked')).toBe('Locked on its devices (synced)')
-    page = await render([consoleApp({ on: false, locked: true })], { sync: 'enforced' })
+    page = await render([consoleApp({ state: 'disabled', locked: true })], { sync: 'enforced' })
     expect(line(page, 'remoteit.console', 'locked')).toBe('Locked on its devices (enforced)')
-    page = await render([consoleApp({ on: false })], { sync: 'template' })
+    page = await render([consoleApp({ state: 'disabled' })], { sync: 'template' })
     expect(line(page, 'remoteit.console', 'locked')).toBeUndefined()
   })
 
@@ -376,7 +385,7 @@ describe('a product’s Apps block', () => {
   })
 
   it('read-only for one who may not manage the product', async () => {
-    const page = await render([consoleApp({ needsConsent: true, on: true })], { manage: false })
+    const page = await render([consoleApp({ needsConsent: true, state: 'enabled' })], { manage: false })
     expect(onOf(page, 'remoteit.console').getAttribute('data-disabled')).toBe('true')
     expect(settingOf(page, 'remoteit.console', 'ai_commands').getAttribute('data-disabled')).toBe('true')
     expect(row(page, 'remoteit.console').querySelector('[data-product-app-consent-action]')).toBeNull()
@@ -385,12 +394,12 @@ describe('a product’s Apps block', () => {
   it('a refusal in graphql’s words', async () => {
     setApp.mockResolvedValue({ reason: 'Turning on an app needs Scripting in the product’s account' })
     const page = await render([logs()])
-    await pick(onOf(page, 'acme.logs'), 'on')
+    await pick(onOf(page, 'acme.logs'), 'enabled')
     expect(page.querySelector('[data-notice]')!.textContent).toBe(
       'Turning on an app needs Scripting in the product’s account'
     )
     setApp.mockResolvedValue('ERROR')
-    await pick(onOf(page, 'acme.logs'), 'off')
+    await pick(onOf(page, 'acme.logs'), 'disabled')
     expect(page.querySelector('[data-notice]')!.textContent).toBe('The app was not changed.')
   })
 })
@@ -399,7 +408,7 @@ describe('root, and a release that newly asks for it', () => {
   it('who consented by their email, and that it covers every device in the product, now and later', async () => {
     const page = await render([
       consoleApp({
-        on: true,
+        state: 'enabled',
         rootConsent: { by: 'AAAA', email: 'pat@example.com', at: '2026-11-12T18:00:00Z', version: '1.4.0' },
       }),
     ])
@@ -411,7 +420,7 @@ describe('root, and a release that newly asks for it', () => {
   it('its devices stay on the release they run until someone consents; the dialog says which release, for every device', async () => {
     // What they are given (1.4.0) runs restricted — graphql's root is the release given — beside the root one waiting.
     const page = await render([
-      consoleApp({ on: true, root: false, version: '1.4.0', needsConsent: true, awaitingRoot: '1.5.0', rootConsent: null }),
+      consoleApp({ state: 'enabled', root: false, version: '1.4.0', needsConsent: true, awaitingRoot: '1.5.0', rootConsent: null }),
     ])
     expect(line(page, 'remoteit.console', 'root')).toBeUndefined()
     expect(line(page, 'remoteit.console', 'about')).toBe('By remote.it · 1.4.0 · Stable')
@@ -425,7 +434,7 @@ describe('root, and a release that newly asks for it', () => {
     )
     expect(confirm.textContent).toContain('on every device in this product, now and later')
     await click(confirm.querySelector('[data-confirm-ok]'))
-    expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', true, {
+    expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', {
       channel: 'stable',
       version: null,
       consentRoot: true,
@@ -438,7 +447,7 @@ describe('a removed setting the product still sets', () => {
 
   it('listed as Removed in <version>, with no effect, and cleared with null', async () => {
     const page = await render([
-      consoleApp({ on: true, removedSettings: [removed, { ...removed, name: 'quiet', removedIn: null }] }),
+      consoleApp({ state: 'enabled', removedSettings: [removed, { ...removed, name: 'quiet', removedIn: null }] }),
     ])
     const item = row(page, 'remoteit.console').querySelector('[data-product-app-removed="colour"]')!
     expect(item.textContent).toContain('colour: true')
