@@ -225,6 +225,21 @@ describe('Add, to a tag or a product', () => {
     expect(submit().disabled).toBe(true)
   })
 
+  it('a tag graphql finds over 500 devices: the call refused whole — its words, no device listed, Add again possible', async () => {
+    // The count shown is the device list's; graphql counts the tag's devices itself (devicesNamed), and refuses the call.
+    addMany.mockResolvedValue({ reason: 'More than 500 devices: add it to a product' })
+    await render()
+    await click($('[data-app-add-to="tag"] input'))
+    await select($('[data-app-add-tag-select]'), ['office', 'lab'])
+    expect($('[data-app-add-too-many]')).toBeNull()
+    await click(submit())
+    expect(addMany).toHaveBeenCalledWith('acme.backup', { tags: { operator: 'ANY', values: ['office', 'lab'] }, accountId: undefined })
+    expect($('[data-notice]').textContent).toBe('More than 500 devices: add it to a product')
+    expect($('[data-app-results]')).toBeNull()
+    expect($('[data-app-add-close]').textContent).toBe('Cancel')
+    expect(submit().disabled).toBe(false)
+  })
+
   it('a product: set Enabled on it (state enabled), its consent worded for every device in it, now and later', async () => {
     catalog.mockResolvedValue({ ...mockCatalogApp('acme.backup'), root: true })
     await render()

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { TFunction } from 'i18next'
-import { stateLine, stateWord, withdrawal } from './appsHelper'
+import { outcomeLine, stateLine, stateWord, withdrawal } from './appsHelper'
 
 const t = ((_key: string, text: string, values?: any) =>
   text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as unknown as TFunction
@@ -41,5 +41,18 @@ describe('a withdrawn release, said once', () => {
     expect(withdrawal({ detail: 'No release on this stage' })).toBeUndefined()
     expect(stateLine(t, app('unavailable', 'No release on this stage'))).toBe('Not available here: No release on this stage')
     expect(stateWord(t, 'unavailable', 'No release on this stage')).toBe('Unavailable')
+  })
+})
+
+describe('a many-device call’s outcome a device (DeviceAppChange.outcome)', () => {
+  it('added, enabled, changed, unchanged — Already there when adding — and refused with why', () => {
+    const line = (outcome: string, error: string | null = null, adding?: boolean) => outcomeLine(t, { outcome, error }, adding)
+    expect(line('added', null, true)).toBe('Added')
+    expect(line('enabled', null, true)).toBe('Enabled')
+    expect(line('changed')).toBe('Changed')
+    expect(line('unchanged', null, true)).toBe('Already there')
+    expect(line('unchanged')).toBe('Unchanged')
+    expect(line('refused', 'Managed by its product Kiosks')).toBe('Refused: Managed by its product Kiosks')
+    expect(line('refused')).toBe('Refused')
   })
 })
