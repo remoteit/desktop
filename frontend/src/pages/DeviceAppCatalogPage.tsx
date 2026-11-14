@@ -15,7 +15,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
-import { offered } from '../helpers/appsHelper'
+import { adminControlLine, offered } from '../helpers/appsHelper'
 
 /* The catalogue for this device (presence-server docs/device-apps-design.md, "The Apps pages",
    /devices/:deviceID/apps/add): the apps it may take and does not have (graphql's Device.availableApps) — remote.it's
@@ -141,9 +141,12 @@ export const DeviceAppCatalogPage: React.FC = () => {
   )
 }
 
-// Why an app cannot be added to this device now; none when it can: its administrator's refusal, or no release on its
-// stage. One its remote.it is too old for can be added — graphql gives it the release once remote.it is upgraded.
+// Why an app cannot be added to this device now; none when it can: its administrator's control of it (local or off,
+// in this portal's words), the rest of what graphql refuses, or no release on its stage. One its remote.it is too old
+// for can be added — graphql gives it the release once remote.it is upgraded.
 function whyNot(t: TFunction, app: AvailableApp): string | undefined {
+  const admin = adminControlLine(t, app)
+  if (admin) return admin
   if (app.refused) return app.refused
   if (!app.version) return t('deviceApps.noRelease', 'No release of it here yet')
 }

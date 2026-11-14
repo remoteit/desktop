@@ -267,7 +267,7 @@ export type AppTarget = {
   name: string
   canRun: boolean
   has: 'enabled' | 'disabled' | null // the app there already, enabled or disabled
-  adminControl: string | null // its administrator's control of the app there, where it has it (DeviceApp.adminControl)
+  adminControl: string | null // its administrator's control of the app there (DeviceApp's, or its offer's: AvailableApp.adminControl)
   offer: { refused: string | null; version: string | null; needsNewer: boolean } | null
 }
 
@@ -279,7 +279,7 @@ export async function graphQLAppTargets(
 ): Promise<AppTarget[] | 'ERROR'> {
   const query = `query AppTargets($accountId: String, $name: String, $size: Int) {
     login { account(id: $accountId) { devices(size: $size, from: 0, name: $name, sort: "name") {
-      items { id name permissions apps { id enabled adminControl } availableApps { id refused version needsNewer } }
+      items { id name permissions apps { id enabled adminControl } availableApps { id refused adminControl version needsNewer } }
     } } }
   }`
   const variables = { accountId, name: name?.trim() || undefined, size: APP_TARGETS_PAGE }
@@ -295,7 +295,7 @@ export async function graphQLAppTargets(
       name: device.name ?? device.id,
       canRun: permissions.includes('MANAGE') && permissions.includes('SCRIPTING'),
       has: there ? (there.enabled ? 'enabled' : 'disabled') : null,
-      adminControl: there?.adminControl ?? null,
+      adminControl: there?.adminControl ?? offer?.adminControl ?? null,
       offer: offer
         ? { refused: offer.refused ?? null, version: offer.version ?? null, needsNewer: !!offer.needsNewer }
         : null,

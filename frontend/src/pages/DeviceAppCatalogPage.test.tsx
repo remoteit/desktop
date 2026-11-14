@@ -121,6 +121,23 @@ describe('the catalogue for this device', () => {
     expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.agent' }), true, true)
   })
 
+  it('its administrator’s control said up front: local or off, Add held; cloud takes an add', async () => {
+    apps.value.available = [
+      available({ id: 'acme.kept', name: 'Kept', adminControl: 'local', refused: 'Kept local on the device by its administrator' }),
+      available({ id: 'acme.held', name: 'Held', adminControl: 'off', refused: 'Turned off on this device by its administrator (acme.held_control off)' }),
+      available({ id: 'acme.cloud', name: 'Cloud', adminControl: 'cloud' }),
+    ]
+    const page = await render()
+    const why = (id: string) => offer(page, id).querySelector('[data-available-why]')?.textContent
+    const add = (id: string) => offer(page, id).querySelector('[data-available-add]') as HTMLButtonElement
+    expect(why('acme.kept')).toBe('Kept local by this device’s administrator: changed on the device only')
+    expect(add('acme.kept').disabled).toBe(true)
+    expect(why('acme.held')).toBe('Turned off on this device by its administrator')
+    expect(add('acme.held').disabled).toBe(true)
+    expect(why('acme.cloud')).toBeUndefined()
+    expect(add('acme.cloud').disabled).toBe(false)
+  })
+
   it('a refusal said in graphql’s words, staying on the page', async () => {
     turn.mockResolvedValue({ reason: 'No build for this device’s platform' })
     const page = await render()

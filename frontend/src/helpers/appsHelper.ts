@@ -63,14 +63,18 @@ export const adminRefuses = (app: Pick<DeviceApp, 'adminControl'>, action: AppAd
 // What graphql and the device say of an app its administrator turned off (`<app>_control off`).
 const TURNED_OFF = /turned off on this device by its administrator/i
 
-// The administrator's control in words, said up front where it refuses something — none where its state already says
-// it (graphql's "Turned off on this device by its administrator (<app>_control off)").
-export function adminLine(t: TFunction, app: Pick<DeviceApp, 'adminControl' | 'detail'>): string | undefined {
+// The administrator's control in words where it refuses enabling the app — an add too (adminRefuses 'enable'): local
+// or off. None where it takes one.
+export function adminControlLine(t: TFunction, app: { adminControl?: string | null }): string | undefined {
   if (app.adminControl === 'local')
     return t('apps.adminLocal', 'Kept local by this device’s administrator: changed on the device only')
-  if (app.adminControl === 'off' && !TURNED_OFF.test(app.detail ?? ''))
-    return t('apps.adminOff', 'Turned off on this device by its administrator')
+  if (app.adminControl === 'off') return t('apps.adminOff', 'Turned off on this device by its administrator')
 }
+
+// The administrator's control in words, said up front where it refuses something — none where its state already says
+// it (graphql's "Turned off on this device by its administrator (<app>_control off)").
+export const adminLine = (t: TFunction, app: Pick<DeviceApp, 'adminControl' | 'detail'>): string | undefined =>
+  app.adminControl === 'off' && TURNED_OFF.test(app.detail ?? '') ? undefined : adminControlLine(t, app)
 
 // A product holding an app: its enable, disable, remove, channel and pin are the product's.
 export const managedLine = (t: TFunction, locked: SettingLock) =>
@@ -258,6 +262,7 @@ export const offered = (app: AvailableApp): DeviceApp => ({
   publisherVerifiedDomain: app.publisherVerifiedDomain ?? null,
   root: app.root,
   enabled: false,
+  adminControl: app.adminControl,
   channel: null,
   version: null,
   state: 'disabled',

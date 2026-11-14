@@ -143,7 +143,9 @@ describe('the devices an app may be added to', () => {
             devices: {
               items: [
                 { id: 'D1', name: 'pi', permissions: ['MANAGE', 'SCRIPTING'], apps: [{ id: 'acme.backup', enabled: false, adminControl: 'off' }], availableApps: [] },
-                { id: 'D2', name: 'nas', permissions: ['MANAGE'], apps: [], availableApps: [{ id: 'acme.backup', refused: null, version: '1.4.0', needsNewer: false }] },
+                { id: 'D2', name: 'nas', permissions: ['MANAGE'], apps: [], availableApps: [{ id: 'acme.backup', refused: null, adminControl: 'cloud+local', version: '1.4.0', needsNewer: false }] },
+                // Without the app, its administrator's control read from the offer.
+                { id: 'D3', name: 'kiosk', permissions: ['MANAGE', 'SCRIPTING'], apps: [], availableApps: [{ id: 'acme.backup', refused: 'kept local', adminControl: 'local', version: '1.4.0', needsNewer: false }] },
               ],
             },
           },
@@ -152,9 +154,11 @@ describe('the devices an app may be added to', () => {
     )
     const targets = await graphQLAppTargets('acme.backup')
     expect(post.mock.calls[0][0].query).toContain('apps { id enabled adminControl }')
+    expect(post.mock.calls[0][0].query).toContain('availableApps { id refused adminControl version needsNewer }')
     expect(targets).toEqual([
       { id: 'D1', name: 'pi', canRun: true, has: 'disabled', adminControl: 'off', offer: null },
-      { id: 'D2', name: 'nas', canRun: false, has: null, adminControl: null, offer: { refused: null, version: '1.4.0', needsNewer: false } },
+      { id: 'D2', name: 'nas', canRun: false, has: null, adminControl: 'cloud+local', offer: { refused: null, version: '1.4.0', needsNewer: false } },
+      { id: 'D3', name: 'kiosk', canRun: true, has: null, adminControl: 'local', offer: { refused: 'kept local', version: '1.4.0', needsNewer: false } },
     ])
   })
 })

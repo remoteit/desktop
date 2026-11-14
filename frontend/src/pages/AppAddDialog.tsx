@@ -32,7 +32,7 @@ import { graphQLFetchDeviceCount } from '../services/graphQLDevice'
 import { AppChangeResults } from '../components/AppChangeResults'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
-import { channelName } from '../helpers/appsHelper'
+import { adminControlLine, channelName } from '../helpers/appsHelper'
 
 type Target = 'devices' | 'tag' | 'product'
 
@@ -438,11 +438,9 @@ export const AppAddDialog: React.FC = () => {
 function whyNot(t: TFunction, device: AppTarget): string | undefined {
   if (!device.canRun) return t('apps.needsManageScripting', 'Needs Manage and Scripting on it')
   if (device.has === 'enabled') return t('apps.alreadyThere', 'Already there')
-  // Disabled there, adding enables it — which its administrator refuses under local or off, as graphql does.
-  if (device.has === 'disabled' && device.adminControl === 'local')
-    return t('apps.adminLocal', 'Kept local by this device’s administrator: changed on the device only')
-  if (device.has === 'disabled' && device.adminControl === 'off')
-    return t('apps.adminOff', 'Turned off on this device by its administrator')
+  // Adding it — or enabling it, disabled there — its administrator refuses under local or off, as graphql does.
+  const admin = adminControlLine(t, device)
+  if (admin) return admin
   if (device.has === 'disabled') return
   if (!device.offer) return t('apps.notOffered', 'Not offered to this device: no build for its platform, or not its account’s')
   if (device.offer.refused) return device.offer.refused

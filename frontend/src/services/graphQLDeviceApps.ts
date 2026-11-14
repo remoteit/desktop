@@ -186,7 +186,8 @@ export async function graphQLDeviceApps(deviceId: string): Promise<DeviceApp[] |
 
 /* What the catalogue offers a device under "Add an app" (graphql's Device.availableApps): remote.it's apps and its own
    account's that it has no row for, each with whether it runs as root, the release its stage gives (none: it cannot be
-   turned on yet), why its administrator refuses it there, and whether its remote.it is too old to run it. */
+   turned on yet), why its administrator refuses it there and its administrator's control of it (said up front: local
+   and off refuse an add), and whether its remote.it is too old to run it. */
 export type AvailableApp = {
   id: string
   name: string
@@ -196,6 +197,7 @@ export type AvailableApp = {
   root: boolean
   version: string | null
   refused: string | null
+  adminControl?: AppAdminControl | string // its administrator's control there (AppAdminControl)
   needsNewer: boolean
   oldInstall?: boolean // ScreenView installed the old way, and enabled, here
   conversion?: ScreenViewConversion | null // what becomes of it (ScreenViewConversion)
@@ -204,7 +206,7 @@ export type AvailableApp = {
 
 // [] where the API has none, or the device is not this person's to manage.
 export async function graphQLAvailableApps(deviceId: string): Promise<AvailableApp[]> {
-  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher publisherVerifiedDomain description root version refused needsNewer oldInstall conversion conversionDetail } } } }`
+  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher publisherVerifiedDomain description root version refused adminControl needsNewer oldInstall conversion conversionDetail } } } }`
   const variables = { id: [deviceId] }
   const response = await post({ query, variables })
   if (response === 'ERROR') return []
@@ -214,6 +216,7 @@ export async function graphQLAvailableApps(deviceId: string): Promise<AvailableA
     description: app.description ?? null,
     version: app.version ?? null,
     refused: app.refused ?? null,
+    adminControl: app.adminControl ?? 'cloud+local',
     needsNewer: !!app.needsNewer,
     publisherVerifiedDomain: app.publisherVerifiedDomain ?? null,
     oldInstall: !!app.oldInstall,

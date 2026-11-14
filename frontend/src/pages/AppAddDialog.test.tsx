@@ -69,6 +69,9 @@ const TARGETS = [
   target('D8', 'ancient', { offer: { refused: null, version: '1.4.0', needsNewer: true } }),
   target('D9', 'kept', { has: 'disabled', adminControl: 'local' }),
   target('D10', 'off', { has: 'disabled', adminControl: 'off' }),
+  // Without the app: its administrator's control, said in this portal's words over graphql's refusal.
+  target('D11', 'kept-new', { adminControl: 'local', offer: { refused: 'Kept local on the device by its administrator', version: '1.4.0', needsNewer: false } }),
+  target('D12', 'off-new', { adminControl: 'off', offer: { refused: 'Turned off on this device by its administrator (acme.backup_control off)', version: '1.4.0', needsNewer: false } }),
 ]
 
 let root: Root
@@ -133,6 +136,12 @@ describe('Add, to devices', () => {
     expect(disabled('D9')).toBe(true)
     expect(row('D10').textContent).toContain('Turned off on this device by its administrator')
     expect(disabled('D10')).toBe(true)
+    // Without it, the same, up front: an add is refused there too.
+    expect(row('D11').textContent).toContain('Kept local by this device’s administrator: changed on the device only')
+    expect(disabled('D11')).toBe(true)
+    expect(row('D12').textContent).toContain('Turned off on this device by its administrator')
+    expect(row('D12').textContent).not.toContain('_control off')
+    expect(disabled('D12')).toBe(true)
   })
 
   it('bulk add: addDeviceApps with the devices ticked, then each device’s result', async () => {

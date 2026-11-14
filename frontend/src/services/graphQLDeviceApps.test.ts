@@ -282,10 +282,13 @@ describe('build step 5: what a device may add, and a remote.it too old', () => {
       answer({ login: { device: [{ availableApps: [{ id: 'remoteit.files', name: 'Files', publisher: 'remote.it', root: false, version: '1.0.0', needsNewer: true }] }] } })
     )
     expect(await graphQLAvailableApps('D1')).toEqual([
-      { id: 'remoteit.files', name: 'Files', publisher: 'remote.it', publisherVerifiedDomain: null, description: null, root: false, version: '1.0.0', refused: null, needsNewer: true, oldInstall: false,
+      { id: 'remoteit.files', name: 'Files', publisher: 'remote.it', publisherVerifiedDomain: null, description: null, root: false, version: '1.0.0', refused: null, adminControl: 'cloud+local', needsNewer: true, oldInstall: false,
         conversion: null, conversionDetail: null },
     ])
-    expect(post.mock.calls[0][0].query).toContain('availableApps { id name publisher publisherVerifiedDomain description root version refused needsNewer oldInstall conversion conversionDetail }')
+    expect(post.mock.calls[0][0].query).toContain('availableApps { id name publisher publisherVerifiedDomain description root version refused adminControl needsNewer oldInstall conversion conversionDetail }')
+    // Its administrator's control, where it says one (none said: the default).
+    post.mockResolvedValue(answer({ login: { device: [{ availableApps: [{ id: 'remoteit.files', name: 'Files', publisher: 'remote.it', adminControl: 'local' }] }] } }))
+    expect((await graphQLAvailableApps('D1'))[0].adminControl).toBe('local')
     post.mockResolvedValue('ERROR')
     expect(await graphQLAvailableApps('D1')).toEqual([])
   })
