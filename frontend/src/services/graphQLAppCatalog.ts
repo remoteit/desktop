@@ -249,3 +249,46 @@ export async function graphQLSetAccountAppChannel(
   if ('reason' in result) return result
   return { accountChannel: result.data?.data?.setAccountAppChannel?.accountChannel ?? null }
 }
+
+/* The account's devices an app may be added to (Add, "Devices"): each with whether the person may run code there
+   (Manage and Scripting), whether it has the app already (enabled, or disabled: adding enables it), and what the catalogue offers it (Device.availableApps:
+   refused by its administrator, no release here, a remote.it too old). One the catalogue does not offer the app to at
+   all — no build for its platform — has no offer. The first 100 by name, searched by name. */
+export type AppTarget = {
+  id: string
+  name: string
+  canRun: boolean
+  has: 'enabled' | 'disabled' | null // the app there already, enabled or disabled
+  offer: { refused: string | null; version: string | null; needsNewer: boolean } | null
+}
+
+export const APP_TARGETS_PAGE = 100
+
+export async function graphQLAppTargets(
+  app: string,
+  { accountId, name }: { accountId?: string; name?: string } = {}
+): Promise<AppTarget[] | 'ERROR'> {
+  const query = `query AppTargets($accountId: String, $name: String, $size: Int) {
+    login { account(id: $accountId) { devices(size: $size, from: 0, name: $name, sort: "name") {
+      items { id name permissions apps { id enabled } availableApps { id refused version needsNewer } }
+    } } }
+  }`
+  const variables = { accountId, name: name?.trim() || undefined, size: APP_TARGETS_PAGE }
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return 'ERROR'
+  if (graphQLGetErrors(response, true, { query, variables })) return 'ERROR'
+  return (response.data?.data?.login?.account?.devices?.items ?? []).map((device: any): AppTarget => {
+    const permissions: string[] = device.permissions ?? []
+    const offer = (device.availableApps ?? []).find((a: any) => a.id === app)
+    const there = (device.apps ?? []).find((a: any) => a.id === app)
+    return {
+      id: device.id,
+      name: device.name ?? device.id,
+      canRun: permissions.includes('MANAGE') && permissions.includes('SCRIPTING'),
+      has: there ? (there.enabled ? 'enabled' : 'disabled') : null,
+      offer: offer
+        ? { refused: offer.refused ?? null, version: offer.version ?? null, needsNewer: !!offer.needsNewer }
+        : null,
+    }
+  })
+}
