@@ -436,7 +436,7 @@ describe('root, consented to', () => {
     const page = await render(<DeviceApps device={device()} />)
     const row = appRow(page, 'remoteit.console')
     expect(row.querySelector('[data-app-needs-consent]')?.textContent).toBe(
-      'A new version (1.5.0) needs to run as root: this device stays on the version it runs until you consent'
+      'A new version (1.5.0) needs to run as root: it still runs 1.4.0 until you consent'
     )
     expect(row.querySelector('[data-app-consent]')).toBeNull()
     await click(row.querySelector('[data-app-consent-action]'))
@@ -462,6 +462,22 @@ describe('root, consented to', () => {
     const row = appRow(page, 'remoteit.console')
     expect(row.querySelector('[data-app-consent-action]')).toBeNull()
     expect(row.querySelector('[data-app-needs-consent]')?.textContent).toBe(
+      'A new version (1.5.0) needs to run as root: it still runs 1.4.0; its product’s page asks for consent'
+    )
+  })
+
+  it('a new version waiting for root consent where the device says no version yet: the device stays on what it runs', async () => {
+    apps.value.apps = [consoleApp({ rootConsent: null, awaitingRoot: '1.5.0', version: null })]
+    let page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'remoteit.console').querySelector('[data-app-needs-consent]')?.textContent).toBe(
+      'A new version (1.5.0) needs to run as root: this device stays on the version it runs until you consent'
+    )
+    act(() => root.unmount())
+    apps.value.apps = [
+      consoleApp({ awaitingRoot: '1.5.0', version: null, locked: { product: 'Fleet', level: 'synced' } }),
+    ]
+    page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'remoteit.console').querySelector('[data-app-needs-consent]')?.textContent).toBe(
       'A new version (1.5.0) needs to run as root: its product’s page asks for consent'
     )
   })

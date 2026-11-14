@@ -151,11 +151,25 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                     )}
                     {app.on && app.awaitingRoot && (
                       <Typography variant="caption" component="div" color="warning.main" data-app-needs-consent>
+                        {/* The version it still runs, where the device says it: graphql keeps giving that one (and its
+                            delivery grant) while the new one waits, its last restricted release or the root one before. */}
                         {app.locked
+                          ? app.version
+                            ? t(
+                                'deviceApps.needsConsentProductRuns',
+                                'A new version ({{version}}) needs to run as root: it still runs {{running}}; its product’s page asks for consent',
+                                { version: app.awaitingRoot, running: app.version }
+                              )
+                            : t(
+                                'deviceApps.needsConsentProduct',
+                                'A new version ({{version}}) needs to run as root: its product’s page asks for consent',
+                                { version: app.awaitingRoot }
+                              )
+                          : app.version
                           ? t(
-                              'deviceApps.needsConsentProduct',
-                              'A new version ({{version}}) needs to run as root: its product’s page asks for consent',
-                              { version: app.awaitingRoot }
+                              'deviceApps.needsConsentRuns',
+                              'A new version ({{version}}) needs to run as root: it still runs {{running}} until you consent',
+                              { version: app.awaitingRoot, running: app.version }
                             )
                           : t(
                               'deviceApps.needsConsent',
