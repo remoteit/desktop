@@ -44,6 +44,10 @@ import { Icon } from '../components/Icon'
 import { channelName, day, heldBackLine, stateWord } from '../helpers/appsHelper'
 
 const RELEASES_PAGE = 20
+// The version filter's choices besides a version: any (no filter), and none reported — catalogApp's devices(version: ""),
+// never confused with no filter at all.
+const ANY_VERSION = '*'
+const NO_VERSION = '-'
 
 /* The app in the catalogue (presence-server docs/device-apps-design.md, "The Apps pages", /apps/:appID), from
    catalogApp:
@@ -314,19 +318,29 @@ export const AppPage: React.FC = () => {
             select
             size="small"
             variant="standard"
-            value={filter.version ?? ''}
-            onChange={e => setFilter({ ...filter, version: e.target.value || undefined })}
+            value={filter.version === undefined ? ANY_VERSION : filter.version === '' ? NO_VERSION : filter.version}
+            onChange={e =>
+              setFilter({
+                ...filter,
+                version:
+                  e.target.value === ANY_VERSION ? undefined : e.target.value === NO_VERSION ? '' : e.target.value,
+              })
+            }
             SelectProps={{ native: true }}
             inputProps={{ 'data-fleet-version': true, 'aria-label': t('apps.filterVersion', 'Version') }}
           >
-            <option value="">{t('apps.anyVersion', 'Any version')}</option>
-            {app.fleet.versions
-              .filter(v => v.version)
-              .map(v => (
-                <option key={v.version!} value={v.version!}>
+            <option value={ANY_VERSION}>{t('apps.anyVersion', 'Any version')}</option>
+            {app.fleet.versions.map(v =>
+              v.version ? (
+                <option key={v.version} value={v.version}>
                   {v.version}
                 </option>
-              ))}
+              ) : (
+                <option key={NO_VERSION} value={NO_VERSION}>
+                  {t('apps.versionNotReported', 'Not reported')}
+                </option>
+              )
+            )}
           </TextField>
           <Box sx={{ flexGrow: 1 }} />
           <Button

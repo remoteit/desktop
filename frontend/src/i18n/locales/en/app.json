@@ -341,6 +341,7 @@
     "version": "Version",
     "versionDisabled": "{{version}} on the device, disabled",
     "versionNone": "Nothing on the device",
+    "versionNotReported": "Not reported",
     "withdrawn": "withdrawn {{day}}",
     "yourDevices": "Your devices",
     "yours": "Yours"

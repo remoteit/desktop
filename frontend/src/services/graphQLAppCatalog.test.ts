@@ -88,6 +88,16 @@ describe('the catalogue, where graphql serves it', () => {
     })
   })
 
+  it('devices reporting no version: version "" sent as itself; any version: none sent', async () => {
+    post.mockResolvedValue(answer({ catalogApp: null }))
+    post.mockResolvedValueOnce(schema('appCatalog', 'catalogApp'))
+    await graphQLCatalogApp('acme.backup', { version: '' })
+    expect(post.mock.calls[1][0].variables).toHaveProperty('version', '')
+    expect(JSON.stringify(post.mock.calls[1][0].variables)).toContain('"version":""')
+    await graphQLCatalogApp('acme.backup', {})
+    expect(JSON.stringify(post.mock.calls[2][0].variables)).not.toContain('version')
+  })
+
   it('an error is an error; the probe asked again after one', async () => {
     post.mockResolvedValueOnce('ERROR')
     expect(await graphQLAppCatalog()).toBe('ERROR')

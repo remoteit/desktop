@@ -235,7 +235,7 @@ export function mockCatalogApp(id: string, filter: { heldBack?: boolean; version
   const items = app.devices.filter(
     d =>
       (filter.heldBack === undefined || (d.enabled && !d.upToDate) === filter.heldBack) &&
-      (filter.version === undefined || d.version === filter.version)
+      (filter.version === undefined || (d.version ?? '') === filter.version)
   )
   return { ...app, devices: { items, total: items.length, next: null } }
 }

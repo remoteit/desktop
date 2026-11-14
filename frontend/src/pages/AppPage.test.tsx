@@ -180,6 +180,17 @@ describe('your devices', () => {
     expect(catalog).toHaveBeenLastCalledWith('acme.backup', { accountId: undefined, releases: 20, heldBack: true, version: '1.3.2' })
   })
 
+  it('the version filter’s Not reported asks devices(version: ""), apart from any version (none sent)', async () => {
+    const page = await render()
+    const versions = page.querySelector('[data-fleet-version]') as HTMLSelectElement
+    expect([...versions.options].map(o => o.textContent)).toEqual(['Any version', '1.4.0', '1.3.2', 'Not reported'])
+    await select(versions, '-')
+    expect(catalog).toHaveBeenLastCalledWith('acme.backup', { accountId: undefined, releases: 20, version: '' })
+    expect([...page.querySelectorAll('[data-fleet-device]')].map(el => el.textContent?.split('—')[0])).toEqual(['gw-3'])
+    await select(versions, '*')
+    expect(catalog.mock.lastCall?.[1].version).toBeUndefined()
+  })
+
   it('Update selected: setDeviceAppsRelease(version: ""), then each device’s result', async () => {
     const page = await render()
     expect((page.querySelector('[data-fleet-update]') as HTMLButtonElement).disabled).toBe(true)

@@ -74,7 +74,7 @@ export type CatalogApp = {
   devices?: CatalogAppDevicePage
 }
 
-// A device page's filter: held back or up to date (heldBack false), and a version running.
+// A device page's filter: held back or up to date (heldBack false), and a version running — "" none reported; absent, any.
 export type CatalogDeviceFilter = { heldBack?: boolean; version?: string }
 
 export type Unserved = 'UNSERVED'
