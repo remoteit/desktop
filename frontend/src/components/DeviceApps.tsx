@@ -6,6 +6,7 @@ import {
   Button,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   ListSubheader,
@@ -13,54 +14,70 @@ import {
   Typography,
 } from '@mui/material'
 import { useHistory } from 'react-router-dom'
-import { DeviceApp, DeviceAppRootConsent, needsNewer, SCREENVIEW } from '../services/graphQLDeviceApps'
+import { DeviceApp, SCREENVIEW } from '../services/graphQLDeviceApps'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
-import { DeviceAppSetting } from './DeviceAppSetting'
-import { AddDeviceApp, offered, publisherLine } from './AddDeviceApp'
 import { firstPartyApp } from './firstPartyApps'
-import { productLockNote } from '../helpers/productPolicyHelper'
-import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
+import { heldBackLine, managedLine, offered, runsAsWord, stateWord } from '../helpers/appsHelper'
+import { Notice } from './Notice'
 import { Icon } from './Icon'
-import { timeOptions } from './Timestamp'
 
-/* A device's apps on its Configure page (presence-server docs/device-apps-design.md, "The portal's Apps section"): a
-   row each, with its switch, its state as the device says, its version and channel, its publisher, and Runs as root
-   where it does. Its settings are its options, inside its row with no icon of their own, so their labels line up
-   under its name — only apps get a row of their own. remote.it's own apps add their part (components/firstPartyApps:
-   the console's Open terminal and host key). Turning an app on runs code on the device, so it needs Scripting as well
-   as Manage, and a root app the person's yes to its full control (components/AppRootConsent); turning one off, or
-   changing its settings, needs Manage alone. An app its product turns on or off, as a setting its product sets, says
-   so and is held: graphql refuses a change to it, naming the product. Nothing where the API has no apps.
+/* A device's apps on its Configure page (presence-server docs/device-apps-design.md, "The Apps pages", the device's Apps
+   section): the device's own apps, a row each — its publisher, Runs as root or Restricted, the version it runs, its
+   state in a word, held back where it is —, its Enabled switch, and the row opening the app on this device
+   (/devices/:deviceID/apps/:appID), where its settings, channel, pin and Remove are. The console's Open terminal stays
+   in its row. Add opens the catalogue for this device (/devices/:deviceID/apps/add), offered only where there is
+   something it can add.
 
-   Root, shown: who consented and when. A release that newly runs as root waits for a new consent, the device on its
-   last restricted release meanwhile — "A new version needs to run as root", with Consent… (its product's page asks,
-   where its product holds it). An app its administrator refuses (apps_root_control off) says so in words.
-   A deprecated setting with a value set says why, and offers Clear: back to the default, and then no longer shown. */
+   Enabling runs code on the device, so it needs Scripting as well as Manage, and a root release no consent covers asks
+   first (components/AppRootConsent); disabling needs Manage alone. An app its product holds says "Managed by its
+   product" and its switch is held: graphql refuses a change to it. One being removed is listed until the device says it
+   is gone, with no switch and no page. Nothing where the API has no apps.
+
+   ScreenView installed the old way converts by itself once its daemon can run the app; where it will not, why; where
+   nothing refuses it but it did not, the switch to the app, after the yes to root. */
 export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
-  const { apps, available, switching, turn, setSetting } = useDeviceApps(device.id)
-  const { flip, reconsent, consent } = useAppSwitch(turn)
-  const [saving, setSaving] = useState<string>()
+  const history = useHistory()
+  const deviceApps = useDeviceApps(device.id)
+  const { apps, available, switching } = deviceApps
+  const [refusal, setRefusal] = useState<string>()
+  const { flip, consent } = useAppSwitch(deviceApps, reason =>
+    setRefusal(reason || t('apps.notChanged', 'The app was not changed.'))
+  )
   const canManage = !!device.permissions?.includes('MANAGE')
   const canRun = canManage && !!device.permissions?.includes('SCRIPTING')
 
   if (!apps || (!apps.length && !available?.length)) return null
-  // ScreenView installed the old way (build step 9; graphql's conversion): it converts by itself once its daemon can run
-  // the app — nothing shown while it cannot (waiting), then "Converting from the old install" on its row until the app
-  // runs. Where it will not convert (refused), why: the old install keeps running. Where nothing refuses it but it did
-  // not convert by itself (switch), the switch to the app, turned on only with the person's yes to its running as root.
+  // ScreenView installed the old way (build step 9; graphql's conversion): nothing shown while its daemon cannot run
+  // the app yet (waiting), "Converting from the old install" on its row until the app runs, why where it will not
+  // convert (refused), and where nothing refuses it but it did not convert by itself (switch), the switch to the app.
   const old =
-    apps.find(app => app.id === SCREENVIEW && !app.on && app.oldInstall) ??
+    apps.find(app => app.id === SCREENVIEW && !app.enabled && app.oldInstall) ??
     available?.find(app => app.id === SCREENVIEW && app.oldInstall)
   const oldScreenView = old?.conversion === 'switch' ? ('settings' in old ? old : offered(old)) : undefined
   const notConverted = old?.conversion === 'refused' ? old.conversionDetail || '' : undefined
-  // ScreenView's old install not converted is said above, not offered under Add an app: its release may not run here.
-  const addable = (available ?? []).filter(app => !(app.id === SCREENVIEW && app.oldInstall && app.conversion === 'refused'))
+  // Something it can add: not refused by its administrator, with a release here — ScreenView's old install not
+  // converted aside, said above.
+  const addable = (available ?? []).some(
+    app => !app.refused && app.version && !(app.id === SCREENVIEW && app.oldInstall && app.conversion === 'refused')
+  )
 
   return (
     <List dense sx={{ paddingBottom: 1 }} data-device-apps>
-      <ListSubheader disableGutters>{t('deviceApps.title', 'Apps')}</ListSubheader>
+      <ListSubheader disableGutters sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {t('deviceApps.title', 'Apps')}
+        {addable && canManage && (
+          <Button size="small" onClick={() => history.push(`/devices/${device.id}/apps/add`)} data-add-app>
+            {t('apps.add', 'Add')}
+          </Button>
+        )}
+      </ListSubheader>
+      {refusal && (
+        <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
+          {refusal}
+        </Notice>
+      )}
       {oldScreenView && (
         <ListItem component="div" disableGutters data-screenview-switch>
           <ListItemIcon>
@@ -101,162 +118,84 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
       )}
       {apps.map(app => {
         const own = firstPartyApp(app.id)
-        const words = own?.settings?.(t) ?? {}
-        const on = switching === app.id ? !app.on : app.on
-        const settings = app.settings.filter(setting => !setting.deprecated || setting.at)
-        return (
-          <Box component="li" key={app.id} data-app={app.id} sx={{ listStyle: 'none' }}>
-            <ListItem component="div" disableGutters sx={{ alignItems: 'flex-start' }}>
-              <ListItemIcon sx={{ marginTop: 0.5 }}>
-                <Icon name={own?.icon ?? 'cube'} size="md" fixedWidth />
-              </ListItemIcon>
-              <ListItemText
-                primary={app.name}
-                secondaryTypographyProps={{ component: 'div' }}
-                secondary={
-                  <>
-                    <Typography variant="caption" component="div" color="textSecondary" data-app-about>
-                      {about(t, app)}
+        const removing = app.state === 'removing'
+        const enabled = switching === app.id ? !app.enabled : app.enabled
+        const row = (
+          <>
+            <ListItemIcon>
+              <Icon name={own?.icon ?? 'cube'} size="md" fixedWidth />
+            </ListItemIcon>
+            <ListItemText
+              primary={app.name}
+              secondaryTypographyProps={{ component: 'div' }}
+              secondary={
+                <>
+                  <Typography variant="caption" component="div" color="textSecondary" data-app-about>
+                    {about(t, app, switching === app.id)}
+                  </Typography>
+                  {app.locked && !removing && (
+                    <Typography variant="caption" component="div" color="textSecondary" data-app-locked>
+                      {managedLine(t, app.locked)}
                     </Typography>
-                    {app.root ? (
-                      <Typography variant="caption" component="div" color="warning.main" data-app-root>
-                        {t('deviceApps.runsAsRoot', 'Runs as root: full control of this device')}
-                      </Typography>
-                    ) : (
-                      <Typography variant="caption" component="div" color="textSecondary" data-app-restricted>
-                        {t('deviceApps.runsRestricted', 'Runs restricted: an account of its own on this device')}
-                      </Typography>
-                    )}
+                  )}
+                  {app.enabled && app.heldBack && app.heldBack.reason !== 'pending' && (
                     <Typography
                       variant="caption"
                       component="div"
-                      color={app.state === 'unavailable' && switching !== app.id ? 'error' : 'textSecondary'}
-                      data-app-state
+                      color={app.heldBack.reason === 'consent' ? 'warning.main' : 'textSecondary'}
+                      data-app-held-back={app.heldBack.reason}
                     >
-                      {switching === app.id
-                        ? t('deviceApps.switching', 'Waiting for the device…')
-                        : app.conversion === 'converting'
-                        ? t('deviceApps.converting', 'Converting from the old install')
-                        : own?.state?.(t, app) ?? stateLine(t, app)}
+                      {heldBackLine(t, app.heldBack, app.pinned)}
                     </Typography>
-                    {app.locked && (
-                      <Typography variant="caption" component="div" color="textSecondary" data-app-locked>
-                        {productLockNote(t, app.locked)}
-                      </Typography>
-                    )}
-                    {app.root && app.rootConsent && !app.awaitingRoot && (
-                      <Typography variant="caption" component="div" color="textSecondary" data-app-consent>
-                        {consentLine(t, app.rootConsent)}
-                      </Typography>
-                    )}
-                    {app.on && app.awaitingRoot && (
-                      <Typography variant="caption" component="div" color="warning.main" data-app-needs-consent>
-                        {/* The version it still runs, where the device says it: graphql keeps giving that one (and its
-                            delivery grant) while the new one waits, its last restricted release or the root one before. */}
-                        {app.locked
-                          ? app.version
-                            ? t(
-                                'deviceApps.needsConsentProductRuns',
-                                'A new version ({{version}}) needs to run as root: it still runs {{running}}; its product’s page asks for consent',
-                                { version: app.awaitingRoot, running: app.version }
-                              )
-                            : t(
-                                'deviceApps.needsConsentProduct',
-                                'A new version ({{version}}) needs to run as root: its product’s page asks for consent',
-                                { version: app.awaitingRoot }
-                              )
-                          : app.version
-                          ? t(
-                              'deviceApps.needsConsentRuns',
-                              'A new version ({{version}}) needs to run as root: it still runs {{running}} until you consent',
-                              { version: app.awaitingRoot, running: app.version }
-                            )
-                          : t(
-                              'deviceApps.needsConsent',
-                              'A new version ({{version}}) needs to run as root: this device stays on the version it runs until you consent',
-                              { version: app.awaitingRoot }
-                            )}
-                      </Typography>
-                    )}
-                    {app.problems?.map(problem => (
-                      <Typography key={problem.name} variant="caption" component="div" color="warning.main" data-app-problem={problem.name}>
-                        {problem.detail || `${problem.name}: ${problem.error}`}
-                      </Typography>
-                    ))}
-                    {own?.Lines && <own.Lines device={device} app={app} />}
-                  </>
-                }
-              />
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {app.on && app.awaitingRoot && !app.locked && (
-                  <Button
-                    size="small"
-                    color="warning"
-                    disabled={switching !== undefined || !canRun}
-                    onClick={() => reconsent(app)}
-                    data-app-consent-action
-                  >
-                    {t('deviceApps.consent', 'Consent…')}
-                  </Button>
-                )}
-                {own?.Actions ? <own.Actions device={device} app={app} /> : <AppOpen device={device} app={app} />}
-                <Switch
-                  checked={on}
-                  disabled={switching !== undefined || !!app.locked || (app.on ? !canManage : !canRun)}
-                  onChange={e => flip(app, e.target.checked)}
-                  inputProps={{ 'aria-label': t('deviceApps.switch', '{{app}} on', { app: app.name }) }}
-                />
-              </Box>
-            </ListItem>
-            {!!settings.length && (
-              <List
-                dense
-                disablePadding
-                data-app-settings={app.id}
-                // Under the app's name: past its icon, less the gap a setting's row keeps for the icon it has not.
-                sx={{ paddingLeft: `${LIST_ITEM_ICON_WIDTH - spacing.sm}px` }}
-              >
-                {settings.map(setting => (
-                  <DeviceAppSetting
-                    key={setting.name}
-                    setting={setting}
-                    label={words[setting.name]?.label ?? setting.label}
-                    help={words[setting.name]?.help ?? setting.help}
-                    disabled={!canManage || saving === `${app.id}.${setting.name}`}
-                    onChange={async value => {
-                      setSaving(`${app.id}.${setting.name}`)
-                      await setSetting(app, setting.name, value)
-                      setSaving(undefined)
-                    }}
-                    onClear={
-                      setting.deprecated !== null && setting.at
-                        ? async () => {
-                            setSaving(`${app.id}.${setting.name}`)
-                            await setSetting(app, setting.name, null)
-                            setSaving(undefined)
-                          }
-                        : undefined
-                    }
-                  />
-                ))}
-              </List>
-            )}
+                  )}
+                </>
+              }
+            />
+          </>
+        )
+        // The switch and the console's Open terminal act alone: a click on them is not the row's.
+        const actions = removing ? null : (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} onClick={event => event.stopPropagation()}>
+            {own?.Actions && <own.Actions device={device} app={app} />}
+            <Switch
+              checked={enabled}
+              disabled={switching !== undefined || !!app.locked || (app.enabled ? !canManage : !canRun)}
+              onChange={e => flip(app, e.target.checked)}
+              inputProps={{ 'aria-label': t('apps.enabledSwitch', '{{app}} enabled', { app: app.name }) }}
+              data-app-switch={app.id}
+            />
+            <Icon name="angle-right" size="md" />
           </Box>
         )
+        return (
+          <ListItem key={app.id} component="div" disableGutters disablePadding data-app={app.id} data-app-state={app.state}>
+            {removing ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', paddingY: 0.5, width: '100%' }}>{row}</Box>
+            ) : (
+              <ListItemButton
+                onClick={() => history.push(`/devices/${device.id}/apps/${app.id}`)}
+                sx={{ paddingLeft: 0, paddingRight: 0 }}
+                data-app-open-page={app.id}
+              >
+                {row}
+                {actions}
+              </ListItemButton>
+            )}
+          </ListItem>
+        )
       })}
-      <AddDeviceApp available={addable} canRun={canRun} busy={switching !== undefined} add={flip} />
       {consent}
     </List>
   )
 }
 
-/* Open, for any app reached as a service (serviceId) while it runs: its service's connection, started and launched as its
-   application type launches — HTTP opens in the browser —, as any service's Connect page does. remote.it's own apps
+/* Open, for any app reached as a service (serviceId) while it runs: its service's connection, started and launched as
+   its application type launches — HTTP opens in the browser —, as any service's Connect page does. remote.it's own apps
    with a part of their own (components/firstPartyApps: the console's Open terminal) have theirs instead. */
 export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device, app }) => {
   const { t } = useTranslation()
   const history = useHistory()
-  if (!app.on || app.state !== 'running' || !app.serviceId) return null
+  if (!app.enabled || app.state !== 'running' || !app.serviceId) return null
   return (
     <Button
       size="small"
@@ -274,72 +213,12 @@ export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device,
   )
 }
 
-// Who publishes it, and the version installed there on its channel.
-function about(t: TFunction, app: DeviceApp) {
-  const channel =
-    app.channel === 'beta'
-      ? t('deviceApps.beta', 'Beta')
-      : app.channel === 'stable'
-      ? t('deviceApps.stable', 'Stable')
-      : app.channel
-  return [publisherLine(t, app), app.version, channel]
-    .filter(Boolean)
-    .join(' · ')
-}
-
-// Who consented to its running as root, and when — or how it came to run as root without a person's word here.
-export function consentLine(t: TFunction, consent: DeviceAppRootConsent): string {
-  const words = { by: consent.email || consent.by, when: when(consent.at) }
-  switch (consent.via) {
-    case 'product':
-      return t('deviceApps.consentedProduct', 'Runs as root by its product’s consent: {{by}}, {{when}}', words)
-    case 'registration':
-      return t('deviceApps.consentedRegistration', 'Runs as root since this device registered, {{when}}', words)
-    case 'device':
-      return t('deviceApps.consentedDevice', 'Turned on as root on the device by {{by}}, {{when}}', words)
-    case 'carried':
-      // To a release: switched by itself from its old install (ScreenView), which ran as root. To none: from before
-      // consents were kept.
-      return consent.version
-        ? t('deviceApps.consentedConverted', 'Runs as root, as its old install did: switched to the app by remote.it, {{when}}', words)
-        : t('deviceApps.consentedCarried', 'Runs as root, as it did before consents were kept')
-    default:
-      return t('deviceApps.consented', 'Consented to run as root by {{by}}, {{when}}', words)
-  }
-}
-
-// A time as the person reads it.
-function when(at: string) {
-  const date = new Date(at)
-  return isNaN(date.getTime()) ? at : date.toLocaleDateString(navigator.language, timeOptions.minutes)
-}
-
-// The machine's administrator refusing root apps (apps_root_control off), as graphql or the device says it.
-const ROOT_REFUSED = /apps_root_control off|no apps that run as root/
-
-export function stateLine(t: TFunction, app: DeviceApp): string {
-  if (needsNewer(app)) return t('deviceApps.needsNewer', 'Needs a newer remote.it on this device')
-  if (app.state === 'unavailable' && app.root && ROOT_REFUSED.test(app.detail ?? ''))
-    return t(
-      'deviceApps.rootRefused',
-      'Not allowed here: this device’s administrator does not allow apps that run as root (apps_root_control off)'
-    )
-  switch (app.state) {
-    case 'running':
-      // Why a newer release waits while it runs the one before (its daemon too old for it, its new publisher signature or
-      // delivery grant refused there) — but not one waiting for a consent, which says so on its own line.
-      return app.detail && !app.awaitingRoot
-        ? t('deviceApps.runningDetail', 'Running — {{detail}}', { detail: app.detail })
-        : t('deviceApps.running', 'Running')
-    case 'starting':
-      return app.detail
-        ? t('deviceApps.startingDetail', 'Starting — {{detail}}', { detail: app.detail })
-        : t('deviceApps.starting', 'Starting — waiting for the device to say so')
-    case 'unavailable':
-      return app.detail
-        ? t('deviceApps.unavailable', 'Not available here: {{detail}}', { detail: app.detail })
-        : t('deviceApps.unavailableNoDetail', 'Not available here')
-    default:
-      return t('deviceApps.off', 'Off')
-  }
+// One line: its publisher, how it runs, the version the device runs, its state in a word.
+function about(t: TFunction, app: DeviceApp, switching: boolean) {
+  const state = switching
+    ? t('deviceApps.switching', 'Waiting for the device…')
+    : app.conversion === 'converting'
+    ? t('deviceApps.converting', 'Converting from the old install')
+    : stateWord(t, app.state)
+  return [app.publisher, runsAsWord(t, app.root), app.version ?? '—', state].join(' · ')
 }

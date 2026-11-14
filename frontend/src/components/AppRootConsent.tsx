@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from '@mui/material'
 import type { DeviceApp } from '../services/graphQLDeviceApps'
+import { AppChange, refused } from '../services/deviceAppsShared'
 import type { DeviceApps } from '../hooks/useDeviceApps'
 import { Confirm } from './Confirm'
 
@@ -73,22 +74,32 @@ export const RootConsent: React.FC<{
   )
 }
 
-/* Turning an app on or off, from wherever it is offered (the device's Apps section, the console's connect panel). A
-   root app is turned on only once the person says yes (RootConsent); that yes is setDeviceApp's consentRoot, which
-   graphql refuses a root app without. Off, or a restricted app, at once. A release that newly runs as root while the
-   app is on (awaitingRoot) is asked for the same way (reconsent): the yes turns it on again with consentRoot, which
-   moves the device to that release. */
-export function useAppSwitch(turn: DeviceApps['turn']) {
+/* Enabling or disabling an app, from wherever it is offered (the device's Apps section, the app's page on the device,
+   the console's connect panel). A root app is enabled only once the person says yes (RootConsent); that yes is
+   consentRoot, which graphql refuses a root app without. Disabling, or a restricted app, at once. A release that newly
+   runs as root while the app is enabled (awaitingRoot) is asked for the same way (reconsent): the yes is
+   setDeviceAppRelease's consentRoot alone — Update now —, which moves the device to that release. graphql's refusal,
+   in its words, goes to onRefused; a change made, to onChanged. */
+export function useAppSwitch(
+  { turn, setRelease }: Pick<DeviceApps, 'turn'> & Partial<Pick<DeviceApps, 'setRelease'>>,
+  onRefused?: (reason: string) => void,
+  onChanged?: (app: DeviceApp) => void
+) {
   const { t } = useTranslation()
   const [asking, setAsking] = useState<DeviceApp>()
 
-  const flip = (app: DeviceApp, on: boolean) => {
-    if (on && app.root) setAsking(app)
-    else turn(app, on)
+  const done = (app: DeviceApp) => (answer: AppChange<true>) => {
+    if (refused(answer)) onRefused?.(answer.reason)
+    else onChanged?.(app)
+  }
+
+  const flip = (app: DeviceApp, enabled: boolean) => {
+    if (enabled && app.root) setAsking(app)
+    else turn(app, enabled).then(done(app))
   }
 
   const reconsent = (app: DeviceApp) => setAsking(app)
-  const updating = asking?.on && asking.awaitingRoot ? asking.awaitingRoot : null
+  const updating = asking?.enabled && asking.awaitingRoot ? asking.awaitingRoot : null
 
   const consent = (
     <RootConsent
@@ -98,7 +109,9 @@ export function useAppSwitch(turn: DeviceApps['turn']) {
       onConfirm={() => {
         const app = asking
         setAsking(undefined)
-        if (app) turn(app, true, true)
+        if (!app) return
+        if (app.enabled && app.awaitingRoot && setRelease) setRelease(app, { consentRoot: true }).then(done(app))
+        else turn(app, true, true).then(done(app))
       }}
       onDeny={() => setAsking(undefined)}
     />

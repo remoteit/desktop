@@ -62,8 +62,8 @@ export const CONSOLE_APP: FirstPartyApp = {
   state: (t, app) =>
     app.state === 'running'
       ? t('deviceApps.consoleRunning', 'Running — logins by certificate, nothing listening on the device')
-      : app.state === 'off'
-      ? t('deviceApps.consoleOff', 'Off — a terminal on this device, from this app, by certificate')
+      : app.state === 'disabled'
+      ? t('deviceApps.consoleDisabled', 'Disabled — a terminal on this device, from this app, by certificate')
       : undefined,
   settings: t => ({
     ai_commands: {

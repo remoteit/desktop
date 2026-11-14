@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
+  AppChange,
+  AppRelease,
   AvailableApp,
   CONSOLE,
   DeviceApp,
+  graphQLAddDeviceApp,
   graphQLAvailableApps,
   graphQLDeviceApps,
-  graphQLSetDeviceApp,
+  graphQLRemoveDeviceApp,
+  graphQLSetDeviceAppEnabled,
+  graphQLSetDeviceAppRelease,
   graphQLSetDeviceAppSetting,
+  refused,
 } from '../services/graphQLDeviceApps'
 
 type Read = ReturnType<typeof graphQLDeviceApps>
@@ -30,16 +36,25 @@ const tell = (deviceId: string, apps: DeviceApp[] | null) => watchers.forEach(wa
 export type DeviceApps = {
   apps: DeviceApp[] | null | undefined // undefined while read; null where the API has no apps
   console?: DeviceApp
-  // What it may add (Add an app): read once its apps are, and again after one is turned on or off.
+  // What it may add (the device's catalogue): read once its apps are, and again after one is added or removed.
   available?: AvailableApp[]
-  switching?: string // the app being turned on or off, waited for
-  // consentRoot: the person said yes to a root app's full control of the device (components/AppRootConsent)
-  turn: (app: DeviceApp, on: boolean, consentRoot?: boolean) => Promise<boolean>
+  switching?: string // the app being changed, waited for
+  // Enabled or disabled; an app the device has no row for (one offered) is added. consentRoot: the person said yes to a
+  // root app's full control of the device (components/AppRootConsent).
+  turn: (app: DeviceApp, enabled: boolean, consentRoot?: boolean) => Promise<AppChange<true>>
+  // Its channel and pin; consentRoot alone is Update now, to a release waiting for root consent.
+  setRelease: (app: DeviceApp, release: AppRelease) => Promise<AppChange<true>>
+  // Removed from the device, its files and data with it.
+  remove: (app: DeviceApp) => Promise<AppChange<true>>
   setSetting: (app: DeviceApp, name: string, value: any) => Promise<boolean>
 }
 
-/* A device's apps (services/graphQLDeviceApps): turning one on or off, and setting its settings. The device turns an
-   app on or off within seconds: what it says is waited for, up to half a minute. */
+// An app the device still has to act on: started, or removed.
+const waiting = (app?: DeviceApp) => app?.state === 'starting' || app?.state === 'removing'
+
+/* A device's apps (services/graphQLDeviceApps): added, enabled or disabled, its channel and pin, removed, and its
+   settings. The device acts within seconds: what it says is waited for, up to half a minute — while it starts the app,
+   or until it says the app is gone. */
 export function useDeviceApps(deviceId?: string): DeviceApps {
   const [apps, setApps] = useState<DeviceApp[] | null>()
   const [switching, setSwitching] = useState<string>()
@@ -71,24 +86,44 @@ export function useDeviceApps(deviceId?: string): DeviceApps {
     }
   }, [deviceId])
 
-  const turn = useCallback(
-    async (app: DeviceApp, on: boolean, consentRoot?: boolean) => {
-      if (!deviceId) return false
+  // A change, then what the device says of it, every part of the page told.
+  const change = useCallback(
+    async (app: DeviceApp, call: () => Promise<AppChange<unknown>>): Promise<AppChange<true>> => {
+      if (!deviceId) return { reason: '' }
       setSwitching(app.id)
-      const changed = await graphQLSetDeviceApp(deviceId, app.id, on, consentRoot ? { consentRoot } : {})
-      if (changed) {
+      const answer = await call()
+      if (!refused(answer)) {
         for (let waited = 0; waited < 30_000; waited += 2_000) {
           const now = await graphQLDeviceApps(deviceId)
           tell(deviceId, now)
-          const it = now?.find(a => a.id === app.id)
-          if (!it || it.state !== 'starting') break
+          if (!waiting(now?.find(a => a.id === app.id))) break
           await new Promise(resolve => setTimeout(resolve, 2_000))
         }
       }
       setSwitching(undefined)
-      return !!changed
+      return refused(answer) ? answer : true
     },
     [deviceId]
+  )
+
+  const turn = useCallback(
+    (app: DeviceApp, enabled: boolean, consentRoot?: boolean) =>
+      change(app, () =>
+        apps?.some(a => a.id === app.id)
+          ? graphQLSetDeviceAppEnabled(deviceId!, app.id, enabled, consentRoot || undefined)
+          : graphQLAddDeviceApp(deviceId!, app.id, consentRoot ? { consentRoot } : {})
+      ),
+    [change, deviceId, apps]
+  )
+
+  const setRelease = useCallback(
+    (app: DeviceApp, release: AppRelease) => change(app, () => graphQLSetDeviceAppRelease(deviceId!, app.id, release)),
+    [change, deviceId]
+  )
+
+  const remove = useCallback(
+    (app: DeviceApp) => change(app, () => graphQLRemoveDeviceApp(deviceId!, app.id)),
+    [change, deviceId]
   )
 
   const setSetting = useCallback(
@@ -105,5 +140,14 @@ export function useDeviceApps(deviceId?: string): DeviceApps {
     [deviceId, apps]
   )
 
-  return { apps, console: apps?.find(app => app.id === CONSOLE), available, switching, turn, setSetting }
+  return {
+    apps,
+    console: apps?.find(app => app.id === CONSOLE),
+    available,
+    switching,
+    turn,
+    setRelease,
+    remove,
+    setSetting,
+  }
 }

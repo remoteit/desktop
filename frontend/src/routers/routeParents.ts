@@ -21,6 +21,8 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/devices/:deviceID/:serviceID/advanced', '/devices/:deviceID'],
   ['/devices/:deviceID/:serviceID/share', '/devices/:deviceID'],
   // Devices — device sub-pages → device page
+  ['/devices/:deviceID/apps/add', '/devices/:deviceID/edit'],
+  ['/devices/:deviceID/apps/:appID', '/devices/:deviceID/edit'],
   ['/devices/:deviceID/add/scan', '/devices/:deviceID'],
   ['/devices/:deviceID/add', '/devices/:deviceID'],
   ['/devices/:deviceID/users/:userID', '/devices/:deviceID'],

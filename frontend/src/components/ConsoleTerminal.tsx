@@ -70,10 +70,10 @@ export const ConsoleTerminalButton: React.FC<{ device: IDevice; service: IServic
 export const ConsoleTerminalOption: React.FC<{ device?: IDevice; service?: IService }> = ({ device, service }) => {
   const { t } = useTranslation()
   const {
-    apps: { switching, turn },
+    apps: { switching, turn, setRelease },
     target,
   } = useConsoleTarget(device, service)
-  const { flip, consent } = useAppSwitch(turn)
+  const { flip, consent } = useAppSwitch({ turn, setRelease })
   const { app } = target
   if (!app) return null
   // Not where its product holds it off: graphql refuses that, naming the product.
@@ -98,7 +98,7 @@ export const ConsoleTerminalOption: React.FC<{ device?: IDevice; service?: IServ
     ? t('consoleTerminal.starting', 'The console is starting: web SSH opens it once it runs')
     : app.state === 'unavailable'
     ? t('deviceApps.unavailable', 'Not available here: {{detail}}', { detail: app.detail })
-    : t('consoleTerminal.off', 'The console is off: turn it on to open it in web SSH')
+    : t('consoleTerminal.disabled', 'The console is disabled: enable it to open it in web SSH')
 
   return (
     <Typography
@@ -108,10 +108,10 @@ export const ConsoleTerminalOption: React.FC<{ device?: IDevice; service?: IServ
       sx={{ marginTop: 0.75, textAlign: 'right' }}
     >
       {status}
-      {app.state === 'off' && !switching && canTurnOn && (
+      {app.state === 'disabled' && !switching && canTurnOn && (
         <>
           {' '}
-          <Link onClick={() => flip(app, true)}>{t('consoleTerminal.turnOn', 'Turn it on')}</Link>
+          <Link onClick={() => flip(app, true)}>{t('consoleTerminal.enable', 'Enable it')}</Link>
         </>
       )}
       {consent}

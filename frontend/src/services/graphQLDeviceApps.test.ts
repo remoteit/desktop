@@ -1,24 +1,37 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { post, request, errors, lockFields } = vi.hoisted(() => ({
+const { post, request, reasoned, errors, lockFields } = vi.hoisted(() => ({
   post: vi.fn(),
   request: vi.fn(),
+  reasoned: vi.fn(),
   errors: vi.fn(),
   lockFields: vi.fn(),
 }))
 vi.mock('./post', () => ({ post }))
-vi.mock('./graphQL', () => ({ graphQLBasicRequest: request, graphQLGetErrors: errors }))
+vi.mock('./graphQL', () => ({ graphQLBasicRequest: request, graphQLGetErrors: errors, graphQLRequestWithReason: reasoned }))
 // What the schema says of an app's product lock (services/productPolicy reads it): an API without product apps first.
 vi.mock('./productPolicy', async importOriginal => ({
   ...(await importOriginal<typeof import('./productPolicy')>()),
   appPolicyFields: lockFields,
 }))
 
-import { graphQLAvailableApps, graphQLDeviceApps, graphQLSetDeviceApp, graphQLSetDeviceAppSetting, needsNewer } from './graphQLDeviceApps'
+import {
+  graphQLAddDeviceApp,
+  graphQLAddDeviceApps,
+  graphQLAvailableApps,
+  graphQLDeviceApps,
+  graphQLRemoveDeviceApp,
+  graphQLSetDeviceAppEnabled,
+  graphQLSetDeviceAppRelease,
+  graphQLSetDeviceAppSetting,
+  graphQLSetDeviceAppsRelease,
+  needsNewer,
+} from './graphQLDeviceApps'
 
 beforeEach(() => {
   post.mockReset()
   request.mockReset()
+  reasoned.mockReset()
   errors.mockReset().mockReturnValue(undefined)
   lockFields.mockReset().mockResolvedValue('')
 })
@@ -46,7 +59,7 @@ const consoleApp = {
   name: 'Console',
   publisher: 'remote.it',
   root: true,
-  on: true,
+  enabled: true,
   channel: 'stable',
   version: '1.4.0',
   state: 'running',
@@ -61,13 +74,14 @@ describe('Device.apps', () => {
     const apps = await graphQLDeviceApps('D1')
     const { query, variables } = post.mock.calls[0][0]
     expect(variables).toEqual({ id: ['D1'] })
-    for (const field of ['id', 'name', 'publisher', 'root', 'on', 'channel', 'version', 'state', 'detail', 'serviceId'])
+    for (const field of ['id', 'name', 'publisher', 'root', 'enabled', 'added', 'channel', 'pinned', 'version', 'release', 'latest', 'upToDate', 'grantUntil', 'state', 'detail', 'serviceId'])
       expect(query).toMatch(new RegExp(`\\b${field}\\b`))
     expect(query).toContain(
       'settings { name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration }'
     )
     // The console's host key and port are not the app's: its own extras ask them (components/ConsoleApp).
-    expect(query).not.toMatch(/hostKey|port/)
+    expect(query).not.toMatch(/hostKey|port|\bon\b/)
+    expect(query).toContain('heldBack { reason detail }')
     expect(apps?.[0].settings[0].value).toBe(true)
   })
 
@@ -176,28 +190,75 @@ describe('Device.apps', () => {
   })
 })
 
-describe('setDeviceApp and setDeviceAppSetting', () => {
-  it('setDeviceApp(deviceId, app, on, channel?, version?, consentRoot?)', async () => {
-    request.mockResolvedValue(answer({ setDeviceApp: consoleApp }))
-    const app = await graphQLSetDeviceApp('D1', 'remoteit.console', true, { consentRoot: true })
-    const [query, variables] = request.mock.calls[0]
+describe('the lifecycle: add, enable or disable, channel and pin, remove', () => {
+  const sent = () => reasoned.mock.calls[reasoned.mock.calls.length - 1]
+
+  it('addDeviceApp(deviceId, app, channel?, version?, consentRoot?, settings?): the app as it then stands', async () => {
+    reasoned.mockResolvedValue(answer({ addDeviceApp: { ...consoleApp, heldBack: { reason: 'pending', detail: 'Given' } } }))
+    const app = await graphQLAddDeviceApp('D1', 'remoteit.console', { consentRoot: true, channel: 'beta' })
+    const [query, variables] = sent()
     expect(query).toContain(
-      'setDeviceApp(\n          deviceId: $deviceId, app: $app, on: $on, channel: $channel, version: $version, consentRoot: $consentRoot\n        )'
+      'addDeviceApp(deviceId: $deviceId, app: $app, channel: $channel, version: $version, consentRoot: $consentRoot, settings: $settings)'
     )
-    expect(query).toContain('$consentRoot: Boolean')
-    expect(variables).toEqual({
-      deviceId: 'D1',
-      app: 'remoteit.console',
-      on: true,
-      channel: undefined,
-      version: undefined,
-      consentRoot: true,
-    })
-    expect(app?.id).toBe('remoteit.console')
-    request.mockResolvedValue('ERROR')
-    expect(await graphQLSetDeviceApp('D1', 'remoteit.console', false)).toBeNull()
+    expect(query).toContain('$settings: Any')
+    expect(variables).toEqual({ deviceId: 'D1', app: 'remoteit.console', channel: 'beta', consentRoot: true })
+    expect(app).toMatchObject({ id: 'remoteit.console', enabled: true, heldBack: { reason: 'pending', detail: 'Given' } })
   })
 
+  it('a refusal in graphql’s own words; a failed request, a refusal with none', async () => {
+    reasoned.mockResolvedValue({ reason: 'Managed by its product Kiosks' })
+    expect(await graphQLSetDeviceAppEnabled('D1', 'acme.backup', false)).toEqual({ reason: 'Managed by its product Kiosks' })
+    reasoned.mockResolvedValue('ERROR')
+    expect(await graphQLRemoveDeviceApp('D1', 'acme.backup')).toEqual({ reason: '' })
+  })
+
+  it('setDeviceAppEnabled(deviceId, app, enabled, consentRoot?)', async () => {
+    reasoned.mockResolvedValue(answer({ setDeviceAppEnabled: { ...consoleApp, enabled: false, state: 'disabled' } }))
+    const app = await graphQLSetDeviceAppEnabled('D1', 'remoteit.console', false)
+    const [query, variables] = sent()
+    expect(query).toContain('setDeviceAppEnabled(deviceId: $deviceId, app: $app, enabled: $enabled, consentRoot: $consentRoot)')
+    expect(query).toContain('$enabled: Boolean!')
+    expect(variables).toEqual({ deviceId: 'D1', app: 'remoteit.console', enabled: false })
+    expect(app).toMatchObject({ enabled: false, state: 'disabled' })
+  })
+
+  it('setDeviceAppRelease: "" unpins, consentRoot alone is Update now; absent is left out', async () => {
+    reasoned.mockResolvedValue(answer({ setDeviceAppRelease: consoleApp }))
+    await graphQLSetDeviceAppRelease('D1', 'remoteit.console', { version: '' })
+    expect(sent()[1]).toEqual({ deviceId: 'D1', app: 'remoteit.console', version: '' })
+    await graphQLSetDeviceAppRelease('D1', 'remoteit.console', { consentRoot: true })
+    expect(sent()[1]).toEqual({ deviceId: 'D1', app: 'remoteit.console', consentRoot: true })
+    expect(sent()[0]).toContain('setDeviceAppRelease(deviceId: $deviceId, app: $app, channel: $channel, version: $version, consentRoot: $consentRoot)')
+  })
+
+  it('removeDeviceApp: true where a row went, false where there was none', async () => {
+    reasoned.mockResolvedValue(answer({ removeDeviceApp: true }))
+    expect(await graphQLRemoveDeviceApp('D1', 'acme.backup')).toBe(true)
+    expect(sent()[0]).toMatch(/removeDeviceApp\(deviceId: \$deviceId, app: \$app\) }/)
+    reasoned.mockResolvedValue(answer({ removeDeviceApp: false }))
+    expect(await graphQLRemoveDeviceApp('D1', 'acme.backup')).toBe(false)
+  })
+
+  it('addDeviceApps and setDeviceAppsRelease: a result a device, a refusal that device’s', async () => {
+    const changes = [
+      { deviceId: 'D1', name: 'pi', outcome: 'added', error: null },
+      { deviceId: 'D2', name: 'nas', outcome: 'refused', error: 'No build for linux-mips' },
+    ]
+    reasoned.mockResolvedValue(answer({ addDeviceApps: changes }))
+    expect(
+      await graphQLAddDeviceApps('acme.backup', { tags: { operator: 'ANY', values: ['office'] }, accountId: 'A1' })
+    ).toEqual(changes)
+    expect(sent()[0]).toContain('$tags: ListFilter')
+    expect(sent()[0]).toContain('{ deviceId name outcome error }')
+    expect(sent()[1]).toEqual({ app: 'acme.backup', tags: { operator: 'ANY', values: ['office'] }, accountId: 'A1' })
+    reasoned.mockResolvedValue(answer({ setDeviceAppsRelease: changes }))
+    await graphQLSetDeviceAppsRelease('acme.backup', ['D1', 'D2'], { version: '' })
+    expect(sent()[0]).toContain('$deviceIds: [String!]!')
+    expect(sent()[1]).toEqual({ app: 'acme.backup', deviceIds: ['D1', 'D2'], version: '' })
+  })
+})
+
+describe('setDeviceAppSetting', () => {
   it('setDeviceAppSetting(deviceId, app, name, value): the setting as it then stands', async () => {
     request.mockResolvedValue(answer({ setDeviceAppSetting: { ...aiCommands, value: false } }))
     const setting = await graphQLSetDeviceAppSetting('D1', 'remoteit.console', 'ai_commands', false)

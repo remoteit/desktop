@@ -1,21 +1,29 @@
 import { post } from './post'
-import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
+import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import type { SettingState } from './graphQLDeviceSettings'
 import { appPolicyFields, settingLockOf, SettingLock } from './productPolicy'
+import { AppChange, AppHeldBack, refused } from './deviceAppsShared'
+
+export { NEEDS_NEWER, needsNewer, refused } from './deviceAppsShared'
+export type { AppChange, AppHeldBack, AppHeldBackReason, Refused } from './deviceAppsShared'
 
 /* A device's apps (presence-server docs/device-apps-design.md, "The portal's Apps section"): each a catalogue entry
-   (`<publisher>.<app>`, the console `remoteit.console`) the device has a row for — on or off, its channel, the version
-   installed there, whether it runs as root, and its state as the device says: off, starting, running, or unavailable
-   with why. Its settings are declared by the app's release and set with the same version rule as a device setting:
+   (`<publisher>.<app>`, the console `remoteit.console`) the device has a row for — enabled or disabled, its channel, the version
+   installed there, whether it runs as root, and its state as the device says: disabled, starting, running, unavailable
+   with why, or removing. Its settings are declared by the app's release and set with the same version rule as a device setting:
    who set each from which side, its administrator's control (`<app>.<name>_control`) and its product's lock. Whether
    it is on may be its product's too (locked), where the API says: graphql refuses a change to either, naming the
-   product. graphql's Device.apps, setDeviceApp and setDeviceAppSetting. */
+   product. graphql's Device.apps, the lifecycle's mutations and setDeviceAppSetting. */
 
 export const CONSOLE = 'remoteit.console'
 // ScreenView as an app (build step 9): root, served on its socket as a type-48 service.
 export const SCREENVIEW = 'remoteit.screenview'
 
-export type DeviceAppState = 'off' | 'starting' | 'running' | 'unavailable'
+/* An app's state on its device (presence-server docs/device-apps-design.md, "Lifecycle: add, disable, remove"): disabled
+   (kept on the device, stopped), starting, running, unavailable (with its detail), or removing — no row any more, and
+   the device still reports it until it says it is gone (listed enabled false, with no settings and no actions). */
+export type DeviceAppState = 'disabled' | 'starting' | 'running' | 'unavailable' | 'removing'
+
 
 // The declaration's types; the list is open, so one this portal does not know is shown and left alone.
 export type AppSettingType = 'bool' | 'choice' | 'int' | 'string' | 'list'
@@ -64,24 +72,31 @@ export type DeviceApp = {
   publisher: string // the publisher's name, shown with the app
   publisherVerifiedDomain?: string | null // the domain its publisher proved: "Verified: example.com"
   root: boolean // runs as root: full control of the device
-  on: boolean
-  channel: string | null // stable or beta
-  version: string | null // the app installed there
+  enabled: boolean // enabled, or disabled (kept on the device, stopped)
+  added?: string | null // when this add happened
+  channel: string | null // stable or beta; none: its account's
+  pinned?: string | null // a version it is pinned to
+  version: string | null // the version the device runs
+  release?: string | null // the version graphql gives it now
+  latest?: string | null // the version its channel gives this device, its pin aside; none on this stage
+  upToDate?: boolean // enabled, and the device runs latest
+  heldBack?: AppHeldBack | null // why not, while enabled and not up to date
+  grantUntil?: string | null // when the delivery grant last given lapses; none while disabled
   state: DeviceAppState
   detail: string | null
-  serviceId: string | null // the service it is reached as, while it is on and served
-  locked?: SettingLock | null // on or off as its product holds it: a synced or enforced product that sets it
+  serviceId: string | null // the service it is reached as
+  locked?: SettingLock | null // enabled or disabled as its product holds it: a synced or enforced product that sets it
   rootConsent?: DeviceAppRootConsent | null // the consent to root it runs under, where the API says
-  // A newer release that newly runs as root, waiting for a consent: the device stays on its last restricted release
-  // until someone consents (turning it on again with consentRoot).
+  // A newer release that newly runs as root, waiting for a consent: the device stays on the version it runs until
+  // someone consents (setDeviceAppRelease with consentRoot alone: Update now).
   awaitingRoot?: string | null
   // What the device says is wrong with its settings: its administrator's control of a setting since removed
   // (no-such-setting, "<key>_control: no such setting, removed in <version>"), or a value its manifest refuses.
   problems?: { name: string; error: string; detail: string | null }[]
-  // ScreenView installed the old way (installApp) and enabled on this device, while the app is off here.
+  // ScreenView installed the old way (installApp) and enabled on this device, while the app is disabled here.
   oldInstall?: boolean
-  // ScreenView and its old install (ScreenViewConversion): converting — turned on by itself from the old install, not
-  // yet running —; off, with the old install: refused (conversionDetail says why), switch, waiting.
+  // ScreenView and its old install (ScreenViewConversion): converting — enabled by itself from the old install, not
+  // yet running —; disabled, with the old install: refused (conversionDetail says why), switch, waiting.
   conversion?: ScreenViewConversion | null
   conversionDetail?: string | null
   settings: DeviceAppSetting[]
@@ -112,7 +127,8 @@ export const rootConsentOf = (consent: any): DeviceAppRootConsent | null =>
 
 const SETTING_FIELDS =
   'name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration'
-const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root on channel version state detail serviceId problems { name error detail } settings { ${SETTING_FIELDS} }`
+// The lifecycle's fields (enabled, added, latest, upToDate, heldBack, grantUntil) as the design pins them.
+const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil state detail serviceId problems { name error detail } settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
 function parsedSetting(setting: any): DeviceAppSetting {
@@ -126,8 +142,16 @@ function parsedSetting(setting: any): DeviceAppSetting {
   }
 }
 
-const parsed = (app: any): DeviceApp => ({
+export const parsedDeviceApp = (app: any): DeviceApp => ({
   ...app,
+  enabled: !!app.enabled,
+  added: app.added ?? null,
+  pinned: app.pinned ?? null,
+  release: app.release ?? null,
+  latest: app.latest ?? null,
+  upToDate: !!app.upToDate,
+  heldBack: app.heldBack?.reason ? { reason: app.heldBack.reason, detail: app.heldBack.detail ?? '' } : null,
+  grantUntil: app.grantUntil ?? null,
   locked: app.locked?.product || app.locked?.level ? settingLockOf(app.locked) : null,
   rootConsent: rootConsentOf(app.rootConsent),
   awaitingRoot: app.awaitingRoot ?? null,
@@ -148,13 +172,8 @@ export async function graphQLDeviceApps(deviceId: string): Promise<DeviceApp[] |
   if (response === 'ERROR') return null
   if (graphQLGetErrors(response, true, { query, variables })) return null
   const apps = response.data?.data?.login?.device?.[0]?.apps
-  return apps ? apps.map(parsed) : null
+  return apps ? apps.map(parsedDeviceApp) : null
 }
-
-// What graphql says of a release a device's remote.it is too old to run — restricted, a script or bundle, one served on
-// a socket — where it is on: its state unavailable, this its detail.
-export const NEEDS_NEWER = 'Needs a newer remote.it on this device'
-export const needsNewer = (app: Pick<DeviceApp, 'state' | 'detail'>) => app.state === 'unavailable' && app.detail === NEEDS_NEWER
 
 /* What the catalogue offers a device under "Add an app" (graphql's Device.availableApps): remote.it's apps and its own
    account's that it has no row for, each with whether it runs as root, the release its stage gives (none: it cannot be
@@ -194,31 +213,152 @@ export async function graphQLAvailableApps(deviceId: string): Promise<AvailableA
   }))
 }
 
-export type SetDeviceAppOptions = {
-  channel?: string
-  version?: string
-  // A root app is turned on only with this: the person said yes to it having full control of the device.
+/* The lifecycle (presence-server docs/device-apps-design.md, "Lifecycle: add, disable, remove", API): add, enable or
+   disable, the channel and the pin, remove. Each answers the app as it then stands, or graphql's refusal in its own
+   words — a product holding it ("Managed by its product <name>"), its administrator, a root release with no consent. */
+
+export type AppRelease = {
+  channel?: string // stable or beta; "" none (its account's, else stable); absent, unchanged
+  version?: string // a release of the app; "" no pin; absent, unchanged
+  // The person's yes to full control of the device: a root release is enabled, added or moved to only with it.
   consentRoot?: boolean
 }
 
-export async function graphQLSetDeviceApp(
+// One mutation answering a DeviceApp: the app as parsed, else graphql's refusal ('' where it said none).
+async function appMutation(
+  name: string,
+  declaration: string,
+  args: string,
+  variables: ILookup<any>,
+  selection?: string
+): Promise<AppChange<any>> {
+  const result = await graphQLRequestWithReason(
+    `mutation ${name[0].toUpperCase()}${name.slice(1)}(${declaration}) { ${name}(${args})${selection ? ` { ${selection} }` : ''} }`,
+    variables
+  )
+  if (result === 'ERROR') return { reason: '' }
+  if ('reason' in result) return result
+  return result.data?.data?.[name]
+}
+
+const given = (variables: ILookup<any>) =>
+  Object.fromEntries(Object.entries(variables).filter(([, value]) => value !== undefined))
+
+// No row: added and enabled. A disabled row: enabled. An enabled row: left as it is. Then its channel and pin where
+// given, and its settings written.
+export async function graphQLAddDeviceApp(
   deviceId: string,
   app: string,
-  on: boolean,
-  { channel, version, consentRoot }: SetDeviceAppOptions = {}
-): Promise<DeviceApp | null> {
-  const response = await graphQLBasicRequest(
-    ` mutation SetDeviceApp(
-        $deviceId: String!, $app: String!, $on: Boolean!, $channel: String, $version: String, $consentRoot: Boolean
-      ) {
-        setDeviceApp(
-          deviceId: $deviceId, app: $app, on: $on, channel: $channel, version: $version, consentRoot: $consentRoot
-        ) { ${await appFields()} }
-      }`,
-    { deviceId, app, on, channel, version, consentRoot }
+  { channel, version, consentRoot, settings }: AppRelease & { settings?: ILookup<any> } = {}
+): Promise<AppChange<DeviceApp>> {
+  const answer = await appMutation(
+    'addDeviceApp',
+    '$deviceId: String!, $app: String!, $channel: String, $version: String, $consentRoot: Boolean, $settings: Any',
+    'deviceId: $deviceId, app: $app, channel: $channel, version: $version, consentRoot: $consentRoot, settings: $settings',
+    given({ deviceId, app, channel, version, consentRoot, settings }),
+    await appFields()
   )
-  const answer = response === 'ERROR' ? null : response?.data?.data?.setDeviceApp
-  return answer ? parsed(answer) : null
+  return refused(answer) ? answer : parsedDeviceApp(answer)
+}
+
+// true: the release its channel or pin names now, a root one only with consentRoot. false: disabled, kept on the device.
+export async function graphQLSetDeviceAppEnabled(
+  deviceId: string,
+  app: string,
+  enabled: boolean,
+  consentRoot?: boolean
+): Promise<AppChange<DeviceApp>> {
+  const answer = await appMutation(
+    'setDeviceAppEnabled',
+    '$deviceId: String!, $app: String!, $enabled: Boolean!, $consentRoot: Boolean',
+    'deviceId: $deviceId, app: $app, enabled: $enabled, consentRoot: $consentRoot',
+    given({ deviceId, app, enabled, consentRoot }),
+    await appFields()
+  )
+  return refused(answer) ? answer : parsedDeviceApp(answer)
+}
+
+// Its channel and its pin; consentRoot alone, where awaitingRoot names a release, is Update now.
+export async function graphQLSetDeviceAppRelease(
+  deviceId: string,
+  app: string,
+  { channel, version, consentRoot }: AppRelease
+): Promise<AppChange<DeviceApp>> {
+  const answer = await appMutation(
+    'setDeviceAppRelease',
+    '$deviceId: String!, $app: String!, $channel: String, $version: String, $consentRoot: Boolean',
+    'deviceId: $deviceId, app: $app, channel: $channel, version: $version, consentRoot: $consentRoot',
+    given({ deviceId, app, channel, version, consentRoot }),
+    await appFields()
+  )
+  return refused(answer) ? answer : parsedDeviceApp(answer)
+}
+
+// Removed from the device, its files and data deleted there: true where a row was removed, false where there was none.
+export async function graphQLRemoveDeviceApp(deviceId: string, app: string): Promise<AppChange<boolean>> {
+  const answer = await appMutation(
+    'removeDeviceApp',
+    '$deviceId: String!, $app: String!',
+    'deviceId: $deviceId, app: $app',
+    { deviceId, app }
+  )
+  return refused(answer) ? answer : !!answer
+}
+
+/* Many devices at once (addDeviceApps, setDeviceAppsRelease): each device alone, a refusal that device's result and
+   never the call's. At most 500 devices a call. */
+export type DeviceAppOutcome = 'added' | 'enabled' | 'changed' | 'unchanged' | 'refused'
+export type DeviceAppChange = { deviceId: string; name: string | null; outcome: DeviceAppOutcome | string; error: string | null }
+export const MANY_DEVICES_MAX = 500
+
+const CHANGE_FIELDS = 'deviceId name outcome error'
+const changesOf = (answer: any): DeviceAppChange[] =>
+  (answer ?? []).map((change: any) => ({
+    deviceId: change.deviceId,
+    name: change.name ?? null,
+    outcome: change.outcome,
+    error: change.error ?? null,
+  }))
+
+export type TagFilter = { operator: 'ANY' | 'ALL'; values: string[] }
+
+// To the devices named and those a tag has now (their union), of the caller's account or accountId's.
+export async function graphQLAddDeviceApps(
+  app: string,
+  {
+    deviceIds,
+    tags,
+    accountId,
+    channel,
+    version,
+    consentRoot,
+    settings,
+  }: AppRelease & { deviceIds?: string[]; tags?: TagFilter; accountId?: string; settings?: ILookup<any> }
+): Promise<AppChange<DeviceAppChange[]>> {
+  const answer = await appMutation(
+    'addDeviceApps',
+    '$app: String!, $deviceIds: [String!], $tags: ListFilter, $accountId: String, $channel: String, $version: String, $consentRoot: Boolean, $settings: Any',
+    'app: $app, deviceIds: $deviceIds, tags: $tags, accountId: $accountId, channel: $channel, version: $version, consentRoot: $consentRoot, settings: $settings',
+    given({ app, deviceIds, tags, accountId, channel, version, consentRoot, settings }),
+    CHANGE_FIELDS
+  )
+  return refused(answer) ? answer : changesOf(answer)
+}
+
+// version "" with nothing else: Update now, each device to its channel's release, unpinned.
+export async function graphQLSetDeviceAppsRelease(
+  app: string,
+  deviceIds: string[],
+  { channel, version, consentRoot }: AppRelease
+): Promise<AppChange<DeviceAppChange[]>> {
+  const answer = await appMutation(
+    'setDeviceAppsRelease',
+    '$app: String!, $deviceIds: [String!]!, $channel: String, $version: String, $consentRoot: Boolean',
+    'app: $app, deviceIds: $deviceIds, channel: $channel, version: $version, consentRoot: $consentRoot',
+    given({ app, deviceIds, channel, version, consentRoot }),
+    CHANGE_FIELDS
+  )
+  return refused(answer) ? answer : changesOf(answer)
 }
 
 export async function graphQLSetDeviceAppSetting(

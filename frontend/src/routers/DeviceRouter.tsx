@@ -22,6 +22,8 @@ import { SharePage } from '../pages/SharePage'
 import { Panel } from '../components/Panel'
 import { useSelector } from 'react-redux'
 import { DeviceTransferPage } from '../pages/DeviceTransferPage'
+import { DeviceAppCatalogPage } from '../pages/DeviceAppCatalogPage'
+import { DeviceAppPage } from '../pages/DeviceAppPage'
 
 export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const { deviceID } = useParams<{ deviceID?: string; serviceID?: string; networkID?: string }>()
@@ -95,6 +97,13 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           )}
           <Route path="/devices/:deviceID/details">
             <DeviceDetailPage />
+          </Route>
+          {/* An app id always holds a dot, so add never reads as one; both before a service's routes. */}
+          <Route path="/devices/:deviceID/apps/add">
+            <DeviceAppCatalogPage />
+          </Route>
+          <Route path="/devices/:deviceID/apps/:appID">
+            <DeviceAppPage />
           </Route>
           <Route path="/devices/:deviceID/:serviceID">
             <ServiceRouter basename="/devices/:deviceID/:serviceID" />

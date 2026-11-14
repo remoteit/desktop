@@ -46,11 +46,11 @@ const app = (state: string, extra: any = {}) => ({
   name: 'Console',
   publisher: 'remote.it',
   root: true,
-  on: state !== 'off',
+  enabled: state !== 'disabled',
   channel: 'stable',
   state,
   detail: null,
-  serviceId: state === 'off' ? null : 'S1',
+  serviceId: state === 'disabled' ? null : 'S1',
   version: null,
   settings: [],
   ...extra,
@@ -71,7 +71,7 @@ beforeEach(() => {
   name.value = 'pi-evan.on.remote.it'
   env.isNative = false
   openTerminal.mockReset()
-  turn.mockReset()
+  turn.mockReset().mockResolvedValue(true)
 })
 afterEach(() => act(() => root.unmount()))
 
@@ -111,9 +111,9 @@ describe('ConsoleTerminalOption — the console’s connect panel', () => {
   })
 
   it('says the console is off, and turns it on — it runs as root — once the person says yes to that', async () => {
-    apps.value.console = app('off')
+    apps.value.console = app('disabled')
     const container = await render(<ConsoleTerminalOption device={device()} service={consoleService} />)
-    expect(container.textContent).toBe('The console is off: turn it on to open it in web SSH Turn it on')
+    expect(container.textContent).toBe('The console is disabled: enable it to open it in web SSH Enable it')
     await click(container.querySelector('a'))
     expect(turn).not.toHaveBeenCalled()
     expect(container.querySelector('[data-confirm]')?.textContent).toContain(
@@ -124,7 +124,7 @@ describe('ConsoleTerminalOption — the console’s connect panel', () => {
   })
 
   it('not turned on when the person says no', async () => {
-    apps.value.console = app('off')
+    apps.value.console = app('disabled')
     const container = await render(<ConsoleTerminalOption device={device()} service={consoleService} />)
     await click(container.querySelector('a'))
     await click(container.querySelector('[data-confirm-deny]'))
@@ -133,10 +133,10 @@ describe('ConsoleTerminalOption — the console’s connect panel', () => {
   })
 
   it('does not offer turning it on to those who may not run code on the device: Manage and Scripting', async () => {
-    apps.value.console = app('off')
+    apps.value.console = app('disabled')
     for (const permissions of [['CONNECT'], ['CONNECT', 'MANAGE'], ['CONNECT', 'SCRIPTING']]) {
       const container = await render(<ConsoleTerminalOption device={device(permissions)} service={consoleService} />)
-      expect(container.textContent).toBe('The console is off: turn it on to open it in web SSH')
+      expect(container.textContent).toBe('The console is disabled: enable it to open it in web SSH')
       expect(container.querySelector('a')).toBeNull()
       act(() => root.unmount())
     }
@@ -177,7 +177,7 @@ describe('ConsoleTerminalButton — the console’s row in the device’s servic
   })
 
   it('is nothing while the console does not run, or for another service', async () => {
-    apps.value.console = app('off')
+    apps.value.console = app('disabled')
     expect((await render(<ConsoleTerminalButton device={device()} service={consoleService} />)).innerHTML).toBe('')
     act(() => root.unmount())
     apps.value.console = app('running')
