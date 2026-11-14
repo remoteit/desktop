@@ -199,9 +199,14 @@ export const JOIN_KEY_ENV = 'REMOTEIT_JOIN_KEY'
 export const JOIN_KEY_FILE_ENV = 'REMOTEIT_JOIN_KEY_FILE'
 // The remote.it device as a container (device-package docs/container-image.md): its image, the path its join key file
 // is mounted at, and the state directory a device that keeps its own key needs as a volume. A device join key needs none.
-export const DEVICE_CONTAINER_IMAGE = env.VITE_DEVICE_CONTAINER_IMAGE || 'ghcr.io/remoteit/device'
+// Released images are on Docker Hub (device-package docs/container-image.md: GHCR holds the builds being tested).
+export const DEVICE_CONTAINER_IMAGE = env.VITE_DEVICE_CONTAINER_IMAGE || 'remoteit/device'
 export const DEVICE_CONTAINER_JOIN_KEY_FILE = '/run/secrets/remoteit_join_key'
 export const DEVICE_CONTAINER_STATE = '/var/lib/remoteit-device'
+// The image takes remote.it's releases itself, as a package install does, with this set (its volume keeps them).
+export const DEVICE_CONTAINER_SELF_UPDATE_ENV = 'R3_DEVICE_SELF_UPDATE'
+// The Home Assistant add-on's repository: what Home Assistant's add-on store is given to install it from.
+export const HOME_ASSISTANT_ADDON_REPOSITORY = 'https://github.com/remoteit/home-assistant-addons'
 
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'

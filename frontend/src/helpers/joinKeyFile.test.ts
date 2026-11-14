@@ -17,7 +17,7 @@ describe('joinKeyContainerCommand', () => {
       'docker run -d --name remoteit --restart unless-stopped --network host',
       '-e REMOTEIT_JOIN_KEY_FILE=/run/secrets/remoteit_join_key',
       '-v "$PWD/k.txt:/run/secrets/remoteit_join_key:ro"',
-      'ghcr.io/remoteit/device',
+      'remoteit/device',
     ])
   })
 
@@ -29,6 +29,13 @@ describe('joinKeyContainerCommand', () => {
     const command = joinKeyContainerCommand('product', 'k.txt', true)
     expect(lines(command)).toContain('-e R3_ALLOW_NO_VOLUME=1')
     expect(command).not.toContain('/var/lib/remoteit-device')
+  })
+
+  it("self-update: a product's device with its volume takes releases itself; one without a volume cannot", () => {
+    expect(lines(joinKeyContainerCommand('product', 'k.txt', false, true))).toContain('-e R3_DEVICE_SELF_UPDATE=1')
+    expect(joinKeyContainerCommand('product', 'k.txt', false, false)).not.toContain('R3_DEVICE_SELF_UPDATE')
+    expect(joinKeyContainerCommand('device', 'k.txt', false, true)).toBe(joinKeyContainerCommand('device', 'k.txt'))
+    expect(joinKeyContainerCommand('product', 'k.txt', true, true)).not.toContain('R3_DEVICE_SELF_UPDATE')
   })
 
   it('a device key ignores the ephemeral flag: it never needs a volume', () => {

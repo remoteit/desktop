@@ -14,7 +14,10 @@ export function upkeepText(
       return {
         icon: 'box',
         label: t('upkeep.image', 'Updated by its container image'),
-        hint: t('upkeep.imageHint', 'Pull the image again and recreate the container to update it.'),
+        hint: t(
+          'upkeep.imageHint',
+          'Pull the image again and recreate the container to update it — or run it with -e R3_DEVICE_SELF_UPDATE=1 and a volume, and it keeps itself up to date.'
+        ),
       }
     case 'HOME_ASSISTANT':
       return {

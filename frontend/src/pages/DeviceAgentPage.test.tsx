@@ -187,7 +187,7 @@ describe('DeviceAgentPage', () => {
     const el = await render()
     const notice = el.querySelector('[data-notice]')!
     expect(notice.textContent).toContain('Too old: remote.it needs 1.1.0.20261108160000 or newer here')
-    expect(notice.textContent).toContain('Its sign-in was retired. Pull the image again and recreate the container to update it.')
+    expect(notice.textContent).toContain('Its sign-in was retired. Pull the image again and recreate the container to update it')
   })
 
   it('at or above it, or with no minimum: no warning', async () => {

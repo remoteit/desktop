@@ -177,9 +177,10 @@ describe('CreateJoinKeyDialog', () => {
       [
         'docker run -d --name remoteit --restart unless-stopped --network host',
         '-v remoteit-device:/var/lib/remoteit-device',
+        '-e R3_DEVICE_SELF_UPDATE=1', // on by default: the volume keeps each release
         '-e REMOTEIT_JOIN_KEY_FILE=/run/secrets/remoteit_join_key',
         '-v "$PWD/remoteit-join-key-line-2.txt:/run/secrets/remoteit_join_key:ro"',
-        'ghcr.io/remoteit/device',
+        'remoteit/device',
       ].join(' \\\n  ')
     )
     expect(run).not.toContain(SECRET)

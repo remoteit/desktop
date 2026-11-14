@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { TFunction } from 'i18next'
-import { devicePackageCommand, devicePackagePath, withDevicePackage } from './devicePackage'
+import {
+  DEVICE_PACKAGE_PLATFORMS,
+  devicePackageCommand,
+  devicePackageContainerCommand,
+  devicePackagePath,
+  withDevicePackage,
+} from './devicePackage'
 import { DEVICE_DOWNLOADS_URL } from '../constants'
 import { IPlatform } from '.'
 
@@ -34,5 +40,35 @@ describe('device package installs', () => {
     expect(p.installation?.download).toBeUndefined()
     expect(p.installation?.command).toBe(devicePackageCommand('mac'))
     expect(p.installation?.description).toBeUndefined()
+  })
+
+  it('offers Docker and Home Assistant beside the installs', () => {
+    expect(DEVICE_PACKAGE_PLATFORMS).toEqual(['linux', 'mac', 'windows', 'docker', 'home-assistant'])
+  })
+
+  it("Docker's command keeps the device in a volume and, on by default, updates itself", () => {
+    const on = devicePackageContainerCommand(true).split(' \\\n  ')
+    expect(on).toEqual([
+      'docker run -d --name remoteit --restart unless-stopped --network host',
+      '-v remoteit-device:/var/lib/remoteit-device',
+      '-e R3_REGISTRATION_CODE=[CODE]',
+      '-e R3_DEVICE_SELF_UPDATE=1',
+      'remoteit/device',
+    ])
+    expect(devicePackageContainerCommand(false)).not.toContain('R3_DEVICE_SELF_UPDATE')
+    expect(devicePackageCommand('docker')).toBe(devicePackageContainerCommand(true))
+    const docker = withDevicePackage({ id: 'docker', name: 'Docker', installation: {} } as unknown as IPlatform, t)
+    expect(docker.id).toBe('docker') // its code's type: Docker Container
+    expect(docker.override).toBeUndefined() // PlatformAddPage gives it the page with the self-update switch
+    expect(docker.installation?.command).toBe(devicePackageContainerCommand(true))
+  })
+
+  it('Home Assistant keeps its own page: the code, pasted into the add-on', () => {
+    const ha = {
+      id: 'home-assistant',
+      name: 'Home Assistant',
+      installation: { command: '[CODE]' },
+    } as unknown as IPlatform
+    expect(withDevicePackage(ha, t)).toBe(ha)
   })
 })

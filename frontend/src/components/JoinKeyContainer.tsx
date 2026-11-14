@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Typography } from '@mui/material'
+import { Box, FormControlLabel, Switch, Typography } from '@mui/material'
 import { JOIN_KEY_FILE_ENV } from '../constants'
-import { JoinKeyKind, joinKeyContainerCommand, joinKeyFileName } from '../helpers/joinKeyFile'
+import { JoinKeyKind, joinKeyContainerCommand, joinKeyFileName, selfUpdatable } from '../helpers/joinKeyFile'
 import { CopyCodeBlock } from './CopyCodeBlock'
 
 type Props = {
@@ -18,6 +18,10 @@ type Props = {
 export const JoinKeyContainer: React.FC<Props> = ({ kind, prefix, name, ephemeral }) => {
   const { t } = useTranslation()
   const file = joinKeyFileName(prefix, name)
+  // Keeping itself up to date needs the volume that keeps the release: a product's device with one (on by default, as
+  // the Home Assistant add-on's auto_update); a device join key's container, or an ephemeral product's, has none.
+  const canSelfUpdate = selfUpdatable(kind, ephemeral)
+  const [selfUpdate, setSelfUpdate] = useState(true)
   return (
     <Box marginTop={2} data-join-key-container={kind}>
       <Typography variant="subtitle2" color="textSecondary" gutterBottom>
@@ -45,7 +49,30 @@ export const JoinKeyContainer: React.FC<Props> = ({ kind, prefix, name, ephemera
                 'Download the key, then run this beside {{file}}. The container reads it from the file named by {{env}} to register a new device, which keeps its own key in the volume from then on: one volume per device.',
             })}
       </Typography>
-      <CopyCodeBlock value={joinKeyContainerCommand(kind, file, ephemeral)} />
+      <CopyCodeBlock value={joinKeyContainerCommand(kind, file, ephemeral, canSelfUpdate && selfUpdate)} />
+      <FormControlLabel
+        disabled={!canSelfUpdate}
+        control={
+          <Switch checked={canSelfUpdate && selfUpdate} onChange={event => setSelfUpdate(event.target.checked)} />
+        }
+        label={t('joinKeyContainer.selfUpdate', 'Keep it updated automatically')}
+      />
+      <Typography variant="body2" color="textSecondary">
+        {!canSelfUpdate
+          ? t(
+              'joinKeyContainer.selfUpdateNoVolume',
+              'Needs a volume to keep each release in, which this container has none of: it is updated by pulling the image again.'
+            )
+          : selfUpdate
+          ? t(
+              'joinKeyContainer.selfUpdateOn',
+              'It takes each remote.it release as it comes out, kept in its volume; pulling a newer image still wins.'
+            )
+          : t(
+              'joinKeyContainer.selfUpdateOff',
+              'It is updated by pulling the image again and recreating the container.'
+            )}
+      </Typography>
     </Box>
   )
 }

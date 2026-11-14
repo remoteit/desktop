@@ -68,7 +68,9 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect, on
         code: sessionCodeRef.current,
       }
       if (platform) {
-        options.platform = platforms.findType(platform.id)
+        // A platform with no type of its own (Home Assistant's add-on) names none: the device reports its machine's.
+        const type = platforms.findType(platform.id)
+        options.platform = Number.isNaN(type) ? undefined : type
         options.template = platform.installation?.command
       }
 

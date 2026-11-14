@@ -10,6 +10,7 @@ import { AddDownload } from '../components/AddDownload'
 import { AddDevice } from '../components/AddDevice'
 import { platforms } from '../platforms'
 import { withDevicePackage } from '../platforms/devicePackage'
+import { DevicePackageContainer } from '../components/DevicePackageContainer'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { Notice } from '../components/Notice'
 import { Body } from '../components/Body'
@@ -22,7 +23,10 @@ export const PlatformAddPage: React.FC = () => {
   // ?package: the remote.it device package's one-line install for this platform (AddPage, behind the device-session
   // gate) in place of its own download or command.
   const devicePackage = useDeviceSessions() && new URLSearchParams(location.search).has('package')
-  const platformObj = devicePackage ? withDevicePackage(platforms.get(platform), t) : platforms.get(platform)
+  const packaged = devicePackage ? withDevicePackage(platforms.get(platform), t) : platforms.get(platform)
+  // The device package's container: its command with the self-update switch.
+  const platformObj =
+    devicePackage && platform === 'docker' ? { ...packaged, override: DevicePackageContainer } : packaged
   const defaultServices = platformObj.services ? platformObj.services.map(s => s.application) : [28]
   const canRegister = useSelector(selectCanRegister)
   const [platformTags, setPlatformTags] = useState<string[]>([])

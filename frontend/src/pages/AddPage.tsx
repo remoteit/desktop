@@ -41,6 +41,9 @@ export const AddPage: React.FC = () => {
   const canRegister = useSelector(selectCanRegister)
   const addAhead = !!identity?.addDevice && devicePackage && canRegister
   const [addingAhead, setAddingAhead] = useState(false)
+  // Where the stage has the device package, the classic agent's installs are legacy: folded away until asked for.
+  const [showLegacy, setShowLegacy] = useState(false)
+  const legacy = devicePackage ? ` · ${t('addPage.legacyAgent', 'legacy agent')}` : ''
 
   useEffect(() => {
     if (!allApplicationTypes.length) dispatch.applicationTypes.fetchAll()
@@ -150,61 +153,92 @@ export const AddPage: React.FC = () => {
             })}
           </List>
         )}
-        <List className="addList addIcons" dense disablePadding>
-          <ListSubheader disableGutters>{t('addPage.addInstance', 'Add an instance')}</ListSubheader>
-          {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
-            const platform = platforms.get(p)
-            return (
-              <ListItemLocation
-                key={p}
-                iconPlatform
-                iconSize="xxl"
-                icon={platform.id}
-                to={`/add/${platform.id}`}
-                title={platformText(t, platform).name}
-                subtitle={platform.subtitle}
-                disableGutters
+        {devicePackage && (
+          <List className="addList addSmall" dense disablePadding>
+            <ListSubheader disableGutters>{t('addPage.legacyTitle', 'Legacy agent')}</ListSubheader>
+            <ListItemButton disableGutters onClick={() => setShowLegacy(!showLegacy)}>
+              <ListItemIcon>
+                <Icon name={showLegacy ? 'chevron-up' : 'chevron-down'} size="xxl" fixedWidth />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  showLegacy
+                    ? t('addPage.hideLegacy', 'Hide the legacy installs')
+                    : t('addPage.showLegacy', 'Show the legacy installs')
+                }
+                secondary={t(
+                  'addPage.legacyHint',
+                  "The classic remote.it agent, for devices that can't run the device package"
+                )}
               />
-            )
-          })}
-        </List>
-        <List className="addList addIcons" dense disablePadding>
-          <ListSubheader disableGutters>{t('addPage.addDevice', 'Add a device')}</ListSubheader>
-          {[
-            'raspberrypi',
-            'linux',
-            'docker',
-            'android',
-            'nas',
-            'openwrt',
-            'firewalla',
-            'tinkerboard',
-            'ubiquiti',
-            'nvidia',
-            'alpine',
-            'axis',
-            'advantech',
-            'idy',
-            'teltonika',
-            'ubuntu',
-            'windows',
-            'mac',
-          ].map(p => {
-            const platform = platforms.get(p)
-            return (
-              <ListItemLocation
-                key={p}
-                iconPlatform
-                iconSize="xxl"
-                icon={platform.id}
-                to={platform.route || `/add/${platform.id}`}
-                title={<>{platform.listItemTitle || platformText(t, platform).name}</>}
-                subtitle={platform.subtitle}
-                disableGutters
-              />
-            )
-          })}
-        </List>
+            </ListItemButton>
+          </List>
+        )}
+        {(!devicePackage || showLegacy) && (
+          <>
+            <List className="addList addIcons" dense disablePadding>
+              <ListSubheader disableGutters>
+                {t('addPage.addInstance', 'Add an instance')}
+                {legacy}
+              </ListSubheader>
+              {['docker-jumpbox', 'aws', 'azure', 'gcp', 'arm'].map(p => {
+                const platform = platforms.get(p)
+                return (
+                  <ListItemLocation
+                    key={p}
+                    iconPlatform
+                    iconSize="xxl"
+                    icon={platform.id}
+                    to={`/add/${platform.id}`}
+                    title={platformText(t, platform).name}
+                    subtitle={platform.subtitle}
+                    disableGutters
+                  />
+                )
+              })}
+            </List>
+            <List className="addList addIcons" dense disablePadding>
+              <ListSubheader disableGutters>
+                {t('addPage.addDevice', 'Add a device')}
+                {legacy}
+              </ListSubheader>
+              {[
+                'raspberrypi',
+                'linux',
+                'docker',
+                'android',
+                'nas',
+                'openwrt',
+                'firewalla',
+                'tinkerboard',
+                'ubiquiti',
+                'nvidia',
+                'alpine',
+                'axis',
+                'advantech',
+                'idy',
+                'teltonika',
+                'ubuntu',
+                'windows',
+                'mac',
+              ].map(p => {
+                const platform = platforms.get(p)
+                return (
+                  <ListItemLocation
+                    key={p}
+                    iconPlatform
+                    iconSize="xxl"
+                    icon={platform.id}
+                    to={platform.route || `/add/${platform.id}`}
+                    title={<>{platform.listItemTitle || platformText(t, platform).name}</>}
+                    subtitle={platform.subtitle}
+                    disableGutters
+                  />
+                )
+              })}
+            </List>
+          </>
+        )}
         {virtualDevices && (
           <List className="addList addSmall" dense disablePadding>
             <ListSubheader disableGutters>{t('addPage.virtualDevice', 'Virtual device')}</ListSubheader>

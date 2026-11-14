@@ -61,6 +61,7 @@ class Platforms {
     'firewalla',
     'gcp',
     'hmi',
+    'home-assistant',
     'idy',
     'ios',
     'ipcamera',

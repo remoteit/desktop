@@ -1,6 +1,7 @@
 import {
   DEVICE_CONTAINER_IMAGE,
   DEVICE_CONTAINER_JOIN_KEY_FILE,
+  DEVICE_CONTAINER_SELF_UPDATE_ENV,
   DEVICE_CONTAINER_STATE,
   JOIN_KEY_FILE_ENV,
 } from '../constants'
@@ -36,11 +37,21 @@ export type JoinKeyKind = 'device' | 'product'
    file — never on the command line, where it would land in the shell's history and the container's inspect output.
    - A device join key brings its one device back at every start, its identity in memory: no volume.
    - A product join key registers a new device, which then keeps its own key in a volume, one per device; an ephemeral
-     product's device is new at every start, so it has none (R3_ALLOW_NO_VOLUME). */
-export function joinKeyContainerCommand(kind: JoinKeyKind, file: string, ephemeral = false): string {
+     product's device is new at every start, so it has none (R3_ALLOW_NO_VOLUME).
+   - selfUpdate: the container takes remote.it's releases itself (R3_DEVICE_SELF_UPDATE), which only a volume keeps:
+     for a product's device with one, never one without (selfUpdatable). */
+export const selfUpdatable = (kind: JoinKeyKind, ephemeral = false) => kind === 'product' && !ephemeral
+
+export function joinKeyContainerCommand(
+  kind: JoinKeyKind,
+  file: string,
+  ephemeral = false,
+  selfUpdate = false
+): string {
   const lines = ['docker run -d --name remoteit --restart unless-stopped --network host']
   if (kind === 'product')
     lines.push(ephemeral ? '-e R3_ALLOW_NO_VOLUME=1' : `-v remoteit-device:${DEVICE_CONTAINER_STATE}`)
+  if (selfUpdate && selfUpdatable(kind, ephemeral)) lines.push(`-e ${DEVICE_CONTAINER_SELF_UPDATE_ENV}=1`)
   lines.push(`-e ${JOIN_KEY_FILE_ENV}=${DEVICE_CONTAINER_JOIN_KEY_FILE}`)
   lines.push(`-v "$PWD/${file}:${DEVICE_CONTAINER_JOIN_KEY_FILE}:ro"`)
   lines.push(DEVICE_CONTAINER_IMAGE)
