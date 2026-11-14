@@ -94,7 +94,7 @@ export const AppsPage: React.FC = () => {
       ) : (
         <List data-apps>
           {shown.map(app => {
-            const devices = app.fleet.enabled + app.fleet.disabled
+            const devices = app.fleet.total
             return (
               <AppCatalogRow
                 key={app.id}

@@ -36,7 +36,7 @@ describe('the catalogue, where graphql serves it', () => {
             platforms: ['linux-arm64'],
             version: '1.4.0',
             accountChannel: null,
-            fleet: { enabled: 2, disabled: 1, upToDate: 1, heldBack: 1, versions: [{ version: '1.4.0', count: 2 }] },
+            fleet: { total: 3, enabled: 2, disabled: 1, upToDate: 1, heldBack: 1, versions: [{ version: '1.4.0', count: 2 }] },
           },
         ],
       })
@@ -45,7 +45,8 @@ describe('the catalogue, where graphql serves it', () => {
     const { query, variables } = post.mock.calls[1][0]
     expect(query).toContain('appCatalog(accountId: $accountId)')
     expect(query).toContain('publisher { id name verifiedDomain remoteit own }')
-    expect(query).toContain('fleet { enabled disabled upToDate heldBack versions { version count } }')
+    expect(query).toContain('fleet { total enabled disabled upToDate heldBack versions { version count } }')
+    expect(query).not.toContain('heldBackBy') // worked out per held-back device: one app's page only
     expect(variables).toEqual({ accountId: 'A1' })
     expect(apps).toEqual([
       expect.objectContaining({
@@ -53,7 +54,7 @@ describe('the catalogue, where graphql serves it', () => {
         publisher: { id: 'acme', name: 'Acme', verifiedDomain: 'acme.com', remoteit: false, own: true },
         description: null,
         accountChannel: null,
-        fleet: { enabled: 2, disabled: 1, upToDate: 1, heldBack: 1, versions: [{ version: '1.4.0', count: 2 }] },
+        fleet: { total: 3, enabled: 2, disabled: 1, upToDate: 1, heldBack: 1, versions: [{ version: '1.4.0', count: 2 }] },
       }),
     ])
   })
@@ -66,6 +67,7 @@ describe('the catalogue, where graphql serves it', () => {
           name: 'Backup',
           publisher: { id: 'acme', name: 'Acme' },
           channels: [{ channel: 'beta', current: '1.5.0', candidate: '1.5.1', share: 10 }],
+          fleet: { total: 1, enabled: 1, disabled: 0, upToDate: 0, heldBack: 1, versions: [], heldBackBy: [{ reason: 'daemon', count: 1 }] },
           releases: [{ version: '1.5.0', created: '2026-11-12', notes: 'Adds S3', root: false, platforms: [], withdrawn: null, channels: ['beta'] }],
           devices: {
             items: [{ deviceId: 'D1', name: 'nas', enabled: true, state: 'running', upToDate: false, heldBack: { reason: 'daemon', detail: 'x' } }],
@@ -75,15 +77,17 @@ describe('the catalogue, where graphql serves it', () => {
         },
       })
     )
-    const app = await graphQLCatalogApp('acme.backup', { heldBack: true })
+    const app = await graphQLCatalogApp('acme.backup', { heldBack: true, heldBackReason: 'daemon' })
     const { query, variables } = post.mock.calls[1][0]
     expect(query).toContain('releases(first: $releases) { version created notes root platforms withdrawn channels }')
-    expect(query).toContain('devices(first: 100, after: $after, heldBack: $heldBack, version: $version)')
+    expect(query).toContain('devices(first: 100, after: $after, heldBack: $heldBack, heldBackReason: $heldBackReason, version: $version)')
+    expect(query).toContain('heldBackBy { reason count }')
     expect(query).toContain('heldBack { reason detail }')
-    expect(variables).toMatchObject({ id: 'acme.backup', heldBack: true, releases: 20 })
+    expect(variables).toMatchObject({ id: 'acme.backup', heldBack: true, heldBackReason: 'daemon', releases: 20 })
     expect(app).toMatchObject({
       channels: [{ channel: 'beta', current: '1.5.0', candidate: '1.5.1', share: 10 }],
       releases: [{ version: '1.5.0', notes: 'Adds S3' }],
+      fleet: { total: 1, heldBack: 1, heldBackBy: [{ reason: 'daemon', count: 1 }] },
       devices: { total: 1, items: [{ deviceId: 'D1', heldBack: { reason: 'daemon', detail: 'x' }, pinned: null }] },
     })
   })

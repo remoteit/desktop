@@ -43,11 +43,15 @@ vi.mock('../components/Confirm', () => ({
       </div>
     ) : null,
 }))
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? ''),
-  }),
-}))
+vi.mock('react-i18next', () => {
+  const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
+  return {
+    useTranslation: () => ({
+      t: (_key: string, a: any, b?: any) =>
+        typeof a === 'string' ? fill(a, b) : fill(a.count === 1 ? a.defaultValue_one : a.defaultValue_other, a),
+    }),
+  }
+})
 
 import { AppPage } from './AppPage'
 import { mockCatalogApp } from '../services/__fixtures__/appCatalogMock'
@@ -141,6 +145,21 @@ describe('the app in the catalogue', () => {
     )
   })
 
+  it('a candidate rolling out: "beta candidate" named as the channel’s candidate, with its share', async () => {
+    const app = backup()
+    const rc = { ...app.releases[0], version: '1.5.0-rc.1', channels: ['beta candidate'] }
+    catalog.mockResolvedValue({ ...app, releases: [rc, ...app.releases] })
+    const page = await render()
+    expect(page.querySelector('[data-app-release="1.5.0-rc.1"]')?.textContent).toContain('Beta candidate, 10% of its devices')
+    expect(page.querySelector('[data-app-release="1.4.0"]')?.textContent).toContain('Stable')
+    act(() => root.unmount())
+    container.remove()
+    catalog.mockResolvedValue({ ...app, channels: [], releases: [rc] })
+    const again = await render()
+    expect(again.querySelector('[data-app-release="1.5.0-rc.1"]')?.textContent).toContain('Beta candidate')
+    expect(again.querySelector('[data-app-release="1.5.0-rc.1"]')?.textContent).not.toContain('beta candidate')
+  })
+
   it('Show more asks for more releases', async () => {
     catalog.mockImplementation(async (_id: string, { releases }: any) => ({
       ...backup(),
@@ -155,7 +174,12 @@ describe('the app in the catalogue', () => {
 describe('your devices', () => {
   it('the counts, and each device’s version, channel, state, up to date or held back with why', async () => {
     const page = await render()
-    expect(page.querySelector('[data-app-fleet-counts]')?.textContent).toBe('3 enabled · 1 disabled · 1 up to date · 2 held back')
+    expect(page.querySelector('[data-app-fleet-counts]')?.textContent).toBe(
+      '4 devices · 3 enabled · 1 disabled · 1 up to date · 2 held back'
+    )
+    expect(page.querySelector('[data-app-fleet-held-by]')?.textContent).toBe(
+      'Held back: Needs a newer remote.it on this device (1) · Pinned (1)'
+    )
     expect(device(page, 'pi-kitchen').querySelector('[data-fleet-status]')?.textContent).toBe('Up to date')
     expect(device(page, 'nas').textContent).toContain('1.3.2 · Stable · Running')
     expect(device(page, 'nas').querySelector('[data-fleet-status]')?.textContent).toBe(
@@ -178,6 +202,27 @@ describe('your devices', () => {
     expect([...page.querySelectorAll('[data-fleet-device]')].length).toBe(2)
     await select(page.querySelector('[data-fleet-version]'), '1.3.2')
     expect(catalog).toHaveBeenLastCalledWith('acme.backup', { accountId: undefined, releases: 20, heldBack: true, version: '1.3.2' })
+  })
+
+  it('held back for one reason: the fleet’s heldBackBy as choices, asked as heldBackReason', async () => {
+    const page = await render()
+    const filter = page.querySelector('[data-fleet-filter]') as HTMLSelectElement
+    expect([...filter.options].map(o => o.textContent)).toEqual([
+      'All',
+      'Held back',
+      '— Needs a newer remote.it on this device (1)',
+      '— Pinned (1)',
+      'Up to date',
+    ])
+    await select(filter, 'held:pinned')
+    expect(catalog.mock.lastCall?.[1]).toMatchObject({ heldBackReason: 'pinned' })
+    expect(catalog.mock.lastCall?.[1].heldBack).toBeUndefined()
+    expect([...page.querySelectorAll('[data-fleet-device]')].map(el => el.getAttribute('data-fleet-device'))).toEqual([
+      '80:00:00:00:01:00:00:03',
+    ])
+    await select(filter, 'held')
+    expect(catalog.mock.lastCall?.[1]).toMatchObject({ heldBack: true })
+    expect(catalog.mock.lastCall?.[1].heldBackReason).toBeUndefined()
   })
 
   it('the version filter’s Not reported asks devices(version: ""), apart from any version (none sent)', async () => {

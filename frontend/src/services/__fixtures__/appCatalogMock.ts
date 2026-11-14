@@ -89,11 +89,13 @@ export type MockCatalogApp = {
     channels: string[]
   }[]
   fleet: {
+    total: number
     enabled: number
     disabled: number
     upToDate: number
     heldBack: number
     versions: { version: string | null; count: number }[]
+    heldBackBy: { reason: string; count: number }[]
   }
   devices: MockDevice[]
 }
@@ -102,12 +104,16 @@ const fleetOf = (devices: MockDevice[]) => {
   const enabled = devices.filter(d => d.enabled)
   const versions = new Map<string | null, number>()
   devices.forEach(d => versions.set(d.version, (versions.get(d.version) ?? 0) + 1))
+  const reasons = new Map<string, number>()
+  enabled.forEach(d => d.heldBack && reasons.set(d.heldBack.reason, (reasons.get(d.heldBack.reason) ?? 0) + 1))
   return {
+    total: devices.length,
     enabled: enabled.length,
     disabled: devices.length - enabled.length,
     upToDate: enabled.filter(d => d.upToDate).length,
     heldBack: enabled.filter(d => !d.upToDate).length,
     versions: [...versions].map(([version, count]) => ({ version, count })),
+    heldBackBy: [...reasons].map(([reason, count]) => ({ reason, count })),
   }
 }
 
@@ -229,12 +235,13 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
 ]
 
 // One app with a page of its devices, filtered as catalogApp's devices are: held back (or up to date), a version.
-export function mockCatalogApp(id: string, filter: { heldBack?: boolean; version?: string } = {}) {
+export function mockCatalogApp(id: string, filter: { heldBack?: boolean; heldBackReason?: string; version?: string } = {}) {
   const app = MOCK_CATALOG.find(a => a.id === id)
   if (!app) return null
   const items = app.devices.filter(
     d =>
       (filter.heldBack === undefined || (d.enabled && !d.upToDate) === filter.heldBack) &&
+      (filter.heldBackReason === undefined || d.heldBack?.reason === filter.heldBackReason) &&
       (filter.version === undefined || (d.version ?? '') === filter.version)
   )
   return { ...app, devices: { items, total: items.length, next: null } }

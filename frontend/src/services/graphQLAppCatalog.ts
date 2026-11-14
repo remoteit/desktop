@@ -32,11 +32,15 @@ export type CatalogAppRelease = {
 }
 
 export type CatalogAppFleet = {
+  total: number // devices with the app: enabled + disabled
   enabled: number
   disabled: number
   upToDate: number
   heldBack: number
-  versions: { version: string | null; count: number }[]
+  versions: { version: string | null; count: number }[] // version null: not reported
+  // The held back by why (AppHeldBack.reason), the most first, adding up to heldBack: read for one app's page only,
+  // as graphql works it out per held-back device.
+  heldBackBy?: { reason: string; count: number }[]
 }
 
 export type CatalogAppDevice = {
@@ -74,8 +78,9 @@ export type CatalogApp = {
   devices?: CatalogAppDevicePage
 }
 
-// A device page's filter: held back or up to date (heldBack false), and a version running — "" none reported; absent, any.
-export type CatalogDeviceFilter = { heldBack?: boolean; version?: string }
+// A device page's filter: held back or up to date (heldBack false), held back for one reason (heldBackReason), and a
+// version running — "" none reported; absent, any.
+export type CatalogDeviceFilter = { heldBack?: boolean; heldBackReason?: string; version?: string }
 
 export type Unserved = 'UNSERVED'
 export const UNSERVED: Unserved = 'UNSERVED'
@@ -104,12 +109,14 @@ export function resetAppCatalog() {
 }
 
 const PUBLISHER = 'publisher { id name verifiedDomain remoteit own }'
-const FLEET = 'fleet { enabled disabled upToDate heldBack versions { version count } }'
-const LIST = `id name description ${PUBLISHER} runsAs root kind serves platforms version accountChannel ${FLEET}`
+const FLEET_COUNTS = 'total enabled disabled upToDate heldBack versions { version count }'
+const BASE = `id name description ${PUBLISHER} runsAs root kind serves platforms version accountChannel`
+const LIST = `${BASE} fleet { ${FLEET_COUNTS} }`
+const ONE = `${BASE} fleet { ${FLEET_COUNTS} heldBackBy { reason count } }`
 const RELEASES = 'releases(first: $releases) { version created notes root platforms withdrawn channels }'
 const CHANNELS = 'channels { channel current candidate share }'
 const DEVICE = 'deviceId name enabled state detail version release latest channel pinned upToDate heldBack { reason detail }'
-const DEVICES = `devices(first: 100, after: $after, heldBack: $heldBack, version: $version) { items { ${DEVICE} } total next }`
+const DEVICES = `devices(first: 100, after: $after, heldBack: $heldBack, heldBackReason: $heldBackReason, version: $version) { items { ${DEVICE} } total next }`
 
 const publisherOf = (publisher: any): CatalogAppPublisher => ({
   id: publisher?.id ?? '',
@@ -120,11 +127,15 @@ const publisherOf = (publisher: any): CatalogAppPublisher => ({
 })
 
 const fleetOf = (fleet: any): CatalogAppFleet => ({
+  total: fleet?.total ?? (fleet?.enabled ?? 0) + (fleet?.disabled ?? 0),
   enabled: fleet?.enabled ?? 0,
   disabled: fleet?.disabled ?? 0,
   upToDate: fleet?.upToDate ?? 0,
   heldBack: fleet?.heldBack ?? 0,
   versions: (fleet?.versions ?? []).map((v: any) => ({ version: v.version ?? null, count: v.count ?? 0 })),
+  ...(fleet?.heldBackBy && {
+    heldBackBy: fleet.heldBackBy.map((r: any) => ({ reason: r.reason, count: r.count ?? 0 })),
+  }),
 })
 
 export const catalogDeviceOf = (device: any): CatalogAppDevice => ({
@@ -211,10 +222,18 @@ export async function graphQLCatalogApp(
 ): Promise<CatalogRead<CatalogApp | null>> {
   const from = await source()
   if (from !== 'api') return from
-  const query = `query CatalogApp($id: String!, $accountId: String, $releases: Int, $after: String, $heldBack: Boolean, $version: String) {
-    catalogApp(id: $id, accountId: $accountId) { ${LIST} ${CHANNELS} ${RELEASES} ${DEVICES} }
+  const query = `query CatalogApp($id: String!, $accountId: String, $releases: Int, $after: String, $heldBack: Boolean, $heldBackReason: String, $version: String) {
+    catalogApp(id: $id, accountId: $accountId) { ${ONE} ${CHANNELS} ${RELEASES} ${DEVICES} }
   }`
-  const variables = { id, accountId, releases, after, heldBack: filter.heldBack, version: filter.version }
+  const variables = {
+    id,
+    accountId,
+    releases,
+    after,
+    heldBack: filter.heldBack,
+    heldBackReason: filter.heldBackReason,
+    version: filter.version,
+  }
   const response = await post({ query, variables })
   if (response === 'ERROR') return 'ERROR'
   if (graphQLGetErrors(response, true, { query, variables })) return 'ERROR'

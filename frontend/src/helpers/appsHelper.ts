@@ -35,6 +35,25 @@ export const channelName = (t: TFunction, channel: string | null | undefined) =>
     ? t('deviceApps.stable', 'Stable')
     : channel || t('apps.accountChannel', 'Account’s')
 
+// Where a stage's channel points at a release, as CatalogAppRelease.channels says it: "stable", "beta", or a candidate
+// rolling out ("beta candidate"), with its share of the channel's devices where the channels say it.
+export function releaseChannelName(
+  t: TFunction,
+  name: string,
+  channels: { channel: string; candidate: string | null; share: number }[] = []
+): string {
+  const candidate = /^(\S+) candidate$/.exec(name)
+  if (!candidate) return channelName(t, name)
+  const channel = candidate[1]
+  const share = channels.find(c => c.channel === channel && c.candidate)?.share
+  return share
+    ? t('apps.channelCandidateShare', '{{channel}} candidate, {{share}}% of its devices', {
+        channel: channelName(t, channel),
+        share,
+      })
+    : t('apps.channelCandidate', '{{channel}} candidate', { channel: channelName(t, channel) })
+}
+
 // A product holding an app: its enable, disable, remove, channel and pin are the product's.
 export const managedLine = (t: TFunction, locked: SettingLock) =>
   locked.product

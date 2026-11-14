@@ -22,6 +22,7 @@ import { State } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
 import {
   CatalogApp,
+  CatalogAppChannel,
   CatalogAppDevice,
   CatalogAppRelease,
   CatalogDeviceFilter,
@@ -41,12 +42,14 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
-import { channelName, day, heldBackLine, stateWord } from '../helpers/appsHelper'
+import { channelName, day, heldBackLine, heldBackReason, releaseChannelName, stateWord } from '../helpers/appsHelper'
 
 const RELEASES_PAGE = 20
 // The version filter's choices besides a version: any (no filter), and none reported — catalogApp's devices(version: ""),
 // never confused with no filter at all.
 const ANY_VERSION = '*'
+// The held-back filter's choice of one reason (heldBackReason): this, then the reason.
+const HELD_FOR = 'held:'
 const NO_VERSION = '-'
 
 /* The app in the catalogue (presence-server docs/device-apps-design.md, "The Apps pages", /apps/:appID), from
@@ -59,8 +62,9 @@ const NO_VERSION = '-'
      this account follows (setAccountAppChannel);
      Releases, newest first: each version, its date, where this stage's channels point at it, root, its platforms,
      withdrawn, and its notes opened in place; Show more;
-     Your devices: how many enabled, disabled, up to date and held back; each device's version running, channel, state,
-     and up to date or held back with the reason in words — filtered by held back and by version. A row opens the app
+     Your devices: how many in all, enabled, disabled, up to date and held back, and the held back by why (fleet.total,
+     fleet.heldBackBy); each device's version running, channel, state, and up to date or held back with the reason in
+     words — filtered by held back, by one reason (heldBackReason), and by version ("" none reported). A row opens the app
      on that device. Update selected moves each to its channel's release, unpinned (setDeviceAppsRelease with version
      ""), asking first for the yes to root where any is held for it; Pin selected… picks a release. Each device's
      result is listed after: a refusal is that device's. */
@@ -89,7 +93,7 @@ export const AppPage: React.FC = () => {
     const read = ++latest.current
     const answer = await graphQLCatalogApp(appID, { accountId: account, releases, ...filter })
     if (read === latest.current) setApp(answer)
-  }, [appID, account, releases, filter.heldBack, filter.version])
+  }, [appID, account, releases, filter.heldBack, filter.heldBackReason, filter.version])
 
   useEffect(() => {
     setSelected([])
@@ -270,6 +274,7 @@ export const AppPage: React.FC = () => {
           <ReleaseRow
             key={release.version}
             release={release}
+            channels={app.channels}
             open={opened === release.version}
             onToggle={() => setOpened(opened === release.version ? undefined : release.version)}
           />
@@ -288,6 +293,7 @@ export const AppPage: React.FC = () => {
           {t('apps.yourDevices', 'Your devices')}
           <Typography variant="caption" color="textSecondary" data-app-fleet-counts>
             {[
+              t('apps.fleetTotal', { count: app.fleet.total, defaultValue_one: '{{count}} device', defaultValue_other: '{{count}} devices' }),
               t('apps.fleetEnabled', '{{number}} enabled', { number: app.fleet.enabled }),
               t('apps.fleetDisabled', '{{number}} disabled', { number: app.fleet.disabled }),
               t('apps.fleetUpToDate', '{{number}} up to date', { number: app.fleet.upToDate }),
@@ -295,23 +301,53 @@ export const AppPage: React.FC = () => {
             ].join(' · ')}
           </Typography>
         </ListSubheader>
+        {!!app.fleet.heldBackBy?.length && (
+          <ListItem>
+            <Typography variant="caption" color="textSecondary" data-app-fleet-held-by>
+              {t('apps.heldBack', 'Held back: {{reason}}', {
+                reason: app.fleet.heldBackBy
+                  .map(({ reason, count }) => `${heldBackReason(t, { reason, detail: '' })} (${count})`)
+                  .join(' · '),
+              })}
+            </Typography>
+          </ListItem>
+        )}
         <ListItem sx={{ gap: 1, flexWrap: 'wrap' }}>
           <TextField
             select
             size="small"
             variant="standard"
-            value={filter.heldBack === undefined ? 'all' : filter.heldBack ? 'held' : 'current'}
-            onChange={e =>
+            value={
+              filter.heldBackReason
+                ? `${HELD_FOR}${filter.heldBackReason}`
+                : filter.heldBack === undefined
+                ? 'all'
+                : filter.heldBack
+                ? 'held'
+                : 'current'
+            }
+            onChange={e => {
+              const value = e.target.value
+              const reason = value.startsWith(HELD_FOR) ? value.slice(HELD_FOR.length) : undefined
               setFilter({
                 ...filter,
-                heldBack: e.target.value === 'all' ? undefined : e.target.value === 'held',
+                heldBack: value === 'all' || reason ? undefined : value === 'held',
+                heldBackReason: reason,
               })
-            }
+            }}
             SelectProps={{ native: true }}
             inputProps={{ 'data-fleet-filter': true, 'aria-label': t('apps.filter', 'Which devices') }}
           >
             <option value="all">{t('apps.filterAll', 'All')}</option>
             <option value="held">{t('apps.filterHeldBack', 'Held back')}</option>
+            {(app.fleet.heldBackBy ?? []).map(({ reason, count }) => (
+              <option key={reason} value={`${HELD_FOR}${reason}`}>
+                {t('apps.filterHeldFor', '— {{reason}} ({{count}})', {
+                  reason: heldBackReason(t, { reason, detail: '' }),
+                  count,
+                })}
+              </option>
+            ))}
             <option value="current">{t('apps.filterUpToDate', 'Up to date')}</option>
           </TextField>
           <TextField
@@ -477,15 +513,16 @@ export const AppPage: React.FC = () => {
 
 /* A release: its version, date, where this stage's channels point at it or that it was withdrawn, the first line of
    its notes — opened in place to all of them, with root and its platforms. */
-const ReleaseRow: React.FC<{ release: CatalogAppRelease; open: boolean; onToggle: () => void }> = ({
-  release,
-  open,
-  onToggle,
-}) => {
+const ReleaseRow: React.FC<{
+  release: CatalogAppRelease
+  channels: CatalogAppChannel[]
+  open: boolean
+  onToggle: () => void
+}> = ({ release, channels, open, onToggle }) => {
   const { t } = useTranslation()
   const where = release.withdrawn
     ? t('apps.withdrawn', 'withdrawn {{day}}', { day: day(release.withdrawn) })
-    : release.channels.join(', ')
+    : release.channels.map(name => releaseChannelName(t, name, channels)).join(', ')
   return (
     <>
       <ListItemButton onClick={onToggle} data-app-release={release.version}>
