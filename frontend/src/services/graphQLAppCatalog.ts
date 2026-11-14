@@ -1,0 +1,251 @@
+import { post } from './post'
+import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
+import type { AppHeldBack, AppChange } from './deviceAppsShared'
+import { MOCK_CATALOG, mockCatalogApp } from './appCatalogMock'
+
+/* The account's app catalogue (presence-server docs/device-apps-design.md, "Lifecycle: add, disable, remove", API, and
+   "The Apps pages"): every app the account may take — remote.it's, its own publisher's —, each with its publisher, how
+   it runs, its platforms, the release its channel gives on this stage, its channels and releases with their notes, and
+   its fleet: the account's devices that have it, at which versions, up to date or held back and why. graphql's
+   appCatalog, catalogApp and setAccountAppChannel.
+
+   graphql builds the reads apart from the portal (its step 12e), so they are asked only where its schema has them,
+   probed once. Until then a development build reads them from services/appCatalogMock, so the pages can be seen and
+   worked on; any other build says the API does not have them yet. The mutations are always graphql's own. */
+
+export type CatalogAppPublisher = {
+  id: string
+  name: string
+  verifiedDomain: string | null
+  remoteit: boolean // remote.it's own
+  own: boolean // the account's own publisher: its releases are managed on the Publisher page
+}
+
+export type CatalogAppChannel = { channel: string; current: string | null; candidate: string | null; share: number }
+
+export type CatalogAppRelease = {
+  version: string
+  created: string
+  notes: string | null // its manifest's notes, as its publisher signed them
+  root: boolean
+  platforms: string[]
+  withdrawn: string | null
+  channels: string[] // where this stage points at it: "stable", "beta", "beta candidate"
+}
+
+export type CatalogAppFleet = {
+  enabled: number
+  disabled: number
+  upToDate: number
+  heldBack: number
+  versions: { version: string | null; count: number }[]
+}
+
+export type CatalogAppDevice = {
+  deviceId: string
+  name: string
+  enabled: boolean
+  state: string
+  detail: string | null
+  version: string | null // running
+  release: string | null // offered
+  latest: string | null
+  channel: string | null
+  pinned: string | null
+  upToDate: boolean
+  heldBack: AppHeldBack | null
+}
+
+export type CatalogAppDevicePage = { items: CatalogAppDevice[]; total: number; next: string | null }
+
+export type CatalogApp = {
+  id: string
+  name: string
+  description: string | null
+  publisher: CatalogAppPublisher
+  runsAs: string // restricted | root, of version
+  root: boolean
+  kind: string // binary | script | bundle
+  serves: string // inetd | socket | none
+  platforms: string[] // version's archive keys
+  version: string | null // the release the account's channel gives here; none: none here yet
+  accountChannel: string | null // none: stable
+  channels: CatalogAppChannel[]
+  releases: CatalogAppRelease[] // newest first
+  fleet: CatalogAppFleet
+  devices?: CatalogAppDevicePage
+}
+
+// A device page's filter: held back or up to date (heldBack false), and a version running.
+export type CatalogDeviceFilter = { heldBack?: boolean; version?: string }
+
+export type Unserved = 'UNSERVED'
+export const UNSERVED: Unserved = 'UNSERVED'
+export type CatalogRead<T> = T | Unserved | 'ERROR'
+
+// Whether the API has the catalogue's reads. Read once; asked again after a failed request.
+let probe: Promise<boolean | 'ERROR'> | undefined
+export function appCatalogServed(): Promise<boolean | 'ERROR'> {
+  if (!probe)
+    probe = post({ query: 'query AppCatalogFields { query: __type(name: "Query") { fields { name } } }' }).then(
+      response => {
+        if (response === 'ERROR') {
+          probe = undefined
+          return 'ERROR'
+        }
+        const fields: { name: string }[] = response.data?.data?.query?.fields ?? []
+        return fields.some(field => field.name === 'appCatalog') && fields.some(field => field.name === 'catalogApp')
+      }
+    )
+  return probe
+}
+
+// For tests, and for a change of API or sign-in.
+export function resetAppCatalog() {
+  probe = undefined
+}
+
+// The mocks stand in only in a development build.
+export const mocked = () => !!import.meta.env.DEV
+
+const PUBLISHER = 'publisher { id name verifiedDomain remoteit own }'
+const FLEET = 'fleet { enabled disabled upToDate heldBack versions { version count } }'
+const LIST = `id name description ${PUBLISHER} runsAs root kind serves platforms version accountChannel ${FLEET}`
+const RELEASES = 'releases(first: $releases) { version created notes root platforms withdrawn channels }'
+const CHANNELS = 'channels { channel current candidate share }'
+const DEVICE = 'deviceId name enabled state detail version release latest channel pinned upToDate heldBack { reason detail }'
+const DEVICES = `devices(first: 100, after: $after, heldBack: $heldBack, version: $version) { items { ${DEVICE} } total next }`
+
+const publisherOf = (publisher: any): CatalogAppPublisher => ({
+  id: publisher?.id ?? '',
+  name: publisher?.name ?? publisher?.id ?? '',
+  verifiedDomain: publisher?.verifiedDomain ?? null,
+  remoteit: !!publisher?.remoteit,
+  own: !!publisher?.own,
+})
+
+const fleetOf = (fleet: any): CatalogAppFleet => ({
+  enabled: fleet?.enabled ?? 0,
+  disabled: fleet?.disabled ?? 0,
+  upToDate: fleet?.upToDate ?? 0,
+  heldBack: fleet?.heldBack ?? 0,
+  versions: (fleet?.versions ?? []).map((v: any) => ({ version: v.version ?? null, count: v.count ?? 0 })),
+})
+
+export const catalogDeviceOf = (device: any): CatalogAppDevice => ({
+  deviceId: device.deviceId,
+  name: device.name ?? device.deviceId,
+  enabled: !!device.enabled,
+  state: device.state ?? 'disabled',
+  detail: device.detail ?? null,
+  version: device.version ?? null,
+  release: device.release ?? null,
+  latest: device.latest ?? null,
+  channel: device.channel ?? null,
+  pinned: device.pinned ?? null,
+  upToDate: !!device.upToDate,
+  heldBack: device.heldBack?.reason ? { reason: device.heldBack.reason, detail: device.heldBack.detail ?? '' } : null,
+})
+
+export const catalogAppOf = (app: any): CatalogApp => ({
+  id: app.id,
+  name: app.name ?? app.id,
+  description: app.description ?? null,
+  publisher: publisherOf(app.publisher),
+  runsAs: app.runsAs ?? (app.root ? 'root' : 'restricted'),
+  root: !!app.root,
+  kind: app.kind ?? 'binary',
+  serves: app.serves ?? 'none',
+  platforms: app.platforms ?? [],
+  version: app.version ?? null,
+  accountChannel: app.accountChannel ?? null,
+  channels: (app.channels ?? []).map((c: any) => ({
+    channel: c.channel,
+    current: c.current ?? null,
+    candidate: c.candidate ?? null,
+    share: c.share ?? 0,
+  })),
+  releases: (app.releases ?? []).map((r: any) => ({
+    version: r.version,
+    created: r.created,
+    notes: r.notes ?? null,
+    root: !!r.root,
+    platforms: r.platforms ?? [],
+    withdrawn: r.withdrawn ?? null,
+    channels: r.channels ?? [],
+  })),
+  fleet: fleetOf(app.fleet),
+  ...(app.devices && {
+    devices: {
+      items: (app.devices.items ?? []).map(catalogDeviceOf),
+      total: app.devices.total ?? 0,
+      next: app.devices.next ?? null,
+    },
+  }),
+})
+
+// Served, else the mocks in a development build, else UNSERVED.
+async function source(): Promise<'api' | 'mock' | Unserved | 'ERROR'> {
+  const served = await appCatalogServed()
+  if (served === true) return 'api'
+  if (mocked()) return 'mock'
+  return served === 'ERROR' ? 'ERROR' : UNSERVED
+}
+
+// Every app the account may use, from the account's own (accountId: an organization's).
+export async function graphQLAppCatalog(accountId?: string): Promise<CatalogRead<CatalogApp[]>> {
+  const from = await source()
+  if (from === 'mock') return MOCK_CATALOG.map(({ devices, ...app }) => catalogAppOf(app))
+  if (from !== 'api') return from
+  const query = `query AppCatalog($accountId: String) { appCatalog(accountId: $accountId) { ${LIST} } }`
+  const variables = { accountId }
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return 'ERROR'
+  if (graphQLGetErrors(response, true, { query, variables })) return 'ERROR'
+  return (response.data?.data?.appCatalog ?? []).map(catalogAppOf)
+}
+
+// One app in the catalogue, with its channels, releases (the newest `releases`), fleet and a page of its devices.
+// null: not one the account may take.
+export async function graphQLCatalogApp(
+  id: string,
+  {
+    accountId,
+    releases = 20,
+    after,
+    ...filter
+  }: { accountId?: string; releases?: number; after?: string } & CatalogDeviceFilter = {}
+): Promise<CatalogRead<CatalogApp | null>> {
+  const from = await source()
+  if (from === 'mock') {
+    const app = mockCatalogApp(id, filter)
+    return app ? catalogAppOf({ ...app, releases: app.releases.slice(0, releases) }) : null
+  }
+  if (from !== 'api') return from
+  const query = `query CatalogApp($id: String!, $accountId: String, $releases: Int, $after: String, $heldBack: Boolean, $version: String) {
+    catalogApp(id: $id, accountId: $accountId) { ${LIST} ${CHANNELS} ${RELEASES} ${DEVICES} }
+  }`
+  const variables = { id, accountId, releases, after, heldBack: filter.heldBack, version: filter.version }
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return 'ERROR'
+  if (graphQLGetErrors(response, true, { query, variables })) return 'ERROR'
+  const app = response.data?.data?.catalogApp
+  return app ? catalogAppOf(app) : null
+}
+
+// The channel the account follows for this app: stable or beta; "" none (stable).
+export async function graphQLSetAccountAppChannel(
+  app: string,
+  channel: string,
+  accountId?: string
+): Promise<AppChange<{ accountChannel: string | null }>> {
+  const result = await graphQLRequestWithReason(
+    `mutation SetAccountAppChannel($app: String!, $channel: String, $accountId: String) {
+      setAccountAppChannel(app: $app, channel: $channel, accountId: $accountId) { id accountChannel }
+    }`,
+    { app, channel, accountId }
+  )
+  if (result === 'ERROR') return { reason: '' }
+  if ('reason' in result) return result
+  return { accountChannel: result.data?.data?.setAccountAppChannel?.accountChannel ?? null }
+}
