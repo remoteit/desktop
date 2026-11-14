@@ -46,7 +46,7 @@ vi.mock('react-i18next', () => {
 })
 
 import { AppAddDialog } from './AppAddDialog'
-import { mockCatalogApp } from '../services/appCatalogMock'
+import { mockCatalogApp } from '../services/__fixtures__/appCatalogMock'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const target = (id: string, name: string, more: any = {}) => ({

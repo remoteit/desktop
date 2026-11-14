@@ -1,7 +1,6 @@
 import { post } from './post'
 import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import type { AppHeldBack, AppChange } from './deviceAppsShared'
-import { MOCK_CATALOG, mockCatalogApp } from './appCatalogMock'
 
 /* The account's app catalogue (presence-server docs/device-apps-design.md, "Lifecycle: add, disable, remove", API, and
    "The Apps pages"): every app the account may take — remote.it's, its own publisher's —, each with its publisher, how
@@ -9,9 +8,8 @@ import { MOCK_CATALOG, mockCatalogApp } from './appCatalogMock'
    its fleet: the account's devices that have it, at which versions, up to date or held back and why. graphql's
    appCatalog, catalogApp and setAccountAppChannel.
 
-   graphql builds the reads apart from the portal (its step 12e), so they are asked only where its schema has them,
-   probed once. Until then a development build reads them from services/appCatalogMock, so the pages can be seen and
-   worked on; any other build says the API does not have them yet. The mutations are always graphql's own. */
+   graphql serves the reads from its step 12e on; they are asked only where its schema has them, probed once, so a
+   server from before says it does not have them yet. The mutations are always graphql's own. */
 
 export type CatalogAppPublisher = {
   id: string
@@ -105,9 +103,6 @@ export function resetAppCatalog() {
   probe = undefined
 }
 
-// The mocks stand in only in a development build.
-export const mocked = () => !!import.meta.env.DEV
-
 const PUBLISHER = 'publisher { id name verifiedDomain remoteit own }'
 const FLEET = 'fleet { enabled disabled upToDate heldBack versions { version count } }'
 const LIST = `id name description ${PUBLISHER} runsAs root kind serves platforms version accountChannel ${FLEET}`
@@ -184,18 +179,16 @@ export const catalogAppOf = (app: any): CatalogApp => ({
   }),
 })
 
-// Served, else the mocks in a development build, else UNSERVED.
-async function source(): Promise<'api' | 'mock' | Unserved | 'ERROR'> {
+// Served, else UNSERVED.
+async function source(): Promise<'api' | Unserved | 'ERROR'> {
   const served = await appCatalogServed()
   if (served === true) return 'api'
-  if (mocked()) return 'mock'
   return served === 'ERROR' ? 'ERROR' : UNSERVED
 }
 
 // Every app the account may use, from the account's own (accountId: an organization's).
 export async function graphQLAppCatalog(accountId?: string): Promise<CatalogRead<CatalogApp[]>> {
   const from = await source()
-  if (from === 'mock') return MOCK_CATALOG.map(({ devices, ...app }) => catalogAppOf(app))
   if (from !== 'api') return from
   const query = `query AppCatalog($accountId: String) { appCatalog(accountId: $accountId) { ${LIST} } }`
   const variables = { accountId }
@@ -217,10 +210,6 @@ export async function graphQLCatalogApp(
   }: { accountId?: string; releases?: number; after?: string } & CatalogDeviceFilter = {}
 ): Promise<CatalogRead<CatalogApp | null>> {
   const from = await source()
-  if (from === 'mock') {
-    const app = mockCatalogApp(id, filter)
-    return app ? catalogAppOf({ ...app, releases: app.releases.slice(0, releases) }) : null
-  }
   if (from !== 'api') return from
   const query = `query CatalogApp($id: String!, $accountId: String, $releases: Int, $after: String, $heldBack: Boolean, $version: String) {
     catalogApp(id: $id, accountId: $accountId) { ${LIST} ${CHANNELS} ${RELEASES} ${DEVICES} }

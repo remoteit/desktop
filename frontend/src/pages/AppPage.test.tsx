@@ -50,7 +50,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 import { AppPage } from './AppPage'
-import { mockCatalogApp } from '../services/appCatalogMock'
+import { mockCatalogApp } from '../services/__fixtures__/appCatalogMock'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const backup = (filter: any = {}, more: any = {}) => ({ ...mockCatalogApp('acme.backup', filter)!, ...more })

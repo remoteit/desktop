@@ -29,7 +29,7 @@ vi.mock('react-i18next', () => {
 })
 
 import { AppsPage } from './AppsPage'
-import { MOCK_CATALOG } from '../services/appCatalogMock'
+import { MOCK_CATALOG } from '../services/__fixtures__/appCatalogMock'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 // The mocks are in graphql's shape already.

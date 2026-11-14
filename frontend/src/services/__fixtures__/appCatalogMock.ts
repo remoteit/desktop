@@ -1,7 +1,6 @@
-/* What graphql's appCatalog and catalogApp answer, shaped as the design pins them (presence-server
-   docs/device-apps-design.md, API, CatalogApp), for a development build until graphql serves them (its step 12e) — and
-   for the tests. The apps and devices of the design's wireframes: the console, Files, and an account's own Backup. Read
-   only: every change is graphql's own. */
+/* What graphql's appCatalog and catalogApp answer (graphql step 12e; presence-server docs/device-apps-design.md, API,
+   CatalogApp), for the tests only: no build imports it. The apps and devices of the design's wireframes: the console,
+   Files, and an account's own Backup. */
 
 const PUBLISHER_REMOTEIT = { id: 'remoteit', name: 'remote.it', verifiedDomain: 'remote.it', remoteit: true, own: false }
 const PUBLISHER_ACME = { id: 'acme', name: 'Acme', verifiedDomain: 'acme.com', remoteit: false, own: true }

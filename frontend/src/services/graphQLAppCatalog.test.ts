@@ -11,7 +11,6 @@ import {
   resetAppCatalog,
   UNSERVED,
 } from './graphQLAppCatalog'
-import { MOCK_CATALOG } from './appCatalogMock'
 
 const answer = (data: any) => ({ data: { data } })
 const schema = (...fields: string[]) => answer({ query: { fields: fields.map(name => ({ name })) } })
@@ -21,7 +20,6 @@ beforeEach(() => {
   reasoned.mockReset()
   errors.mockReset().mockReturnValue(undefined)
   resetAppCatalog()
-  vi.unstubAllEnvs()
 })
 
 describe('the catalogue, where graphql serves it', () => {
@@ -92,7 +90,6 @@ describe('the catalogue, where graphql serves it', () => {
 
   it('an error is an error; the probe asked again after one', async () => {
     post.mockResolvedValueOnce('ERROR')
-    vi.stubEnv('DEV', false)
     expect(await graphQLAppCatalog()).toBe('ERROR')
     post.mockResolvedValueOnce(schema('appCatalog', 'catalogApp')).mockResolvedValueOnce('ERROR')
     expect(await graphQLAppCatalog()).toBe('ERROR')
@@ -100,23 +97,14 @@ describe('the catalogue, where graphql serves it', () => {
   })
 })
 
-describe('until graphql serves it (12e)', () => {
-  it('a development build reads the mocks, shaped as graphql will answer', async () => {
+describe('a server from before graphql served it (12e)', () => {
+  it('says the API does not have it — in a development build too: no mock stands in', async () => {
     post.mockResolvedValue(schema('devices'))
     vi.stubEnv('DEV', true)
-    const apps = await graphQLAppCatalog()
-    expect(apps).toHaveLength(MOCK_CATALOG.length)
-    expect(post).toHaveBeenCalledTimes(1) // the probe alone
-    const backup = await graphQLCatalogApp('acme.backup', { heldBack: true })
-    expect(backup !== UNSERVED && backup !== 'ERROR' && backup?.devices?.items.map(d => d.name)).toEqual(['nas', 'kiosk-4'])
-    expect(await graphQLCatalogApp('acme.none')).toBeNull()
-  })
-
-  it('any other build says the API does not have it', async () => {
-    post.mockResolvedValue(schema('devices'))
-    vi.stubEnv('DEV', false)
     expect(await graphQLAppCatalog()).toBe(UNSERVED)
     expect(await graphQLCatalogApp('acme.backup')).toBe(UNSERVED)
+    expect(post).toHaveBeenCalledTimes(1) // the probe alone
+    vi.unstubAllEnvs()
   })
 })
 
