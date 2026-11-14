@@ -17,6 +17,8 @@ const PANEL_WIDTH_DEFAULTS: Record<string, { default: number; primary?: number; 
   scripts: { default: 550 },
   script: { default: 450, primary: 330, secondary: 400 },
   runs: { default: 330 },
+  // The Apps pages: the catalogue on the left, the app (its releases and its devices) on the right, which needs the room.
+  apps: { default: 420 },
 }
 
 export function getPanelWidthDefault(
