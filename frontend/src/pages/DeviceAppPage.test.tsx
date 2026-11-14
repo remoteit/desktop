@@ -296,6 +296,32 @@ describe('its service, settings, root, delivery and problems', () => {
     expect(push).toHaveBeenCalledWith({ pathname: '/devices/D1/S7/connect', state: { autoConnect: true, autoLaunch: true } })
   })
 
+  it('disabled: no Open — its service stopped, said where its app serves one', async () => {
+    // graphql 12c: a disabled app has no release, grant, heldBack or service.
+    const disabled = { enabled: false, state: 'disabled' as const, release: null, grantUntil: null, heldBack: null, serviceId: null }
+    apps.value.apps = [backup(disabled)]
+    catalog.mockResolvedValue({ ...CATALOG, serves: 'inetd' })
+    let page = await render()
+    expect(page.querySelector('[data-app-open]')).toBeNull()
+    expect(text(page, 'service')).toContain('Stopped while the app is disabled: enable it to open it')
+    act(() => root.unmount())
+    container.remove()
+    catalog.mockResolvedValue({ ...CATALOG, serves: 'none' })
+    page = await render()
+    expect(row(page, 'service')).toBeNull()
+    act(() => root.unmount())
+    container.remove()
+    // Even one whose service graphql still names, disabled, offers no Open.
+    apps.value.apps = [backup({ ...disabled, serviceId: 'S7' }), backup({ id: 'remoteit.console', ...disabled, serviceId: 'S7' })]
+    page = await render()
+    expect(page.querySelector('[data-app-open]')).toBeNull()
+    act(() => root.unmount())
+    container.remove()
+    params.appID = 'remoteit.console'
+    page = await render()
+    expect(text(page, 'service')).not.toContain('Open terminal')
+  })
+
   it('the console’s Open terminal and host key in its place', async () => {
     params.appID = 'remoteit.console'
     apps.value.apps = [backup({ id: 'remoteit.console', name: 'Console', root: true, serviceId: 'S7' })]

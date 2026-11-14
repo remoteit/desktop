@@ -40,7 +40,8 @@ import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
      Version    the version it runs against the one offered on its channel: up to date, or held back with why and what
                 would release it (Update now… for a release waiting for root consent, Unpin for a pin, none for the rest)
      Channel    its channel (the account's, stable, beta) and its pin (none, or a release of it)
-     Service    its service, opened as any service opens; the console's Open terminal and host key
+     Service    its service, opened as any service opens; the console's Open terminal and host key. A disabled app
+                has no service to open (graphql gives none: kept, stopped): said stopped, where its app serves one
      Settings   the app's options, the setting rows the device's settings use
      Root       who consented, when, to which release and how (root apps only)
      Delivery   when the delivery grant last given lapses; none while disabled
@@ -294,7 +295,14 @@ export const DeviceAppPage: React.FC = () => {
               </Typography>
               {own?.Lines && <own.Lines device={device} app={app} />}
             </Box>
-            {own?.Actions ? <own.Actions device={device} app={app} /> : <AppOpen device={device} app={app} />}
+            {app.enabled && (own?.Actions ? <own.Actions device={device} app={app} /> : <AppOpen device={device} app={app} />)}
+          </Row>
+        )}
+        {!app.serviceId && !app.enabled && !gone && catalog && catalog.serves !== 'none' && (
+          <Row label={t('apps.service', 'Service')} data="service">
+            <Typography variant="body2" color="textSecondary" data-app-service-stopped>
+              {t('apps.serviceStopped', 'Stopped while the app is disabled: enable it to open it')}
+            </Typography>
           </Row>
         )}
         {!!settings.length && !gone && (

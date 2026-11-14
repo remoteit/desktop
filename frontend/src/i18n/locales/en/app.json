@@ -322,6 +322,7 @@
     "searchDevices": "Search devices…",
     "service": "Service",
     "serviceLine": "{{name}} · port {{port}}",
+    "serviceStopped": "Stopped while the app is disabled: enable it to open it",
     "settings": "Settings",
     "showMore": "Show more",
     "state": "State",
