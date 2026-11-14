@@ -253,7 +253,13 @@ export type DeviceSetting = {
   locked?: boolean
   lockedWhy?: string
   overridden?: string
+  // An app's setting (its id, remoteit.console): its state as the daemon has it (connectd's client.Setting.App) —
+  // running, starting, unavailable or disabled, the version it holds, and why ("Turned off on this device by its
+  // administrator"). `remoteit-device set <id> off` disables it, `on` enables it.
+  app?: DeviceSettingApp
 }
+
+export type DeviceSettingApp = { state: 'running' | 'starting' | 'unavailable' | 'disabled' | string; version?: string; detail?: string }
 
 // 1.5.0: the app's own preferences for the person on this machine — the machine's, not a stage's, so every stage's
 // page shows them alike. openAtLogin absent where the app keeps no login item itself.

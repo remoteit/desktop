@@ -604,6 +604,26 @@ describe('This device has what Settings has', () => {
     expect(row('websocket').textContent).toContain('Automatic')
   })
 
+  it('an app’s state as the daemon says it: disabled with why, running with its version, as the portal says it', async () => {
+    const apps = [
+      ...settings.filter(s => s.name !== 'remoteit.console'),
+      {
+        name: 'remoteit.console',
+        value: false,
+        source: 'machine' as const,
+        app: { state: 'disabled', version: '1.4.0', detail: 'Turned off on this device by its administrator' },
+      },
+      { name: 'acme.backup', value: true, source: 'cloud' as const, app: { state: 'running', version: '1.2.0' } },
+      { name: 'acme.files', value: true, source: 'cloud' as const, app: { state: 'unavailable', detail: 'No build for linux-mips' } },
+    ]
+    const { container } = await render({ capabilities: caps, status, settings: apps }, { part: 'advanced' })
+    const row = (name: string) => container.querySelector(`[data-section="settings"] [data-setting="${name}"]`)!
+    expect(row('remoteit.console').textContent).toContain('Disabled — Turned off on this device by its administrator 1.4.0')
+    expect((row('remoteit.console').querySelector('input') as HTMLInputElement).checked).toBe(false)
+    expect(row('acme.backup').textContent).toContain('Running 1.2.0')
+    expect(row('acme.files').textContent).toContain('Not available here: No build for linux-mips')
+  })
+
   it('the console’s AI commands: an option of the console’s row, set by the console’s key', async () => {
     const { container, bridge } = await render({ capabilities: caps, status, settings }, { part: 'advanced' })
     const rows = [...container.querySelectorAll('[data-section="settings"] [data-setting]')]

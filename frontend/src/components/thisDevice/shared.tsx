@@ -2,6 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, ListItem, ListItemIcon, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
 import { Icon } from '../Icon'
+import { stateLine } from '../../helpers/appsHelper'
 import { DeviceSetting, DeviceStatus, ExitRef, SettingValue } from '../../services/thisDevice'
 
 // What This device's parts share (pages/ThisDevicePage.tsx): the rows, the notes, and the words for each state.
@@ -185,6 +186,11 @@ export const SettingRow: React.FC<{
       ? t('thisDevice.fromMachine', 'Set on this device')
       : t('thisDevice.fromDefault', 'Default')
   const secondary = [
+    // An app's state as the daemon says it, as the portal says it (helpers/appsHelper), with the version it holds.
+    setting.app &&
+      [stateLine(t, { state: setting.app.state as any, detail: setting.app.detail ?? null, root: false }), setting.app.version]
+        .filter(Boolean)
+        .join(' '),
     locked ? setting.lockedWhy || lockedLine(t) : from,
     setting.overridden,
     on && notServed && t('thisDevice.notServed', 'Not served: remote access to services is off'),
