@@ -78,6 +78,10 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/products/:productId', '/products'],
   ['/products/add', '/products'],
 
+  // Apps
+  ['/apps/:appID/add', '/apps/:appID'],
+  ['/apps/:appID', '/apps'],
+
   // Settings
   ['/settings/notifications', '/settings'],
   ['/settings/graphs', '/settings'],

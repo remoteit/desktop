@@ -5,6 +5,7 @@ import { ServiceRouter } from './ServiceRouter'
 import { NetworkRouter } from './NetworkRouter'
 import { ScriptingRouter } from './ScriptingRouter'
 import { ProductsRouter } from './ProductsRouter'
+import { AppsRouter } from './AppsRouter'
 import { RedirectOffsite } from '../components/RedirectOffsite'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
@@ -335,6 +336,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         <Panel layout={layout}>
           <LogsPage />
         </Panel>
+      </Route>
+      {/* Apps: the account's catalogue */}
+      <Route path="/apps">
+        <AppsRouter layout={layout} />
       </Route>
       {/* Products */}
       <Route path="/products">

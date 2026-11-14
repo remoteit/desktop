@@ -190,3 +190,25 @@ export const offered = (app: AvailableApp): DeviceApp => ({
   serviceId: null,
   settings: [],
 })
+
+// One device's result of a many-device call: Added · Enabled · Already there (or Unchanged) · Changed · Refused: why.
+export function outcomeLine(
+  t: TFunction,
+  change: { outcome: string; error: string | null },
+  adding?: boolean
+): string {
+  switch (change.outcome) {
+    case 'added':
+      return t('apps.outcomeAdded', 'Added')
+    case 'enabled':
+      return t('apps.outcomeEnabled', 'Enabled')
+    case 'changed':
+      return t('apps.outcomeChanged', 'Changed')
+    case 'unchanged':
+      return adding ? t('apps.outcomeThere', 'Already there') : t('apps.outcomeUnchanged', 'Unchanged')
+    default:
+      return change.error
+        ? t('apps.outcomeRefused', 'Refused: {{why}}', { why: change.error })
+        : t('apps.outcomeRefusedNoWhy', 'Refused')
+  }
+}
