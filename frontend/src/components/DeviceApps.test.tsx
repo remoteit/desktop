@@ -667,9 +667,13 @@ describe('build step 8: Verified beside the publisher', () => {
 
 describe('build step 9: ScreenView installed the old way', () => {
   const screenview = (more: any = {}) => ({ id: 'remoteit.screenview', name: 'ScreenView', publisher: 'remote.it', description: null, root: true,
-    version: '1.0.0', refused: null, needsNewer: false, oldInstall: true, ...more })
+    version: '1.0.0', refused: null, needsNewer: false, oldInstall: true, conversion: 'switch', conversionDetail: null, ...more })
+  const unmount = () => {
+    act(() => root.unmount())
+    container.remove()
+  }
 
-  it('offers to switch to the app, which asks for the yes to root first — the old install is no consent', async () => {
+  it('where it did not convert by itself and nothing refuses it: the switch, which asks for the yes to root first', async () => {
     apps.value = { ...apps.value, apps: [consoleApp()], available: [screenview()] }
     const page = await render(<DeviceApps device={device()} />)
     const offer = page.querySelector('[data-screenview-switch]')!
@@ -681,21 +685,57 @@ describe('build step 9: ScreenView installed the old way', () => {
     expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.screenview' }), true, true)
   })
 
-  it('a row of it off, flagged: offered too; on, or not flagged, or refused there: not', async () => {
-    apps.value = { ...apps.value, apps: [{ ...backup(), id: 'remoteit.screenview', name: 'ScreenView', root: true, oldInstall: true }], available: [] }
+  it('a row of it off, to switch: offered too; one that converts by itself (waiting), on, or not flagged: not', async () => {
+    apps.value = { ...apps.value, apps: [{ ...backup(), id: 'remoteit.screenview', name: 'ScreenView', root: true, oldInstall: true, conversion: 'switch' }], available: [] }
     let page = await render(<DeviceApps device={device()} />)
     expect(page.querySelector('[data-screenview-switch]')).not.toBeNull()
-    act(() => root.unmount())
-    container.remove()
-    for (const available of [[screenview({ oldInstall: false })], [screenview({ refused: 'Not allowed' })], [screenview({ version: null })]]) {
+    unmount()
+    // Still on an old daemon (waiting): it converts by itself once it can — nothing new shown.
+    for (const available of [[screenview({ oldInstall: false, conversion: null })], [screenview({ conversion: 'waiting' })]]) {
       apps.value = { ...apps.value, apps: [consoleApp()], available }
       page = await render(<DeviceApps device={device()} />)
       expect(page.querySelector('[data-screenview-switch]')).toBeNull()
-      act(() => root.unmount())
-      container.remove()
+      expect(page.querySelector('[data-screenview-not-converted]')).toBeNull()
+      unmount()
     }
-    apps.value = { ...apps.value, apps: [{ ...backup(), id: 'remoteit.screenview', on: true, oldInstall: true }], available: [] }
+    apps.value = { ...apps.value, apps: [{ ...backup(), id: 'remoteit.screenview', on: true, oldInstall: false }], available: [] }
     page = await render(<DeviceApps device={device(['VIEW', 'CONNECT', 'MANAGE'])} />)
     expect(page.querySelector('[data-screenview-switch]')).toBeNull()
+  })
+
+  it('it will not convert: why, the old install left as it is — no switch, and not offered under Add an app', async () => {
+    apps.value = { ...apps.value, apps: [consoleApp()], available: [screenview({ conversion: 'refused', conversionDetail: 'Its product Kiosks keeps ScreenView off' })] }
+    let page = await render(<DeviceApps device={device()} />)
+    expect(page.querySelector('[data-screenview-switch]')).toBeNull()
+    expect(page.querySelector('[data-screenview-not-converted]')?.textContent).toContain(
+      'It keeps running as it is, not switched to the app: Its product Kiosks keeps ScreenView off')
+    expect(page.querySelector('[data-add-app]')).toBeNull()
+    unmount()
+    apps.value = { ...apps.value, apps: [{ ...backup(), id: 'remoteit.screenview', name: 'ScreenView', root: true, oldInstall: true, conversion: 'refused',
+      conversionDetail: 'No release of the ScreenView app for this device\'s platform' }], available: [] }
+    page = await render(<DeviceApps device={device()} />)
+    expect(page.querySelector('[data-screenview-not-converted]')?.textContent).toContain('for this device\'s platform')
+  })
+
+  it('converted by itself: "Converting from the old install" until the app runs; its consent says it came from the old install', async () => {
+    const converted = { ...backup(), id: 'remoteit.screenview', name: 'ScreenView', root: true, on: true, state: 'starting', conversion: 'converting',
+      rootConsent: { by: 'remote.it', email: null, at: '2026-11-13T18:00:00.000Z', version: '1.0.0', via: 'carried' } }
+    apps.value = { ...apps.value, apps: [converted], available: [] }
+    let page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'remoteit.screenview').querySelector('[data-app-state]')?.textContent).toBe('Converting from the old install')
+    expect(appRow(page, 'remoteit.screenview').querySelector('[data-app-consent]')?.textContent).toMatch(/^Runs as root, as its old install did: switched to the app by remote.it/)
+    unmount()
+    apps.value = { ...apps.value, apps: [{ ...converted, state: 'running', conversion: null }], available: [] }
+    page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'remoteit.screenview').querySelector('[data-app-state]')?.textContent).toBe('Running')
+  })
+})
+
+describe('a newer release withheld while the version before runs', () => {
+  it('running, and why the newer one waits', async () => {
+    apps.value = { ...apps.value, apps: [{ ...backup(), on: true, state: 'running', version: '1.0.0',
+      detail: 'Needs a newer remote.it on this device for 1.1.0: it still runs 1.0.0' }], available: [] }
+    const page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'acme.backup').querySelector('[data-app-state]')?.textContent).toBe('Running — Needs a newer remote.it on this device for 1.1.0: it still runs 1.0.0')
   })
 })

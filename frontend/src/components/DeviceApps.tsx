@@ -46,11 +46,17 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   const canRun = canManage && !!device.permissions?.includes('SCRIPTING')
 
   if (!apps || (!apps.length && !available?.length)) return null
-  // ScreenView installed the old way (build step 9): offered as the app, turned on only with the person's yes to its
-  // running as root — the old install is no consent.
-  const oldScreenView =
+  // ScreenView installed the old way (build step 9; graphql's conversion): it converts by itself once its daemon can run
+  // the app — nothing shown while it cannot (waiting), then "Converting from the old install" on its row until the app
+  // runs. Where it will not convert (refused), why: the old install keeps running. Where nothing refuses it but it did
+  // not convert by itself (switch), the switch to the app, turned on only with the person's yes to its running as root.
+  const old =
     apps.find(app => app.id === SCREENVIEW && !app.on && app.oldInstall) ??
-    available?.filter(app => app.id === SCREENVIEW && app.oldInstall && app.version && !app.refused).map(offered)[0]
+    available?.find(app => app.id === SCREENVIEW && app.oldInstall)
+  const oldScreenView = old?.conversion === 'switch' ? ('settings' in old ? old : offered(old)) : undefined
+  const notConverted = old?.conversion === 'refused' ? old.conversionDetail || '' : undefined
+  // ScreenView's old install not converted is said above, not offered under Add an app: its release may not run here.
+  const addable = (available ?? []).filter(app => !(app.id === SCREENVIEW && app.oldInstall && app.conversion === 'refused'))
 
   return (
     <List dense sx={{ paddingBottom: 1 }} data-device-apps>
@@ -76,6 +82,21 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
           >
             {t('deviceApps.screenviewSwitch', 'Switch to the app')}
           </Button>
+        </ListItem>
+      )}
+      {notConverted !== undefined && (
+        <ListItem component="div" disableGutters data-screenview-not-converted>
+          <ListItemIcon>
+            <Icon name="android-screenview" size="md" platformIcon fixedWidth />
+          </ListItemIcon>
+          <ListItemText
+            primary={t('deviceApps.screenviewOld', 'ScreenView was installed the old way.')}
+            secondary={
+              notConverted
+                ? t('deviceApps.screenviewNotConverted', 'It keeps running as it is, not switched to the app: {{why}}', { why: notConverted })
+                : t('deviceApps.screenviewNotConvertedNoWhy', 'It keeps running as it is, not switched to the app')
+            }
+          />
         </ListItem>
       )}
       {apps.map(app => {
@@ -114,6 +135,8 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                     >
                       {switching === app.id
                         ? t('deviceApps.switching', 'Waiting for the device…')
+                        : app.conversion === 'converting'
+                        ? t('deviceApps.converting', 'Converting from the old install')
                         : own?.state?.(t, app) ?? stateLine(t, app)}
                     </Typography>
                     {app.locked && (
@@ -207,7 +230,7 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
           </Box>
         )
       })}
-      <AddDeviceApp available={available ?? []} canRun={canRun} busy={switching !== undefined} add={flip} />
+      <AddDeviceApp available={addable} canRun={canRun} busy={switching !== undefined} add={flip} />
       {consent}
     </List>
   )
@@ -261,7 +284,11 @@ export function consentLine(t: TFunction, consent: DeviceAppRootConsent): string
     case 'device':
       return t('deviceApps.consentedDevice', 'Turned on as root on the device by {{by}}, {{when}}', words)
     case 'carried':
-      return t('deviceApps.consentedCarried', 'Runs as root, as it did before consents were kept')
+      // To a release: switched by itself from its old install (ScreenView), which ran as root. To none: from before
+      // consents were kept.
+      return consent.version
+        ? t('deviceApps.consentedConverted', 'Runs as root, as its old install did: switched to the app by remote.it, {{when}}', words)
+        : t('deviceApps.consentedCarried', 'Runs as root, as it did before consents were kept')
     default:
       return t('deviceApps.consented', 'Consented to run as root by {{by}}, {{when}}', words)
   }
@@ -285,7 +312,11 @@ export function stateLine(t: TFunction, app: DeviceApp): string {
     )
   switch (app.state) {
     case 'running':
-      return t('deviceApps.running', 'Running')
+      // Why a newer release waits while it runs the one before (its daemon too old for it, its new publisher signature or
+      // delivery grant refused there) — but not one waiting for a consent, which says so on its own line.
+      return app.detail && !app.awaitingRoot
+        ? t('deviceApps.runningDetail', 'Running — {{detail}}', { detail: app.detail })
+        : t('deviceApps.running', 'Running')
     case 'starting':
       return app.detail
         ? t('deviceApps.startingDetail', 'Starting — {{detail}}', { detail: app.detail })
