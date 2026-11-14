@@ -130,9 +130,45 @@ export function consentLine(t: TFunction, consent: DeviceAppRootConsent): string
 // The machine's administrator refusing root apps (apps_root_control off), as graphql or the device says it.
 const ROOT_REFUSED = /apps_root_control off|no apps that run as root/
 
+/* A release withdrawn by its publisher (presence-server docs/device-apps-design.md, "Lifecycle", Edge cases), as it is
+   said of an app: graphql's own sentences (services/device-apps.ts WITHDRAWN, withdrawnDisabled — "Its release was
+   withdrawn by its publisher: removed from the device …"), whole as they are; the daemon's own words, as This device
+   reads them from connectd (DEVICE_WITHDRAWN "withdrawn by its publisher"); and one its administrator keeps
+   (apps_withdrawn_control keep under <app>_control local) — graphql's KEPT_WITHDRAWN, or the daemon's same words in
+   lower case. */
+const WITHDRAWN = /^its release was withdrawn by its publisher\b/i
+const DEVICE_WITHDRAWN = /^withdrawn by its publisher\.?$/i
+const KEPT_WITHDRAWN = /^kept by this device.s administrator, though its release was withdrawn\.?$/i
+
+export type Withdrawal = 'withdrawn' | 'kept'
+export function withdrawal(app: { detail: string | null }): Withdrawal | undefined {
+  const detail = app.detail?.trim() ?? ''
+  if (WITHDRAWN.test(detail) || DEVICE_WITHDRAWN.test(detail)) return 'withdrawn'
+  if (KEPT_WITHDRAWN.test(detail)) return 'kept'
+}
+
+// A withdrawal's words, once: graphql's sentence as it is; the daemon's in the portal's words.
+function withdrawalWords(t: TFunction, app: { detail: string | null }): string {
+  const detail = app.detail?.trim() ?? ''
+  if (DEVICE_WITHDRAWN.test(detail)) return t('apps.withdrawnByPublisher', 'Withdrawn by its publisher')
+  if (KEPT_WITHDRAWN.test(detail))
+    return t('apps.keptWithdrawn', 'Kept by this device’s administrator, though its release was withdrawn')
+  return detail
+}
+
 // Its state as the device says it, with why where it says.
 export function stateLine(t: TFunction, app: Pick<DeviceApp, 'state' | 'detail' | 'root' | 'awaitingRoot'>): string {
   if (needsNewer(app)) return t('deviceApps.needsNewer', 'Needs a newer remote.it on this device')
+  // Withdrawn, or kept though withdrawn: the words say it all where it cannot run ("Not available here: Its release
+  // was withdrawn …" would say it twice); a state that runs or is disabled keeps its word before them.
+  const withdrawn = withdrawal(app)
+  if (withdrawn) {
+    const words = withdrawalWords(t, app)
+    if (app.state === 'unavailable') return words
+    if (app.state === 'running') return t('deviceApps.runningDetail', 'Running — {{detail}}', { detail: words })
+    if (app.state === 'starting') return t('deviceApps.startingDetail', 'Starting — {{detail}}', { detail: words })
+    if (app.state === 'disabled') return t('apps.disabledDetail', 'Disabled — {{detail}}', { detail: words })
+  }
   if (app.state === 'unavailable' && app.root && ROOT_REFUSED.test(app.detail ?? ''))
     return t(
       'deviceApps.rootRefused',
@@ -162,8 +198,10 @@ export function stateLine(t: TFunction, app: Pick<DeviceApp, 'state' | 'detail' 
   }
 }
 
-// A state in one word, for a row: Running, Starting, Disabled, Unavailable, Removing.
-export function stateWord(t: TFunction, state: string): string {
+// A state in one word, for a row: Running, Starting, Disabled, Unavailable — Withdrawn where its release was —, Removing.
+export function stateWord(t: TFunction, state: string, detail?: string | null): string {
+  if (state === 'unavailable' && withdrawal({ detail: detail ?? null }) === 'withdrawn')
+    return t('apps.stateWithdrawn', 'Withdrawn')
   switch (state) {
     case 'running':
       return t('apps.stateRunning', 'Running')

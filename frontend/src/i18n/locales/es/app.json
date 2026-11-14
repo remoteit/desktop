@@ -270,6 +270,7 @@
     "heldUnavailable": "",
     "heldUngranted": "",
     "heldUntrusted": "",
+    "keptWithdrawn": "",
     "managed": "",
     "managedBy": "",
     "manageReleases": "",
@@ -335,6 +336,7 @@
     "stateRunning": "",
     "stateStarting": "",
     "stateUnavailable": "",
+    "stateWithdrawn": "",
     "tagOnce": "",
     "tags": "",
     "title": "",
@@ -357,6 +359,7 @@
     "versionNone": "",
     "versionNotReported": "",
     "withdrawn": "",
+    "withdrawnByPublisher": "",
     "yourDevices": "",
     "yours": ""
   },

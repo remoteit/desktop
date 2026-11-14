@@ -230,6 +230,6 @@ function about(t: TFunction, app: DeviceApp, switching: boolean) {
     ? t('deviceApps.switching', 'Waiting for the device…')
     : app.conversion === 'converting'
     ? t('deviceApps.converting', 'Converting from the old install')
-    : stateWord(t, app.state)
+    : stateWord(t, app.state, app.detail)
   return [app.publisher, runsAsWord(t, app.root), app.version ?? '—', state].join(' · ')
 }

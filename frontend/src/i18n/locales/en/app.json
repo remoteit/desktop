@@ -264,6 +264,7 @@
     "heldUnavailable": "Not available on this device",
     "heldUngranted": "The device refused its delivery grant",
     "heldUntrusted": "The device refused its publisher’s signature",
+    "keptWithdrawn": "Kept by this device’s administrator, though its release was withdrawn",
     "managed": "Managed by its product",
     "managedBy": "Managed by its product {{product}}",
     "manageReleases": "Manage releases",
@@ -329,6 +330,7 @@
     "stateRunning": "Running",
     "stateStarting": "Starting",
     "stateUnavailable": "Unavailable",
+    "stateWithdrawn": "Withdrawn",
     "tagOnce": "The tag is read once, now: a device tagged later gets nothing. A product gives it to its devices now and later.",
     "tags": "Tags",
     "title": "Apps",
@@ -351,6 +353,7 @@
     "versionNone": "Nothing on the device",
     "versionNotReported": "Not reported",
     "withdrawn": "withdrawn {{day}}",
+    "withdrawnByPublisher": "Withdrawn by its publisher",
     "yourDevices": "Your devices",
     "yours": "Yours"
   },

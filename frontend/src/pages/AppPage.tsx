@@ -576,7 +576,7 @@ const FleetRow: React.FC<{ device: CatalogAppDevice; checked: boolean; onCheck: 
         </ListItemIcon>
         <ListItemText
           primary={device.name}
-          secondary={[device.version ?? '—', channelName(t, device.channel), stateWord(t, device.state)].join(' · ')}
+          secondary={[device.version ?? '—', channelName(t, device.channel), stateWord(t, device.state, device.detail)].join(' · ')}
         />
         <Typography
           variant="caption"

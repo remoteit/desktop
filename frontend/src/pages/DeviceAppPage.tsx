@@ -129,6 +129,9 @@ export const DeviceAppPage: React.FC = () => {
   const channel = app.channel || accountChannel
   const service = device.services?.find(s => s.id === app.serviceId)
   const waitingRoot = app.heldBack?.reason === 'consent' || (!app.heldBack && !!app.awaitingRoot)
+  // Held back for what its state already says (graphql gives both the same words: a withdrawal, one kept though
+  // withdrawn, the device's refusal): said once, in State.
+  const heldSaid = app.heldBack?.reason === 'unavailable' && app.heldBack.detail === app.detail
 
   const change = async (key: string, work: () => Promise<unknown>) => {
     setSaving(key)
@@ -211,7 +214,7 @@ export const DeviceAppPage: React.FC = () => {
             <Typography variant="body2" data-app-version-line>
               {versionLine(t, app, channel)}
             </Typography>
-            {app.enabled && app.heldBack && (
+            {app.enabled && app.heldBack && !heldSaid && (
               <Typography
                 variant="body2"
                 color={waitingRoot ? 'warning.main' : 'textSecondary'}

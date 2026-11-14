@@ -259,6 +259,17 @@ describe('held back, with why and what releases it', () => {
 })
 
 describe('channel and pin', () => {
+  it('withdrawn with none standing: graphql’s words once — in State, not again as why it is held back', async () => {
+    const words = 'Its release was withdrawn by its publisher: removed from the device until a new one is published'
+    apps.value.apps = [
+      backup({ state: 'unavailable', detail: words, upToDate: false, heldBack: { reason: 'unavailable', detail: words } }),
+    ]
+    const page = await render()
+    expect(text(page, 'state')).toContain(words)
+    expect(text(page, 'state')).not.toContain('Not available here')
+    expect(page.querySelector('[data-app-held-back]')).toBeNull()
+  })
+
   it('the channel: the account’s (named), stable or beta, by setDeviceAppRelease', async () => {
     const page = await render()
     const channel = page.querySelector('[data-app-channel]') as HTMLSelectElement
