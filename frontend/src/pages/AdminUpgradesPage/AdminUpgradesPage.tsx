@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux'
 import { Box } from '@mui/material'
 import { AdminUpgradesListPage } from './AdminUpgradesListPage'
 import { AdminFleetTab } from './AdminFleetTab'
+import { AdminMinimumsTab } from './AdminMinimumsTab'
+import { isMinimumsView } from './UpgradesTabs'
 import { isFleetView } from './fleetHelpers'
 import { AdminRolloutDetailPanel } from './AdminRolloutDetailPanel'
 import { AdminRolloutStartForm } from './AdminRolloutStartForm'
@@ -50,10 +52,12 @@ const handleSx = (theme: import('@mui/material').Theme) => ({
 })
 
 /* Device package upgrades (admin): each release channel's devices and delivery, the rollout runs that take a candidate
-   up its ladder, and one run in detail with its controls; or, in its Fleet tab (?view=fleet), the fleet's versions.
+   up its ladder, and one run in detail with its controls; or, in its Fleet tab (?view=fleet), the fleet's versions;
+   or, in its Minimums tab (?view=minimums), the oldest build each kind of device may run.
    English only, as the rest of /admin. */
 export const AdminUpgradesPage: React.FC = () => {
   const location = useLocation()
+  if (isMinimumsView(location.search)) return <AdminMinimumsTab />
   return isFleetView(location.search) ? <AdminFleetTab /> : <AdminRolloutsView />
 }
 
