@@ -201,6 +201,12 @@ describe('the app on this device', () => {
     expect(page.querySelector('[data-app-version-line]')?.textContent).toBe('1.4.0 running · 1.4.0 offered on Stable · up to date')
   })
 
+  it('enabled but not run — turned off by its administrator — is on the device, not running', async () => {
+    apps.value.apps = [backup({ state: 'unavailable', detail: 'Turned off on this device by its administrator (acme.backup_control off)', adminControl: 'off' } as Partial<DeviceApp>)]
+    const page = await render()
+    expect(page.querySelector('[data-app-version-line]')?.textContent).toBe('1.4.0 on the device · 1.4.0 offered on Stable · up to date')
+  })
+
   it('a disabled app says the version it keeps, and no grant', async () => {
     apps.value.apps = [backup({ enabled: false, state: 'disabled', grantUntil: null, upToDate: false })]
     const page = await render()

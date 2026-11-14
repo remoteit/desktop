@@ -455,8 +455,13 @@ const Row: React.FC<{ label: string; data: string; top?: boolean; children: Reac
 
 // What it runs against what it is offered: "1.4.0 running · 1.4.0 offered on stable · up to date".
 function versionLine(t: TFunction, app: DeviceApp, channel: string): string {
+  // Running only where the device says it runs: one it holds but does not run (turned off or kept disabled by its
+  // administrator, refused, withdrawn and kept) is on the device, not running.
+  const runs = app.state === 'running' || app.state === 'starting'
   const running = app.version
-    ? t('apps.running', '{{version}} running', { version: app.version })
+    ? runs
+      ? t('apps.running', '{{version}} running', { version: app.version })
+      : t('apps.versionOnDevice', '{{version}} on the device', { version: app.version })
     : t('apps.notRunning', 'Nothing running yet')
   if (!app.enabled)
     return app.version
