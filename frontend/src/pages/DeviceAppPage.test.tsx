@@ -229,6 +229,16 @@ describe('held back, with why and what releases it', () => {
     expect(setRelease).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), { consentRoot: true })
   })
 
+  it('held back for consent with no awaitingRoot said: Update now still moves it by setDeviceAppRelease', async () => {
+    apps.value.apps = [backup({ latest: '1.5.0', upToDate: false, heldBack: { reason: 'consent', detail: '' } })]
+    const page = await render()
+    await click(page.querySelector('[data-app-update-now]'))
+    expect(page.querySelector('[data-root-consent-update]')?.textContent).toContain('Backup 1.5.0 needs to run as root')
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(setRelease).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), { consentRoot: true })
+    expect(turn).not.toHaveBeenCalled()
+  })
+
   it('the rest say why, with nothing to press: a daemon too old, no build, the device’s own words', async () => {
     for (const [heldBack, words] of [
       [{ reason: 'daemon', detail: 'x' }, 'Held back: Needs a newer remote.it on this device'],

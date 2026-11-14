@@ -99,18 +99,20 @@ export function useAppSwitch(
   }
 
   const reconsent = (app: DeviceApp) => setAsking(app)
-  const updating = asking?.enabled && asking.awaitingRoot ? asking.awaitingRoot : null
+  // An enabled app held back for a release that runs as root: the yes moves it there.
+  const waiting = (app?: DeviceApp) => !!app?.enabled && (!!app.awaitingRoot || app.heldBack?.reason === 'consent')
+  const updating = waiting(asking) ? asking?.awaitingRoot || asking?.latest || '' : null
 
   const consent = (
     <RootConsent
       app={asking}
       version={updating}
-      action={updating ? t('deviceApps.rootUpdateAction', 'Consent and update') : undefined}
+      action={updating !== null ? t('deviceApps.rootUpdateAction', 'Consent and update') : undefined}
       onConfirm={() => {
         const app = asking
         setAsking(undefined)
         if (!app) return
-        if (app.enabled && app.awaitingRoot && setRelease) setRelease(app, { consentRoot: true }).then(done(app))
+        if (waiting(app) && setRelease) setRelease(app, { consentRoot: true }).then(done(app))
         else turn(app, true, true).then(done(app))
       }}
       onDeny={() => setAsking(undefined)}
