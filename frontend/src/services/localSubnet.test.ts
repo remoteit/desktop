@@ -105,3 +105,45 @@ describe('localSignIn', () => {
     expect(heard).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('localSubnetName', () => {
+  const NAME = 'pi-ada.on.solo.remote.it'
+  const asked = () => request.mock.calls.filter(([q]) => q.includes('query SubnetProbe(')).length
+
+  it('a "no" is kept a while; asked again, it is asked anew and a name kept', async () => {
+    answer({ name: null })
+    const mod = await load()
+    expect(await mod.localSubnetName('S1', NAME)).toBeNull()
+    expect(await mod.localSubnetName('S1', NAME)).toBeNull()
+    expect(asked()).toBe(1)
+    answer({ name: NAME })
+    expect(await mod.localSubnetName('S1', NAME, true)).toEqual({ name: NAME })
+    expect(asked()).toBe(2)
+    expect(await mod.localSubnetName('S1', NAME)).toEqual({ name: NAME })
+    expect(asked()).toBe(2)
+    expect(mod.localAbsent()).toBe(false)
+  })
+
+  it('no daemon here: no, without asking, even asked again, until its backoff is past', async () => {
+    vi.useFakeTimers()
+    try {
+      request.mockImplementation(async (query: string) => {
+        if (query.includes('CreateSubnetProbe'))
+          return { data: { data: { createSubnetProbe: { token: 'b'.repeat(24), name: 'b-probe.on.solo.remote.it' } } } }
+        return { data: { data: { subnetProbe: { seen: false } } } }
+      })
+      const mod = await load()
+      const first = mod.localSubnetName('S1', NAME)
+      await vi.advanceTimersByTimeAsync(2_000)
+      expect(await first).toBeNull()
+      expect(mod.localAbsent()).toBe(true)
+      const calls = request.mock.calls.length
+      expect(await mod.localSubnetName('S1', NAME, true)).toBeNull()
+      expect(request.mock.calls.length).toBe(calls)
+      await vi.advanceTimersByTimeAsync(60_000)
+      expect(mod.localAbsent()).toBe(false)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})

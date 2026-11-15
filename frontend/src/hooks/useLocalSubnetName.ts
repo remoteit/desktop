@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useDeviceSessions } from './useDeviceSessions'
 import { useDeviceSessionInfo } from './useDeviceSessionInfo'
-import { LocalSignIn, LocalSubnetName, localSignIn, localSubnetName, onLocalForgotten } from '../services/localSubnet'
+import {
+  LocalSignIn,
+  LocalSubnetName,
+  localAbsent,
+  localSignIn,
+  localSubnetName,
+  onLocalForgotten,
+} from '../services/localSubnet'
 import { requestServiceSessionInfo } from '../services/deviceSessionInfo'
 
 export type SubnetReach = {
@@ -22,6 +29,11 @@ export const useSubnetName = (deviceId?: string, serviceId?: string): string | u
   return enabled ? (serviceId ? info?.services?.[serviceId] : info?.subnetName) ?? undefined : undefined
 }
 
+// A "no" from a daemon that is here may not last — a request that failed answers no too — and nothing else asks again
+// while the page is open (a reload did): asked again, anew, after each of these. Not where no daemon is here: that
+// waits out its own backoff (services/localSubnet ABSENT_MS).
+export const REACH_RETRY_MS = [2_000, 5_000, 10_000, 20_000, 40_000]
+
 // A service's name in device subnets, and whether it works on this machine: through the daemon here when one reaches
 // it, or else — once asked and answered — through the browser client (services/browserGateway).
 export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetReach => {
@@ -33,14 +45,25 @@ export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetRea
     setReach({ checked: false })
     if (!name || !id) return
     let current = true
-    const ask = () =>
-      localSubnetName(id, name).then(answer => {
-        if (current) setReach({ local: answer ?? undefined, checked: true })
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let tries = 0
+    const ask = (again?: boolean) => {
+      clearTimeout(timer)
+      localSubnetName(id, name, again).then(answer => {
+        if (!current) return
+        setReach({ local: answer ?? undefined, checked: true })
+        if (!answer && tries < REACH_RETRY_MS.length && !localAbsent())
+          timer = setTimeout(() => ask(true), REACH_RETRY_MS[tries++])
       })
+    }
     ask()
-    const off = onLocalForgotten(ask)
+    const off = onLocalForgotten(() => {
+      tries = 0
+      ask()
+    })
     return () => {
       current = false
+      clearTimeout(timer)
       off()
     }
   }, [id, name])
