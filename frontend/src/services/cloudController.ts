@@ -443,6 +443,19 @@ ${await productFullEventFields()}
             dispatch.devices.sortByState(target.accountId)
           }
 
+          // A service not here yet, of a device that is: added since the device was read — or its add not yet in the
+          // store, the device taking it up first. Read the device, whose service then has the state this event gave.
+          if (!target.service && target.deviceId && target.id !== target.deviceId) {
+            const [, loaded] = selectById(store.getState(), undefined, target.deviceId)
+            if (loaded)
+              dispatch.devices.fetchSingleFull({
+                id: target.deviceId,
+                hidden: true,
+                silent: true,
+                accountId: target.accountId,
+              })
+          }
+
           // New unknown device discovered
           if (!target.device && target.id === target.deviceId && onlineState === 'active') {
             const state = store.getState()

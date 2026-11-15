@@ -52,6 +52,22 @@ export function requestDeviceSessionInfo(deviceId: string, again?: boolean) {
   timer ??= setTimeout(flush)
 }
 
+/* A service the device's answer does not list — added since it was read (here or anywhere else) — has its name only
+   in a new answer: the device is read again, once for each such service, keeping what it has meanwhile so the names
+   of its other services stay shown. A service still missing from the new answer is not asked about again. */
+const missingAsked = new Set<string>()
+
+export function requestServiceSessionInfo(deviceId: string, serviceId: string) {
+  const known = info.get(deviceId)
+  if (unsupported || !known?.services || serviceId in known.services) return
+  const key = `${deviceId}/${serviceId}`
+  if (missingAsked.has(key)) return
+  missingAsked.add(key)
+  if (wanted.has(deviceId)) return
+  wanted.add(deviceId)
+  timer ??= setTimeout(flush)
+}
+
 async function flush() {
   const ids = [...wanted]
   wanted = new Set()
@@ -110,6 +126,7 @@ export async function setDeviceUserMode(deviceId: string, on: boolean) {
 // For tests.
 export function resetDeviceSessionInfo() {
   info.clear()
+  missingAsked.clear()
   wanted = new Set()
   unsupported = false
   withUpkeep = true

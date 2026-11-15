@@ -33,6 +33,7 @@ import {
   updateVirtualDevice,
 } from '../services/graphQLVirtualDevices'
 import { isSampleId } from '../services/virtualDevicesSample'
+import { requestServiceSessionInfo } from '../services/deviceSessionInfo'
 import { graphQLDecommissionDevices, graphQLDisableDevices, graphQLRestoreDevices } from '../services/deviceDisable'
 import {
   graphQLKeepDuplicate,
@@ -506,6 +507,10 @@ export default createModel<RootModel>()({
           await graphQLSetAttributes(form.attributes, id)
           dispatch.devices.addService({ deviceId, service: { ...form, ports, id } })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
+          // The form is not the service: read the device for its state — online already when its daemon took it up
+          // before the service was here to be marked — and its name in device subnets.
+          dispatch.devices.fetchSingleFull({ id: deviceId, hidden: true, silent: true })
+          requestServiceSessionInfo(deviceId, id)
         }
         // ScreenView is an app now (remoteit.screenview, turned on in the device's Apps): adding a service never installs
         // anything on the device.
