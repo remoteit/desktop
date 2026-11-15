@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { DEFAULT_CONNECTION } from '@common/constants'
 
-const { setConnection, setSession } = vi.hoisted(() => ({ setConnection: vi.fn(), setSession: vi.fn() }))
+const { setConnection, setSession, selectById, fetchSingleFull } = vi.hoisted(() => ({
+  setConnection: vi.fn(),
+  setSession: vi.fn(),
+  selectById: vi.fn(),
+  fetchSingleFull: vi.fn(),
+}))
 
 vi.mock('./Network', () => ({ default: {} }))
 vi.mock('../selectors/scripting', () => ({}))
@@ -9,9 +14,14 @@ vi.mock('../models/accounts', () => ({}))
 vi.mock('../helpers/apiHelper', () => ({}))
 vi.mock('./oidc', () => ({}))
 vi.mock('../constants', () => ({}))
-vi.mock('../store', () => ({ store: { dispatch: { sessions: { setSession, removeSession: vi.fn() } } } }))
+vi.mock('../store', () => ({
+  store: {
+    getState: () => ({}),
+    dispatch: { sessions: { setSession, removeSession: vi.fn() }, devices: { fetchSingleFull } },
+  },
+}))
 vi.mock('./Notifications', () => ({}))
-vi.mock('../selectors/devices', () => ({}))
+vi.mock('../selectors/devices', () => ({ selectById }))
 vi.mock('../helpers/connectionHelper', () => ({ setConnection }))
 vi.mock('../selectors/accounts', () => ({}))
 vi.mock('./graphQL', () => ({}))
@@ -67,5 +77,32 @@ describe('cloudController — local connection updates', () => {
 
     cloudController.update(event('DEVICE_STATE', 'inactive', { ...DEFAULT_CONNECTION, id: 'f', online: true }))
     expect(setConnection).toHaveBeenCalledWith(expect.objectContaining({ id: 'f', online: false }))
+  })
+})
+
+describe('cloudController — a service state for a service not here yet', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  const serviceEvent = (state: string) =>
+    ({
+      type: 'DEVICE_STATE',
+      state,
+      timestamp: 1,
+      target: [{ id: 'VNC', deviceId: 'MAC', accountId: 'acct' }],
+    } as unknown as ICloudEvent)
+
+  it('reads its device again when the device is loaded', () => {
+    selectById.mockReturnValue([undefined, { id: 'MAC', services: [] }])
+    cloudController.update(serviceEvent('active'))
+
+    expect(selectById).toHaveBeenCalledWith(expect.anything(), undefined, 'MAC')
+    expect(fetchSingleFull).toHaveBeenCalledWith({ id: 'MAC', hidden: true, silent: true, accountId: 'acct' })
+  })
+
+  it('leaves a device that is not loaded alone', () => {
+    selectById.mockReturnValue([undefined, undefined])
+    cloudController.update(serviceEvent('active'))
+
+    expect(fetchSingleFull).not.toHaveBeenCalled()
   })
 })

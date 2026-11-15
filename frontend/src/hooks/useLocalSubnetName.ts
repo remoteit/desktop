@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDeviceSessions } from './useDeviceSessions'
 import { useDeviceSessionInfo } from './useDeviceSessionInfo'
 import { LocalSignIn, LocalSubnetName, localSignIn, localSubnetName, onLocalForgotten } from '../services/localSubnet'
+import { requestServiceSessionInfo } from '../services/deviceSessionInfo'
 
 export type SubnetReach = {
   name?: string // the service's name in device subnets, when it has one
@@ -14,6 +15,10 @@ export type SubnetReach = {
 export const useSubnetName = (deviceId?: string, serviceId?: string): string | undefined => {
   const enabled = useDeviceSessions()
   const info = useDeviceSessionInfo(enabled ? deviceId : undefined)
+  // A service added since the device was read is not in its answer: read it again for the service's name.
+  useEffect(() => {
+    if (enabled && deviceId && serviceId && info) requestServiceSessionInfo(deviceId, serviceId)
+  }, [enabled, deviceId, serviceId, info])
   return enabled ? (serviceId ? info?.services?.[serviceId] : info?.subnetName) ?? undefined : undefined
 }
 

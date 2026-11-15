@@ -12,6 +12,7 @@ vi.mock('axios', () => ({ default: { request } }))
 import {
   deviceSessionInfo,
   requestDeviceSessionInfo,
+  requestServiceSessionInfo,
   resetDeviceSessionInfo,
   subscribeDeviceSessionInfo,
 } from './deviceSessionInfo'
@@ -120,5 +121,52 @@ describe('device session info', () => {
     expect(request.mock.calls[0][0].data.query).toContain('updatedBy howToUpdate available')
     expect(request.mock.calls[1][0].data.query).not.toContain('howToUpdate')
     expect(deviceSessionInfo('A')?.agent?.running).toBe('connectd-go 5.6.1.1')
+  })
+
+  it('reads a device again for a service its answer does not list, keeping what it has meanwhile, once', async () => {
+    const answer = (services: { id: string; subnetName: string | null }[]) => ({
+      data: {
+        data: {
+          login: { device: [{ id: 'MAC', subnetName: 'mac.on.remote.it', actsFor: null, agent: null, services }] },
+        },
+      },
+      headers: {},
+    })
+    request.mockResolvedValueOnce(answer([{ id: 'SSH', subnetName: 'ssh.mac.on.remote.it' }]))
+    let done = settled()
+    requestDeviceSessionInfo('MAC')
+    await done
+
+    requestServiceSessionInfo('MAC', 'SSH') // listed: nothing to read
+    expect(request).toHaveBeenCalledTimes(1)
+
+    request.mockResolvedValueOnce(
+      answer([
+        { id: 'SSH', subnetName: 'ssh.mac.on.remote.it' },
+        { id: 'VNC', subnetName: 'vnc.mac.on.remote.it' },
+      ])
+    )
+    done = settled()
+    requestServiceSessionInfo('MAC', 'VNC')
+    expect(deviceSessionInfo('MAC')?.services).toEqual({ SSH: 'ssh.mac.on.remote.it' }) // kept while it is read
+    await done
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(deviceSessionInfo('MAC')?.services).toEqual({
+      SSH: 'ssh.mac.on.remote.it',
+      VNC: 'vnc.mac.on.remote.it',
+    })
+
+    request.mockResolvedValueOnce(answer([{ id: 'SSH', subnetName: 'ssh.mac.on.remote.it' }]))
+    done = settled()
+    requestServiceSessionInfo('MAC', 'GONE')
+    await done
+    requestServiceSessionInfo('MAC', 'GONE') // still not listed: not asked again
+    await new Promise(resolve => setTimeout(resolve))
+    expect(request).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not read a device not read yet for a service', () => {
+    requestServiceSessionInfo('NEW', 'VNC')
+    expect(request).not.toHaveBeenCalled()
   })
 })
