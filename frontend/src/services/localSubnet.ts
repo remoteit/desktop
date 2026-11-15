@@ -31,16 +31,21 @@ export const subnetWebURL = (name: string) => `https://${name}`
 const kept = new Map<string, { at: number; answer: Promise<LocalSubnetName | null> }>()
 let absentUntil = 0
 
-// `id` is the service's, or the device's for the device itself; `name` its name in device subnets.
-export function localSubnetName(id: string, name: string): Promise<LocalSubnetName | null> {
+// `id` is the service's, or the device's for the device itself; `name` its name in device subnets. `again`: asked anew,
+// not the answer kept — a "no" asked again (hooks/useLocalSubnetName useSubnetReach). No daemon here answers no all the
+// same until ABSENT_MS is past.
+export function localSubnetName(id: string, name: string, again?: boolean): Promise<LocalSubnetName | null> {
   const now = Date.now()
   if (now < absentUntil) return Promise.resolve(null)
   const held = kept.get(id)
-  if (held && now - held.at < KEPT_MS) return held.answer
+  if (held && now - held.at < KEPT_MS && !again) return held.answer
   const answer = browser.isElectron ? askDaemon(name) : askBeacon(id)
   kept.set(id, { at: now, answer })
   return answer
 }
+
+// Whether no daemon here is the answer for now: a probe went unseen, or the name API did not answer (ABSENT_MS).
+export const localAbsent = () => Date.now() < absentUntil
 
 // The beacon: this page's probe (one for every service asked about), then the name, when the device that saw it
 // reaches the service.
