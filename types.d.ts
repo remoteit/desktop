@@ -379,7 +379,6 @@ declare global {
     newDevice?: boolean
     presenceAddress?: string
     timeSeries?: ITimeSeries
-    supportedAppInstalls: number[]
     attributes: ILookup<any> & {
       name?: string
       color?: number

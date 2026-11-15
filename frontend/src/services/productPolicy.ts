@@ -19,8 +19,10 @@ import type { NetworkDeviceRole } from './graphQLDeviceNetworks'
 export type ProductSync = 'template' | 'synced' | 'enforced'
 export const PRODUCT_SYNCS: ProductSync[] = ['template', 'synced', 'enforced']
 
-// tag, network, service, setting, proxy or exit (one its devices run): as graphql names it, for the preview to group by.
-export type ProductItem = { kind: string; name: string }
+// tag, network, service, setting, proxy, exit (one its devices run), app or app_setting: as graphql names it, for the
+// preview to group by. An app's and an app setting's value where graphql gives it: whether the app is on, the setting's
+// value.
+export type ProductItem = { kind: string; name: string; value?: any }
 
 // What a change of product, or of a product's level, does to one device (graphql's DeviceProductPreview): the items it
 // is given, those it has that become locked to the product, those it loses (only a move into, or a raise to, enforced
@@ -53,6 +55,69 @@ export type ProductPolicy = {
   networks: ProductNetwork[] | null
   devices: ProductDevice[] | null
   deviceCount: number | null
+  apps: ProductApp[] | null
+}
+
+/* The apps a product sets on its devices (presence-server docs/device-apps-design.md, "Product policy" under
+   "Lifecycle: add, disable, remove"): every catalogue app the product's account may take, each enabled, disabled,
+   removed or unset (each device's own) — under enforced, an app the product does not set is removed from its devices
+   —, with its channel or a pinned version, and its settings, each
+   set or unset the same way. A root app is turned on only with a consent kept on the product, which covers every
+   device in it, now and later; a release that newly runs as root needs it again (needsConsent). graphql's
+   DeviceProduct.apps, setDeviceProductApp and setDeviceProductAppSetting. */
+
+export type ProductRootConsent = { by: string; email?: string | null; at: string; version: string | null }
+
+// A value the product sets of a setting the release its devices are given no longer declares: no effect on them,
+// "Removed in <version>", until graphql's daily sweep deletes it — or the product unsets it.
+export type ProductRemovedSetting = {
+  name: string
+  value: any
+  at: string | null
+  by: string | null
+  removedIn: string | null
+}
+
+export type ProductAppSetting = {
+  name: string
+  type: string // bool, choice, int, string or list; the list is open
+  label: string
+  help: string | null
+  default: any
+  value: any // the product's; null unset: each device's own
+  at: string | null
+  by: string | null
+  forcible: boolean // may be forced on (a bool) or fixed (a choice), and so held on its devices
+  locked: boolean // held on its devices: set, the product synced or enforced, and a value that may be held
+  deprecated: string | null
+  choices: { value: string; label: string }[] | null
+}
+
+// What a product sets of an app on its devices (r3_DeviceProductApps.state): added and enabled, added and disabled
+// (nothing installed), or removed; null, no row: unset.
+export type ProductAppState = 'enabled' | 'disabled' | 'removed'
+export const PRODUCT_APP_STATES: ProductAppState[] = ['enabled', 'disabled', 'removed']
+
+export type ProductApp = {
+  id: string
+  name: string
+  publisher: string
+  description: string | null
+  root: boolean // the release its devices are given runs as root
+  version: string | null // the release this stage gives on its channel, or its pin; null none here yet
+  state: ProductAppState | null // null unset: each device's own
+  channel: string | null
+  pinned: string | null
+  rootConsent: ProductRootConsent | null
+  // Set on, and a new release newly runs as root with no consent that covers it: its devices stay on its last restricted
+  // release (version) — or are not turned on, where there is none — until someone consents. awaitingRoot: that release.
+  needsConsent: boolean
+  awaitingRoot?: string | null
+  locked: boolean // held on its devices: set, and the product synced or enforced
+  at: string | null
+  by: string | null
+  settings: ProductAppSetting[]
+  removedSettings?: ProductRemovedSetting[]
 }
 
 export type DeviceProductRef = { id: string; name: string; sync: ProductSync; lifecycle: string | null }
@@ -78,6 +143,7 @@ export type ProductPolicyServed = {
   proxies: boolean
   devices: boolean
   bulk: boolean
+  apps: boolean
 }
 
 export const NOTHING_SERVED: ProductPolicyServed = {
@@ -88,6 +154,7 @@ export const NOTHING_SERVED: ProductPolicyServed = {
   proxies: false,
   devices: false,
   bulk: false,
+  apps: false,
 }
 
 /* The schema as it is read: each type's fields, each with its arguments' types as a declaration takes them ("ID!"),
@@ -152,7 +219,8 @@ async function readTypes(names: string[]): Promise<Schema | 'ERROR'> {
 }
 
 // The types read first; then those they answer that the portal selects from: the previews, a device's product, a
-// product's networks and devices.
+// product's networks and devices. Those a product's apps and a preview's items answer are a level further down, so
+// they are named here as graphql names them, and read with the first: a type the API does not have is answered null.
 const FIRST = [
   'Query',
   'Mutation',
@@ -163,6 +231,12 @@ const FIRST = [
   'NetworkDevice',
   'Service',
   'Proxy',
+  'DeviceApp',
+  'DeviceProductApp',
+  'DeviceProductAppSetting',
+  'DeviceProductRootConsent',
+  'DeviceAppRootConsent',
+  'ProductPlanItem',
 ]
 
 const has = (schema: Schema, type: string, ...fields: string[]) => fields.every(field => !!schema[type]?.[field])
@@ -189,6 +263,10 @@ export function parseServed(schema: Schema): ProductPolicyServed {
       product && has(schema, 'Proxy', 'products') && has(schema, 'Mutation', 'addProxyProduct', 'removeProxyProduct'),
     devices: product && has(schema, 'DeviceProduct', 'devices'),
     bulk: device && has(schema, 'Mutation', 'setDevicesProduct'),
+    apps:
+      product &&
+      has(schema, 'DeviceProduct', 'apps') &&
+      has(schema, 'Mutation', 'setDeviceProductApp', 'setDeviceProductAppSetting'),
   }
 }
 
@@ -211,6 +289,7 @@ function read(): Promise<Read> {
         first.Device?.product?.type,
         first.DeviceProduct?.networks?.type,
         first.DeviceProduct?.devices?.type,
+        first.DeviceProduct?.apps?.type,
       ].filter((name, i, all): name is string => !!name && !first[name] && all.indexOf(name) === i)
       const second = await readTypes(answered)
       if (second === 'ERROR') {
@@ -287,7 +366,11 @@ const items = (list: any): ProductItem[] =>
   Array.isArray(list)
     ? list.map(item =>
         item && typeof item === 'object'
-          ? { kind: String(item.kind || '').toLowerCase(), name: String(item.name ?? '') }
+          ? {
+              kind: String(item.kind || '').toLowerCase(),
+              name: String(item.name ?? ''),
+              ...(item.value !== undefined && { value: item.value }),
+            }
           : { kind: '', name: String(item) }
       )
     : []
@@ -311,17 +394,104 @@ export const networkOf = (network: any): ProductNetwork => {
 }
 
 const NETWORK: Want = { networkId: true, name: true, role: true }
-const ITEMS = 'kind name'
-const PREVIEW: Want = {
-  deviceId: true,
-  deviceName: true,
-  added: ITEMS,
-  locked: ITEMS,
-  removed: ITEMS,
-  owned: ITEMS,
-  warnings: true,
-  refusal: true,
+// A preview's items: an app's and an app setting's value too, where the item's type has it.
+const preview = (schema: Schema): Want => {
+  const items = select(schema, 'ProductPlanItem', { kind: true, name: true, value: true }) || 'kind name'
+  return {
+    deviceId: true,
+    deviceName: true,
+    added: items,
+    locked: items,
+    removed: items,
+    owned: items,
+    warnings: true,
+    refusal: true,
+  }
 }
+
+const APP_SETTING: Want = {
+  name: true,
+  type: true,
+  label: true,
+  help: true,
+  default: true,
+  value: true,
+  at: true,
+  by: true,
+  forcible: true,
+  locked: true,
+  deprecated: true,
+  choices: 'value label',
+}
+const APP: Want = {
+  id: true,
+  name: true,
+  publisher: true,
+  description: true,
+  root: true,
+  version: true,
+  state: true,
+  channel: true,
+  pinned: true,
+  rootConsent: { by: true, at: true, version: true, user: 'email' },
+  needsConsent: true,
+  awaitingRoot: true,
+  locked: true,
+  at: true,
+  by: true,
+  settings: APP_SETTING,
+  removedSettings: 'name value at by removedIn',
+}
+
+export const productAppOf = (app: any): ProductApp => ({
+  id: app.id,
+  name: app.name ?? app.id,
+  publisher: app.publisher ?? '',
+  description: app.description ?? null,
+  root: !!app.root,
+  version: app.version ?? null,
+  state: PRODUCT_APP_STATES.includes(app.state) ? app.state : null,
+  channel: app.channel ?? null,
+  pinned: app.pinned ?? null,
+  rootConsent: app.rootConsent?.by
+    ? {
+        by: app.rootConsent.by,
+        email: app.rootConsent.user?.email ?? null,
+        at: app.rootConsent.at,
+        version: app.rootConsent.version ?? null,
+      }
+    : null,
+  needsConsent: !!app.needsConsent,
+  awaitingRoot: app.awaitingRoot ?? null,
+  locked: !!app.locked,
+  at: app.at ?? null,
+  by: app.by ?? null,
+  settings: (app.settings || []).map(
+    (setting: any): ProductAppSetting => ({
+      name: setting.name,
+      type: setting.type,
+      label: setting.label ?? setting.name,
+      help: setting.help ?? null,
+      default: setting.default ?? null,
+      value: setting.value ?? null,
+      at: setting.at ?? null,
+      by: setting.by ?? null,
+      forcible: !!setting.forcible,
+      locked: !!setting.locked,
+      deprecated: setting.deprecated ?? null,
+      choices: setting.choices ?? null,
+    })
+  ),
+  removedSettings: (app.removedSettings || []).map(
+    (removed: any): ProductRemovedSetting => ({
+      name: removed.name,
+      value: removed.value ?? null,
+      at: removed.at ?? null,
+      by: removed.by ?? null,
+      removedIn: removed.removedIn ?? null,
+    })
+  ),
+})
 
 // The fields a device setting adds where its product may hold it (fromProduct: set by a synced or enforced product,
 // locked), and which product at which level (locked, the shape the settings document gives the daemon): none where the
@@ -338,6 +508,17 @@ export async function memberPolicyFields(): Promise<string> {
   const { served, schema } = await read()
   if (!served.device && !served.product) return ''
   return select(schema, 'NetworkDevice', { fromProduct: true })
+}
+
+// The fields a device's app adds where the API says them: whether its product holds it on or off (locked: which
+// product, how firmly), the consent to root it runs under and a release waiting for one (rootConsent, awaitingRoot).
+export async function appPolicyFields(): Promise<string> {
+  const { schema } = await read()
+  return select(schema, 'DeviceApp', {
+    locked: 'product level',
+    rootConsent: { by: true, at: true, version: true, via: true, user: 'email' },
+    awaitingRoot: true,
+  })
 }
 
 // A setting's lock as graphql names it: the product's name and its level, where they are known.
@@ -373,6 +554,7 @@ export async function graphQLProductPolicy(productId: string, accountId?: string
     ...(served.settings ? { settings: 'name value' } : {}),
     ...(served.networks ? { networks: NETWORK } : {}),
     ...(served.devices ? { devices: 'id name state', deviceCount: true } : {}),
+    ...(served.apps ? { apps: APP } : {}),
   })
   const query = `query DeviceProductPolicy($id: String!, $accountId: String) {
     login { account(id: $accountId) { deviceProducts(id: [$id]) { items { id ${fields} } } } }
@@ -391,6 +573,7 @@ export async function graphQLProductPolicy(productId: string, accountId?: string
       ? (product.devices || []).map((d: any) => ({ id: d.id, name: d.name ?? d.id, state: d.state ?? null }))
       : null,
     deviceCount: typeof product.deviceCount === 'number' ? product.deviceCount : null,
+    apps: served.apps && Array.isArray(product.apps) ? product.apps.map(productAppOf) : null,
   }
 }
 
@@ -407,7 +590,7 @@ export async function graphQLProductSyncPreview(productId: string, sync: Product
       devices: typeof data?.devices === 'number' ? data.devices : null,
       previews: (data?.changes || []).map(previewOf),
     }),
-    select(schema, type, { summary: true, devices: true, changes: PREVIEW })
+    select(schema, type, { summary: true, devices: true, changes: preview(schema) })
   )
 }
 
@@ -418,6 +601,40 @@ export const graphQLSetDeviceProductSync = (productId: string, sync: ProductSync
 // null unsets it: the devices choose it themselves again.
 export const graphQLSetDeviceProductSetting = (productId: string, name: string, value: any) =>
   ask<true>('Mutation', 'setDeviceProductSetting', { productId, name, value }, () => true)
+
+export type SetProductAppOptions = {
+  channel?: string | null
+  version?: string | null
+  // A root app is turned on only with this: the person consented to its full control of every device in the product.
+  consentRoot?: boolean
+}
+
+// state null unsets it: each device's own again (its channel and version go with it). Enabling it, or choosing its
+// channel or version, needs Scripting in the product's account as well; a root app without a consent on the product,
+// consentRoot. Refused in graphql's words.
+export const graphQLSetDeviceProductApp = (
+  productId: string,
+  app: string,
+  state: ProductAppState | null,
+  { channel, version, consentRoot }: SetProductAppOptions = {}
+) =>
+  ask<true>(
+    'Mutation',
+    'setDeviceProductApp',
+    {
+      productId,
+      app,
+      state,
+      ...(state && state !== 'removed' && channel !== undefined && { channel }),
+      ...(state && state !== 'removed' && version !== undefined && { version }),
+      ...(consentRoot && { consentRoot }),
+    },
+    () => true
+  )
+
+// value null unsets it: each device's own again.
+export const graphQLSetDeviceProductAppSetting = (productId: string, app: string, name: string, value: any) =>
+  ask<true>('Mutation', 'setDeviceProductAppSetting', { productId, app, name, value }, () => true)
 
 export const graphQLAddDeviceProductNetwork = (productId: string, networkId: string, role: NetworkDeviceRole) =>
   ask<true>('Mutation', 'addDeviceProductNetwork', { productId, networkId, role }, () => true)
@@ -497,7 +714,7 @@ export async function graphQLDeviceProductPreview(deviceId: string, productId: s
     'deviceProductPreview',
     { deviceId, productId },
     data => previewOf(Array.isArray(data) ? data[0] : data),
-    select(schema, type, PREVIEW)
+    select(schema, type, preview(schema))
   )
 }
 

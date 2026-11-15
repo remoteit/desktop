@@ -337,30 +337,6 @@ export async function graphQLRemoveService(id: string) {
   )
 }
 
-export async function graphQLInstallApp(props: { deviceIds: string[]; application: number }) {
-  return await graphQLBasicRequest(
-    ` mutation InstallApp($deviceIds: [String!], $application: Int!) {
-        installApp(
-          deviceIds: $deviceIds,
-          application: $application,
-        )
-      }`,
-    props
-  )
-}
-
-export async function graphQLRemoveApp(props: { deviceIds: string[]; application: number }) {
-  return await graphQLBasicRequest(
-    ` mutation RemoveApp($deviceIds: [String!], $application: Int!) {
-        removeApp(
-          deviceIds: $deviceIds,
-          application: $application,
-        )
-      }`,
-    props
-  )
-}
-
 export async function graphQLReadNotice(id: string, value: boolean = true) {
   return await graphQLBasicRequest(
     ` mutation ReadNotice($id: String!, $value: Boolean!) {

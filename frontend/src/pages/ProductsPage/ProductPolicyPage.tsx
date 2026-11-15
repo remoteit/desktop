@@ -9,6 +9,7 @@ import { LoadingMessage } from '../../components/LoadingMessage'
 import { ProductHeaderMenu } from '../../components/ProductHeaderMenu'
 import { ProductSyncLevel } from '../../components/ProductSyncLevel'
 import { ProductPolicySettings } from '../../components/ProductPolicySettings'
+import { ProductPolicyApps } from '../../components/ProductPolicyApps'
 import { ProductGrants } from '../../components/ProductGrants'
 import { ProductDevices } from '../../components/ProductDevices'
 import { useProductPolicy } from '../../hooks/useProductPolicy'
@@ -18,7 +19,7 @@ import { selectPermissions } from '../../selectors/organizations'
 import { dispatch } from '../../store'
 
 /* A product's policy (graphql-api docs/PROXY-GROUPS.md §11, wave 4), for its Control Link devices: its sync level,
-   the settings it sets, what it grants — networks, proxies; its tags are on its page — and the devices that
+   the settings it sets, the apps it turns on or off with their settings, what it grants — networks, proxies; its tags are on its page — and the devices that
    belong to it. Its managers change them; a grant changed reads the product's registration warning again, as one with
    grants is warned of while it registers with reusable codes. Nothing where the API has no product policy. */
 export const ProductPolicyPage: React.FC = () => {
@@ -68,6 +69,15 @@ export const ProductPolicyPage: React.FC = () => {
               <ProductPolicySettings
                 productId={product.id}
                 settings={policy.settings}
+                manage={manage}
+                onChanged={changed}
+              />
+            )}
+            {policy.apps && (
+              <ProductPolicyApps
+                productId={product.id}
+                apps={policy.apps}
+                sync={policy.sync}
                 manage={manage}
                 onChanged={changed}
               />

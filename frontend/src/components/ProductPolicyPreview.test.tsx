@@ -108,4 +108,29 @@ describe('a preview of a change of product or level', () => {
     const page = await render(<ProductPolicyPreview preview={previews} />)
     expect(notices(page, 'warning')).toEqual([warning])
   })
+
+  it('a product’s apps: each named with its state, each app setting with its value, and counted by kind', async () => {
+    const app = (name: string, value: string) => ({ kind: 'app', name, value })
+    const setting = { kind: 'app_setting', name: 'Console: AI commands', value: false }
+    const one = previewOf({
+      deviceId: 'D1',
+      added: [app('Console', 'enabled'), setting],
+      locked: [app('Files', 'disabled')],
+      removed: [app('Logs', 'removed')],
+    })
+    let page = await render(<ProductPolicyPreview preview={[one]} single />)
+    expect(page.querySelector('[data-preview-group="added"]')?.textContent).toBe(
+      'AddedApp Console enabledConsole: AI commands: off'
+    )
+    expect(page.querySelector('[data-preview-group="removed"]')?.textContent).toBe('RemovedApp Logs removed')
+    expect(page.querySelector('[data-preview-group="locked"]')?.textContent).toContain('App Files disabled')
+    page = await render(
+      <ProductPolicyPreview preview={[one, previewOf({ deviceId: 'D2', added: [app('Console', 'enabled')] })]} />
+    )
+    expect([...page.querySelectorAll('[data-preview-line]')].map(l => l.textContent)).toEqual([
+      '2 devices will get 1 app',
+      '1 device will get 1 app setting',
+      '1 device will have 1 app locked to the product',
+    ])
+  })
 })

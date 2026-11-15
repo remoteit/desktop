@@ -2,9 +2,9 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import {
-  DeviceSetting,
   DeviceSettingName,
   MACHINE_WIDE,
+  SettingState,
   settingLocked,
   settingOn,
 } from '../services/graphQLDeviceSettings'
@@ -14,10 +14,12 @@ import { ListItemSetting } from './ListItemSetting'
 import { SelectSetting } from './SelectSetting'
 
 type Props = {
-  setting: DeviceSetting
+  setting: SettingState
   icon?: string
+  hideIcon?: boolean // an option of the row above it (an app's setting): no icon of its own
   label: React.ReactNode
   subLabel?: React.ReactNode // what the setting does: in place of a note on who set it, or why it is fixed
+  deprecated?: string | null // why it is deprecated, said before the rest: a setting on its way out
   on?: boolean // a part of the setting's value (exit_node's lan); else whether the setting is on, as its control fixes
   disabled?: boolean // the caller's: not one who manages the device, or a change under way
   quiet?: boolean // a part of a setting whose row above already says who set it, or why it is fixed
@@ -33,8 +35,10 @@ type Props = {
 export const DeviceSettingRow: React.FC<Props> = ({
   setting,
   icon,
+  hideIcon,
   label,
   subLabel,
+  deprecated,
   on,
   disabled,
   quiet,
@@ -45,12 +49,25 @@ export const DeviceSettingRow: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const checked = on ?? settingOn(setting)
+  const said = (!quiet && settingNote(t, setting)) || subLabel
+  const why = deprecatedLine(t, deprecated)
 
   return (
     <ListItemSetting
       icon={icon}
+      hideIcon={hideIcon}
       label={label}
-      subLabel={(!quiet && settingNote(t, setting)) || subLabel}
+      subLabel={
+        !why || !said ? (
+          why || said
+        ) : typeof said === 'string' ? (
+          `${why} · ${said}`
+        ) : (
+          <>
+            {why} · {said}
+          </>
+        )
+      }
       toggle={checked}
       disabled={disabled || settingLocked(setting)}
       confirm={confirm}
@@ -64,15 +81,16 @@ export const DeviceSettingRow: React.FC<Props> = ({
 /* A device setting whose value is a choice (websocket's auto, on, off): DeviceSettingRow's, as a select — who set it
    when that was on the device, and the administrator's override, which fixes a value here greyed and says which. */
 export const DeviceSettingChoice: React.FC<{
-  setting: DeviceSetting
+  setting: SettingState
   icon?: string
+  hideIcon?: boolean
   label: string
   value: string // the value standing, as the setting's control fixes it
   choices: ISelect[]
   note?: React.ReactNode // the setting's state, below who set it
   disabled?: boolean
   onChange: (value: string) => void
-}> = ({ setting, icon, label, value, choices, note, disabled, onChange }) => {
+}> = ({ setting, icon, hideIcon, label, value, choices, note, disabled, onChange }) => {
   const { t } = useTranslation()
   const fixed = choices.find(choice => choice.key === setting.control)
   const why = fixed
@@ -81,6 +99,7 @@ export const DeviceSettingChoice: React.FC<{
   return (
     <SelectSetting
       icon={icon}
+      hideIcon={hideIcon}
       label={label}
       value={value}
       values={choices}
@@ -105,7 +124,7 @@ export const CONFIGURATION = 'configuration'
 // Why a setting is as it is, where that is not the portal's doing: the administrator's override, its product holding
 // it, or a change made on the device. None for a setting set here — but the exit and Protect, the machine's, say who
 // set them in the portal too, and one a person signed in on the device set ends at their sign-out.
-export function settingNote(t: TFunction, setting?: DeviceSetting): string | undefined {
+export function settingNote(t: TFunction, setting?: SettingState): string | undefined {
   if (!setting) return undefined
   switch (setting.control) {
     case 'off':
@@ -131,6 +150,15 @@ export function settingNote(t: TFunction, setting?: DeviceSetting): string | und
       ? t('deviceSetting.onDeviceBy', 'Set on the device by {{by}}', { by: setting.by })
       : t('deviceSetting.onDevice', 'Set on the device')
   return undefined
+}
+
+// A deprecated setting's line (presence-server docs/device-apps-design.md, "Deprecating and removing a setting"): still
+// applied, on its way out, and why.
+export function deprecatedLine(t: TFunction, deprecated?: string | null): string | undefined {
+  if (deprecated === undefined || deprecated === null) return undefined
+  return deprecated
+    ? t('deviceSetting.deprecatedWhy', 'Deprecated: {{why}}', { why: deprecated })
+    : t('deviceSetting.deprecated', 'Deprecated')
 }
 
 /* A policy-only setting (updates, initiators): nothing to set from either side, only the administrator's allowing it

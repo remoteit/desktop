@@ -157,6 +157,7 @@ export const SidebarNav: React.FC = () => {
         match={['/script', '/scripts', '/runs']}
         dense
       />
+      <ListItemLocation title={t('nav.apps', 'Apps')} to="/apps" match="/apps" icon="cubes" dense />
       <ListItemLocation title={t('nav.products', 'Products')} to="/products" match="/products" icon="conveyor-belt-boxes" dense />
       <ListItemLocation title={t('nav.organization', 'Organization')} to="/organization" icon="industry-alt" dense />
       {hasPartner && (

@@ -161,12 +161,6 @@ const DeviceSelectLookup: ILookup<string, string> = {
   presenceAddress
   `,
 
-  installs: `
-  supportedAppInstalls {
-    id
-  }
-  `,
-
   notifications: `
   notificationSettings {
     emailNotifications
@@ -434,7 +428,6 @@ export function graphQLDeviceAdaptor({
       services: graphQLServiceAdaptor(d, loaded || serviceLoaded, serviceTimeSeries),
       presenceAddress: d.presenceAddress,
       notificationSettings: d.notificationSettings,
-      supportedAppInstalls: d.supportedAppInstalls?.map(i => i.id) || [],
       timeSeries: processTimeSeries(d, deviceTimeSeries),
       access:
         d.access?.map((a: any) => ({

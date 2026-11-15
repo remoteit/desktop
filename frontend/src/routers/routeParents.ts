@@ -21,6 +21,8 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/devices/:deviceID/:serviceID/advanced', '/devices/:deviceID'],
   ['/devices/:deviceID/:serviceID/share', '/devices/:deviceID'],
   // Devices — device sub-pages → device page
+  ['/devices/:deviceID/apps/add', '/devices/:deviceID/edit'],
+  ['/devices/:deviceID/apps/:appID', '/devices/:deviceID/edit'],
   ['/devices/:deviceID/add/scan', '/devices/:deviceID'],
   ['/devices/:deviceID/add', '/devices/:deviceID'],
   ['/devices/:deviceID/users/:userID', '/devices/:deviceID'],
@@ -76,6 +78,10 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/products/:productId', '/products'],
   ['/products/add', '/products'],
 
+  // Apps
+  ['/apps/:appID/add', '/apps/:appID'],
+  ['/apps/:appID', '/apps'],
+
   // Settings
   ['/settings/notifications', '/settings'],
   ['/settings/graphs', '/settings'],
@@ -111,6 +117,7 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/account/billing', '/account'],
   ['/account/license', '/account'],
   ['/account/accessKey', '/account'],
+  ['/account/publisher', '/account'],
   ['/account/connected', '/account'],
   ['/account/connected/:clientId', '/account/connected'],
   ['/account/overview', '/account'],

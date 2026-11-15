@@ -54,7 +54,7 @@ const HINT =
 
 describe('Allow remote access to services, the cloud’s side', () => {
   it('absent where the API serves no services setting — one before it, or no settings at all', async () => {
-    for (const list of [null, [], [{ ...services(), name: 'mcp_exec' as const }]]) {
+    for (const list of [null, [], [{ ...services(), name: 'proxy' as const }]]) {
       const page = await render(<DeviceServicesSetting settings={settingsOf(list)} canManage />)
       expect(row(page)).toBeNull()
     }

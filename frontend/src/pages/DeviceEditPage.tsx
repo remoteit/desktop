@@ -87,7 +87,7 @@ export const DeviceEditPage: React.FC = () => {
           on it, so with its settings. */}
       {deviceSessions && device && (
         <Gutters>
-          <DeviceApps deviceId={device.id} canManage={!!device.permissions?.includes('MANAGE')} />
+          <DeviceApps device={device} />
           <DeviceSshAccess deviceId={device.id} />
           <DeviceJoinKeys device={device} />
         </Gutters>

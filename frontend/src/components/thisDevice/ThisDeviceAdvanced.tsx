@@ -2,15 +2,18 @@ import React from 'react'
 import { Box, Button, Divider, List, ListItem, ListItemText, Switch, Typography } from '@mui/material'
 import { PermissionName, ThisDevice } from '../../services/thisDevice'
 import { ThisDeviceModel } from './model'
-import { SettingRow, SWITCH_TEXT, UNDER_SERVICES } from './shared'
+import { OPTIONS, SettingRow, SWITCH_TEXT, UNDER_SERVICES } from './shared'
 
 /* This device's Advanced (pages/ThisDevicePage.tsx, /this-device/advanced): what is changed seldom — what the device
-   offers beyond the three switches (exit node, console, any port, proxy, AI commands, the relay), a phone's permissions,
+   offers beyond the three switches (exit node, the console and its AI commands, any port, proxy, the relay), a phone's permissions,
    the app's own Open at login, the detailed logging and the diagnostics, and last its removal. */
 
 export const ThisDeviceAdvanced: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {
   const { t, has, status, kind, permissions, logging, app } = m
   const d = status?.device
+  // An option is listed under the setting it belongs to; one whose setting is not listed stands on its own.
+  const options = (name: string) => m.listed.filter(s => OPTIONS[s.name]?.of === name)
+  const standing = m.listed.filter(s => !m.listed.some(p => p.name === OPTIONS[s.name]?.of))
   const heading = (text: string) => (
     <Typography variant="subtitle1" paddingX={2}>
       {text}
@@ -22,15 +25,27 @@ export const ThisDeviceAdvanced: React.FC<{ device: ThisDevice; m: ThisDeviceMod
       {has('settings') && m.listed.length > 0 && (
         <List data-section="settings">
           {heading(t('thisDevice.features', 'Features'))}
-          {m.listed.map(s => (
-            <SettingRow
-              key={s.name}
-              setting={s}
-              relayUsing={s.name === 'websocket' ? status?.relay?.using : undefined}
-              notServed={m.servicesOff && UNDER_SERVICES.includes(s.name)}
-              disabled={m.busy}
-              onSet={value => m.setSetting(s.name, value)}
-            />
+          {standing.map(s => (
+            <React.Fragment key={s.name}>
+              <SettingRow
+                setting={s}
+                title={OPTIONS[s.name]?.title(t)}
+                relayUsing={s.name === 'websocket' ? status?.relay?.using : undefined}
+                notServed={m.servicesOff && UNDER_SERVICES.includes(s.name)}
+                disabled={m.busy}
+                onSet={value => m.setSetting(s.name, value)}
+              />
+              {options(s.name).map(o => (
+                <SettingRow
+                  key={o.name}
+                  setting={o}
+                  title={OPTIONS[o.name].title(t)}
+                  indent
+                  disabled={m.busy}
+                  onSet={value => m.setSetting(o.name, value)}
+                />
+              ))}
+            </React.Fragment>
           ))}
         </List>
       )}

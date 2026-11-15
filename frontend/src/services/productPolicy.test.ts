@@ -17,7 +17,10 @@ import {
   graphQLProductPolicy,
   graphQLProductProxies,
   graphQLProductSyncPreview,
+  appPolicyFields,
   graphQLSetDeviceProduct,
+  graphQLSetDeviceProductApp,
+  graphQLSetDeviceProductAppSetting,
   graphQLSetDeviceProductSetting,
   graphQLSetDeviceProductSync,
   graphQLSetDevicesProduct,
@@ -211,6 +214,7 @@ describe('whether the API serves product policy', () => {
       proxies: false,
       devices: false,
       bulk: false,
+      apps: false,
     })
     expect(await settingPolicyFields()).toBe('')
     expect(request).toHaveBeenCalledTimes(1)
@@ -226,6 +230,7 @@ describe('whether the API serves product policy', () => {
       proxies: true,
       devices: true,
       bulk: true,
+      apps: false,
     })
     expect(schemaReads()).toBe(2)
     expect(asked(1).query).toMatch(
@@ -450,6 +455,7 @@ describe('reads', () => {
       networks: [{ id: 'N1', name: 'Plant', role: 'INITIATOR' }],
       devices: [{ id: 'D1', name: 'pump-1', state: 'active' }],
       deviceCount: 140,
+      apps: null,
     })
   })
 
@@ -561,5 +567,293 @@ describe('reads', () => {
       name: 'Plant',
       role: 'TARGET',
     })
+  })
+})
+
+/* Product apps (presence-server docs/device-apps-design.md, "Product policy"): graphql's DeviceProduct.apps,
+   setDeviceProductApp and setDeviceProductAppSetting, a device app's product lock, and a preview's app items. */
+
+const APPS: Desc = {
+  ...WAVE4,
+  Mutation: {
+    ...WAVE4.Mutation,
+    setDeviceProductApp: {
+      type: nonNull(object('DeviceProduct')),
+      args: {
+        productId: nonNull(scalar('ID')),
+        app: nonNull(scalar()),
+        state: scalar(),
+        channel: scalar(),
+        version: scalar(),
+        consentRoot: scalar('Boolean'),
+      },
+    },
+    setDeviceProductAppSetting: {
+      type: nonNull(object('DeviceProduct')),
+      args: { productId: nonNull(scalar('ID')), app: nonNull(scalar()), name: nonNull(scalar()), value: scalar('Any') },
+    },
+  },
+  DeviceProduct: { ...WAVE4.DeviceProduct, apps: { type: nonNull(list(nonNull(object('DeviceProductApp')))) } },
+  DeviceProductApp: Object.fromEntries(
+    [
+      'id',
+      'name',
+      'publisher',
+      'description',
+      'root',
+      'version',
+      'state',
+      'channel',
+      'pinned',
+      'needsConsent',
+      'locked',
+      'at',
+      'by',
+    ]
+      .map(name => [name, { type: scalar() }])
+      .concat([
+        ['rootConsent', { type: object('DeviceProductRootConsent') }],
+        ['settings', { type: nonNull(list(nonNull(object('DeviceProductAppSetting')))) }],
+      ])
+  ),
+  DeviceProductRootConsent: { by: { type: scalar() }, at: { type: scalar('DateTime') }, version: { type: scalar() } },
+  DeviceProductAppSetting: Object.fromEntries(
+    ['name', 'type', 'label', 'help', 'default', 'value', 'at', 'by', 'forcible', 'locked', 'deprecated', 'declaration']
+      .map(name => [name, { type: scalar() }])
+      .concat([['choices', { type: list(nonNull(object('DeviceAppSettingChoice'))) }]])
+  ),
+  DeviceApp: { id: { type: scalar() }, locked: { type: object('DeviceSettingLock') } },
+  ProductPlanItem: {
+    kind: { type: scalar() },
+    key: { type: scalar() },
+    name: { type: scalar() },
+    value: { type: scalar('Any') },
+  },
+}
+
+const consoleApp = {
+  id: 'remoteit.console',
+  name: 'Console',
+  publisher: 'remote.it',
+  description: 'A terminal on the device',
+  root: true,
+  version: '1.4.0',
+  state: 'enabled',
+  channel: 'stable',
+  pinned: null,
+  rootConsent: { by: 'evan@example.com', at: '2026-11-12T18:00:00Z', version: '1.4.0' },
+  needsConsent: false,
+  locked: true,
+  at: '2026-11-12T18:00:00Z',
+  by: 'evan@example.com',
+  settings: [
+    {
+      name: 'ai_commands',
+      type: 'bool',
+      label: 'AI commands',
+      help: null,
+      default: true,
+      value: null,
+      at: null,
+      by: null,
+      forcible: false,
+      locked: false,
+      deprecated: null,
+      choices: null,
+    },
+  ],
+}
+
+describe('product apps', () => {
+  it('served only with DeviceProduct.apps and both its mutations', async () => {
+    serve(APPS)
+    expect((await productPolicyServed()).apps).toBe(true)
+    resetProductPolicy()
+    const { setDeviceProductAppSetting: _s, ...mutations } = APPS.Mutation
+    serve({ ...APPS, Mutation: mutations })
+    expect((await productPolicyServed()).apps).toBe(false)
+  })
+
+  it('a product’s apps read with its policy: each app, its consent, and its settings as the schema has them', async () => {
+    serve(APPS, () => ({
+      login: { account: { deviceProducts: { items: [{ id: 'P1', sync: 'enforced', apps: [consoleApp] }] } } },
+    }))
+    const policy = (await graphQLProductPolicy('P1')) as any
+    const call = asked(request.mock.calls.length - 1)
+    expect(call.query).toContain(
+      'apps { id name publisher description root version state channel pinned rootConsent { by at version } needsConsent locked at by settings { name type label help default value at by forcible locked deprecated choices { value label } } }'
+    )
+    expect(call.query).not.toContain('declaration')
+    // An API from before consents named their person, releases waiting for root, or removed settings: none of them.
+    expect(policy.apps).toEqual([
+      {
+        ...consoleApp,
+        rootConsent: { ...consoleApp.rootConsent, email: null },
+        awaitingRoot: null,
+        removedSettings: [],
+      },
+    ])
+  })
+
+  it('where the API has them: the consent’s person, a release waiting for root, and removed settings with the release that removed them', async () => {
+    const schema = {
+      ...APPS,
+      DeviceProductApp: {
+        ...APPS.DeviceProductApp,
+        awaitingRoot: { type: scalar() },
+        removedSettings: { type: nonNull(list(nonNull(object('DeviceProductRemovedAppSetting')))) },
+      },
+      DeviceProductRootConsent: { ...APPS.DeviceProductRootConsent, user: { type: object('UserReference') } },
+    }
+    const removed = { name: 'colour', value: true, at: '2026-11-12T18:00:00Z', by: 'AAAA', removedIn: '1.5.0' }
+    serve(schema, () => ({
+      login: {
+        account: {
+          deviceProducts: {
+            items: [
+              {
+                id: 'P1',
+                sync: 'synced',
+                apps: [
+                  {
+                    ...consoleApp,
+                    version: '1.4.0',
+                    needsConsent: true,
+                    awaitingRoot: '1.5.0',
+                    rootConsent: { ...consoleApp.rootConsent, by: 'AAAA', user: { email: 'pat@example.com' } },
+                    removedSettings: [removed],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    }))
+    const [app] = ((await graphQLProductPolicy('P1')) as any).apps
+    const call = asked(request.mock.calls.length - 1)
+    expect(call.query).toContain('rootConsent { by at version user { email } } needsConsent awaitingRoot')
+    expect(call.query).toContain('removedSettings { name value at by removedIn }')
+    expect(app).toMatchObject({
+      needsConsent: true,
+      awaitingRoot: '1.5.0',
+      rootConsent: { by: 'AAAA', email: 'pat@example.com', version: '1.4.0' },
+      removedSettings: [removed],
+    })
+  })
+
+  it('an app unset, and a consent not yet given, read as null', async () => {
+    serve(APPS, () => ({
+      login: {
+        account: {
+          deviceProducts: {
+            items: [
+              { id: 'P1', sync: 'synced', apps: [{ ...consoleApp, state: null, rootConsent: null, needsConsent: true }] },
+            ],
+          },
+        },
+      },
+    }))
+    const [app] = ((await graphQLProductPolicy('P1')) as any).apps
+    expect(app).toMatchObject({ state: null, rootConsent: null, needsConsent: true })
+  })
+
+  it('an API without product apps: none asked for, and none read', async () => {
+    serve(WAVE4, () => ({ login: { account: { deviceProducts: { items: [{ id: 'P1', sync: 'synced' }] } } } }))
+    const policy = (await graphQLProductPolicy('P1')) as any
+    expect(asked(request.mock.calls.length - 1).query).not.toContain('apps')
+    expect(policy.apps).toBeNull()
+  })
+
+  it('setDeviceProductApp: enabled with a root consent, disabled, removed and unset leaving its channel and version out', async () => {
+    serve(APPS, () => ({ setDeviceProductApp: { __typename: 'DeviceProduct' } }))
+    expect(
+      await graphQLSetDeviceProductApp('P1', 'remoteit.console', 'enabled', {
+        channel: 'stable',
+        version: null,
+        consentRoot: true,
+      })
+    ).toBe(true)
+    let call = asked(request.mock.calls.length - 1)
+    expect(call.query).toContain(
+      'mutation SetDeviceProductApp($productId: ID!, $app: String!, $state: String, $channel: String, $version: String, $consentRoot: Boolean)'
+    )
+    expect(call.query).toContain('{ __typename }')
+    expect(call.variables).toEqual({
+      productId: 'P1',
+      app: 'remoteit.console',
+      state: 'enabled',
+      channel: 'stable',
+      version: null,
+      consentRoot: true,
+    })
+    await graphQLSetDeviceProductApp('P1', 'remoteit.console', 'disabled', { channel: 'beta' })
+    call = asked(request.mock.calls.length - 1)
+    expect(call.variables).toEqual({ productId: 'P1', app: 'remoteit.console', state: 'disabled', channel: 'beta' })
+    await graphQLSetDeviceProductApp('P1', 'remoteit.console', 'removed', { channel: 'beta', version: '1.3.0' })
+    call = asked(request.mock.calls.length - 1)
+    expect(call.variables).toEqual({ productId: 'P1', app: 'remoteit.console', state: 'removed' })
+    await graphQLSetDeviceProductApp('P1', 'remoteit.console', null, { channel: 'beta', version: '1.3.0' })
+    call = asked(request.mock.calls.length - 1)
+    expect(call.variables).toEqual({ productId: 'P1', app: 'remoteit.console', state: null })
+  })
+
+  it('a root app turned on without consent is refused in graphql’s words', async () => {
+    serve(APPS, () => ({
+      errors: [{ message: 'refused', extensions: { message: 'Console runs as root: consent to it for the product' } }],
+    }))
+    expect(await graphQLSetDeviceProductApp('P1', 'remoteit.console', 'enabled')).toEqual({
+      reason: 'Console runs as root: consent to it for the product',
+    })
+  })
+
+  it('setDeviceProductAppSetting: a value, and null unsetting it', async () => {
+    serve(APPS, () => ({ setDeviceProductAppSetting: { __typename: 'DeviceProduct' } }))
+    await graphQLSetDeviceProductAppSetting('P1', 'remoteit.console', 'ai_commands', null)
+    const call = asked(request.mock.calls.length - 1)
+    expect(call.query).toContain(
+      'setDeviceProductAppSetting(productId: $productId, app: $app, name: $name, value: $value)'
+    )
+    expect(call.variables).toEqual({ productId: 'P1', app: 'remoteit.console', name: 'ai_commands', value: null })
+  })
+
+  it('a device’s app adds which product holds it, where the API says', async () => {
+    serve(APPS)
+    expect(await appPolicyFields()).toBe('locked { product level }')
+    resetProductPolicy()
+    // And the consent to root it runs under, and a release waiting for one, where the API says those.
+    serve({
+      ...APPS,
+      DeviceApp: {
+        ...APPS.DeviceApp,
+        rootConsent: { type: object('DeviceAppRootConsent') },
+        awaitingRoot: { type: scalar() },
+      },
+      DeviceAppRootConsent: Object.fromEntries(
+        ['by', 'at', 'version', 'via']
+          .map(name => [name, { type: scalar() }])
+          .concat([['user', { type: object('UserReference') }]])
+      ),
+    })
+    expect(await appPolicyFields()).toBe(
+      'locked { product level } rootConsent { by at version via user { email } } awaitingRoot'
+    )
+    resetProductPolicy()
+    serve(WAVE4)
+    expect(await appPolicyFields()).toBe('')
+  })
+
+  it('a preview’s items carry their value where the item type has it: an app’s state, a setting’s value', async () => {
+    const preview = {
+      deviceId: 'D1',
+      added: [
+        { kind: 'app', name: 'Console', value: 'enabled' },
+        { kind: 'app_setting', name: 'Console: AI commands', value: false },
+      ],
+    }
+    serve(APPS, () => ({ deviceProductPreview: preview }))
+    const answer = (await graphQLDeviceProductPreview('D1', 'P1')) as any
+    expect(asked(request.mock.calls.length - 1).query).toContain('added { kind name value }')
+    expect(answer.added).toEqual(preview.added)
   })
 })

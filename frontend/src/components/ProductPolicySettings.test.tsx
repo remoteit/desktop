@@ -73,15 +73,17 @@ describe('the settings a product sets', () => {
     expect(row(page, 'Device subnet').dataset.value).toBe('on')
     expect(row(page, 'Allow remote access to services').dataset.value).toBe('off')
     expect(row(page, 'Reflector (websocket)').dataset.value).toBe('off')
-    expect(row(page, 'Console').dataset.value).toBe('')
-    expect(row(page, 'Console').textContent).toBe('Each device’s ownOnOff')
+    expect(row(page, 'Allow scripts').dataset.value).toBe('')
+    expect(row(page, 'Allow scripts').textContent).toBe('Each device’s ownOnOff')
+    // Apps are not device settings: a product's apps are its Apps block's.
+    expect(page.textContent).not.toMatch(/Console|AI commands/)
     expect(row(page, 'Reflector (websocket)').textContent).toBe('Each device’s ownAutomaticAlwaysOff')
   })
 
   it('set to a value, or unset; the product read again', async () => {
     const page = await render([{ name: 'subnet', value: true }])
-    await pick(page, 'Console', 'on')
-    expect(setSetting).toHaveBeenLastCalledWith('P1', 'console', true)
+    await pick(page, 'Allow scripts', 'on')
+    expect(setSetting).toHaveBeenLastCalledWith('P1', 'scripts', true)
     await pick(page, 'Reflector (websocket)', 'auto')
     expect(setSetting).toHaveBeenLastCalledWith('P1', 'websocket', 'auto')
     await pick(page, 'Device subnet', '')

@@ -516,7 +516,8 @@ describe('This device has what Settings has', () => {
     },
     { name: 'printers', value: true, source: 'machine' as const },
     { name: 'services', value: false, source: 'machine' as const },
-    { name: 'console', value: true, source: 'cloud' as const },
+    { name: 'remoteit.console', value: true, source: 'cloud' as const },
+    { name: 'remoteit.console.ai_commands', value: false, source: 'default' as const },
     {
       name: 'exit_node',
       value: { on: false, lan: false } as any,
@@ -596,10 +597,64 @@ describe('This device has what Settings has', () => {
     const row = (name: string) => container.querySelector(`[data-section="settings"] [data-setting="${name}"]`)!
     expect(row('exit_node').textContent).toContain('Turned off by this machine’s administrator')
     expect((row('exit_node').querySelector('input') as HTMLInputElement).disabled).toBe(true)
-    expect(row('console').textContent).toContain('Not served: remote access to services is off')
+    expect(row('remoteit.console').textContent).toContain('Console')
+    expect(row('remoteit.console').textContent).toContain('Not served: remote access to services is off')
     expect(row('websocket').textContent).toContain('Changed from the portal to Always')
     expect(row('websocket').textContent).toContain('In use now')
     expect(row('websocket').textContent).toContain('Automatic')
+  })
+
+  it('an app’s state as the daemon says it: disabled with why, running with its version, as the portal says it', async () => {
+    const apps = [
+      ...settings.filter(s => s.name !== 'remoteit.console'),
+      {
+        name: 'remoteit.console',
+        value: false,
+        source: 'machine' as const,
+        app: { state: 'disabled', version: '1.4.0', detail: 'Turned off on this device by its administrator' },
+      },
+      { name: 'acme.backup', value: true, source: 'cloud' as const, app: { state: 'running', version: '1.2.0' } },
+      { name: 'acme.files', value: true, source: 'cloud' as const, app: { state: 'unavailable', detail: 'No build for linux-mips' } },
+    ]
+    const { container } = await render({ capabilities: caps, status, settings: apps }, { part: 'advanced' })
+    const row = (name: string) => container.querySelector(`[data-section="settings"] [data-setting="${name}"]`)!
+    expect(row('remoteit.console').textContent).toContain('Disabled — Turned off on this device by its administrator 1.4.0')
+    expect((row('remoteit.console').querySelector('input') as HTMLInputElement).checked).toBe(false)
+    expect(row('acme.backup').textContent).toContain('Running 1.2.0')
+    expect(row('acme.files').textContent).toContain('Not available here: No build for linux-mips')
+  })
+
+  it('a withdrawn release as the daemon says it: withdrawn, or kept by its administrator — in the portal’s words', async () => {
+    const apps = [
+      ...settings.filter(s => s.name !== 'remoteit.console'),
+      { name: 'acme.backup', value: true, source: 'cloud' as const, app: { state: 'unavailable', detail: 'withdrawn by its publisher' } },
+      {
+        name: 'acme.files',
+        value: true,
+        source: 'machine' as const,
+        app: { state: 'running', version: '1.2.0', detail: "kept by this device's administrator, though its release was withdrawn" },
+      },
+    ]
+    const { container } = await render({ capabilities: caps, status, settings: apps }, { part: 'advanced' })
+    const row = (name: string) => container.querySelector(`[data-section="settings"] [data-setting="${name}"]`)!
+    expect(row('acme.backup').textContent).toContain('Withdrawn by its publisher')
+    expect(row('acme.backup').textContent).not.toContain('Not available here')
+    expect(row('acme.files').textContent).toContain('Running — Kept by this device’s administrator, though its release was withdrawn 1.2.0')
+  })
+
+  it('the console’s AI commands: an option of the console’s row, set by the console’s key', async () => {
+    const { container, bridge } = await render({ capabilities: caps, status, settings }, { part: 'advanced' })
+    const rows = [...container.querySelectorAll('[data-section="settings"] [data-setting]')]
+    const at = rows.findIndex(r => r.getAttribute('data-setting') === 'remoteit.console')
+    const option = rows[at + 1] as HTMLElement
+    expect(option.getAttribute('data-setting')).toBe('remoteit.console.ai_commands')
+    expect(option.textContent).toContain('Allow AI commands')
+    expect(getComputedStyle(option).paddingLeft).toBe('32px')
+    expect(option.querySelector('svg[data-icon], .MuiListItemIcon-root')).toBeNull()
+    await act(async () => (option.querySelector('input') as HTMLInputElement).click())
+    expect(bridge.calls.filter(c => c.method === 'settings.set').map(c => c.args)).toEqual([
+      { name: 'remoteit.console.ai_commands', value: true },
+    ])
   })
 
   it('the detailed connection logging, and the app’s own Open at login', async () => {
