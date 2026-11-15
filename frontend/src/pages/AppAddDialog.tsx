@@ -32,6 +32,7 @@ import { graphQLFetchDeviceCount } from '../services/graphQLDevice'
 import { AppChangeResults } from '../components/AppChangeResults'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
+import { AppCapabilities } from '../components/AppRootConsent'
 import { adminControlLine, channelName } from '../helpers/appsHelper'
 
 type Target = 'devices' | 'tag' | 'product'
@@ -48,7 +49,8 @@ type Target = 'devices' | 'tag' | 'product'
                the product's root consent.
      Channel  the account's, stable or beta; and a version to pin, where wanted.
      A root app (or a root release pinned) asks the person's yes in words before Add is offered: full control of each
-     device — of every device in the product, now and later, for a product.
+     device — of every device in the product, now and later, for a product —, and what else it asks of remote.it (its
+     capabilities, the release's), said in the same place; a restricted app says them above Add.
 
    Devices and a tag call addDeviceApps (at most 500 devices a call: more, and it says to add it to a product); each
    device's result is listed after — Added · Enabled · Already there · Refused: <why>. */
@@ -124,6 +126,7 @@ export const AppAddDialog: React.FC = () => {
   const standing = ready?.releases.filter(r => !r.withdrawn) ?? []
   const pinned = pinning && version ? standing.find(r => r.version === version) : undefined
   const root = pinned ? pinned.root : !!ready?.root
+  const capabilities = pinned ? pinned.capabilities : ready?.capabilities
   const product = products.find(p => p.id === productId)
   const count = target === 'devices' ? ticked.length : target === 'tag' ? tagCount ?? 0 : 0
   const tooMany = target !== 'product' && count > MANY_DEVICES_MAX
@@ -365,6 +368,14 @@ export const AppAddDialog: React.FC = () => {
               )}
             </Box>
 
+            {!root && !!capabilities?.length && (
+              <Box sx={{ marginTop: 2 }} data-app-add-capabilities>
+                <AppCapabilities
+                  capabilities={capabilities}
+                  title={t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+                />
+              </Box>
+            )}
             {root && (
               <Box sx={{ marginTop: 2 }} data-app-add-root>
                 <Notice severity="warning" fullWidth>
@@ -373,6 +384,7 @@ export const AppAddDialog: React.FC = () => {
                       ? t('apps.rootProduct', '{{app}} runs as root: full control of every device in this product, now and later.', { app: ready.name })
                       : t('apps.rootDevices', '{{app}} runs as root: full control of each device.', { app: ready.name })}
                   </Typography>
+                  <AppCapabilities capabilities={capabilities} />
                   <FormControlLabel
                     control={
                       <Checkbox

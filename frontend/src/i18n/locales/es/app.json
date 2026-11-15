@@ -226,6 +226,11 @@
     "anyVersion": "",
     "cancel": "",
     "candidate": "",
+    "capabilitiesAlso": "Además, le pide a remote.it:",
+    "capabilitiesAsks": "Le pide a remote.it:",
+    "capabilityPersonAccounts": "Mantiene cuentas para las personas con las que comparte",
+    "capabilityPersonCertificates": "Inicia la sesión de las personas con un certificado de remote.it",
+    "capabilitySshExec": "Los comandos de IA pasan por esta app",
     "catalogFailed": "",
     "catalogUnserved": "",
     "channel": "",
@@ -338,6 +343,12 @@
     "service": "",
     "serviceLine": "",
     "serviceStopped": "",
+    "sessionAs": "como {{login}}",
+    "sessionByAi": "por una IA",
+    "sessions": "Sesiones",
+    "sessionSince": "desde {{when}}",
+    "sessionsMore": "{{number}} más sin listar",
+    "sessionsOpen": "{{number}} abiertas ahora",
     "settings": "",
     "showMore": "",
     "state": "",
@@ -371,6 +382,13 @@
     "withdrawnByPublisher": "",
     "yourDevices": "",
     "yours": ""
+  },
+  "appTerminal": {
+    "disabled": "{{app}} está desactivada: actívela para abrirla en SSH web",
+    "enable": "Activarla",
+    "open": "Abrir en SSH web",
+    "openInBrowser": "Abrir en SSH web, en su navegador",
+    "starting": "{{app}} se está iniciando: SSH web la abre en cuanto se ejecute"
   },
   "appType": {
     "adminPanel": {
@@ -895,13 +913,6 @@
     "permissionSubLabel": "Requiere el permiso de dispositivo \"Administrar\"",
     "webAuthenticationLabel": "Autenticación web"
   },
-  "consoleTerminal": {
-    "disabled": "",
-    "enable": "",
-    "open": "",
-    "openInBrowser": "",
-    "starting": ""
-  },
   "copyCodeBlock": {
     "copy": "Copiar",
     "copyCode": "Copiar código",
@@ -1181,11 +1192,6 @@
     "consentedDevice": "Activada como root en el dispositivo por {{by}}, {{when}}",
     "consentedProduct": "Se ejecuta como root con el consentimiento de su producto: {{by}}, {{when}}",
     "consentedRegistration": "Se ejecuta como root desde que este dispositivo se registró, {{when}}",
-    "console": "",
-    "consoleAiCommands": "",
-    "consoleAiCommandsHelp": "",
-    "consoleDisabled": "",
-    "consoleRunning": "",
     "converting": "",
     "hostKey": "",
     "needsNewer": "Necesita un remote.it más reciente en este dispositivo",

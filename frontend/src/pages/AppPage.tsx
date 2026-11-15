@@ -33,7 +33,6 @@ import {
 } from '../services/graphQLAppCatalog'
 import { DeviceAppChange, graphQLSetDeviceAppsRelease, refused } from '../services/graphQLDeviceApps'
 import { AppChangeResults } from '../components/AppChangeResults'
-import { firstPartyApp } from '../components/firstPartyApps'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Container } from '../components/Container'
 import { Confirm } from '../components/Confirm'
@@ -42,7 +41,16 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
-import { channelName, day, heldBackLine, heldBackReason, releaseChannelName, stateWord } from '../helpers/appsHelper'
+import {
+  appIcon,
+  capabilitiesLine,
+  channelName,
+  day,
+  heldBackLine,
+  heldBackReason,
+  releaseChannelName,
+  stateWord,
+} from '../helpers/appsHelper'
 
 const RELEASES_PAGE = 20
 // The version filter's choices besides a version: any (no filter), and none reported — catalogApp's devices(version: ""),
@@ -55,12 +63,14 @@ const NO_VERSION = '-'
 /* The app in the catalogue (presence-server docs/device-apps-design.md, "The Apps pages", /apps/:appID), from
    catalogApp:
 
-     its name and version, its publisher (Verified, Yours), Runs as root or Restricted, its description and platforms;
+     its name and version, its publisher (Verified, Yours), Runs as root or Restricted and what else it asks of
+     remote.it (its capabilities, in words), its description and platforms;
      Add… (/apps/:appID/add), and Manage releases for the account's own publisher (the Publisher page, where releases
      are published);
      Channels on this stage — each channel's release, its candidate and to how many of the devices — and the channel
      this account follows (setAccountAppChannel);
-     Releases, newest first: each version, its date, where this stage's channels point at it, root, its platforms,
+     Releases, newest first: each version, its date, where this stage's channels point at it, root and its
+     capabilities, its platforms,
      withdrawn, and its notes opened in place; Show more;
      Your devices: how many in all, enabled, disabled, up to date and held back, and the held back by why (fleet.total,
      fleet.heldBackBy); each device's version running, channel, state, and up to date or held back with the reason in
@@ -176,7 +186,7 @@ export const AppPage: React.FC = () => {
     <Container gutterBottom bodyProps={{ verticalOverflow: true }} header={header(app.name)}>
       <Gutters top="sm" data-catalog-app-page={app.id}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-          <Icon name={firstPartyApp(app.id)?.icon ?? 'cube'} size="xl" fixedWidth />
+          <Icon name={appIcon(app.protocol)} size="xl" fixedWidth />
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="body2" data-app-about>
               {[
@@ -194,6 +204,11 @@ export const AppPage: React.FC = () => {
                 ? t('apps.runsAsRootFull', 'Runs as root: full control of the device')
                 : t('apps.restricted', 'Restricted')}
             </Typography>
+            {!!app.capabilities.length && (
+              <Typography variant="body2" color="textSecondary" data-app-asks>
+                {capabilitiesLine(t, app.capabilities)}
+              </Typography>
+            )}
             {app.description && (
               <Typography variant="body2" color="textSecondary" data-app-description>
                 {app.description}
@@ -512,7 +527,7 @@ export const AppPage: React.FC = () => {
 }
 
 /* A release: its version, date, where this stage's channels point at it or that it was withdrawn, the first line of
-   its notes — opened in place to all of them, with root and its platforms. */
+   its notes — opened in place to all of them, with root, what else it asks of remote.it and its platforms. */
 const ReleaseRow: React.FC<{
   release: CatalogAppRelease
   channels: CatalogAppChannel[]
@@ -543,6 +558,7 @@ const ReleaseRow: React.FC<{
               release.root
                 ? t('apps.runsAsRootFull', 'Runs as root: full control of the device')
                 : t('apps.restricted', 'Restricted'),
+              capabilitiesLine(t, release.capabilities),
               release.platforms.join(' · '),
             ]
               .filter(Boolean)

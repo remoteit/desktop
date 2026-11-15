@@ -17,16 +17,26 @@ import { useHistory } from 'react-router-dom'
 import { DeviceApp, SCREENVIEW } from '../services/graphQLDeviceApps'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
-import { firstPartyApp } from './firstPartyApps'
-import { adminLine, adminRefuses, heldBackLine, managedLine, offered, runsAsWord, stateWord } from '../helpers/appsHelper'
+import { AppTerminalAction } from './AppTerminal'
+import {
+  adminLine,
+  adminRefuses,
+  appIcon,
+  heldBackLine,
+  managedLine,
+  offered,
+  runsAsWord,
+  stateWord,
+} from '../helpers/appsHelper'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 /* A device's apps on its Configure page (presence-server docs/device-apps-design.md, "The Apps pages", the device's Apps
    section): the device's own apps, a row each — its publisher, Runs as root or Restricted, the version it runs, its
    state in a word, held back where it is —, its Enabled switch, and the row opening the app on this device
-   (/devices/:deviceID/apps/:appID), where its settings, channel, pin and Remove are. The console's Open terminal stays
-   in its row. Add opens the catalogue for this device (/devices/:deviceID/apps/add), offered only where there is
+   (/devices/:deviceID/apps/:appID), where its settings, channel, pin and Remove are. Every app is drawn from what the
+   API says of it, none by its id: its icon from how its service opens, and Open terminal in its row for one whose
+   service is ssh and that signs people in by certificate (components/AppTerminal). Add opens the catalogue for this device (/devices/:deviceID/apps/add), offered only where there is
    something it can add.
 
    Enabling runs code on the device, so it needs Scripting as well as Manage, and a root release no consent covers asks
@@ -118,13 +128,12 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
         </ListItem>
       )}
       {apps.map(app => {
-        const own = firstPartyApp(app.id)
         const removing = app.state === 'removing'
         const enabled = switching === app.id ? !app.enabled : app.enabled
         const row = (
           <>
             <ListItemIcon>
-              <Icon name={own?.icon ?? 'cube'} size="md" fixedWidth />
+              <Icon name={appIcon(app.protocol)} size="md" fixedWidth />
             </ListItemIcon>
             <ListItemText
               primary={app.name}
@@ -159,10 +168,10 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
             />
           </>
         )
-        // The switch and the console's Open terminal act alone: a click on them is not the row's.
+        // The switch and Open terminal act alone: a click on them is not the row's.
         const actions = removing ? null : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} onClick={event => event.stopPropagation()}>
-            {own?.Actions && <own.Actions device={device} app={app} />}
+            <AppTerminalAction device={device} app={app} />
             <Switch
               checked={enabled}
               disabled={
@@ -201,8 +210,8 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
 }
 
 /* Open, for any app reached as a service (serviceId) while it runs: its service's connection, started and launched as
-   its application type launches — HTTP opens in the browser —, as any service's Connect page does. remote.it's own apps
-   with a part of their own (components/firstPartyApps: the console's Open terminal) have theirs instead. */
+   its application type launches — HTTP opens in the browser —, as any service's Connect page does. One whose service
+   opens as a terminal (helpers/sshHelper opensTerminal) has Open terminal instead (components/AppTerminal). */
 export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device, app }) => {
   const { t } = useTranslation()
   const history = useHistory()

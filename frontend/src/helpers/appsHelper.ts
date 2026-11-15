@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 import type { AppHeldBack, AvailableApp, DeviceApp, DeviceAppRootConsent } from '../services/graphQLDeviceApps'
 import { needsNewer } from '../services/deviceAppsShared'
+import { untilConsoleMigrates } from '../services/consoleUntilDeclared'
 import type { SettingLock } from '../services/productPolicy'
 import { timeOptions } from '../components/Timestamp'
 
@@ -26,6 +27,47 @@ export const runsAsLine = (t: TFunction, root: boolean) =>
 // The same, for a row: Runs as root, or Restricted.
 export const runsAsWord = (t: TFunction, root: boolean) =>
   root ? t('apps.runsAsRoot', 'Runs as root') : t('apps.restricted', 'Restricted')
+
+/* What an app asks of the platform beyond an ordinary app's (its capabilities), each in words: shown beside Runs as
+   root wherever it is offered, and part of the consent to it (presence-contract docs/self-contained-apps.md,
+   "Manifest"). One this portal does not know is said by its name. */
+export function capabilityWords(t: TFunction, capability: string): string {
+  switch (capability) {
+    case 'person-accounts':
+      return t('apps.capabilityPersonAccounts', 'Keeps accounts for the people you share with')
+    case 'person-certificates':
+      return t('apps.capabilityPersonCertificates', 'Signs in people by remote.it certificate')
+    case 'ssh-exec':
+      return t('apps.capabilitySshExec', 'AI commands go through this app')
+    default:
+      return capability
+  }
+}
+
+export const capabilitiesLine = (t: TFunction, capabilities: string[] = []) =>
+  capabilities.map(capability => capabilityWords(t, capability)).join(' · ')
+
+// An app's icon, from how its service opens: a terminal, a page, else a box. No app has one of its own.
+export const appIcon = (protocol?: string | null) =>
+  protocol === 'ssh' ? 'terminal' : protocol === 'http' || protocol === 'https' ? 'globe' : 'cube'
+
+/* An app's service's host (graphql src/lib/service-host.ts appHost): remoteit-app-<publisher>-<app>, the id's dot a
+   dash — the device itself, which its daemon serves. Every app's service is at its app's host, so only such a
+   service is looked for among its device's apps. */
+const APP_HOST_PREFIX = 'remoteit-app-'
+export const appHost = (id: string) => `${APP_HOST_PREFIX}${id.toLowerCase().replace('.', '-')}`
+const hostOf = (service?: Pick<IService, 'host'>) => untilConsoleMigrates((service?.host ?? '').trim().toLowerCase())
+export const isAppService = (service?: Pick<IService, 'host'>) => hostOf(service).startsWith(APP_HOST_PREFIX)
+
+/* The app a service belongs to: the one that names it (DeviceApp.serviceId); while an app is disabled graphql names no
+   service (it is kept, stopped), so the one whose host it is. An app that names another service is not this one's. */
+export function serviceApp(apps: DeviceApp[] | null | undefined, service?: Pick<IService, 'id' | 'host'>) {
+  if (!apps || !service || !isAppService(service)) return undefined
+  return (
+    apps.find(app => app.serviceId === service.id) ??
+    apps.find(app => !app.serviceId && appHost(app.id) === hostOf(service))
+  )
+}
 
 // A channel by name: stable or beta, or the account's where none is set.
 export const channelName = (t: TFunction, channel: string | null | undefined) =>
@@ -268,6 +310,11 @@ export const offered = (app: AvailableApp): DeviceApp => ({
   state: 'disabled',
   detail: null,
   serviceId: null,
+  protocol: app.protocol ?? null,
+  capabilities: app.capabilities ?? [],
+  hostKey: null,
+  sessions: [],
+  sessionsOpen: 0,
   settings: [],
 })
 

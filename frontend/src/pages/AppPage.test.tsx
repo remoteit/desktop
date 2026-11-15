@@ -29,7 +29,6 @@ vi.mock('../components/Notice', () => ({ Notice: ({ children }: any) => <div dat
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
 vi.mock('../components/Link', () => ({ Link: ({ to, children, ...rest }: any) => <a data-to={to} {...rest}>{children}</a> }))
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
-vi.mock('../components/firstPartyApps', () => ({ firstPartyApp: () => undefined }))
 vi.mock('../components/Confirm', () => ({
   Confirm: ({ open, title, action, disabled, children, onConfirm, onDeny }: any) =>
     open ? (
@@ -106,6 +105,7 @@ describe('the app in the catalogue', () => {
     expect(page.querySelector('[data-title]')?.textContent).toBe('Backup')
     expect(page.querySelector('[data-app-about]')?.textContent).toBe('1.4.0 · Acme · Verified: acme.com · Yours')
     expect(page.querySelector('[data-app-runs]')?.textContent).toBe('Restricted')
+    expect(page.querySelector('[data-app-asks]')).toBeNull()
     expect(page.querySelector('[data-app-platforms]')?.textContent).toBe('linux-amd64 · linux-arm64 · linux-arm64-musl')
     await click(page.querySelector('[data-app-add]'))
     expect(push).toHaveBeenCalledWith('/apps/acme.backup/add')
@@ -120,6 +120,19 @@ describe('the app in the catalogue', () => {
     const page = await render()
     expect(page.querySelector('[data-app-manage]')).toBeNull()
     expect(page.querySelector('[data-app-runs]')?.textContent).toBe('Runs as root: full control of the device')
+  })
+
+  it('what it asks of remote.it beside how it runs — the app’s, and each release’s with its root', async () => {
+    params.appID = 'remoteit.console'
+    catalog.mockResolvedValue(mockCatalogApp('remoteit.console'))
+    const page = await render()
+    const asks =
+      'Keeps accounts for the people you share with · Signs in people by remote.it certificate · AI commands go through this app'
+    expect(page.querySelector('[data-app-asks]')?.textContent).toBe(asks)
+    await click(page.querySelector('[data-app-release="1.4.0"]'))
+    expect(page.querySelector('[data-app-release-notes="1.4.0"]')?.textContent).toContain(
+      `Runs as root: full control of the device · ${asks}`
+    )
   })
 
   it('channels on this stage, a candidate’s share; the account’s channel set by setAccountAppChannel', async () => {

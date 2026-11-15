@@ -1,16 +1,19 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import type { DeviceApp } from '../services/graphQLDeviceApps'
 import { AppChange, refused } from '../services/deviceAppsShared'
 import type { DeviceApps } from '../hooks/useDeviceApps'
+import { capabilityWords } from '../helpers/appsHelper'
 import { Confirm } from './Confirm'
 
 /* Asking for the person's yes to a root app's full control, in words naming the app, its publisher and that it gets
-   full control of the device (presence-server docs/device-apps-design.md, "Root, shown and consented to"). For a
-   product it says the yes covers every device in the product, now and later, as graphql keeps it on the product. */
+   full control of the device (presence-server docs/device-apps-design.md, "Root, shown and consented to"), and what
+   else it asks of remote.it — its capabilities, part of the consent (presence-contract docs/self-contained-apps.md,
+   "Manifest"). For a product it says the yes covers every device in the product, now and later, as graphql keeps it
+   on the product. */
 export const RootConsent: React.FC<{
-  app?: { name: string; publisher: string } // open while there is one
+  app?: { name: string; publisher: string; capabilities?: string[] } // open while there is one
   product?: boolean // a product's consent, for every device in it
   action?: string // the confirm button's words, where they are not turning it on
   // A release of an app already on that newly runs as root: the consent moves it there (a re-consent).
@@ -61,6 +64,7 @@ export const RootConsent: React.FC<{
               words
             )}
       </Typography>
+      <AppCapabilities capabilities={app?.capabilities} />
       <Typography variant="body2">
         {product
           ? t(
@@ -74,8 +78,30 @@ export const RootConsent: React.FC<{
   )
 }
 
+// What an app asks of remote.it beyond running, a line each: in its consent, and where it is offered.
+export const AppCapabilities: React.FC<{ capabilities?: string[]; title?: string }> = ({ capabilities, title }) => {
+  const { t } = useTranslation()
+  if (!capabilities?.length) return null
+  return (
+    <Box sx={{ marginBottom: 1 }} data-app-capabilities>
+      <Typography variant="body2">{title ?? t('apps.capabilitiesAlso', 'It also asks of remote.it:')}</Typography>
+      {capabilities.map(capability => (
+        <Typography
+          key={capability}
+          variant="body2"
+          component="div"
+          sx={{ paddingLeft: 2 }}
+          data-app-capability={capability}
+        >
+          · {capabilityWords(t, capability)}
+        </Typography>
+      ))}
+    </Box>
+  )
+}
+
 /* Enabling or disabling an app, from wherever it is offered (the device's Apps section, the app's page on the device,
-   the console's connect panel). A root app is enabled only once the person says yes (RootConsent); that yes is
+   an app's service's connect panel). A root app is enabled only once the person says yes (RootConsent); that yes is
    consentRoot, which graphql refuses a root app without. Disabling, or a restricted app, at once. A release that newly
    runs as root while the app is enabled (awaitingRoot) is asked for the same way (reconsent): the yes is
    setDeviceAppRelease's consentRoot alone — Update now —, which moves the device to that release. graphql's refusal,

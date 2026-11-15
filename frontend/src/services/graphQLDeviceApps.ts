@@ -3,20 +3,25 @@ import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from 
 import type { SettingState } from './graphQLDeviceSettings'
 import { appPolicyFields, settingLockOf, SettingLock } from './productPolicy'
 import { AppChange, AppHeldBack, refused } from './deviceAppsShared'
+import { untilConsoleDeclares } from './consoleUntilDeclared'
 
 export { NEEDS_NEWER, needsNewer, refused } from './deviceAppsShared'
 export type { AppChange, AppHeldBack, AppHeldBackReason, Refused } from './deviceAppsShared'
 
 /* A device's apps (presence-server docs/device-apps-design.md, "The portal's Apps section"): each a catalogue entry
-   (`<publisher>.<app>`, the console `remoteit.console`) the device has a row for — enabled or disabled, its channel, the version
-   installed there, whether it runs as root, and its state as the device says: disabled, starting, running, unavailable
-   with why, or removing. Its settings are declared by the app's release and set with the same version rule as a device setting:
+   (`<publisher>.<app>`) the device has a row for — enabled or disabled, its channel, the version installed there,
+   whether it runs as root, and its state as the device says: disabled, starting, running, unavailable with why, or
+   removing. Its settings are declared by the app's release and set with the same version rule as a device setting:
    who set each from which side, its administrator's control (`<app>.<name>_control`) and its product's lock. Whether
    it is on may be its product's too (locked), where the API says: graphql refuses a change to either, naming the
-   product. graphql's Device.apps, the lifecycle's mutations and setDeviceAppSetting. */
+   product. graphql's Device.apps, the lifecycle's mutations and setDeviceAppSetting.
 
-export const CONSOLE = 'remoteit.console'
-// ScreenView as an app (build step 9): root, served on its socket as a type-48 service.
+   Every app is drawn from what the API says of it, none by its id (presence-contract docs/self-contained-apps.md): how
+   its service opens (protocol), what it asks of the platform beyond an ordinary app (capabilities), the key its
+   service presents (hostKey) and the sessions it serves. */
+
+// ScreenView's old install (build step 9), and only that: what becomes of a type-48 service installed before ScreenView
+// was an app (oldInstall, conversion). The app itself is drawn as any other.
 export const SCREENVIEW = 'remoteit.screenview'
 
 /* An app's state on its device (presence-server docs/device-apps-design.md, "Lifecycle: add, disable, remove"): disabled
@@ -31,6 +36,25 @@ export type DeviceAppState = 'disabled' | 'starting' | 'running' | 'unavailable'
    or remove. */
 export type AppAdminControl = 'cloud+local' | 'cloud' | 'local' | 'off'
 
+/* How the portal opens an app's service (its manifest's service.protocol, else its type's): ssh a terminal, http and
+   https a page, tcp as its type launches. None for an app that serves nothing. */
+export type AppProtocol = 'ssh' | 'http' | 'https' | 'tcp'
+
+/* What an app asks of the platform beyond an ordinary app's (its manifest's capabilities; self-contained-apps.md,
+   "Capabilities, as the platform keeps them"): people's own accounts kept on the device while it is enabled
+   (person-accounts), people signed in to its service by remote.it certificate (person-certificates), and AI commands
+   run through it (ssh-exec). The list is open: one this portal does not know is shown by its name. */
+export type AppCapability = 'person-accounts' | 'person-certificates' | 'ssh-exec'
+
+// A session the app serves, as the device reports it: its own id, the account on the device, who (as the app knows
+// them: a certificate's key ID), "ai" where an AI opened it, and since when.
+export type DeviceAppSession = {
+  id: string
+  login: string | null
+  person: string | null
+  via: string | null
+  since: string | null
+}
 
 // The declaration's types; the list is open, so one this portal does not know is shown and left alone.
 export type AppSettingType = 'bool' | 'choice' | 'int' | 'string' | 'list'
@@ -93,6 +117,11 @@ export type DeviceApp = {
   state: DeviceAppState
   detail: string | null
   serviceId: string | null // the service it is reached as
+  protocol: AppProtocol | string | null // how its service opens; none for one that serves nothing
+  capabilities: (AppCapability | string)[]
+  hostKey: string | null // the key its service presents, as the device reports it (an OpenSSH fingerprint)
+  sessions: DeviceAppSession[] // the open ones the device lists, for those who manage it
+  sessionsOpen: number // how many are open
   locked?: SettingLock | null // enabled or disabled as its product holds it: a synced or enforced product that sets it
   rootConsent?: DeviceAppRootConsent | null // the consent to root it runs under, where the API says
   // A newer release that newly runs as root, waiting for a consent: the device stays on the version it runs until
@@ -136,7 +165,8 @@ export const rootConsentOf = (consent: any): DeviceAppRootConsent | null =>
 const SETTING_FIELDS =
   'name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration'
 // The lifecycle's fields (enabled, added, latest, upToDate, heldBack, grantUntil) as the design pins them.
-const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil adminControl state detail serviceId problems { name error detail } settings { ${SETTING_FIELDS} }`
+const SESSION_FIELDS = 'id login person via since'
+const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil adminControl state detail serviceId protocol capabilities hostKey sessions { ${SESSION_FIELDS} } sessionsOpen problems { name error detail } settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
 function parsedSetting(setting: any): DeviceAppSetting {
@@ -150,25 +180,37 @@ function parsedSetting(setting: any): DeviceAppSetting {
   }
 }
 
-export const parsedDeviceApp = (app: any): DeviceApp => ({
-  ...app,
-  enabled: !!app.enabled,
-  added: app.added ?? null,
-  pinned: app.pinned ?? null,
-  release: app.release ?? null,
-  latest: app.latest ?? null,
-  upToDate: !!app.upToDate,
-  heldBack: app.heldBack?.reason ? { reason: app.heldBack.reason, detail: app.heldBack.detail ?? '' } : null,
-  grantUntil: app.grantUntil ?? null,
-  adminControl: app.adminControl ?? 'cloud+local',
-  locked: app.locked?.product || app.locked?.level ? settingLockOf(app.locked) : null,
-  rootConsent: rootConsentOf(app.rootConsent),
-  awaitingRoot: app.awaitingRoot ?? null,
-  problems: app.problems ?? [],
-  conversion: conversionOf(app.conversion),
-  conversionDetail: app.conversionDetail ?? null,
-  settings: (app.settings ?? []).map(parsedSetting),
-})
+export const parsedDeviceApp = (app: any): DeviceApp =>
+  untilConsoleDeclares({
+    ...app,
+    enabled: !!app.enabled,
+    added: app.added ?? null,
+    pinned: app.pinned ?? null,
+    release: app.release ?? null,
+    latest: app.latest ?? null,
+    upToDate: !!app.upToDate,
+    heldBack: app.heldBack?.reason ? { reason: app.heldBack.reason, detail: app.heldBack.detail ?? '' } : null,
+    grantUntil: app.grantUntil ?? null,
+    adminControl: app.adminControl ?? 'cloud+local',
+    locked: app.locked?.product || app.locked?.level ? settingLockOf(app.locked) : null,
+    rootConsent: rootConsentOf(app.rootConsent),
+    awaitingRoot: app.awaitingRoot ?? null,
+    problems: app.problems ?? [],
+    conversion: conversionOf(app.conversion),
+    conversionDetail: app.conversionDetail ?? null,
+    protocol: app.protocol ?? null,
+    capabilities: app.capabilities ?? [],
+    hostKey: app.hostKey ?? null,
+    sessions: (app.sessions ?? []).map((session: any) => ({
+      id: session.id,
+      login: session.login ?? null,
+      person: session.person ?? null,
+      via: session.via ?? null,
+      since: session.since ?? null,
+    })),
+    sessionsOpen: app.sessionsOpen ?? app.sessions?.length ?? 0,
+    settings: (app.settings ?? []).map(parsedSetting),
+  })
 
 // An app's fields, with its product's lock and its root consent where the API has them.
 const appFields = async () => [FIELDS, await appPolicyFields()].filter(Boolean).join(' ')
@@ -187,7 +229,8 @@ export async function graphQLDeviceApps(deviceId: string): Promise<DeviceApp[] |
 /* What the catalogue offers a device under "Add an app" (graphql's Device.availableApps): remote.it's apps and its own
    account's that it has no row for, each with whether it runs as root, the release its stage gives (none: it cannot be
    turned on yet), why its administrator refuses it there and its administrator's control of it (said up front: local
-   and off refuse an add), and whether its remote.it is too old to run it. */
+   and off refuse an add), and whether its remote.it is too old to run it. What it asks of the platform (capabilities)
+   and how its service opens (protocol) are its catalogue entry's (graphQLAppCatalog), where the page has read it. */
 export type AvailableApp = {
   id: string
   name: string
@@ -202,6 +245,8 @@ export type AvailableApp = {
   oldInstall?: boolean // ScreenView installed the old way, and enabled, here
   conversion?: ScreenViewConversion | null // what becomes of it (ScreenViewConversion)
   conversionDetail?: string | null // why it does not convert (refused)
+  protocol?: AppProtocol | string | null
+  capabilities?: (AppCapability | string)[]
 }
 
 // [] where the API has none, or the device is not this person's to manage.
@@ -387,17 +432,4 @@ export async function graphQLSetDeviceAppSetting(
   )
   const answer = response === 'ERROR' ? null : response?.data?.data?.setDeviceAppSetting
   return answer ? parsedSetting(answer) : null
-}
-
-// The host key the console's service should show, as its device reports it: the console's own extra (graphql
-// sshHostKey). null where the device has not said, or for a service that is not the console's.
-export async function graphQLSshHostKey(serviceId: string): Promise<string | null> {
-  const response = await graphQLBasicRequest(
-    ` query SshHostKey($serviceId: String!) {
-        sshHostKey(serviceId: $serviceId)
-      }`,
-    { serviceId },
-    true
-  )
-  return response === 'ERROR' ? null : response?.data?.data?.sshHostKey ?? null
 }

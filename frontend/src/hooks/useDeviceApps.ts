@@ -3,7 +3,6 @@ import {
   AppChange,
   AppRelease,
   AvailableApp,
-  CONSOLE,
   DeviceApp,
   graphQLAddDeviceApp,
   graphQLAvailableApps,
@@ -14,11 +13,12 @@ import {
   graphQLSetDeviceAppSetting,
   refused,
 } from '../services/graphQLDeviceApps'
+import { isAppService, serviceApp } from '../helpers/appsHelper'
 
 type Read = ReturnType<typeof graphQLDeviceApps>
 
-// One read per device for every part of a page that asks in the same moment: its Apps section, the console's row in
-// its services and the console's connect panel.
+// One read per device for every part of a page that asks in the same moment: its Apps section, and an app's service's
+// row in its services and connect panel.
 const reading = new Map<string, Read>()
 function read(deviceId: string): Read {
   let answer = reading.get(deviceId)
@@ -35,7 +35,6 @@ const tell = (deviceId: string, apps: DeviceApp[] | null) => watchers.forEach(wa
 
 export type DeviceApps = {
   apps: DeviceApp[] | null | undefined // undefined while read; null where the API has no apps
-  console?: DeviceApp
   // What it may add (the device's catalogue): read once its apps are, and again after one is added or removed.
   available?: AvailableApp[]
   switching?: string // the app being changed, waited for
@@ -54,8 +53,9 @@ const waiting = (app?: DeviceApp) => app?.state === 'starting' || app?.state ===
 
 /* A device's apps (services/graphQLDeviceApps): added, enabled or disabled, its channel and pin, removed, and its
    settings. The device acts within seconds: what it says is waited for, up to half a minute — while it starts the app,
-   or until it says the app is gone. */
-export function useDeviceApps(deviceId?: string): DeviceApps {
+   or until it says the app is gone. What it may add is read too, unless the part asking does not offer any (offers
+   false). */
+export function useDeviceApps(deviceId?: string, { offers = true }: { offers?: boolean } = {}): DeviceApps {
   const [apps, setApps] = useState<DeviceApp[] | null>()
   const [switching, setSwitching] = useState<string>()
   const [available, setAvailable] = useState<AvailableApp[]>()
@@ -63,13 +63,13 @@ export function useDeviceApps(deviceId?: string): DeviceApps {
 
   useEffect(() => {
     setAvailable(undefined)
-    if (!deviceId || apps === undefined || apps === null) return
+    if (!offers || !deviceId || apps === undefined || apps === null) return
     let current = true
     graphQLAvailableApps(deviceId).then(result => current && setAvailable(result))
     return () => {
       current = false
     }
-  }, [deviceId, ids, apps === null])
+  }, [offers, deviceId, ids, apps === null])
 
   useEffect(() => {
     setApps(undefined)
@@ -142,7 +142,6 @@ export function useDeviceApps(deviceId?: string): DeviceApps {
 
   return {
     apps,
-    console: apps?.find(app => app.id === CONSOLE),
     available,
     switching,
     turn,
@@ -150,4 +149,12 @@ export function useDeviceApps(deviceId?: string): DeviceApps {
     remove,
     setSetting,
   }
+}
+
+/* The app a service of a device belongs to (helpers/appsHelper serviceApp), with its device's apps to turn it on: read
+   only for a service at an app's host, so a device's other services ask nothing. */
+export type ServiceApp = DeviceApps & { app?: DeviceApp }
+export function useServiceApp(device?: IDevice, service?: IService): ServiceApp {
+  const deviceApps = useDeviceApps(isAppService(service) ? device?.id : undefined, { offers: false })
+  return { ...deviceApps, app: serviceApp(deviceApps.apps, service) }
 }

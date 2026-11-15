@@ -1,10 +1,11 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useHistory } from 'react-router-dom'
 import { Box, Button, List, Typography } from '@mui/material'
 import { DeviceContext } from '../services/Context'
 import { AvailableApp, SCREENVIEW } from '../services/graphQLDeviceApps'
+import { CatalogApp, graphQLAppCatalog } from '../services/graphQLAppCatalog'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from '../components/AppRootConsent'
 import { AppCatalogRow } from '../components/AppCatalogRow'
@@ -19,11 +20,12 @@ import { adminControlLine, offered } from '../helpers/appsHelper'
 
 /* The catalogue for this device (presence-server docs/device-apps-design.md, "The Apps pages",
    /devices/:deviceID/apps/add): the apps it may take and does not have (graphql's Device.availableApps) — remote.it's
-   and its own account's —, each with its publisher, Runs as root or Restricted, its description, and why it cannot be
-   added here where it cannot: its administrator refuses it, or its stage has no release of it yet; and where its
-   remote.it is too old to run it yet. A row opens the app in the catalogue; Add adds it here and enabled — a root app
-   only with the person's yes (components/AppRootConsent) —, then opens it on this device. Adding runs code on the
-   device: Scripting as well as Manage. */
+   and its own account's —, each with its publisher, Runs as root or Restricted and what else it asks of remote.it (its
+   capabilities, as its account's catalogue gives them for the release its channel gives), its description, and why it
+   cannot be added here where it cannot: its administrator refuses it, or its stage has no release of it yet; and where
+   its remote.it is too old to run it yet. A row opens the app in the catalogue; Add adds it here and enabled — a root
+   app only with the person's yes (components/AppRootConsent), which names its capabilities too —, then opens it on
+   this device. Adding runs code on the device: Scripting as well as Manage. */
 export const DeviceAppCatalogPage: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
@@ -31,18 +33,29 @@ export const DeviceAppCatalogPage: React.FC = () => {
   const deviceApps = useDeviceApps(device?.id)
   const { apps, available, switching } = deviceApps
   const [refusal, setRefusal] = useState<string>()
+  const [catalog, setCatalog] = useState<CatalogApp[]>()
   const { flip, consent } = useAppSwitch(
     deviceApps,
     reason => setRefusal(reason || t('apps.notAdded', 'The app was not added.')),
     app => device && history.push(`/devices/${device.id}/apps/${app.id}`)
   )
 
+  const accountId = device?.accountId
+  useEffect(() => {
+    let current = true
+    setCatalog(undefined)
+    graphQLAppCatalog(accountId).then(answer => current && setCatalog(Array.isArray(answer) ? answer : []))
+    return () => {
+      current = false
+    }
+  }, [accountId])
+
   if (!device) return <LoadingMessage />
   const canRun = !!device.permissions?.includes('MANAGE') && !!device.permissions?.includes('SCRIPTING')
   // ScreenView's old install not converted is said on the device's Apps section, not offered here.
-  const offers = (available ?? []).filter(
-    app => !(app.id === SCREENVIEW && app.oldInstall && app.conversion === 'refused')
-  )
+  const offers = (available ?? [])
+    .filter(app => !(app.id === SCREENVIEW && app.oldInstall && app.conversion === 'refused'))
+    .map(app => described(app, catalog))
 
   return (
     <Container
@@ -69,7 +82,7 @@ export const DeviceAppCatalogPage: React.FC = () => {
           </Notice>
         </Gutters>
       )}
-      {apps === undefined || (apps && available === undefined) ? (
+      {apps === undefined || (apps && (available === undefined || catalog === undefined)) ? (
         <LoadingMessage />
       ) : !offers.length ? (
         <Gutters>
@@ -91,6 +104,8 @@ export const DeviceAppCatalogPage: React.FC = () => {
                 publisher={app.publisher}
                 verifiedDomain={app.publisherVerifiedDomain}
                 root={app.root}
+                capabilities={app.capabilities}
+                protocol={app.protocol}
                 description={app.description}
                 aside={app.version}
                 onOpen={() => history.push(`/apps/${app.id}`)}
@@ -139,6 +154,12 @@ export const DeviceAppCatalogPage: React.FC = () => {
       {consent}
     </Container>
   )
+}
+
+// What it asks of remote.it and how its service opens, from its catalogue entry: where there is none, nothing said.
+function described(app: AvailableApp, catalog: CatalogApp[] = []): AvailableApp {
+  const entry = catalog.find(c => c.id === app.id)
+  return entry ? { ...app, capabilities: entry.capabilities, protocol: entry.protocol } : app
 }
 
 // Why an app cannot be added to this device now; none when it can: its administrator's control of it (local or off,

@@ -73,6 +73,8 @@ export type MockCatalogApp = {
   publisher: typeof PUBLISHER_REMOTEIT
   runsAs: string
   root: boolean
+  capabilities: string[]
+  protocol: string | null
   kind: string
   serves: string
   platforms: string[]
@@ -84,6 +86,8 @@ export type MockCatalogApp = {
     created: string
     notes: string | null
     root: boolean
+    capabilities: string[]
+    protocol: string | null
     platforms: string[]
     withdrawn: string | null
     channels: string[]
@@ -125,6 +129,8 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
     publisher: PUBLISHER_REMOTEIT,
     runsAs: 'root',
     root: true,
+    capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'],
+    protocol: 'ssh',
     kind: 'binary',
     serves: 'inetd',
     platforms: ['linux-amd64', 'linux-arm64', 'darwin-arm64', 'windows-amd64'],
@@ -140,6 +146,8 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
         created: '2026-11-10T18:00:00.000Z',
         notes: 'Detached commands keep running when the browser closes.',
         root: true,
+        capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'],
+        protocol: 'ssh',
         platforms: ['linux-amd64', 'linux-arm64', 'darwin-arm64', 'windows-amd64'],
         withdrawn: null,
         channels: ['beta'],
@@ -149,6 +157,8 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
         created: '2026-11-01T18:00:00.000Z',
         notes: 'AI commands are a setting of their own.',
         root: true,
+        capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'],
+        protocol: 'ssh',
         platforms: ['linux-amd64', 'linux-arm64', 'darwin-arm64', 'windows-amd64'],
         withdrawn: null,
         channels: ['stable'],
@@ -164,6 +174,8 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
     publisher: PUBLISHER_REMOTEIT,
     runsAs: 'restricted',
     root: false,
+    capabilities: [],
+    protocol: 'https',
     kind: 'binary',
     serves: 'socket',
     platforms: ['linux-amd64', 'linux-arm64'],
@@ -176,6 +188,8 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
         created: '2026-10-28T18:00:00.000Z',
         notes: null,
         root: false,
+        capabilities: [],
+        protocol: 'https',
         platforms: ['linux-amd64', 'linux-arm64'],
         withdrawn: null,
         channels: ['stable'],
@@ -191,6 +205,8 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
     publisher: PUBLISHER_ACME,
     runsAs: 'restricted',
     root: false,
+    capabilities: [],
+    protocol: null,
     kind: 'binary',
     serves: 'none',
     platforms: ['linux-amd64', 'linux-arm64', 'linux-arm64-musl'],
@@ -206,6 +222,8 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
         created: '2026-11-12T18:00:00.000Z',
         notes: 'Adds S3-compatible targets.\nA bucket on any S3-compatible service can be the target.',
         root: false,
+        capabilities: [],
+        protocol: null,
         platforms: ['linux-amd64', 'linux-arm64', 'linux-arm64-musl'],
         withdrawn: null,
         channels: ['beta'],
@@ -215,6 +233,8 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
         created: '2026-11-01T18:00:00.000Z',
         notes: 'Fixes the retry after a lost connection.',
         root: false,
+        capabilities: [],
+        protocol: null,
         platforms: ['linux-amd64', 'linux-arm64', 'linux-arm64-musl'],
         withdrawn: null,
         channels: ['stable'],
@@ -224,6 +244,8 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
         created: '2026-10-20T18:00:00.000Z',
         notes: null,
         root: false,
+        capabilities: [],
+        protocol: null,
         platforms: ['linux-amd64', 'linux-arm64'],
         withdrawn: '2026-10-25T18:00:00.000Z',
         channels: [],

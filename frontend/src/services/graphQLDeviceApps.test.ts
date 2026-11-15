@@ -79,11 +79,64 @@ describe('Device.apps', () => {
     expect(query).toContain(
       'settings { name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration }'
     )
-    // The console's host key and port are not the app's: its own extras ask them (components/ConsoleApp).
-    expect(query).not.toMatch(/hostKey|port|\bon\b/)
+    // What draws any app, none by its id: how its service opens, what it asks of remote.it, the key its service
+    // presents, and the sessions it serves.
+    for (const field of ['protocol', 'capabilities', 'hostKey', 'sessionsOpen'])
+      expect(query).toMatch(new RegExp(`\\b${field}\\b`))
+    expect(query).toContain('sessions { id login person via since }')
+    expect(query).not.toMatch(/\bport\b|\bon\b/)
     expect(query).toContain('heldBack { reason detail }')
     expect(apps?.[0].settings[0].value).toBe(true)
     expect(apps?.[0].adminControl).toBe('cloud+local') // none said: the default
+  })
+
+  it('how its service opens, what it asks of remote.it, its host key and sessions, as graphql says them', async () => {
+    const session = {
+      id: 'k1',
+      login: 'r3-evan',
+      person: 'evan@remote.it',
+      via: 'ai',
+      since: '2026-11-15T10:00:00.000Z',
+    }
+    const shell = {
+      ...consoleApp,
+      id: 'acme.shell',
+      protocol: 'ssh',
+      capabilities: ['person-certificates'],
+      hostKey: 'SHA256:abc',
+      sessions: [session, { id: 'k2' }],
+      sessionsOpen: 40,
+    }
+    post.mockResolvedValue(
+      answer({ login: { device: [{ id: 'D1', apps: [shell, { ...consoleApp, id: 'acme.files' }] }] } })
+    )
+    const [app, files] = (await graphQLDeviceApps('D1'))!
+    expect(app).toMatchObject({
+      protocol: 'ssh',
+      capabilities: ['person-certificates'],
+      hostKey: 'SHA256:abc',
+      sessionsOpen: 40,
+    })
+    expect(app.sessions).toEqual([session, { id: 'k2', login: null, person: null, via: null, since: null }])
+    // None said: none, and an app that serves nothing.
+    expect(files).toMatchObject({ protocol: null, capabilities: [], hostKey: null, sessions: [], sessionsOpen: 0 })
+  })
+
+  // TEMPORARY (services/consoleUntilDeclared): deleted, with it, by the removal step.
+  it('until the console declares them, it is taken as declaring what it does today; once it does, as it says', async () => {
+    post.mockResolvedValue(answer({ login: { device: [{ id: 'D1', apps: [consoleApp] }] } }))
+    expect((await graphQLDeviceApps('D1'))?.[0]).toMatchObject({
+      protocol: 'ssh',
+      capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'],
+    })
+    post.mockResolvedValue(
+      answer({
+        login: {
+          device: [{ id: 'D1', apps: [{ ...consoleApp, protocol: 'ssh', capabilities: ['person-certificates'] }] }],
+        },
+      })
+    )
+    expect((await graphQLDeviceApps('D1'))?.[0].capabilities).toEqual(['person-certificates'])
   })
 
   it('its administrator’s control as graphql says it', async () => {
@@ -135,7 +188,7 @@ describe('Device.apps', () => {
     )
     const apps = (await graphQLDeviceApps('D1'))!
     expect(post.mock.calls[0][0].query).toMatch(
-      /serviceId problems \{ name error detail } settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} declaration } locked \{ product level }/
+      /sessionsOpen problems \{ name error detail } settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} declaration } locked \{ product level }/
     )
     expect(apps[0].locked).toEqual({ product: 'Acme', level: 'enforced' })
     expect(apps[1].locked).toBeNull()
