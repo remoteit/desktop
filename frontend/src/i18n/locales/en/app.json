@@ -223,6 +223,7 @@
     "anyPlatform": "Any platform",
     "anyTag": "Any of these",
     "anyVersion": "Any version",
+    "asksUnknown": "What this version asks could not be read, so it cannot be consented to here. Try again later.",
     "cancel": "Cancel",
     "candidate": "Candidate {{version}} to {{share}}% of devices",
     "capabilitiesAlso": "It also asks of remote.it:",

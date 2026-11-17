@@ -220,6 +220,7 @@
     "anyPlatform": "",
     "anyTag": "",
     "anyVersion": "",
+    "asksUnknown": "このバージョンが求める内容を読み取れなかったため、ここでは同意できません。後でもう一度お試しください。",
     "cancel": "",
     "candidate": "",
     "capabilitiesAlso": "さらに remote.it に求めるもの:",

@@ -41,12 +41,12 @@ vi.mock('./SelectSetting', () => ({
 vi.mock('./Icon', () => ({ Icon: ({ name }: any) => (name ? <i data-icon={name} /> : null) }))
 vi.mock('./Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
 vi.mock('./Confirm', () => ({
-  Confirm: ({ open, title, action, children, onConfirm, onDeny }: any) =>
+  Confirm: ({ open, title, action, children, disabled, onConfirm, onDeny }: any) =>
     open ? (
       <div data-confirm>
         <span data-confirm-title>{title}</span>
         {children}
-        <button data-confirm-ok onClick={onConfirm}>
+        <button data-confirm-ok disabled={disabled} onClick={onConfirm}>
           {action}
         </button>
         <button data-confirm-deny onClick={onDeny} />
@@ -246,6 +246,7 @@ describe('a product’s Apps block', () => {
   })
 
   it('a root app with no consent: asked in words naming it, its publisher, full control and every device in the product, now and later', async () => {
+    catalog.mockResolvedValue(consoleCatalog('1.4.0', [{ version: '1.4.0', root: true, capabilities: CONSOLE_ALL }]))
     const page = await render([consoleApp()])
     await pick(onOf(page, 'remoteit.console'), 'enabled')
     expect(setApp).not.toHaveBeenCalled()
@@ -271,6 +272,14 @@ describe('a product’s Apps block', () => {
       consentRoot: true,
     })
     expect(page.querySelector('[data-confirm]')).toBeNull()
+  })
+
+  it('where the catalogue cannot say what the release asks: said, and the yes not taken', async () => {
+    const page = await render([consoleApp()])
+    await pick(onOf(page, 'remoteit.console'), 'enabled')
+    const confirm = page.querySelector('[data-confirm]')!
+    expect(confirm.querySelector('[data-root-consent-unknown]')).not.toBeNull()
+    expect((confirm.querySelector('[data-confirm-ok]') as HTMLButtonElement).disabled).toBe(true)
   })
 
   it('a root app not turned on when the person says no', async () => {
@@ -332,6 +341,7 @@ describe('a product’s Apps block', () => {
   })
 
   it('a new release that needs root: said, and consented to from its row', async () => {
+    catalog.mockResolvedValue(consoleCatalog('1.4.0', [{ version: '1.4.0', root: true, capabilities: CONSOLE_ALL }]))
     const page = await render([
       consoleApp({
         state: 'enabled',

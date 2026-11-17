@@ -50,7 +50,6 @@ import {
   channelName,
   day,
   heldBackLine,
-  heldConsentRoot,
   heldBackReason,
   releaseChannelName,
   stateWord,
@@ -157,16 +156,16 @@ export const AppPage: React.FC = () => {
   /* Update selected unpins them (version ""): each is moved to the release its channel gives it (latest — graphql's,
      by its bucket). It asks the yes where that release asks for one a device may not have: one held for a consent, or
      one pinned elsewhere that it would move off (its consent unknown here; graphql keeps the newer yes). What it asks
-     is those releases' together, as the catalogue lists them — where it does not, root as graphql's words for the
-     held-back say. */
+     is those releases' together, as the catalogue lists them; one it does not list is not known, and the yes waits. */
   const releaseOf = (version: string | null) => app.releases.find(r => r.version === version)
   const moving = chosen.filter(
     d =>
       d.heldBack?.reason === 'consent' ||
-      (d.enabled && !!d.pinned && d.latest !== d.pinned && asksConsent(releaseOf(d.latest)))
+      (d.enabled && !!d.pinned && d.latest !== d.pinned && (!releaseOf(d.latest) || asksConsent(releaseOf(d.latest))))
   )
   const needsConsent = moving.length > 0
-  const updateRoot = moving.some(d => releaseOf(d.latest)?.root ?? (!!d.heldBack && heldConsentRoot(d.heldBack)))
+  const updateKnown = moving.every(d => !!releaseOf(d.latest))
+  const updateRoot = !updateKnown || moving.some(d => releaseOf(d.latest)?.root)
   const updateAsks = [...new Set(moving.flatMap(d => releaseOf(d.latest)?.capabilities ?? []))]
   const standing = app.releases.filter(r => !r.withdrawn)
   const pinRelease = standing.find(r => r.version === pinTo)
@@ -477,6 +476,7 @@ export const AppPage: React.FC = () => {
       <Confirm
         open={asking === 'update'}
         color="error"
+        disabled={!updateKnown}
         title={
           updateRoot
             ? t('apps.updateRootTitle', 'Update {{app}} to run as root?', { app: app.name })
@@ -502,6 +502,14 @@ export const AppPage: React.FC = () => {
                 { app: app.name, publisher: app.publisher.name }
               )}
         </Typography>
+        {!updateKnown && (
+          <Typography variant="body2" color="error" gutterBottom data-fleet-consent-unknown>
+            {t(
+              'apps.asksUnknown',
+              'What this version asks could not be read, so it cannot be consented to here. Try again later.'
+            )}
+          </Typography>
+        )}
         <AppCapabilities
           capabilities={updateAsks}
           title={updateRoot ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}

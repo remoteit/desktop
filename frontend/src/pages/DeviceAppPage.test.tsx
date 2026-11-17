@@ -187,7 +187,7 @@ describe('the app on this device', () => {
     expect(page.querySelector('[data-app-publisher]')?.textContent).toBe('By Acme · Verified: acme.com')
     expect(page.querySelector('[data-app-runs]')?.textContent).toBe('Runs restricted: an account of its own on this device')
     expect(page.querySelector('[data-app-back]')?.getAttribute('data-to')).toBe('/devices/D1/edit')
-    expect(catalog).toHaveBeenCalledWith('acme.backup', { accountId: 'A1', releases: 50 })
+    expect(catalog).toHaveBeenCalledWith('acme.backup', { accountId: 'A1', releases: 100 })
   })
 
   it('its state: running, starting, disabled, unavailable with its detail, removing — with no controls then', async () => {
@@ -397,7 +397,7 @@ describe('channel and pin', () => {
     expect(catalog).toHaveBeenCalledWith('acme.backup', expect.objectContaining({ accountId: 'A1' }))
   })
 
-  it('the yes waits while what the release asks is read; where the catalogue cannot say, the app’s own are named', async () => {
+  it('the yes waits while what the release asks is read; where the catalogue cannot say, it is not taken', async () => {
     let answer: (value: unknown) => void = () => {}
     catalog.mockResolvedValueOnce(CATALOG).mockReturnValueOnce(new Promise(resolve => (answer = resolve)))
     apps.value.apps = [backup({ capabilities: ['person-certificates'] })]
@@ -405,10 +405,13 @@ describe('channel and pin', () => {
     await select(page.querySelector('[data-app-pin]') as HTMLSelectElement, '1.5.0')
     expect((page.querySelector('[data-confirm-ok]') as HTMLButtonElement).disabled).toBe(true)
     await act(async () => answer('ERROR'))
-    expect((page.querySelector('[data-confirm-ok]') as HTMLButtonElement).disabled).toBe(false)
-    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual([
-      'person-certificates',
-    ])
+    // Not the running release's words for another's: said not known, asked as root, and the yes held.
+    expect((page.querySelector('[data-confirm-ok]') as HTMLButtonElement).disabled).toBe(true)
+    expect(page.querySelector('[data-root-consent-unknown]')?.textContent).toBe(
+      'What this version asks could not be read, so it cannot be consented to here. Try again later.'
+    )
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Backup as root?')
+    expect(page.querySelector('[data-confirm] [data-app-capability]')).toBeNull()
   })
 
   it('where the API has no catalogue: only the pin it has', async () => {

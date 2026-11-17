@@ -37,11 +37,12 @@ export const RootConsent: React.FC<{
   const { t } = useTranslation()
   const words = { app: app?.name, publisher: app?.publisher, version }
   const asks = useReleaseAsks(app, release ?? version, accountId)
-  const root = asks ? asks.root : !!app?.root
+  // Not known (null): asked as the most it could be, and not given until it is.
+  const root = asks ? asks.root : true
   return (
     <Confirm
       open={!!app}
-      disabled={asks === undefined}
+      disabled={!asks}
       color="error"
       title={
         root
@@ -113,6 +114,14 @@ export const RootConsent: React.FC<{
               words
             )}
       </Typography>
+      {asks === null && (
+        <Typography variant="body2" color="error" gutterBottom data-root-consent-unknown>
+          {t(
+            'apps.asksUnknown',
+            'What this version asks could not be read, so it cannot be consented to here. Try again later.'
+          )}
+        </Typography>
+      )}
       <AppCapabilities
         capabilities={asks?.capabilities ?? undefined}
         title={root ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
@@ -131,41 +140,44 @@ export const RootConsent: React.FC<{
 }
 
 /* What the releases a consent is for ask (whether one runs as root, and their capabilities, together): each its
-   catalogue entry's, read under the account the device or product was read for; the app's own where no release is
-   named, or where the catalogue does not answer for one (an API without one, an error, a release it does not list —
-   graphql still refuses a yes that does not cover what the release asks). undefined while they are read. */
+   catalogue entry's, read under the account the device or product was read for. The app's own where no release is
+   named (an app offered to the device: its fields are the release the device would be given). null where a release
+   named is not one the catalogue answers for (an API without one, an error, one it does not list): what it asks is
+   not known, and a yes to it is not taken. undefined while they are read. */
 export function useReleaseAsks(
   app: { id?: string; root: boolean; capabilities?: string[] } | undefined,
   release: string | string[] | null | undefined,
   accountId: string | undefined
-): ConsentAsking | undefined {
-  const [read, setRead] = useState<{ key: string; asks: ConsentAsking[] }>()
+): ConsentAsking | null | undefined {
+  const [read, setRead] = useState<{ key: string; asks: ConsentAsking | null }>()
   const releases = (Array.isArray(release) ? release : [release]).filter((r): r is string => !!r)
   const key = app?.id && releases.length ? `${accountId ?? ''}/${app.id}/${releases.join(',')}` : ''
-  const own = app ? { root: app.root, capabilities: app.capabilities ?? [] } : undefined
   useEffect(() => {
-    if (!key || !app?.id || !own) return
+    if (!key || !app?.id) return
     let current = true
     graphQLCatalogApp(app.id, { accountId, releases: 100 }).then(answer => {
       if (!current) return
       const listed = typeof answer === 'object' && answer ? answer.releases : []
-      const asks = releases.map(version => {
-        const entry = listed.find(r => r.version === version)
-        return entry ? { root: entry.root, capabilities: entry.capabilities } : own
+      const entries = releases.map(version => listed.find(r => r.version === version))
+      const known = entries.every(entry => !!entry)
+      setRead({
+        key,
+        asks: known
+          ? {
+              root: entries.some(entry => entry!.root),
+              capabilities: [...new Set(entries.flatMap(entry => entry!.capabilities))],
+            }
+          : null,
       })
-      setRead({ key, asks })
     })
     return () => {
       current = false
     }
   }, [key])
-  if (!own) return undefined
-  if (!key) return own
+  if (!app) return undefined
+  if (!key) return { root: app.root, capabilities: app.capabilities ?? [] }
   if (read?.key !== key) return undefined
-  return {
-    root: read.asks.some(asks => asks.root),
-    capabilities: [...new Set(read.asks.flatMap(asks => asks.capabilities ?? []))],
-  }
+  return read.asks
 }
 
 // What an app asks of remote.it beyond running, a line each: in its consent, and where it is offered.
@@ -219,9 +231,9 @@ export function useAppSwitch(
   // An enabled app held back for a release that runs as root: the yes moves it there.
   const waiting = (app?: DeviceApp) => !!app?.enabled && (!!app.awaitingRoot || app.heldBack?.reason === 'consent')
   const updating = waiting(asking) ? asking?.awaitingRoot || asking?.latest || '' : null
-  // The release the yes goes to: the one waiting for it, else the one enabling gives — its pin, else its channel's.
-  const target =
-    updating || asking?.awaitingRoot || asking?.pinned || asking?.latest || asking?.release || asking?.version || null
+  // The release the yes goes to: the one waiting for it (graphql's awaitingRoot, enabled or not). None for an app
+  // offered to the device: its own fields are what its release asks there.
+  const target = updating || asking?.awaitingRoot || null
 
   const consent = (
     <RootConsent

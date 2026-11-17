@@ -223,6 +223,7 @@
     "anyPlatform": "",
     "anyTag": "",
     "anyVersion": "",
+    "asksUnknown": "Was diese Version verlangt, konnte nicht gelesen werden, daher kann hier nicht zugestimmt werden. Versuchen Sie es später erneut.",
     "cancel": "",
     "candidate": "",
     "capabilitiesAlso": "Außerdem verlangt sie von remote.it:",

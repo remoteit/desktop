@@ -190,9 +190,9 @@ export function productRelease(
    pinned; else what the channel chosen gives — the account's where none is, else stable —: its candidate to the
    devices in its share, its current to the rest, and a channel naming none stable's. A withdrawn release is given to
    none. versions: those releases; root and capabilities: all they ask together, each release's as the catalogue lists
-   it — one not among the releases read (the newest only) as the app's own says, graphql refusing an add whose consent
-   does not cover what its release asks. */
-export type AddAsks = { versions: string[]; root: boolean; capabilities: string[] }
+   it. known: false where one is not among the releases read (the newest only): what it asks is not known, and no yes
+   is taken for it. */
+export type AddAsks = { versions: string[]; root: boolean; capabilities: string[]; known: boolean }
 export function addAsks(app: CatalogApp, channel: string | null | undefined, pin?: string | null): AddAsks {
   const gives = (name: string): string[] => {
     const row = app.channels.find(c => c.channel === name)
@@ -204,11 +204,12 @@ export function addAsks(app: CatalogApp, channel: string | null | undefined, pin
   const given = versions
     .map(version => ({ version, release: app.releases.find(release => release.version === version) }))
     .filter(({ release }) => !release?.withdrawn)
-  const asks = given.length ? given.map(({ release }) => release ?? app) : [app]
+  const listed = given.flatMap(({ release }) => (release ? [release] : []))
   return {
     versions: given.map(({ version }) => version),
-    root: asks.some(release => release.root),
-    capabilities: [...new Set(asks.flatMap(release => release.capabilities))],
+    root: listed.some(release => release.root),
+    capabilities: [...new Set(listed.flatMap(release => release.capabilities))],
+    known: listed.length === given.length,
   }
 }
 

@@ -278,6 +278,12 @@ describe('the root consent', () => {
     )
     expect($('[data-app-add-root]')).toBeNull()
     expect(submit().disabled).toBe(true)
+    // Its candidate (1.5.0-rc.1) is not among the releases read: what it asks is not known, and Add waits.
+    expect($('[data-app-add-unknown]').textContent).toBe(
+      'What this version asks could not be read, so it cannot be consented to here. Try again later.'
+    )
+    await click($('[data-app-add-consent]'))
+    expect(submit().disabled).toBe(true)
     // Its candidate (1.5.0-rc.1, to 10% of its devices) runs as root: the yes is asked, for beta's releases.
     act(() => root.unmount())
     container.remove()

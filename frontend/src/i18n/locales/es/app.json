@@ -226,6 +226,7 @@
     "anyPlatform": "",
     "anyTag": "",
     "anyVersion": "",
+    "asksUnknown": "No se pudo leer lo que pide esta versión, así que aquí no se puede dar el consentimiento. Inténtalo más tarde.",
     "cancel": "",
     "candidate": "",
     "capabilitiesAlso": "Además, le pide a remote.it:",

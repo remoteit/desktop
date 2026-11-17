@@ -6,7 +6,7 @@ import { Box, Button, Divider, List, Switch, TextField, Typography } from '@mui/
 import { DeviceContext } from '../services/Context'
 import { DeviceApp, DeviceAppService } from '../services/graphQLDeviceApps'
 import { firstPortOf, formatPorts } from '../services/multiPortServices'
-import { CatalogApp, CatalogAppRelease, graphQLCatalogApp } from '../services/graphQLAppCatalog'
+import { CatalogApp, graphQLCatalogApp } from '../services/graphQLAppCatalog'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch, RootConsent } from '../components/AppRootConsent'
 import { DeviceAppSetting } from '../components/DeviceAppSetting'
@@ -96,7 +96,7 @@ export const DeviceAppPage: React.FC = () => {
   useEffect(() => {
     let current = true
     setCatalog(undefined)
-    graphQLCatalogApp(appID, { accountId, releases: 50 }).then(
+    graphQLCatalogApp(appID, { accountId, releases: 100 }).then(
       answer => current && setCatalog(typeof answer === 'object' ? answer : null)
     )
     return () => {
@@ -183,11 +183,12 @@ export const DeviceAppPage: React.FC = () => {
       app.enabled && catalog
         ? addAsks(catalog, values.channel ?? app.channel, values.version ?? app.pinned).versions
         : []
-    const asking = given
-      .map(version => releases.find(r => r.version === version))
-      .filter((named): named is CatalogAppRelease => !!named && asksConsent(named))
-      .filter(named => !consentCovers(app.rootConsent, named, releases))
-    if (asking.length) return setMoving({ key, values, releases: asking.map(named => named.version) })
+    // One not among the releases read is not known: asked, and the yes waits (RootConsent says so).
+    const asking = given.filter(version => {
+      const named = releases.find(r => r.version === version)
+      return !named || (asksConsent(named) && !consentCovers(app.rootConsent, named, releases))
+    })
+    if (asking.length) return setMoving({ key, values, releases: asking })
     release(key, values)
   }
   // Whether the release waiting for a consent runs as root, where the catalogue lists it; else as the app's own does.

@@ -90,7 +90,7 @@ export const AppAddDialog: React.FC = () => {
 
   useEffect(() => {
     let current = true
-    graphQLCatalogApp(appID, { accountId: account, releases: 50 }).then(
+    graphQLCatalogApp(appID, { accountId: account, releases: 100 }).then(
       answer => current && setApp(answer === 'UNSERVED' ? 'ERROR' : answer)
     )
     dispatch.tags.fetchIfEmpty(accountId)
@@ -131,6 +131,8 @@ export const AppAddDialog: React.FC = () => {
   const root = !!asks?.root
   const capabilities = asks?.capabilities
   const asking = asksConsent(asks)
+  // A release it gives not among those read: what it asks is not known, and Add waits.
+  const unknown = !!asks && !asks.known
   const consentFor = [target, target === 'product' ? productId : '', ...(asks?.versions ?? [])].join('/')
   const consented = consentedTo === consentFor
   const product = products.find(p => p.id === productId)
@@ -138,7 +140,7 @@ export const AppAddDialog: React.FC = () => {
   const tooMany = target !== 'product' && count > MANY_DEVICES_MAX
   const chosen = target === 'devices' ? ticked.length > 0 : target === 'tag' ? tagged.length > 0 : !!product
   const done = !!results || !!productDone
-  const canAdd = !!ready && chosen && !tooMany && (!asking || consented) && !busy && !done
+  const canAdd = !!ready && chosen && !tooMany && (!asking || consented) && !unknown && !busy && !done
 
   const release = {
     ...(channel && { channel }),
@@ -402,6 +404,14 @@ export const AppAddDialog: React.FC = () => {
                   />
                 </Notice>
               </Box>
+            )}
+            {unknown && (
+              <Typography variant="body2" color="error" sx={{ marginTop: 1 }} data-app-add-unknown>
+                {t(
+                  'apps.asksUnknown',
+                  'What this version asks could not be read, so it cannot be consented to here. Try again later.'
+                )}
+              </Typography>
             )}
             {tooMany && (
               <Typography variant="body2" color="error" sx={{ marginTop: 1 }} data-app-add-too-many>

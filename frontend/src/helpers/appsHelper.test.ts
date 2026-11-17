@@ -173,17 +173,23 @@ describe('addAsks: what adding an app gives, and so asks', () => {
     } as any)
 
   it('the account’s channel, else stable: its current, and its candidate where it has a share', () => {
-    expect(addAsks(app(), '')).toEqual({ versions: ['1.0.0'], root: false, capabilities: ['person-accounts'] })
+    expect(addAsks(app(), '')).toEqual({ versions: ['1.0.0'], root: false, capabilities: ['person-accounts'], known: true })
     expect(addAsks(app({ accountChannel: 'beta' }), '')).toEqual({
       versions: ['1.2.0', '1.1.0'],
       root: true,
       capabilities: ['ssh-exec'],
+      known: true,
     })
     // The channel chosen over the account's.
     expect(addAsks(app({ accountChannel: 'beta' }), 'stable').versions).toEqual(['1.0.0'])
     // A candidate at no share goes to no device.
     const none = app().channels.map((c: any) => ({ ...c, share: 0 }))
-    expect(addAsks(app({ channels: none }), 'beta')).toEqual({ versions: ['1.1.0'], root: false, capabilities: ['ssh-exec'] })
+    expect(addAsks(app({ channels: none }), 'beta')).toEqual({
+      versions: ['1.1.0'],
+      root: false,
+      capabilities: ['ssh-exec'],
+      known: true,
+    })
   })
 
   it('a pin over the channel; a channel naming none gives stable’s; a withdrawn release none', () => {
@@ -195,9 +201,9 @@ describe('addAsks: what adding an app gives, and so asks', () => {
     expect(addAsks(withdrawn, 'beta').versions).toEqual(['1.2.0'])
   })
 
-  it('a release not among those read asks what the app’s own fields say', () => {
-    const own = app({ root: true, capabilities: ['person-certificates'], releases: [] })
-    expect(addAsks(own, 'beta')).toEqual({ versions: ['1.2.0', '1.1.0'], root: true, capabilities: ['person-certificates'] })
+  it('a release not among those read: not known — never what the app’s own fields say of another release', () => {
+    const own = app({ root: true, capabilities: ['person-certificates'], releases: [release('1.1.0', { capabilities: ['ssh-exec'] })] })
+    expect(addAsks(own, 'beta')).toEqual({ versions: ['1.2.0', '1.1.0'], root: false, capabilities: ['ssh-exec'], known: false })
   })
 })
 
