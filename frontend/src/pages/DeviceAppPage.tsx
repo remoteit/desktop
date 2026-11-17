@@ -86,8 +86,8 @@ export const DeviceAppPage: React.FC = () => {
   const [refusal, setRefusal] = useState<string>()
   const [saving, setSaving] = useState<string>()
   const [removing, setRemoving] = useState(false)
-  // A channel or pin whose release asks for a consent, asked first: the change, and the release the yes is to.
-  const [moving, setMoving] = useState<{ key: string; values: Move; release: string }>()
+  // A channel or pin whose release asks for a consent, asked first: the change, and the releases the yes is to.
+  const [moving, setMoving] = useState<{ key: string; values: Move; releases: string[] }>()
   const [catalog, setCatalog] = useState<CatalogApp | null>()
   const failed = (reason: string) => setRefusal(reason || t('apps.notChanged', 'The app was not changed.'))
   const { flip, reconsent, consent } = useAppSwitch(deviceApps, failed, undefined, device?.accountId)
@@ -174,8 +174,9 @@ export const DeviceAppPage: React.FC = () => {
   if (app.pinned && !pins.includes(app.pinned)) pins.unshift(app.pinned)
   /* A channel or a pin (or none): the releases it gives the device (helpers/appsHelper addAsks — a channel's candidate
      or current, by its bucket). While the app is enabled, one that asks for a consent the one kept with the app does
-     not cover is asked first, as graphql refuses it without (the one running as root named, where one does); a
-     disabled app is given no release, and asks nothing until it is enabled. */
+     not cover is asked first, as graphql refuses it without — every such release named, as which of them the device
+     is given is its bucket's, graphql's to say; a disabled app is given no release, and asks nothing until it is
+     enabled. */
   const move = (key: string, values: Move) => {
     const releases = catalog?.releases ?? []
     const given =
@@ -186,8 +187,7 @@ export const DeviceAppPage: React.FC = () => {
       .map(version => releases.find(r => r.version === version))
       .filter((named): named is CatalogAppRelease => !!named && asksConsent(named))
       .filter(named => !consentCovers(app.rootConsent, named, releases))
-    const named = asking.find(r => r.root) ?? asking[0]
-    if (named) return setMoving({ key, values, release: named.version })
+    if (asking.length) return setMoving({ key, values, releases: asking.map(named => named.version) })
     release(key, values)
   }
   // Whether the release waiting for a consent runs as root, where the catalogue lists it; else as the app's own does.
@@ -534,7 +534,7 @@ export const DeviceAppPage: React.FC = () => {
       {consent}
       <RootConsent
         app={moving ? app : undefined}
-        release={moving?.release}
+        release={moving?.releases}
         accountId={device.accountId}
         action={root =>
           moving?.values.version

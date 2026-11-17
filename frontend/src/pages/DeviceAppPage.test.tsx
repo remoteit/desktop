@@ -309,6 +309,24 @@ describe('channel and pin', () => {
     expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { channel: 'beta', consentRoot: true })
   })
 
+  it('a channel rolling out a candidate: the yes names what its current and its candidate ask together', async () => {
+    // Which of them this device is given is its bucket's: a root current, and a restricted candidate asking ssh-exec.
+    const releases = [
+      { version: '1.6.0', root: false, withdrawn: null, capabilities: ['ssh-exec'] },
+      { version: '1.5.0', root: true, withdrawn: null, capabilities: [] },
+      { version: '1.4.0', root: false, withdrawn: null, capabilities: [] },
+    ]
+    const channels = [CATALOG.channels[0], { channel: 'beta', current: '1.5.0', candidate: '1.6.0', share: 10 }]
+    catalog.mockResolvedValue({ ...CATALOG, channels, releases })
+    const page = await render()
+    await select(page.querySelector('[data-app-channel]') as HTMLSelectElement, 'beta')
+    expect(setRelease).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Backup as root?')
+    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual(['ssh-exec'])
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { channel: 'beta', consentRoot: true })
+  })
+
   it('a release that declares capabilities asks as a root one does; a consent that covers it does not ask again', async () => {
     const releases = [
       { version: '1.6.0', root: false, withdrawn: null, capabilities: ['ssh-exec'] },

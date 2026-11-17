@@ -16,7 +16,8 @@ import { Confirm } from './Confirm'
    it on the product.
 
    What is asked is the release's the yes is given to (release), not the version the device runs: a release may ask
-   more than the one before it, and graphql takes the yes as covering what that release asks. It is read from its
+   more than the one before it, and graphql takes the yes as covering what that release asks. Where the change may give
+   one of several (a channel's candidate or current, by the device's bucket), all they ask together. It is read from its
    catalogue entry, under the account the device or product was read for (useReleaseAsks); until it is, the yes waits.
    action: the confirm button's words, where they are not turning it on, for a release that runs as root or not. */
 export const RootConsent: React.FC<{
@@ -26,8 +27,9 @@ export const RootConsent: React.FC<{
   action?: (root: boolean) => string
   // A release of an app already on that newly asks for consent: the consent moves it there (a re-consent).
   version?: string | null
-  // The release the yes is given to, where it is not version: a pin, the release enabling gives. None: the app's own.
-  release?: string | null
+  // The release the yes is given to, where it is not version: a pin, the release enabling gives — or the releases a
+  // change may give. None: the app's own.
+  release?: string | string[] | null
   accountId: string | undefined // whose catalogue names the release: the device's or the product's account
   onConfirm: () => void
   onDeny: () => void
@@ -128,34 +130,42 @@ export const RootConsent: React.FC<{
   )
 }
 
-/* What the release a consent is for asks (whether it runs as root, and its capabilities): its catalogue entry's for
-   that release, read under the account the device or product was read for; the app's own where no release is named,
-   or where the catalogue does not answer for it (an API without one, an error, a release it does not list — graphql
-   still refuses a yes that does not cover what the release asks). undefined while it is read. */
+/* What the releases a consent is for ask (whether one runs as root, and their capabilities, together): each its
+   catalogue entry's, read under the account the device or product was read for; the app's own where no release is
+   named, or where the catalogue does not answer for one (an API without one, an error, a release it does not list —
+   graphql still refuses a yes that does not cover what the release asks). undefined while they are read. */
 export function useReleaseAsks(
   app: { id?: string; root: boolean; capabilities?: string[] } | undefined,
-  release: string | null | undefined,
+  release: string | string[] | null | undefined,
   accountId: string | undefined
 ): ConsentAsking | undefined {
-  const [read, setRead] = useState<{ key: string; asks: ConsentAsking | null }>()
-  const key = app?.id && release ? `${accountId ?? ''}/${app.id}/${release}` : ''
+  const [read, setRead] = useState<{ key: string; asks: ConsentAsking[] }>()
+  const releases = (Array.isArray(release) ? release : [release]).filter((r): r is string => !!r)
+  const key = app?.id && releases.length ? `${accountId ?? ''}/${app.id}/${releases.join(',')}` : ''
+  const own = app ? { root: app.root, capabilities: app.capabilities ?? [] } : undefined
   useEffect(() => {
-    if (!key || !app?.id || !release) return
+    if (!key || !app?.id || !own) return
     let current = true
     graphQLCatalogApp(app.id, { accountId, releases: 100 }).then(answer => {
       if (!current) return
-      const entry = typeof answer === 'object' && answer ? answer.releases.find(r => r.version === release) : undefined
-      setRead({ key, asks: entry ? { root: entry.root, capabilities: entry.capabilities } : null })
+      const listed = typeof answer === 'object' && answer ? answer.releases : []
+      const asks = releases.map(version => {
+        const entry = listed.find(r => r.version === version)
+        return entry ? { root: entry.root, capabilities: entry.capabilities } : own
+      })
+      setRead({ key, asks })
     })
     return () => {
       current = false
     }
   }, [key])
-  if (!app) return undefined
-  const own = { root: app.root, capabilities: app.capabilities ?? [] }
+  if (!own) return undefined
   if (!key) return own
   if (read?.key !== key) return undefined
-  return read.asks ?? own
+  return {
+    root: read.asks.some(asks => asks.root),
+    capabilities: [...new Set(read.asks.flatMap(asks => asks.capabilities ?? []))],
+  }
 }
 
 // What an app asks of remote.it beyond running, a line each: in its consent, and where it is offered.
