@@ -23,6 +23,7 @@ vi.mock('../services/graphQLDeviceApps', () => ({
 }))
 
 import { DeviceApps, ServiceApp, useDeviceApps, useServiceApp } from './useDeviceApps'
+import { withServices } from '../test/deviceApps'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const aiCommands = (value: boolean) => ({
@@ -41,7 +42,7 @@ const aiCommands = (value: boolean) => ({
   deprecated: null,
 })
 
-const app = (state: string, enabled = state !== 'disabled') => ({
+const rawApp = (state: string, enabled = state !== 'disabled') => ({
   id: 'remoteit.console',
   name: 'Console',
   publisher: 'remote.it',
@@ -51,9 +52,11 @@ const app = (state: string, enabled = state !== 'disabled') => ({
   state,
   detail: null,
   serviceId: enabled ? 'S1' : null,
+  protocol: 'ssh',
   version: null,
   settings: [aiCommands(true)],
 })
+const app = (state: string, enabled?: boolean) => withServices(rawApp(state, enabled) as any)
 
 let root: Root
 const seen: Record<string, DeviceApps> = {}
@@ -228,16 +231,33 @@ describe('useDeviceApps', () => {
     expect(setSetting).toHaveBeenCalledWith('D1', 'remoteit.console', 'ai_commands', false)
     expect(seen.a.apps?.[0].settings[0].value).toBe(false)
     expect(seen.b.apps?.[0].settings[0].value).toBe(false)
+    // Not a port: the apps are not read again.
+    expect(read).toHaveBeenCalledTimes(1)
+  })
+
+  it('a port setting — a service’s or a listener’s — reads the apps again: their services’ ports moved with it', async () => {
+    const stream = { key: 'rtsp', name: 'Stream', protocol: 'udp', multiPort: true, port: null, portSetting: null, serviceId: 'S8',
+      listeners: [{ name: 'rtsp', type: 'udp', port: null, portSetting: 'rtsp_port', ports: null }], ports: ['8554'] }
+    const camera = withServices({ ...rawApp('running'), services: undefined } as any)
+    read.mockResolvedValue([{ ...camera, services: [...camera.services, stream] }])
+    await render(<Apps deviceId="D1" name="a" />)
+    read.mockResolvedValue([{ ...camera, services: [...camera.services, { ...stream, ports: ['9554'] }] }])
+    await act(async () => {
+      await seen.a.setSetting(seen.a.apps![0], 'rtsp_port', 9554)
+    })
+    expect(read).toHaveBeenCalledTimes(2)
+    expect(seen.a.apps?.[0].services[1].ports).toEqual(['9554'])
   })
 })
 
 describe('useServiceApp: the app a service belongs to', () => {
-  const shell = (state: string, more: any = {}) => ({
-    ...app(state),
-    id: 'acme.shell',
-    serviceId: state === 'disabled' ? null : 'S5',
-    ...more,
-  })
+  const shell = (state: string, more: any = {}) =>
+    withServices({
+      ...rawApp(state),
+      id: 'acme.shell',
+      serviceId: state === 'disabled' ? null : 'S5',
+      ...more,
+    } as any)
 
   it('the app naming the service; while disabled, the app whose host the service is at', async () => {
     read.mockResolvedValue([app('running'), shell('running')])

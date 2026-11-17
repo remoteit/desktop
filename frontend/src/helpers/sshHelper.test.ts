@@ -8,15 +8,15 @@ describe('sshHelper', () => {
     expect(sshCommand('pi-evan.on.remote.it')).toBe('ssh pi-evan.on.remote.it')
   })
 
-  it('opens a terminal for any app whose service is ssh and that declares person-certificates — none by its id', () => {
-    expect(opensTerminal({ protocol: 'ssh', capabilities: ['person-certificates'] })).toBe(true)
+  it('opens a terminal for an app’s service that is ssh, where the app declares person-certificates — none by its id', () => {
+    expect(opensTerminal({ capabilities: ['person-certificates'] }, { protocol: 'ssh' })).toBe(true)
     expect(
-      opensTerminal({ protocol: 'ssh', capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'] })
+      opensTerminal({ capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'] }, { protocol: 'ssh' })
     ).toBe(true)
-    expect(opensTerminal({ protocol: 'ssh', capabilities: ['ssh-exec'] })).toBe(false)
-    expect(opensTerminal({ protocol: 'https', capabilities: ['person-certificates'] })).toBe(false)
-    expect(opensTerminal({ protocol: 'udp', capabilities: ['person-certificates'] })).toBe(false)
-    expect(opensTerminal({ protocol: null, capabilities: [] })).toBe(false)
+    expect(opensTerminal({ capabilities: ['ssh-exec'] }, { protocol: 'ssh' })).toBe(false)
+    expect(opensTerminal({ capabilities: ['person-certificates'] }, { protocol: 'https' })).toBe(false)
+    expect(opensTerminal({ capabilities: ['person-certificates'] }, { protocol: 'udp' })).toBe(false)
+    expect(opensTerminal({ capabilities: [] }, { protocol: null })).toBe(false)
     expect(opensTerminal(undefined)).toBe(false)
   })
 })

@@ -87,7 +87,12 @@ describe('Device.apps', () => {
     // A session as the app reports it: never a person.
     expect(query).toContain('sessions { session login via since }')
     expect(query).not.toMatch(/\bperson\b/)
-    expect(query).not.toMatch(/\bport\b|\bon\b/)
+    // Its services, the primary first, each with its listeners and its ports on the device; where its named listeners
+    // listen. An app's own port is never asked: a service's is.
+    const services =
+      'services { key name protocol multiPort port portSetting listeners { name type port portSetting ports } serviceId ports }'
+    expect(query).toContain(`${services} listeners { name listen }`)
+    expect(query.replace(services, '')).not.toMatch(/\bport\b|\bon\b/)
     expect(query).toContain('heldBack { reason detail }')
     expect(apps?.[0].settings[0].value).toBe(true)
     expect(apps?.[0].adminControl).toBe('cloud+local') // none said: the default
@@ -204,7 +209,7 @@ describe('Device.apps', () => {
     )
     const apps = (await graphQLDeviceApps('D1'))!
     expect(post.mock.calls[0][0].query).toMatch(
-      /sessionsOpen features portSetting problems \{ name error detail } settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} declaration } locked \{ product level }/
+      /sessionsOpen features portSetting services \{[^}]*\{[^}]*}[^}]*} listeners \{ name listen } problems \{ name error detail } settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} declaration } locked \{ product level }/
     )
     expect(apps[0].locked).toEqual({ product: 'Acme', level: 'enforced' })
     expect(apps[1].locked).toBeNull()
@@ -352,9 +357,9 @@ describe('build step 5: what a device may add, and a remote.it too old', () => {
     )
     expect(await graphQLAvailableApps('D1')).toEqual([
       { id: 'remoteit.files', name: 'Files', publisher: 'remote.it', publisherVerifiedDomain: null, description: null, root: false, version: '1.0.0', refused: null, adminControl: 'cloud+local', needsNewer: true, oldInstall: false,
-        conversion: null, conversionDetail: null, protocol: null, capabilities: [], contract: null },
+        conversion: null, conversionDetail: null, protocol: null, capabilities: [], contract: null, services: [] },
     ])
-    expect(post.mock.calls[0][0].query).toContain('availableApps { id name publisher publisherVerifiedDomain description root version refused adminControl needsNewer oldInstall conversion conversionDetail protocol capabilities contract }')
+    expect(post.mock.calls[0][0].query).toContain('availableApps { id name publisher publisherVerifiedDomain description root version refused adminControl needsNewer oldInstall conversion conversionDetail protocol capabilities contract services { key name protocol multiPort port portSetting listeners { name type port portSetting ports } } }')
     // How its service opens and what it asks of remote.it, of the release its stage gives.
     post.mockResolvedValue(answer({ login: { device: [{ availableApps: [{ id: 'acme.shell', name: 'Shell', publisher: 'Acme', protocol: 'ssh', capabilities: ['person-certificates'], contract: 1 }] }] } }))
     expect((await graphQLAvailableApps('D1'))[0]).toMatchObject({ protocol: 'ssh', capabilities: ['person-certificates'], contract: 1 })
@@ -363,6 +368,28 @@ describe('build step 5: what a device may add, and a remote.it too old', () => {
     expect((await graphQLAvailableApps('D1'))[0].adminControl).toBe('local')
     post.mockResolvedValue('ERROR')
     expect(await graphQLAvailableApps('D1')).toEqual([])
+  })
+
+  it('its services, the primary first: each its listeners and, while served, its service on the device and its ports', async () => {
+    const services = [
+      { key: null, name: 'Camera', protocol: 'http', multiPort: false, port: null, portSetting: 'web_port',
+        listeners: [{ name: 'web', type: 'tcp', port: null, portSetting: 'web_port', ports: null }], serviceId: 'S1', ports: ['8080'] },
+      { key: 'rtsp', name: 'Stream', protocol: 'tcp', multiPort: true,
+        listeners: [{ name: 'rtsp', type: 'tcp', port: 8554 }, { name: 'rtp', type: 'udp', ports: '5004-5005' }], serviceId: 'S2', ports: ['8554', '5004-5005'] },
+    ]
+    post.mockResolvedValue(answer({ login: { device: [{ apps: [{ ...consoleApp, services, listeners: [{ name: 'web', listen: 'tcp:8080' }] }] }] } }))
+    const [app] = (await graphQLDeviceApps('D1'))!
+    expect(app.services).toEqual([
+      services[0],
+      { ...services[1], port: null, portSetting: null, listeners: [
+        { name: 'rtsp', type: 'tcp', port: 8554, portSetting: null, ports: null },
+        { name: 'rtp', type: 'udp', port: null, portSetting: null, ports: '5004-5005' },
+      ] },
+    ])
+    expect(app.listeners).toEqual([{ name: 'web', listen: 'tcp:8080' }])
+    // An app that serves nothing: none.
+    post.mockResolvedValue(answer({ login: { device: [{ apps: [consoleApp] }] } }))
+    expect((await graphQLDeviceApps('D1'))![0].services).toEqual([])
   })
 
   it('a setting\'s declaration is read, for a string\'s max and pattern', async () => {

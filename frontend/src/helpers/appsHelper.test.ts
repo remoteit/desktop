@@ -12,8 +12,10 @@ import {
   stateLine,
   stateWord,
   withdrawal,
+  appServiceOf,
 } from './appsHelper'
-import type { DeviceApp } from '../services/graphQLDeviceApps'
+import type { DeviceApp, DeviceAppService } from '../services/graphQLDeviceApps'
+import { withServices } from '../test/deviceApps'
 
 const t = ((_key: string, text: string, values?: any) =>
   text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as unknown as TFunction
@@ -109,7 +111,7 @@ describe('an app’s icon and service, from what the API says — never its id',
     expect(appIcon(null)).toBe('cube')
   })
 
-  const app = (id: string, serviceId: string | null) => ({ id, serviceId } as DeviceApp)
+  const app = (id: string, serviceId: string | null) => withServices({ id, name: id, serviceId, protocol: null } as DeviceApp)
 
   it('a service at an app’s host is looked for among its device’s apps; any other is no app’s', () => {
     expect(appHost('acme.shell')).toBe('remoteit-app-acme-shell')
@@ -127,5 +129,21 @@ describe('an app’s icon and service, from what the API says — never its id',
     expect(serviceApp([app('acme.shell', 'S9')], service)).toBeUndefined()
     expect(serviceApp([app('acme.shell', 'S5')], { id: 'S5', host: 'localhost' })).toBeUndefined()
     expect(serviceApp(null, service)).toBeUndefined()
+  })
+
+  it('an app of several services: any of them is the app’s, and which of its services it is', () => {
+    const stream: DeviceAppService = {
+      key: 'rtsp', name: 'Stream', protocol: 'tcp', multiPort: true, port: null, portSetting: null, listeners: [], serviceId: 'S6', ports: ['8554', '5004-5005'],
+    }
+    const camera = withServices(app('acme.camera', 'S5'))
+    const both = { ...camera, services: [...camera.services, stream] }
+    const other = { id: 'S6', host: 'remoteit-app-acme-camera' }
+    expect(serviceApp([both], other)?.id).toBe('acme.camera')
+    expect(appServiceOf(both, other)?.key).toBe('rtsp')
+    expect(appServiceOf(both, { id: 'S5', host: 'remoteit-app-acme-camera' })?.key).toBeNull()
+    // Disabled, naming none: the primary, at the app's host.
+    const disabled = withServices({ ...app('acme.camera', null), services: undefined, protocol: 'http' })
+    expect(appServiceOf(disabled, { id: 'S5', host: 'remoteit-app-acme-camera' })?.key).toBeNull()
+    expect(appServiceOf(disabled, { id: 'S5', host: 'remoteit-app-acme-other' })).toBeUndefined()
   })
 })

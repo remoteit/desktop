@@ -39,7 +39,7 @@ export const ServiceConnectButton: React.FC = () => {
   // The app the service belongs to, where it does: one whose service is ssh and that signs people in by certificate
   // opens in our web SSH as well, with the person's own account (components/AppTerminal).
   const serving = useServiceApp(device, service)
-  const byCertificate = opensTerminal(serving.app)
+  const byCertificate = opensTerminal(serving.app, serving.appService)
   const gateway = !local && reach.checked && !!reach.name && (!!web || ssh) && !proxy
   // A local port of this machine (services/localPorts), where it runs our daemon: asked for here, or open already —
   // then it is what the panel shows, until it is disconnected.
