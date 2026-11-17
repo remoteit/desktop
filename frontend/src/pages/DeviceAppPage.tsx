@@ -45,7 +45,8 @@ import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
                 would release it (Update now… for a release waiting for root consent, Unpin for a pin, none for the rest)
      Channel    its channel (the account's, stable, beta) and its pin (none, or a release of it)
      Service    its service, opened by its protocol — Open terminal for one that is ssh and signs people in by
-                certificate (components/AppTerminal), a page for http and https, a viewer for vnc and rdp —, the key it
+                certificate (components/AppTerminal), a page for http and https, a viewer for vnc and rdp, a connection
+                alone for udp (its port, said UDP, is for the person's own UDP client) —, the key it
                 presents where it reports one, and the port people connect to where its owner chooses it (portSetting:
                 that setting is edited here, not under Settings). A disabled app has no service to open (graphql gives
                 none: kept, stopped): said stopped, where its app serves one (its release names a protocol)
@@ -311,9 +312,11 @@ export const DeviceAppPage: React.FC = () => {
           <Row label={t('apps.service', 'Service')} data="service">
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="body2">
-                {service
-                  ? t('apps.serviceLine', '{{name}} · port {{port}}', { name: service.name, port: service.port })
-                  : app.name}
+                {!service
+                  ? app.name
+                  : app.protocol === 'udp'
+                  ? t('apps.serviceLineUdp', '{{name}} · UDP port {{port}}', { name: service.name, port: service.port })
+                  : t('apps.serviceLine', '{{name}} · port {{port}}', { name: service.name, port: service.port })}
               </Typography>
               {app.hostKey && (
                 <Typography

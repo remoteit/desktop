@@ -37,9 +37,9 @@ export type DeviceAppState = 'disabled' | 'starting' | 'running' | 'unavailable'
 export type AppAdminControl = 'cloud+local' | 'cloud' | 'local' | 'off'
 
 /* How the portal opens an app's service (its manifest's service.protocol): ssh a terminal, http and https a page, vnc
-   and rdp a viewer, tcp as its service's type launches. None for an app that serves nothing (no listen, or no
-   service). */
-export type AppProtocol = 'ssh' | 'http' | 'https' | 'vnc' | 'rdp' | 'tcp'
+   and rdp a viewer, tcp as its service's type launches, udp as a connection alone — a port for the person's own UDP
+   client, never a terminal or a page. None for an app that serves nothing (no listen, or no service). */
+export type AppProtocol = 'ssh' | 'http' | 'https' | 'vnc' | 'rdp' | 'tcp' | 'udp'
 
 /* What an app asks of the platform beyond an ordinary app's (its manifest's capabilities; self-contained-apps.md,
    "Capabilities, as the platform keeps them"): people's own accounts kept on the device while it is enabled

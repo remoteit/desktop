@@ -105,6 +105,7 @@ describe('an app’s icon and service, from what the API says — never its id',
     expect(appIcon('https')).toBe('globe')
     expect(appIcon('http')).toBe('globe')
     expect(appIcon('tcp')).toBe('cube')
+    expect(appIcon('udp')).toBe('cube')
     expect(appIcon(null)).toBe('cube')
   })
 

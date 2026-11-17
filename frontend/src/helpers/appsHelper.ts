@@ -56,9 +56,12 @@ export const appIcon = (protocol?: string | null) =>
     ? 'desktop'
     : 'cube'
 
-// Open, in the words of how its service opens (its protocol): a page, a screen, else its service's connection.
+// Open, in the words of how its service opens (its protocol): a page, a screen, a UDP service's connection (nothing to
+// launch: the person's own UDP client uses its port), else its service's connection.
 export function openWord(t: TFunction, protocol?: string | null): string {
   switch (protocol) {
+    case 'udp':
+      return t('deviceApps.connect', 'Connect')
     case 'http':
     case 'https':
       return t('deviceApps.openPage', 'Open page')

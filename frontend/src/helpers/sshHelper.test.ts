@@ -15,6 +15,7 @@ describe('sshHelper', () => {
     ).toBe(true)
     expect(opensTerminal({ protocol: 'ssh', capabilities: ['ssh-exec'] })).toBe(false)
     expect(opensTerminal({ protocol: 'https', capabilities: ['person-certificates'] })).toBe(false)
+    expect(opensTerminal({ protocol: 'udp', capabilities: ['person-certificates'] })).toBe(false)
     expect(opensTerminal({ protocol: null, capabilities: [] })).toBe(false)
     expect(opensTerminal(undefined)).toBe(false)
   })
