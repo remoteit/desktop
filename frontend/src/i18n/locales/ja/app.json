@@ -96,6 +96,16 @@
     "switch": "切り替える",
     "title": "アカウントを切り替えますか？"
   },
+  "aiAssistantsPage": {
+    "connectGuides": "Claude、ChatGPT、Grok、Gemini、Kiro 向けの手順ガイド",
+    "howTo": "接続方法",
+    "intro": "Claude、ChatGPT などの AI アシスタントを Remote.It アカウントに接続しましょう。あとはデバイスの確認、接続の開始、スクリプトの実行を頼むだけです。",
+    "learnMore": "アシスタントが Remote.It でできること",
+    "step1": "Remote.It MCP サーバーの URL をコピーします。",
+    "step2": "AI アシスタントでカスタムコネクタ(またはリモート MCP サーバー)を追加し、URL を貼り付けます。",
+    "step3": "求められたら Remote.It アカウントでサインインします。API キーは不要です。",
+    "title": "AIアシスタント"
+  },
   "androidSetup": {
     "guideBody": "お使いのAndroidデバイスをセットアップするか、簡単な手順に従ってよく使われるプラットフォームのいずれかをセットアップできます。",
     "guideTitle": "デバイスを選択",
@@ -1235,6 +1245,7 @@
     "account": "アカウント",
     "admin": "管理",
     "agent": "エージェント",
+    "aiAssistants": "AIアシスタント",
     "announcements": "お知らせ",
     "apis": "API",
     "bugReport": "バグ報告",

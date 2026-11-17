@@ -152,6 +152,7 @@ export const SidebarNav: React.FC = () => {
         />
       )}
       <ListItemLocation title={t('nav.logs', 'Logs')} to="/logs" icon="rectangle-history" dense exactMatch />
+      <ListItemLocation title={t('nav.aiAssistants', 'AI Assistants')} to="/ai-assistants" icon="robot" dense />
       <Box
         sx={theme => ({
           width: '100%',
