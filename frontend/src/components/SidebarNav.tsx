@@ -1,4 +1,5 @@
 import React from 'react'
+import brand from '@common/brand/config'
 import { useMobile } from '../hooks/useMobile'
 import browser from '../services/browser'
 import { useTranslation } from 'react-i18next'
@@ -152,7 +153,9 @@ export const SidebarNav: React.FC = () => {
         />
       )}
       <ListItemLocation title={t('nav.logs', 'Logs')} to="/logs" icon="rectangle-history" dense exactMatch />
-      <ListItemLocation title={t('nav.aiAssistants', 'AI Assistants')} to="/ai-assistants" icon="robot" dense />
+      {brand.name === 'remoteit' && (
+        <ListItemLocation title={t('nav.aiAssistants', 'AI Assistants')} to="/ai-assistants" icon="robot" dense />
+      )}
       <Box
         sx={theme => ({
           width: '100%',

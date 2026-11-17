@@ -55,11 +55,11 @@ export const AIAssistantsPage: React.FC = () => {
         <Stack spacing={1} alignItems="flex-start">
           <Link href={MCP_CONNECT_DOCS_LINK}>
             {t('aiAssistantsPage.connectGuides', 'Step-by-step guides for Claude, ChatGPT, Grok, Gemini and Kiro')}
-            <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
+            <Icon name="launch" size="sm" />
           </Link>
           <Link href={MCP_DOCS_LINK}>
             {t('aiAssistantsPage.learnMore', 'What your assistant can do with Remote.It')}
-            <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
+            <Icon name="launch" size="sm" />
           </Link>
         </Stack>
       </Gutters>
