@@ -3,6 +3,8 @@ import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const { apps, push } = vi.hoisted(() => ({ apps: { value: {} as any }, push: vi.fn() }))
+// The release a consent names is read from its catalogue entry; none here: the app's own capabilities.
+vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: () => Promise.resolve('UNSERVED') }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }) }))
 vi.mock('../services/Context', async () => ({ DeviceContext: (await import('react')).createContext({}) }))
 vi.mock('../hooks/useDeviceApps', () => ({ useDeviceApps: () => apps.value }))

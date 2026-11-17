@@ -3,6 +3,8 @@ import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const { setApp, setAppSetting } = vi.hoisted(() => ({ setApp: vi.fn(), setAppSetting: vi.fn() }))
+// The release a consent names is read from its catalogue entry; none here: the app's own capabilities.
+vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: () => Promise.resolve('UNSERVED') }))
 vi.mock('../services/post', () => ({ post: vi.fn() }))
 vi.mock('../services/graphQL', () => ({
   graphQLGetErrors: vi.fn(),

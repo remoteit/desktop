@@ -8,6 +8,8 @@ const { apps, name, openTerminal, push } = vi.hoisted(() => ({
   name: { value: 'pi-evan.on.remote.it' as string | undefined },
   openTerminal: vi.fn(),
 }))
+// The release a consent names is read from its catalogue entry; none here: the app's own capabilities.
+vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: () => Promise.resolve('UNSERVED') }))
 vi.mock('../services/post', () => ({ post: vi.fn() }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }) }))
 vi.mock('../services/graphQL', () => ({ graphQLBasicRequest: vi.fn(), graphQLGetErrors: vi.fn() }))

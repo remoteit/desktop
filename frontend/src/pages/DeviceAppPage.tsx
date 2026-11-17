@@ -79,7 +79,7 @@ export const DeviceAppPage: React.FC = () => {
   const [pinning, setPinning] = useState<string>() // a root release to pin, asking first
   const [catalog, setCatalog] = useState<CatalogApp | null>()
   const failed = (reason: string) => setRefusal(reason || t('apps.notChanged', 'The app was not changed.'))
-  const { flip, reconsent, consent } = useAppSwitch(deviceApps, failed)
+  const { flip, reconsent, consent } = useAppSwitch(deviceApps, failed, undefined, device?.accountId)
 
   const accountId = device?.accountId
   useEffect(() => {
@@ -473,6 +473,8 @@ export const DeviceAppPage: React.FC = () => {
       {consent}
       <RootConsent
         app={pinning ? app : undefined}
+        release={pinning}
+        accountId={device.accountId}
         action={t('apps.pinRootAction', 'Pin with full control')}
         onConfirm={() => {
           const version = pinning

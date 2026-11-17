@@ -9,6 +9,8 @@ const { apps, name, openTerminal, env } = vi.hoisted(() => ({
   env: { isNative: false },
 }))
 // The device's apps as the API says them; which one a service belongs to is the portal's own rule (appsHelper).
+// The release a consent names is read from its catalogue entry; none here: the app's own capabilities.
+vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: () => Promise.resolve('UNSERVED') }))
 vi.mock('../hooks/useDeviceApps', async () => {
   const { isAppService, serviceApp } = await import('../helpers/appsHelper')
   return {

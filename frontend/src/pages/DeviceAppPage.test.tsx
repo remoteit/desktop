@@ -35,12 +35,12 @@ vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data
 vi.mock('../components/Link', () => ({ Link: ({ to, children, ...rest }: any) => <a data-to={to} {...rest}>{children}</a> }))
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
 vi.mock('../components/Confirm', () => ({
-  Confirm: ({ open, title, action, children, onConfirm, onDeny }: any) =>
+  Confirm: ({ open, title, action, children, disabled, onConfirm, onDeny }: any) =>
     open ? (
       <div data-confirm>
         <span data-confirm-title>{title}</span>
         {children}
-        <button data-confirm-ok onClick={onConfirm}>
+        <button data-confirm-ok disabled={disabled} onClick={onConfirm}>
           {action}
         </button>
         <button data-confirm-deny onClick={onDeny} />
@@ -301,6 +301,44 @@ describe('channel and pin', () => {
     expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Backup as root?')
     await click(page.querySelector('[data-confirm-ok]'))
     expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { version: '1.5.0', consentRoot: true })
+  })
+
+  it('a consent names what the release it is given to asks, not the version running: a pin, and Update now', async () => {
+    const releases = [
+      { version: '1.5.0', root: true, withdrawn: null, capabilities: ['person-accounts', 'ssh-exec'] },
+      { version: '1.4.0', root: false, withdrawn: null, capabilities: [] },
+    ]
+    catalog.mockResolvedValue({ ...CATALOG, releases })
+    let page = await render()
+    await select(page.querySelector('[data-app-pin]') as HTMLSelectElement, '1.5.0')
+    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual([
+      'person-accounts',
+      'ssh-exec',
+    ])
+    act(() => root.unmount())
+    container.remove()
+    apps.value.apps = [backup({ awaitingRoot: '1.5.0', upToDate: false, heldBack: { reason: 'consent', detail: '' } })]
+    page = await render()
+    await click(page.querySelector('[data-app-update-now]'))
+    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual([
+      'person-accounts',
+      'ssh-exec',
+    ])
+    expect(catalog).toHaveBeenCalledWith('acme.backup', expect.objectContaining({ accountId: 'A1' }))
+  })
+
+  it('the yes waits while what the release asks is read; where the catalogue cannot say, the app’s own are named', async () => {
+    let answer: (value: unknown) => void = () => {}
+    catalog.mockResolvedValueOnce(CATALOG).mockReturnValueOnce(new Promise(resolve => (answer = resolve)))
+    apps.value.apps = [backup({ capabilities: ['person-certificates'] })]
+    const page = await render()
+    await select(page.querySelector('[data-app-pin]') as HTMLSelectElement, '1.5.0')
+    expect((page.querySelector('[data-confirm-ok]') as HTMLButtonElement).disabled).toBe(true)
+    await act(async () => answer('ERROR'))
+    expect((page.querySelector('[data-confirm-ok]') as HTMLButtonElement).disabled).toBe(false)
+    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual([
+      'person-certificates',
+    ])
   })
 
   it('where the API has no catalogue: only the pin it has', async () => {

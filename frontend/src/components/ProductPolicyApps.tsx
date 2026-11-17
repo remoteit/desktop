@@ -232,6 +232,7 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
         product
         app={asking}
         version={asking?.state === 'enabled' && asking.needsConsent ? asking.awaitingRoot : undefined}
+        release={asking?.awaitingRoot || asking?.version}
         action={asking?.state === 'enabled' ? t('productApps.consentAction', 'Consent to full control') : undefined}
         onConfirm={() => {
           const app = asking

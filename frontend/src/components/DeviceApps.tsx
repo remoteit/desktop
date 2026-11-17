@@ -54,8 +54,11 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   const deviceApps = useDeviceApps(device.id)
   const { apps, available, switching } = deviceApps
   const [refusal, setRefusal] = useState<string>()
-  const { flip, consent } = useAppSwitch(deviceApps, reason =>
-    setRefusal(reason || t('apps.notChanged', 'The app was not changed.'))
+  const { flip, consent } = useAppSwitch(
+    deviceApps,
+    reason => setRefusal(reason || t('apps.notChanged', 'The app was not changed.')),
+    undefined,
+    device.accountId
   )
   const canManage = !!device.permissions?.includes('MANAGE')
   const canRun = canManage && !!device.permissions?.includes('SCRIPTING')

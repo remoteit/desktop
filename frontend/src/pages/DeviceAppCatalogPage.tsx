@@ -35,7 +35,8 @@ export const DeviceAppCatalogPage: React.FC = () => {
   const { flip, consent } = useAppSwitch(
     deviceApps,
     reason => setRefusal(reason || t('apps.notAdded', 'The app was not added.')),
-    app => device && history.push(`/devices/${device.id}/apps/${app.id}`)
+    app => device && history.push(`/devices/${device.id}/apps/${app.id}`),
+    device?.accountId
   )
 
   if (!device) return <LoadingMessage />

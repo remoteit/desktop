@@ -84,7 +84,7 @@ export const AppTerminalOption: React.FC<{ device?: IDevice; service?: IService;
   const { t } = useTranslation()
   const terminal = opensTerminal(app)
   const name = useSubnetName(terminal ? device?.id : undefined)
-  const { flip, consent } = useAppSwitch({ turn, setRelease })
+  const { flip, consent } = useAppSwitch({ turn, setRelease }, undefined, undefined, device?.accountId)
   if (!app || !terminal || !name) return null
   // Not where its product holds it off: graphql refuses that, naming the product.
   const canTurnOn =
