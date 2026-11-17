@@ -18,14 +18,18 @@ export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connectio
   if (!connection) connection = newConnection(service)
   const secureReverseProxy = app.publicReverseProxy ? null : isSecureReverseProxy(app.template)
 
-  const update = (template: string) =>
-    connection &&
-    app.launchType &&
+  const update = (template: string) => {
+    if (!connection || !app.launchType) return
+    const launchTemplates = { ...connection.launchTemplates }
+    // a public reverse proxy's default has no port, so storing it would carry a port-less template back to a local route
+    if (template === app.defaultTemplate) delete launchTemplates[app.launchType]
+    else launchTemplates[app.launchType] = template
     setConnection({
       ...connection,
-      launchTemplates: { ...connection.launchTemplates, [app.launchType]: template },
+      launchTemplates,
       disableSecurity: isSecureReverseProxy(template) === false,
     })
+  }
 
   return (
     <InlineTextFieldSetting

@@ -282,7 +282,7 @@ export class Application {
       case 'URL': {
         const template =
           this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.defaultLaunchTemplate
-        return this.publicReverseProxy ? template.replace(':[port]', '') : template
+        return this.publicReverseProxy ? template.replace(/:\[port\]/g, '') : template
       }
       case 'COMMAND':
         return (

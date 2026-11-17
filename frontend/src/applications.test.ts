@@ -53,4 +53,17 @@ describe('public reverse proxy launch template', () => {
     expect(app.publicReverseProxy).toBe(false)
     expect(app.template).toBe('https://[host]:[port]')
   })
+
+  it('drops every port from a service launch template', () => {
+    const app = getApplication(
+      service(HTTP, { launchTemplate: 'https://[host]:[port]/?next=[host]:[port]' }),
+      connection({ public: true })
+    )
+    expect(app.template).toBe('https://[host]/?next=[host]')
+  })
+
+  it('is not a public reverse proxy on a persistent connect link', () => {
+    const app = getApplication(service(HTTP), connection({ public: true, connectLink: true }))
+    expect(app.publicReverseProxy).toBe(false)
+  })
 })
