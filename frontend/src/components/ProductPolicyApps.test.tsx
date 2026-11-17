@@ -2,9 +2,9 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { setApp, setAppSetting } = vi.hoisted(() => ({ setApp: vi.fn(), setAppSetting: vi.fn() }))
-// The release a consent names is read from its catalogue entry; none here: the app's own capabilities.
-vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: () => Promise.resolve('UNSERVED') }))
+const { setApp, setAppSetting, catalog } = vi.hoisted(() => ({ setApp: vi.fn(), setAppSetting: vi.fn(), catalog: vi.fn() }))
+// The release a consent names is read from its catalogue entry; unserved by default: the app's own.
+vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: catalog }))
 vi.mock('../services/post', () => ({ post: vi.fn() }))
 vi.mock('../services/graphQL', () => ({
   graphQLGetErrors: vi.fn(),
@@ -149,13 +149,25 @@ async function render(
   document.body.appendChild(container)
   root = createRoot(container)
   await act(async () =>
-    root.render(<ProductPolicyApps productId="P1" apps={apps} sync={sync} manage={manage} onChanged={onChanged} />)
+    root.render(
+      <ProductPolicyApps productId="P1" accountId="A1" apps={apps} sync={sync} manage={manage} onChanged={onChanged} />
+    )
   )
   return container
 }
 afterEach(() => act(() => root.unmount()))
 
+// The console's catalogue entry: stable gives `current`; each release as it runs and what it declares.
+const CONSOLE_ALL = ['person-accounts', 'person-certificates', 'ssh-exec']
+const consoleCatalog = (current: string, releases: { version: string; root: boolean; capabilities: string[] }[]) => ({
+  id: 'remoteit.console',
+  accountChannel: null,
+  channels: [{ channel: 'stable', current, candidate: null, share: 0 }],
+  releases: releases.map(r => ({ ...r, withdrawn: null })),
+})
+
 beforeEach(() => {
+  catalog.mockReset().mockResolvedValue('UNSERVED')
   setApp.mockReset().mockResolvedValue(true)
   setAppSetting.mockReset().mockResolvedValue(true)
   onChanged.mockReset()
@@ -269,14 +281,54 @@ describe('a product’s Apps block', () => {
     expect(page.querySelector('[data-confirm]')).toBeNull()
   })
 
-  it('a consent kept: shown with who and when, and the app turned on without asking again', async () => {
+  it('a consent kept that covers the release it names: shown with who and when, and the app turned on without asking again', async () => {
+    catalog.mockResolvedValue(consoleCatalog('1.4.0', [{ version: '1.4.0', root: true, capabilities: CONSOLE_ALL }]))
     const page = await render([
       consoleApp({ state: 'disabled', rootConsent: { by: 'evan@example.com', at: '2026-11-12T18:00:00Z', version: '1.4.0' } }),
     ])
     expect(line(page, 'remoteit.console', 'consent')).toMatch(/^Consented to run as root by evan@example.com, .*2026/)
     await pick(onOf(page, 'remoteit.console'), 'enabled')
+    expect(catalog).toHaveBeenCalledWith('remoteit.console', { accountId: 'A1', releases: 100 })
     expect(page.querySelector('[data-confirm]')).toBeNull()
     expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', { channel: 'stable', version: null })
+  })
+
+  it('a consent kept that the release it names asks more than: asked again, for that release', async () => {
+    // 1.5.0 newly declares ssh-exec: the consent to 1.4.0 does not cover it (graphql's coversRootAmong).
+    catalog.mockResolvedValue(
+      consoleCatalog('1.5.0', [
+        { version: '1.5.0', root: true, capabilities: CONSOLE_ALL },
+        { version: '1.4.0', root: true, capabilities: ['person-accounts', 'person-certificates'] },
+      ])
+    )
+    const page = await render([
+      consoleApp({ state: 'disabled', rootConsent: { by: 'evan@example.com', at: '2026-11-12T18:00:00Z', version: '1.4.0' } }),
+    ])
+    await pick(onOf(page, 'remoteit.console'), 'enabled')
+    expect(setApp).not.toHaveBeenCalled()
+    const confirm = page.querySelector('[data-confirm]')!
+    expect(confirm.querySelector('[data-confirm-title]')!.textContent).toBe('Run Console as root on this product’s devices?')
+    expect([...confirm.querySelectorAll('[data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual(CONSOLE_ALL)
+    await click(confirm.querySelector('[data-confirm-ok]'))
+    expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', { channel: 'stable', version: null, consentRoot: true })
+  })
+
+  it('a restricted app that declares capabilities asks as a root one does, in words for what it asks', async () => {
+    const page = await render([logs({ capabilities: ['person-certificates'] })])
+    await pick(onOf(page, 'acme.logs'), 'enabled')
+    expect(setApp).not.toHaveBeenCalled()
+    const confirm = page.querySelector('[data-confirm]')!
+    expect(confirm.querySelector('[data-confirm-title]')!.textContent).toBe('Allow Logs what it asks on this product’s devices?')
+    expect(confirm.querySelector('[data-root-consent]')!.textContent).toBe(
+      'Logs, published by Acme, runs restricted, with an account of its own on every device in this product, now and later.'
+    )
+    expect(confirm.textContent).toContain('It asks of remote.it:')
+    expect([...confirm.querySelectorAll('[data-app-capability]')].map(c => c.textContent)).toEqual([
+      '· Signs in people by remote.it certificate',
+    ])
+    expect(confirm.querySelector('[data-confirm-ok]')!.textContent).toBe('Allow and turn on')
+    await click(confirm.querySelector('[data-confirm-ok]'))
+    expect(setApp).toHaveBeenCalledWith('P1', 'acme.logs', 'enabled', { channel: null, version: null, consentRoot: true })
   })
 
   it('a new release that needs root: said, and consented to from its row', async () => {
@@ -288,7 +340,7 @@ describe('a product’s Apps block', () => {
       }),
     ])
     expect(line(page, 'remoteit.console', 'needs-consent')).toBe(
-      'A new version needs to run as root: its devices are not turned on until you consent'
+      'A new version needs your consent: its devices are not turned on until you consent'
     )
     expect(line(page, 'remoteit.console', 'consent')).toBeUndefined()
     await click(row(page, 'remoteit.console').querySelector('[data-product-app-consent-action]'))
@@ -441,20 +493,28 @@ describe('root, and a release that newly asks for it', () => {
   })
 
   it('its devices stay on the release they run until someone consents; the dialog says which release, for every device', async () => {
-    // What they are given (1.4.0) runs restricted — graphql's root is the release given — beside the root one waiting.
+    // What they are given (1.4.0) runs restricted — graphql's root is the release given — beside the root one waiting,
+    // which the dialog reads from the catalogue under the product's account.
+    catalog.mockResolvedValue(
+      consoleCatalog('1.5.0', [
+        { version: '1.5.0', root: true, capabilities: CONSOLE_ALL },
+        { version: '1.4.0', root: false, capabilities: [] },
+      ])
+    )
     const page = await render([
       consoleApp({ state: 'enabled', root: false, version: '1.4.0', needsConsent: true, awaitingRoot: '1.5.0', rootConsent: null }),
     ])
     expect(line(page, 'remoteit.console', 'root')).toBeUndefined()
     expect(line(page, 'remoteit.console', 'about')).toBe('By remote.it · 1.4.0 · Stable')
     expect(line(page, 'remoteit.console', 'needs-consent')).toBe(
-      'A new version (1.5.0) needs to run as root: its devices stay on 1.4.0 until you consent'
+      'A new version (1.5.0) needs your consent: its devices stay on 1.4.0 until you consent'
     )
     await click(row(page, 'remoteit.console').querySelector('[data-product-app-consent-action]'))
     const confirm = page.querySelector('[data-confirm]')!
     expect(confirm.querySelector('[data-root-consent-update]')?.textContent).toBe(
       'Console 1.5.0 needs to run as root. Its devices stay on the version they run until you consent.'
     )
+    expect(catalog).toHaveBeenCalledWith('remoteit.console', { accountId: 'A1', releases: 100 })
     expect(confirm.textContent).toContain('on every device in this product, now and later')
     await click(confirm.querySelector('[data-confirm-ok]'))
     expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', {

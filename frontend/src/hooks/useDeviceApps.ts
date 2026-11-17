@@ -41,10 +41,10 @@ export type DeviceApps = {
   // What it may add (the device's catalogue): read once its apps are, and again after one is added or removed.
   available?: AvailableApp[]
   switching?: string // the app being changed, waited for
-  // Enabled or disabled; an app the device has no row for (one offered) is added. consentRoot: the person said yes to a
-  // root app's full control of the device (components/AppRootConsent).
+  // Enabled or disabled; an app the device has no row for (one offered) is added. consentRoot: the person said yes to
+  // what its release asks — root's full control of the device, its capabilities (components/AppRootConsent).
   turn: (app: DeviceApp, enabled: boolean, consentRoot?: boolean) => Promise<AppChange<true>>
-  // Its channel and pin; consentRoot alone is Update now, to a release waiting for root consent.
+  // Its channel and pin; consentRoot alone is Update now, to a release waiting for a consent.
   setRelease: (app: DeviceApp, release: AppRelease) => Promise<AppChange<true>>
   // Removed from the device, its files and data with it.
   remove: (app: DeviceApp) => Promise<AppChange<true>>

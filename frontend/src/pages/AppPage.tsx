@@ -41,12 +41,16 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
+import { AppCapabilities } from '../components/AppRootConsent'
 import {
+  allowLine,
   appIcon,
+  asksConsent,
   capabilitiesLine,
   channelName,
   day,
   heldBackLine,
+  heldConsentRoot,
   heldBackReason,
   releaseChannelName,
   stateWord,
@@ -150,10 +154,19 @@ export const AppPage: React.FC = () => {
 
   const devices = app.devices?.items ?? []
   const chosen = devices.filter(d => selected.includes(d.deviceId))
-  const needsConsent = chosen.some(d => d.heldBack?.reason === 'consent')
+  const waiting = chosen.filter(d => d.heldBack?.reason === 'consent')
+  const needsConsent = waiting.length > 0
+  // What the releases they wait for ask: to run as root where graphql says one does, and their capabilities where the
+  // catalogue lists them (their pin's, else their channel's).
+  const updateRoot = waiting.some(d => heldConsentRoot(d.heldBack!))
+  const updateAsks = [
+    ...new Set(waiting.flatMap(d => app.releases.find(r => r.version === (d.pinned || d.latest))?.capabilities ?? [])),
+  ]
   const standing = app.releases.filter(r => !r.withdrawn)
   const pinRelease = standing.find(r => r.version === pinTo)
-  const pinNeedsConsent = !!pinRelease?.root
+  // A pin to a release that asks for a consent (asksConsent, graphql's rule) takes the yes: each device's own consent
+  // may or may not cover it.
+  const pinNeedsConsent = asksConsent(pinRelease)
 
   const many = async (values: { version: string; consentRoot?: boolean }) => {
     setBusy(true)
@@ -458,7 +471,11 @@ export const AppPage: React.FC = () => {
       <Confirm
         open={asking === 'update'}
         color="error"
-        title={t('apps.updateRootTitle', 'Update {{app}} to run as root?', { app: app.name })}
+        title={
+          updateRoot
+            ? t('apps.updateRootTitle', 'Update {{app}} to run as root?', { app: app.name })
+            : t('apps.updateAsksTitle', 'Update {{app}} to a version that asks more?', { app: app.name })
+        }
         action={t('apps.updateRootAction', 'Consent and update')}
         onConfirm={() => {
           setAsking(undefined)
@@ -466,13 +483,23 @@ export const AppPage: React.FC = () => {
         }}
         onDeny={() => setAsking(undefined)}
       >
-        <Typography variant="body2" data-fleet-consent>
-          {t(
-            'apps.updateRootBody',
-            'A new version of {{app}}, published by {{publisher}}, runs as root: it gets full control of each device selected — every file, account and program on it. Update only if you trust {{publisher}} with them.',
-            { app: app.name, publisher: app.publisher.name }
-          )}
+        <Typography variant="body2" gutterBottom data-fleet-consent={updateRoot ? 'root' : 'capabilities'}>
+          {updateRoot
+            ? t(
+                'apps.updateRootBody',
+                'A new version of {{app}}, published by {{publisher}}, runs as root: it gets full control of each device selected — every file, account and program on it. Update only if you trust {{publisher}} with them.',
+                { app: app.name, publisher: app.publisher.name }
+              )
+            : t(
+                'apps.updateAsksBody',
+                'A new version of {{app}}, published by {{publisher}}, asks more of remote.it on each device selected. Update only if you trust {{publisher}} with them.',
+                { app: app.name, publisher: app.publisher.name }
+              )}
         </Typography>
+        <AppCapabilities
+          capabilities={updateAsks}
+          title={updateRoot ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+        />
       </Confirm>
       <Confirm
         open={asking === 'pin'}
@@ -505,7 +532,13 @@ export const AppPage: React.FC = () => {
             </option>
           ))}
         </TextField>
-        {pinNeedsConsent && (
+        {pinNeedsConsent && pinRelease && (
+          <AppCapabilities
+            capabilities={pinRelease.capabilities}
+            title={pinRelease.root ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+          />
+        )}
+        {pinNeedsConsent && pinRelease && (
           <FormControlLabel
             sx={{ marginTop: 1 }}
             control={
@@ -515,10 +548,7 @@ export const AppPage: React.FC = () => {
                 inputProps={{ 'data-fleet-pin-consent': true } as any}
               />
             }
-            label={t('apps.allowRootDevices', 'I allow {{publisher}}’s {{app}} full control of these devices', {
-              publisher: app.publisher.name,
-              app: app.name,
-            })}
+            label={allowLine(t, pinRelease.root, false, app.publisher.name, app.name)}
           />
         )}
       </Confirm>

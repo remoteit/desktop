@@ -108,6 +108,11 @@ const backup = (more: Partial<DeviceApp> = {}): DeviceApp =>
 const CATALOG = {
   id: 'acme.backup',
   accountChannel: 'stable',
+  version: '1.4.0',
+  channels: [
+    { channel: 'stable', current: '1.4.0', candidate: null, share: 0 },
+    { channel: 'beta', current: '1.5.0', candidate: null, share: 0 },
+  ],
   releases: [
     { version: '1.5.0', root: true, withdrawn: null },
     { version: '1.4.0', root: false, withdrawn: null },
@@ -289,12 +294,52 @@ describe('channel and pin', () => {
     expect(page.querySelector('[data-app-held-back]')).toBeNull()
   })
 
-  it('the channel: the account’s (named), stable or beta, by setDeviceAppRelease', async () => {
+  it('the channel: the account’s (named), stable or beta, by setDeviceAppRelease — one whose release asks, after the yes', async () => {
     const page = await render()
     const channel = page.querySelector('[data-app-channel]') as HTMLSelectElement
     expect([...channel.options].map(o => o.textContent)).toEqual(['Account’s (Stable)', 'Stable', 'Beta'])
+    await select(channel, 'stable')
+    expect(setRelease).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), { channel: 'stable' })
+    // Beta gives 1.5.0, which runs as root: asked first, as graphql refuses it without.
     await select(channel, 'beta')
-    expect(setRelease).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), { channel: 'beta' })
+    expect(setRelease).toHaveBeenCalledTimes(1)
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Backup as root?')
+    expect(page.querySelector('[data-confirm-ok]')?.textContent).toBe('Consent and update')
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { channel: 'beta', consentRoot: true })
+  })
+
+  it('a release that declares capabilities asks as a root one does; a consent that covers it does not ask again', async () => {
+    const releases = [
+      { version: '1.6.0', root: false, withdrawn: null, capabilities: ['ssh-exec'] },
+      { version: '1.5.0', root: false, withdrawn: null, capabilities: ['ssh-exec'] },
+      { version: '1.4.0', root: false, withdrawn: null, capabilities: [] },
+    ]
+    catalog.mockResolvedValue({ ...CATALOG, releases })
+    let page = await render()
+    await select(page.querySelector('[data-app-pin]') as HTMLSelectElement, '1.5.0')
+    expect(setRelease).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Allow Backup what it asks?')
+    expect(page.querySelector('[data-root-consent]')?.getAttribute('data-root-consent')).toBe('capabilities')
+    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual(['ssh-exec'])
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { version: '1.5.0', consentRoot: true })
+    act(() => root.unmount())
+    container.remove()
+    // Consented to 1.5.0: 1.6.0 asks nothing more, and is pinned at once.
+    setRelease.mockClear()
+    apps.value.apps = [backup({ rootConsent: { by: 'U1', email: null, at: '2026-11-10T00:00:00Z', version: '1.5.0', via: 'person' } })]
+    page = await render()
+    await select(page.querySelector('[data-app-pin]') as HTMLSelectElement, '1.6.0')
+    expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { version: '1.6.0' })
+    // Disabled, a pin gives it nothing: nothing asked.
+    act(() => root.unmount())
+    container.remove()
+    setRelease.mockClear()
+    apps.value.apps = [backup({ enabled: false, state: 'disabled', serviceId: null })]
+    page = await render()
+    await select(page.querySelector('[data-app-pin]') as HTMLSelectElement, '1.5.0')
+    expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { version: '1.5.0' })
   })
 
   it('the pin: none or a release standing — a root one asks for the yes first', async () => {

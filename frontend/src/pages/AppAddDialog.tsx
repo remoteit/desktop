@@ -33,7 +33,7 @@ import { AppChangeResults } from '../components/AppChangeResults'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
 import { AppCapabilities } from '../components/AppRootConsent'
-import { addAsks, adminControlLine, channelName } from '../helpers/appsHelper'
+import { addAsks, adminControlLine, allowLine, asksConsent, channelName } from '../helpers/appsHelper'
 
 type Target = 'devices' | 'tag' | 'product'
 
@@ -49,10 +49,11 @@ type Target = 'devices' | 'tag' | 'product'
                the product's root consent.
      Channel  the account's, stable or beta; and a version to pin, where wanted.
      What it asks is the releases the choice gives (helpers/appsHelper addAsks): the pin, else the channel's — not the
-     account's channel's where another is chosen. One that runs as root asks the person's yes in words before Add is
-     offered: full control of each device — of every device in the product, now and later, for a product —, and what
-     else it asks of remote.it (its capabilities), said in the same place; a restricted one says them above Add. The yes
-     is to those releases, for that target (and product): another choice asks it again.
+     account's channel's where another is chosen. Where they ask for a consent (asksConsent, graphql's rule) the
+     person's yes, in words, comes before Add is offered: to full control of each device where one runs as root — of
+     every device in the product, now and later, for a product —, and to what they ask of remote.it (their
+     capabilities), said in the same place. The yes is to those releases, for that target (and product): another choice
+     asks it again.
 
    Devices and a tag call addDeviceApps (at most 500 devices a call: more, and it says to add it to a product); each
    device's result is listed after — Added · Enabled · Already there · Refused: <why>. */
@@ -129,6 +130,7 @@ export const AppAddDialog: React.FC = () => {
   const asks = ready ? addAsks(ready, channel, pinning ? version : undefined) : undefined
   const root = !!asks?.root
   const capabilities = asks?.capabilities
+  const asking = asksConsent(asks)
   const consentFor = [target, target === 'product' ? productId : '', ...(asks?.versions ?? [])].join('/')
   const consented = consentedTo === consentFor
   const product = products.find(p => p.id === productId)
@@ -136,12 +138,12 @@ export const AppAddDialog: React.FC = () => {
   const tooMany = target !== 'product' && count > MANY_DEVICES_MAX
   const chosen = target === 'devices' ? ticked.length > 0 : target === 'tag' ? tagged.length > 0 : !!product
   const done = !!results || !!productDone
-  const canAdd = !!ready && chosen && !tooMany && (!root || consented) && !busy && !done
+  const canAdd = !!ready && chosen && !tooMany && (!asking || consented) && !busy && !done
 
   const release = {
     ...(channel && { channel }),
     ...(pinning && version && { version }),
-    ...(root && consented && { consentRoot: true }),
+    ...(asking && consented && { consentRoot: true }),
   }
 
   const add = async () => {
@@ -369,23 +371,24 @@ export const AppAddDialog: React.FC = () => {
               )}
             </Box>
 
-            {!root && !!capabilities?.length && (
-              <Box sx={{ marginTop: 2 }} data-app-add-capabilities>
-                <AppCapabilities
-                  capabilities={capabilities}
-                  title={t('apps.capabilitiesAsks', 'It asks of remote.it:')}
-                />
-              </Box>
-            )}
-            {root && (
-              <Box sx={{ marginTop: 2 }} data-app-add-root>
+            {asking && (
+              <Box
+                sx={{ marginTop: 2 }}
+                data-app-add-root={root || undefined}
+                data-app-add-capabilities={!root || undefined}
+              >
                 <Notice severity="warning" fullWidth>
-                  <Typography variant="body2">
-                    {target === 'product'
-                      ? t('apps.rootProduct', '{{app}} runs as root: full control of every device in this product, now and later.', { app: ready.name })
-                      : t('apps.rootDevices', '{{app}} runs as root: full control of each device.', { app: ready.name })}
-                  </Typography>
-                  <AppCapabilities capabilities={capabilities} />
+                  {root && (
+                    <Typography variant="body2">
+                      {target === 'product'
+                        ? t('apps.rootProduct', '{{app}} runs as root: full control of every device in this product, now and later.', { app: ready.name })
+                        : t('apps.rootDevices', '{{app}} runs as root: full control of each device.', { app: ready.name })}
+                    </Typography>
+                  )}
+                  <AppCapabilities
+                    capabilities={capabilities}
+                    title={root ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+                  />
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -395,17 +398,7 @@ export const AppAddDialog: React.FC = () => {
                         inputProps={{ 'data-app-add-consent': true } as any}
                       />
                     }
-                    label={
-                      target === 'product'
-                        ? t('apps.allowRootProduct', 'I allow {{publisher}}’s {{app}} full control of every device in this product', {
-                            publisher: ready.publisher.name,
-                            app: ready.name,
-                          })
-                        : t('apps.allowRootDevices', 'I allow {{publisher}}’s {{app}} full control of these devices', {
-                            publisher: ready.publisher.name,
-                            app: ready.name,
-                          })
-                    }
+                    label={allowLine(t, root, target === 'product', ready.publisher.name, ready.name)}
                   />
                 </Notice>
               </Box>
@@ -430,7 +423,7 @@ export const AppAddDialog: React.FC = () => {
           {done ? t('apps.done', 'Done') : t('apps.cancel', 'Cancel')}
         </Button>
         {!done && (
-          <Button variant="contained" color={root ? 'error' : 'primary'} disabled={!canAdd} onClick={add} data-app-add-submit>
+          <Button variant="contained" color={asking ? 'error' : 'primary'} disabled={!canAdd} onClick={add} data-app-add-submit>
             {busy
               ? t('apps.adding', 'Adding…')
               : target === 'product'
@@ -459,3 +452,4 @@ function whyNot(t: TFunction, device: AppTarget): string | undefined {
   if (device.offer.refused) return device.offer.refused
   if (!device.offer.version) return t('deviceApps.noRelease', 'No release of it here yet')
 }
+

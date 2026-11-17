@@ -8,7 +8,7 @@ import type {
 } from '../services/graphQLDeviceApps'
 import { needsNewer } from '../services/deviceAppsShared'
 import type { SettingLock } from '../services/productPolicy'
-import type { CatalogApp } from '../services/graphQLAppCatalog'
+import type { CatalogApp, CatalogAppRelease } from '../services/graphQLAppCatalog'
 import { timeOptions } from '../components/Timestamp'
 
 /* The words the Apps pages share (presence-server docs/device-apps-design.md, "The Apps pages"): who publishes an app,
@@ -138,6 +138,54 @@ export function releaseChannelName(
     : t('apps.channelCandidate', '{{channel}} candidate', { channel: channelName(t, channel) })
 }
 
+/* What a release asks a consent for, as graphql decides it (app-catalog.ts consentAsked): to run as root, and each
+   capability it declares. A release that asks anything is turned on, pinned or moved to only with the person's yes
+   (consentRoot), in words saying what it asks — root's full control where it runs as root, the capabilities where it
+   declares them —, unless a consent already given covers it. One rule, wherever the portal decides. */
+export type ConsentAsking = { root: boolean; capabilities?: string[] | null }
+export const consentAsked = (release: ConsentAsking): string[] => [
+  ...(release.root ? ['root'] : []),
+  ...(release.capabilities ?? []),
+]
+export const asksConsent = (release: ConsentAsking | null | undefined): boolean =>
+  !!release && consentAsked(release).length > 0
+
+/* Whether a consent covers a release (graphql's coversRootAmong): one given to no release (from before consents were
+   kept) covers as it always did; one given to a release covers `named` where that release asked everything `named`
+   asks, and `named` is that release or an earlier one, or a later one with no release between lacking any of it.
+   releases: the app's, newest first (by version), as the catalogue lists them, withdrawn ones too. Where either is not
+   among them (only the newest are read), it covers only the release it was given to: asking again is safe — graphql
+   keeps the newer yes —, while a yes not asked is refused. */
+export function consentCovers(
+  consent: { version?: string | null } | null | undefined,
+  named: ConsentAsking & { version: string },
+  releases: (ConsentAsking & { version: string })[]
+): boolean {
+  if (!consent) return false
+  if (!consent.version) return true
+  const asked = consentAsked(named)
+  const has = (release: ConsentAsking) => asked.every(ask => consentAsked(release).includes(ask))
+  const given = releases.findIndex(release => release.version === consent.version)
+  const at = releases.findIndex(release => release.version === named.version)
+  if (given < 0 || at < 0) return consent.version === named.version
+  if (!has(releases[given])) return false
+  return at >= given || releases.slice(at + 1, given).every(has)
+}
+
+/* The release a product names for an app (graphql's productRelease): its pin, else its channel's current — the
+   account's channel where it names none, else stable —, else stable's current. None where that is withdrawn, or not
+   among the releases read. */
+export function productRelease(
+  app: CatalogApp,
+  channel: string | null | undefined,
+  pin: string | null | undefined
+): CatalogAppRelease | undefined {
+  const current = (name: string) => app.channels.find(c => c.channel === name)?.current
+  const version = pin || current(channel || app.accountChannel || 'stable') || current('stable')
+  const release = app.releases.find(r => r.version === version)
+  return release?.withdrawn ? undefined : release
+}
+
 /* What adding an app gives the devices, and so what it asks (graphql's releaseFor and channelVersion): the release
    pinned; else what the channel chosen gives — the account's where none is, else stable —: its candidate to the
    devices in its share, its current to the rest, and a channel naming none stable's. A withdrawn release is given to
@@ -241,6 +289,32 @@ export function consentLine(t: TFunction, consent: DeviceAppRootConsent): string
   }
 }
 
+// The yes, in words: to full control where a release runs as root, else to what it asks of remote.it.
+export function allowLine(t: TFunction, root: boolean, product: boolean, publisher: string, app: string): string {
+  const words = { publisher, app }
+  if (root)
+    return product
+      ? t(
+          'apps.allowRootProduct',
+          'I allow {{publisher}}’s {{app}} full control of every device in this product',
+          words
+        )
+      : t('apps.allowRootDevices', 'I allow {{publisher}}’s {{app}} full control of these devices', words)
+  return product
+    ? t('apps.allowAsksProduct', 'I allow {{publisher}}’s {{app}} what it asks on every device in this product', words)
+    : t('apps.allowAsksDevices', 'I allow {{publisher}}’s {{app}} what it asks on these devices', words)
+}
+
+// A release waiting for a consent, by what it asks: to run as root, or more of remote.it (its capabilities).
+export const heldConsentWords = (t: TFunction, root: boolean) =>
+  root
+    ? t('apps.heldConsent', 'A new version needs to run as root')
+    : t('apps.heldConsentAsks', 'A new version asks more of remote.it')
+// Whether the release a consent is waited for runs as root, as graphql's words for it say (device-apps.ts
+// needsConsentOf: "… needs to run as root", else "… asks for <capabilities>"); none said: as before capabilities did.
+export const heldConsentRoot = (heldBack: Pick<AppHeldBack, 'detail'>) =>
+  !heldBack.detail || /run as root/.test(heldBack.detail)
+
 // The machine's administrator refusing root apps (apps_root_control off), as graphql or the device says it.
 const ROOT_REFUSED = /apps_root_control off|no apps that run as root/
 
@@ -341,7 +415,8 @@ export function heldBackReason(t: TFunction, heldBack: AppHeldBack, pinned?: str
     case 'pinned':
       return pinned ? t('apps.heldPinnedTo', 'Pinned to {{version}}', { version: pinned }) : t('apps.heldPinned', 'Pinned')
     case 'consent':
-      return t('apps.heldConsent', 'A new version needs to run as root')
+      // graphql says what the release waiting asks (device-apps.ts needsConsentOf): running as root, or capabilities.
+      return heldConsentWords(t, heldConsentRoot(heldBack))
     case 'daemon':
       return t('deviceApps.needsNewer', 'Needs a newer remote.it on this device')
     default:

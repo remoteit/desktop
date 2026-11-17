@@ -299,6 +299,36 @@ describe('your devices', () => {
     expect(setMany).toHaveBeenLastCalledWith('acme.backup', ['80:00:00:00:01:00:00:01'], { version: '1.4.0' })
   })
 
+  it('a release that declares capabilities: Update and Pin ask the yes to what it asks, in its words', async () => {
+    catalog.mockImplementation(async () => {
+      const app = backup()
+      app.releases[0] = { ...app.releases[0], root: false, capabilities: ['ssh-exec'] }
+      app.devices.items[1] = {
+        ...app.devices.items[1],
+        pinned: null,
+        latest: app.releases[0].version,
+        heldBack: { reason: 'consent', detail: 'A new version asks for ssh-exec' },
+      }
+      return app
+    })
+    const page = await render()
+    await check(page, 'nas')
+    await click(page.querySelector('[data-fleet-update]'))
+    expect(setMany).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Update Backup to a version that asks more?')
+    expect(page.querySelector('[data-fleet-consent]')?.getAttribute('data-fleet-consent')).toBe('capabilities')
+    expect(page.querySelector('[data-confirm] [data-app-capability]')?.getAttribute('data-app-capability')).toBe('ssh-exec')
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(setMany).toHaveBeenCalledWith('acme.backup', ['80:00:00:00:01:00:00:02'], { version: '', consentRoot: true })
+    await check(page, 'pi-kitchen')
+    await click(page.querySelector('[data-fleet-pin]'))
+    expect((page.querySelector('[data-confirm-ok]') as HTMLButtonElement).disabled).toBe(true)
+    expect(page.querySelector('[data-confirm]')?.textContent).toContain('I allow Acme’s Backup what it asks on these devices')
+    await click(page.querySelector('[data-fleet-pin-consent]'))
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(setMany).toHaveBeenLastCalledWith('acme.backup', ['80:00:00:00:01:00:00:01'], { version: '1.5.0-beta.2', consentRoot: true })
+  })
+
   it('a call refused whole: its words', async () => {
     setMany.mockResolvedValue({ reason: 'More than 500 devices: add it to a product' })
     const page = await render()
