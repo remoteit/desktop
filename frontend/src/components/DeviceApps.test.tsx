@@ -40,6 +40,7 @@ vi.mock('react-i18next', () => ({
 
 import { DeviceApps } from './DeviceApps'
 import type { DeviceApp, DeviceAppSetting } from '../services/graphQLDeviceApps'
+import { withServices } from '../test/deviceApps'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const setting = (more: Partial<DeviceAppSetting> = {}): DeviceAppSetting => ({
@@ -59,7 +60,8 @@ const setting = (more: Partial<DeviceAppSetting> = {}): DeviceAppSetting => ({
   ...more,
 })
 
-const consoleApp = (more: Partial<DeviceApp> = {}): DeviceApp => ({
+const consoleApp = (more: Partial<DeviceApp> = {}): DeviceApp =>
+  withServices({
   id: 'remoteit.console',
   name: 'Console',
   publisher: 'remote.it',
@@ -77,9 +79,10 @@ const consoleApp = (more: Partial<DeviceApp> = {}): DeviceApp => ({
   sessionsOpen: 0,
   settings: [setting()],
   ...more,
-})
+  })
 
-const backup = (more: Partial<DeviceApp> = {}): DeviceApp => ({
+const backup = (more: Partial<DeviceApp> = {}): DeviceApp =>
+  withServices({
   id: 'acme.backup',
   name: 'Backup',
   publisher: 'Acme',
@@ -111,7 +114,7 @@ const backup = (more: Partial<DeviceApp> = {}): DeviceApp => ({
     setting({ name: 'keep', type: 'int', label: 'Keep this many', help: null, default: 7, value: 7 }),
   ],
   ...more,
-})
+  })
 
 const device = (permissions = ['VIEW', 'CONNECT', 'MANAGE', 'SCRIPTING']) =>
   ({

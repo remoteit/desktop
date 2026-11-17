@@ -23,6 +23,7 @@ vi.mock('../services/graphQLDeviceApps', () => ({
 }))
 
 import { DeviceApps, ServiceApp, useDeviceApps, useServiceApp } from './useDeviceApps'
+import { withServices } from '../test/deviceApps'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const aiCommands = (value: boolean) => ({
@@ -41,7 +42,7 @@ const aiCommands = (value: boolean) => ({
   deprecated: null,
 })
 
-const app = (state: string, enabled = state !== 'disabled') => ({
+const rawApp = (state: string, enabled = state !== 'disabled') => ({
   id: 'remoteit.console',
   name: 'Console',
   publisher: 'remote.it',
@@ -51,9 +52,11 @@ const app = (state: string, enabled = state !== 'disabled') => ({
   state,
   detail: null,
   serviceId: enabled ? 'S1' : null,
+  protocol: 'ssh',
   version: null,
   settings: [aiCommands(true)],
 })
+const app = (state: string, enabled?: boolean) => withServices(rawApp(state, enabled) as any)
 
 let root: Root
 const seen: Record<string, DeviceApps> = {}
@@ -232,12 +235,13 @@ describe('useDeviceApps', () => {
 })
 
 describe('useServiceApp: the app a service belongs to', () => {
-  const shell = (state: string, more: any = {}) => ({
-    ...app(state),
-    id: 'acme.shell',
-    serviceId: state === 'disabled' ? null : 'S5',
-    ...more,
-  })
+  const shell = (state: string, more: any = {}) =>
+    withServices({
+      ...rawApp(state),
+      id: 'acme.shell',
+      serviceId: state === 'disabled' ? null : 'S5',
+      ...more,
+    } as any)
 
   it('the app naming the service; while disabled, the app whose host the service is at', async () => {
     read.mockResolvedValue([app('running'), shell('running')])

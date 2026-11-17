@@ -14,7 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useHistory } from 'react-router-dom'
-import { DeviceApp, SCREENVIEW } from '../services/graphQLDeviceApps'
+import { DeviceApp, DeviceAppService, SCREENVIEW } from '../services/graphQLDeviceApps'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
 import { AppTerminalAction } from './AppTerminal'
@@ -175,7 +175,9 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
         // The switch and Open terminal act alone: a click on them is not the row's.
         const actions = removing ? null : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} onClick={event => event.stopPropagation()}>
-            <AppTerminalAction device={device} app={app} />
+            {app.services.map(service => (
+              <AppTerminalAction key={service.key ?? ''} device={device} app={app} service={service} />
+            ))}
             <Switch
               checked={enabled}
               disabled={
@@ -213,15 +215,20 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   )
 }
 
-/* Open, for any app reached as a service (serviceId) while it runs: its service's connection, started and launched as
-   its application type launches (graphql makes the type from the manifest's protocol: http and https open in the
-   browser, vnc and rdp in a viewer, udp nothing: a port for the person's own UDP client), as any service's Connect
-   page does; said by its protocol (Open page, Open screen, Connect). One whose service
-   opens as a terminal (helpers/sshHelper opensTerminal) has Open terminal instead (components/AppTerminal). */
-export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device, app }) => {
+/* Open, for one of an app's services while the app runs and the service is served (serviceId): its connection,
+   started and launched as its application type launches (graphql makes the type from the manifest's protocol: http and
+   https open in the browser, vnc and rdp in a viewer, udp nothing: a port for the person's own UDP client), as any
+   service's Connect page does — a multi-port service's on its first port, its launch port; said by its protocol (Open
+   page, Open screen, Connect). One that opens as a terminal (helpers/sshHelper opensTerminal) has Open terminal
+   instead (components/AppTerminal). */
+export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp; service: DeviceAppService }> = ({
+  device,
+  app,
+  service,
+}) => {
   const { t } = useTranslation()
   const history = useHistory()
-  if (!app.enabled || app.state !== 'running' || !app.serviceId) return null
+  if (!app.enabled || app.state !== 'running' || !service.serviceId) return null
   return (
     <Button
       size="small"
@@ -229,13 +236,13 @@ export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device,
       data-app-open
       onClick={() =>
         history.push({
-          pathname: `/devices/${device.id}/${app.serviceId}/connect`,
+          pathname: `/devices/${device.id}/${service.serviceId}/connect`,
           // A udp service's connection is all it has: its port is for the person's own UDP client.
-          state: app.protocol === 'udp' ? { autoConnect: true } : { autoConnect: true, autoLaunch: true },
+          state: service.protocol === 'udp' ? { autoConnect: true } : { autoConnect: true, autoLaunch: true },
         })
       }
     >
-      {openWord(t, app.protocol)}
+      {openWord(t, service.protocol)}
     </Button>
   )
 }

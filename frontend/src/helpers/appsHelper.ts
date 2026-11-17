@@ -1,5 +1,11 @@
 import type { TFunction } from 'i18next'
-import type { AppHeldBack, AvailableApp, DeviceApp, DeviceAppRootConsent } from '../services/graphQLDeviceApps'
+import type {
+  AppHeldBack,
+  AvailableApp,
+  DeviceApp,
+  DeviceAppRootConsent,
+  DeviceAppService,
+} from '../services/graphQLDeviceApps'
 import { needsNewer } from '../services/deviceAppsShared'
 import type { SettingLock } from '../services/productPolicy'
 import { timeOptions } from '../components/Timestamp'
@@ -81,14 +87,27 @@ export const appHost = (id: string) => `${APP_HOST_PREFIX}${id.toLowerCase().rep
 const hostOf = (service?: Pick<IService, 'host'>) => (service?.host ?? '').trim().toLowerCase()
 export const isAppService = (service?: Pick<IService, 'host'>) => hostOf(service).startsWith(APP_HOST_PREFIX)
 
-/* The app a service belongs to: the one that names it (DeviceApp.serviceId); while an app is disabled graphql names no
-   service (it is kept, stopped), so the one whose host it is. An app that names another service is not this one's. */
+/* The app a service belongs to: the one that names it among its services (DeviceApp.services' serviceId — an app may
+   have several); while an app is disabled graphql names no service (it is kept, stopped), so the one whose host it is.
+   An app that names another service is not this one's. */
 export function serviceApp(apps: DeviceApp[] | null | undefined, service?: Pick<IService, 'id' | 'host'>) {
   if (!apps || !service || !isAppService(service)) return undefined
   return (
-    apps.find(app => app.serviceId === service.id) ??
+    apps.find(app => app.services.some(served => served.serviceId === service.id)) ??
     apps.find(app => !app.serviceId && appHost(app.id) === hostOf(service))
   )
+}
+
+// Which of its app's services a device's service is: the one naming it, or — the app disabled, found by its host —
+// its primary.
+export function appServiceOf(
+  app: DeviceApp | undefined,
+  service?: Pick<IService, 'id' | 'host'>
+): DeviceAppService | undefined {
+  if (!app || !service) return undefined
+  const named = app.services.find(served => served.serviceId === service.id)
+  if (named) return named
+  return !app.serviceId && appHost(app.id) === hostOf(service) ? app.services[0] : undefined
 }
 
 // A channel by name: stable or beta, or the account's where none is set.
@@ -337,6 +356,7 @@ export const offered = (app: AvailableApp): DeviceApp => ({
   hostKey: null,
   sessions: [],
   sessionsOpen: 0,
+  services: app.services ?? [],
   settings: [],
 })
 

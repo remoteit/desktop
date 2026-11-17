@@ -9,6 +9,8 @@ const { apps, catalog, push, params, openTerminal } = vi.hoisted(() => ({
   params: { appID: 'acme.backup' },
   openTerminal: vi.fn(),
 }))
+// The page reads its services' ports with multiPortServices' formatting; nothing here asks the API.
+vi.mock('../services/post', () => ({ post: vi.fn() }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }), useParams: () => params }))
 vi.mock('../services/Context', async () => ({ DeviceContext: (await import('react')).createContext({}) }))
 vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: catalog }))
@@ -56,9 +58,11 @@ vi.mock('react-i18next', () => ({
 import { DeviceAppPage } from './DeviceAppPage'
 import { DeviceContext } from '../services/Context'
 import type { DeviceApp } from '../services/graphQLDeviceApps'
+import { withServices } from '../test/deviceApps'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
-const backup = (more: Partial<DeviceApp> = {}): DeviceApp => ({
+const backup = (more: Partial<DeviceApp> = {}): DeviceApp =>
+  withServices({
   id: 'acme.backup',
   name: 'Backup',
   publisher: 'Acme',
@@ -99,7 +103,7 @@ const backup = (more: Partial<DeviceApp> = {}): DeviceApp => ({
     },
   ],
   ...more,
-})
+  })
 
 const CATALOG = {
   id: 'acme.backup',
@@ -440,6 +444,55 @@ describe('its service, settings, root, delivery and problems', () => {
     page = await render()
     expect(page.querySelector('[data-app-port-setting]')).toBeNull()
     expect(row(page, 'settings')?.textContent).toContain('Port')
+  })
+
+  it('each of its services, the primary first: its ports — several as a list, the first the launch port — its listeners’ port settings, and its own Open', async () => {
+    params.appID = 'acme.camera'
+    const setting = (name: string, label: string) => ({ ...backup().settings[0], name, type: 'int', label, default: 8080, value: 8080, choices: null })
+    const camera = backup({
+      id: 'acme.camera',
+      name: 'Camera',
+      protocol: 'http',
+      serviceId: 'S7',
+      portSetting: 'web_port',
+      settings: [...backup().settings, setting('web_port', 'Web port'), setting('rtsp_port', 'RTSP port')],
+      services: [
+        { key: null, name: 'Camera', protocol: 'http', multiPort: false, port: null, portSetting: 'web_port',
+          listeners: [{ name: 'web', type: 'tcp', port: null, portSetting: null, ports: null }], serviceId: 'S7', ports: ['30001'] },
+        { key: 'rtsp', name: 'Stream', protocol: 'udp', multiPort: true, port: null, portSetting: null,
+          listeners: [
+            { name: 'rtsp', type: 'udp', port: null, portSetting: 'rtsp_port', ports: null },
+            { name: 'rtp', type: 'udp', port: null, portSetting: null, ports: '5004-5005' },
+          ], serviceId: 'S8', ports: ['8554', '5004-5005'] },
+      ],
+    })
+    apps.value.apps = [camera]
+    const page = await render()
+    const services = page.querySelectorAll('[data-app-service]')
+    expect(services.length).toBe(2)
+    expect(services[0].textContent).toContain('Backup · port 30001')
+    expect(services[0].querySelector('[data-app-port-setting="web_port"]')?.textContent).toBe('Port people connect to')
+    expect(services[1].textContent).toContain('Stream · ports 8554, 5004-5005')
+    expect(services[1].querySelector('[data-app-service-ports]')?.textContent).toBe(
+      'This connection reaches port 8554 only. All its ports, 8554, 5004-5005, are reached by name on the device subnet.'
+    )
+    expect(services[1].querySelector('[data-app-port-setting="rtsp_port"]')?.textContent).toBe('Port of rtsp')
+    // Each port setting edited once: under its service, not again under Settings.
+    expect(row(page, 'settings')?.querySelector('[data-setting="web_port"], [data-setting="rtsp_port"]')).toBeNull()
+    expect(row(page, 'settings')?.textContent).toContain('Back up')
+    // Each its own Open: the udp one connects, launching nothing.
+    const opens = page.querySelectorAll('[data-app-open]')
+    expect([...opens].map(open => open.textContent)).toEqual(['Open page', 'Connect'])
+    await click(opens[1])
+    expect(push).toHaveBeenCalledWith({ pathname: '/devices/D1/S8/connect', state: { autoConnect: true } })
+    act(() => root.unmount())
+    container.remove()
+    // Disabled, its services stopped: its port settings are under Settings, by their own labels.
+    apps.value.apps = [{ ...camera, enabled: false, state: 'disabled', serviceId: null, services: camera.services.map(s => ({ ...s, serviceId: null, ports: [] })) }]
+    const stopped = await render()
+    expect(stopped.querySelectorAll('[data-app-service]').length).toBe(0)
+    expect(row(stopped, 'settings')?.textContent).toContain('Web port')
+    expect(row(stopped, 'settings')?.textContent).toContain('RTSP port')
   })
 
   it('Open terminal in Open’s place, for any app whose service is ssh and that declares person-certificates', async () => {

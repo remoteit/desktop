@@ -47,6 +47,38 @@ export type AppProtocol = 'ssh' | 'http' | 'https' | 'vnc' | 'rdp' | 'tcp' | 'ud
    run through it (ssh-exec). The list is open: one this portal does not know is shown by its name. */
 export type AppCapability = 'person-accounts' | 'person-certificates' | 'ssh-exec'
 
+/* One of an app's listeners, as its release declares it (remoteit/apps docs/contract.md, listen as a map of named
+   listeners): where the app listens on the device. Its port pinned, the owner's (portSetting: the setting whose value
+   it is), a range it binds (ports, "low-high"), or none where remote.it picks it or it has none (unix, stdio). */
+export type AppListener = {
+  name: string | null // none for an app with one listener
+  type: string // tcp, udp, unix or stdio
+  port: number | null
+  portSetting: string | null
+  ports: string | null
+}
+
+/* One of an app's services (graphql's DeviceAppService), the primary first — the app's single-service fields
+   (serviceId, protocol, portSetting) are the primary's. key: none for the primary, else its first listener's name. A
+   multi-port service's ports are its listeners' own, in their order, the first its launch port; one of one port has a
+   port (or portSetting, the owner's). serviceId and ports: the service on the device and its ports and ranges there,
+   while the app is enabled and the service served. */
+export type DeviceAppService = {
+  key: string | null
+  name: string
+  protocol: AppProtocol | string | null
+  multiPort: boolean
+  port: number | null
+  portSetting: string | null
+  listeners: AppListener[]
+  serviceId: string | null
+  ports: string[]
+}
+
+// Where one of an app's named listeners listens, as the device reports it while the app runs: tcp:<port>,
+// udp:<port>, a range (tcp:<low>-<high>, udp:<low>-<high>), unix or stdio.
+export type DeviceAppListener = { name: string; listen: string }
+
 // A session the app serves, as it reports it in its status.json: the session id (remote.it's, from the identity line
 // or ${remoteit.session}), the account on the device where it knows one, "ai" where an AI opened it, and since when.
 // Never a person: who is behind a session is remote.it's to know, not an app's.
@@ -128,6 +160,8 @@ export type DeviceApp = {
   // The setting whose value is its service's port (service.port "${setting.X}"): the owner chooses the port there, and
   // graphql keeps the service in step — edited in one place, the setting.
   portSetting?: string | null
+  services: DeviceAppService[] // its services, the primary first; none for an app that serves nothing
+  listeners?: DeviceAppListener[] // where its named listeners listen, as the device reports it while it runs
   locked?: SettingLock | null // enabled or disabled as its product holds it: a synced or enforced product that sets it
   rootConsent?: DeviceAppRootConsent | null // the consent to root it runs under, where the API says
   // A newer release that newly runs as root, waiting for a consent: the device stays on the version it runs until
@@ -172,7 +206,11 @@ const SETTING_FIELDS =
   'name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration'
 // The lifecycle's fields (enabled, added, latest, upToDate, heldBack, grantUntil) as the design pins them.
 const SESSION_FIELDS = 'session login via since'
-const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil adminControl state detail serviceId contract protocol capabilities hostKey sessions { ${SESSION_FIELDS} } sessionsOpen features portSetting problems { name error detail } settings { ${SETTING_FIELDS} }`
+// An app's services as its release declares them (AppService), and as each is on the device (DeviceAppService).
+const DECLARED_SERVICE_FIELDS =
+  'key name protocol multiPort port portSetting listeners { name type port portSetting ports }'
+const SERVICE_FIELDS = `${DECLARED_SERVICE_FIELDS} serviceId ports`
+const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil adminControl state detail serviceId contract protocol capabilities hostKey sessions { ${SESSION_FIELDS} } sessionsOpen features portSetting services { ${SERVICE_FIELDS} } listeners { name listen } problems { name error detail } settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
 function parsedSetting(setting: any): DeviceAppSetting {
@@ -185,6 +223,24 @@ function parsedSetting(setting: any): DeviceAppSetting {
     declaration: setting.declaration ?? null,
   }
 }
+
+const parsedService = (service: any): DeviceAppService => ({
+  key: service.key ?? null,
+  name: service.name,
+  protocol: service.protocol ?? null,
+  multiPort: !!service.multiPort,
+  port: service.port ?? null,
+  portSetting: service.portSetting ?? null,
+  listeners: (service.listeners ?? []).map((listener: any) => ({
+    name: listener.name ?? null,
+    type: listener.type,
+    port: listener.port ?? null,
+    portSetting: listener.portSetting ?? null,
+    ports: listener.ports ?? null,
+  })),
+  serviceId: service.serviceId ?? null,
+  ports: service.ports ?? [],
+})
 
 export const parsedDeviceApp = (app: any): DeviceApp => ({
     ...app,
@@ -216,6 +272,8 @@ export const parsedDeviceApp = (app: any): DeviceApp => ({
     sessionsOpen: app.sessionsOpen ?? app.sessions?.length ?? 0,
     features: app.features ?? [],
     portSetting: app.portSetting ?? null,
+    services: (app.services ?? []).map(parsedService),
+    listeners: app.listeners ?? [],
     settings: (app.settings ?? []).map(parsedSetting),
   })
 
@@ -256,11 +314,12 @@ export type AvailableApp = {
   protocol?: AppProtocol | string | null
   capabilities?: (AppCapability | string)[]
   contract?: number | null
+  services?: DeviceAppService[] // as the release declares them, the primary first; none on the device yet
 }
 
 // [] where the API has none, or the device is not this person's to manage.
 export async function graphQLAvailableApps(deviceId: string): Promise<AvailableApp[]> {
-  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher publisherVerifiedDomain description root version refused adminControl needsNewer oldInstall conversion conversionDetail protocol capabilities contract } } } }`
+  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher publisherVerifiedDomain description root version refused adminControl needsNewer oldInstall conversion conversionDetail protocol capabilities contract services { ${DECLARED_SERVICE_FIELDS} } } } } }`
   const variables = { id: [deviceId] }
   const response = await post({ query, variables })
   if (response === 'ERROR') return []
@@ -279,6 +338,7 @@ export async function graphQLAvailableApps(deviceId: string): Promise<AvailableA
     protocol: app.protocol ?? null,
     capabilities: app.capabilities ?? [],
     contract: app.contract ?? null,
+    services: (app.services ?? []).map(parsedService),
   }))
 }
 

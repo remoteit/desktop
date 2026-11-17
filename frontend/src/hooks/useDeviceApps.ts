@@ -4,6 +4,7 @@ import {
   AppRelease,
   AvailableApp,
   DeviceApp,
+  DeviceAppService,
   graphQLAddDeviceApp,
   graphQLAvailableApps,
   graphQLDeviceApps,
@@ -13,7 +14,7 @@ import {
   graphQLSetDeviceAppSetting,
   refused,
 } from '../services/graphQLDeviceApps'
-import { isAppService, serviceApp } from '../helpers/appsHelper'
+import { appServiceOf, isAppService, serviceApp } from '../helpers/appsHelper'
 
 type Read = ReturnType<typeof graphQLDeviceApps>
 
@@ -151,10 +152,12 @@ export function useDeviceApps(deviceId?: string, { offers = true }: { offers?: b
   }
 }
 
-/* The app a service of a device belongs to (helpers/appsHelper serviceApp), with its device's apps to turn it on: read
-   only for a service at an app's host, so a device's other services ask nothing. */
-export type ServiceApp = DeviceApps & { app?: DeviceApp }
+/* The app a service of a device belongs to (helpers/appsHelper serviceApp) and which of its services it is
+   (appServiceOf), with its device's apps to turn it on: read only for a service at an app's host, so a device's other
+   services ask nothing. */
+export type ServiceApp = DeviceApps & { app?: DeviceApp; appService?: DeviceAppService }
 export function useServiceApp(device?: IDevice, service?: IService): ServiceApp {
   const deviceApps = useDeviceApps(isAppService(service) ? device?.id : undefined, { offers: false })
-  return { ...deviceApps, app: serviceApp(deviceApps.apps, service) }
+  const app = serviceApp(deviceApps.apps, service)
+  return { ...deviceApps, app, appService: appServiceOf(app, service) }
 }

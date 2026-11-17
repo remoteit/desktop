@@ -12,11 +12,12 @@ const { apps, name, openTerminal, env } = vi.hoisted(() => ({
 // The release a consent names is read from its catalogue entry; none here: the app's own capabilities.
 vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: () => Promise.resolve('UNSERVED') }))
 vi.mock('../hooks/useDeviceApps', async () => {
-  const { isAppService, serviceApp } = await import('../helpers/appsHelper')
+  const { appServiceOf, isAppService, serviceApp } = await import('../helpers/appsHelper')
   return {
     useServiceApp: (device?: IDevice, service?: IService) => {
       const read = device && isAppService(service) ? apps.value : {}
-      return { ...read, app: serviceApp(read.apps, service) }
+      const app = serviceApp(read.apps, service)
+      return { ...read, app, appService: appServiceOf(app, service) }
     },
   }
 })
@@ -48,6 +49,7 @@ vi.mock('react-i18next', () => ({
 import { AppTerminalAction, AppTerminalButton, AppTerminalOption } from './AppTerminal'
 import { useServiceApp } from '../hooks/useDeviceApps'
 import type { DeviceApp } from '../services/graphQLDeviceApps'
+import { withServices } from '../test/deviceApps'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 // Any app whose service is ssh and that signs people in by certificate: not the console, nor named anywhere.
@@ -55,7 +57,8 @@ const shellService = { id: 'S1', name: 'Shell', typeID: 28, host: 'remoteit-app-
 const sshService = { id: 'S2', name: 'SSH', typeID: 28, host: 'localhost', port: 22 } as IService
 const device = (permissions = ['CONNECT', 'MANAGE', 'SCRIPTING']) =>
   ({ id: 'D1', name: 'Pi', permissions, services: [shellService, sshService] } as unknown as IDevice)
-const app = (state: string, extra: Partial<DeviceApp> = {}): DeviceApp => ({
+const app = (state: string, extra: Partial<DeviceApp> = {}): DeviceApp =>
+  withServices({
   id: 'acme.shell',
   name: 'Shell',
   publisher: 'Acme',
@@ -74,7 +77,7 @@ const app = (state: string, extra: Partial<DeviceApp> = {}): DeviceApp => ({
   version: null,
   settings: [],
   ...extra,
-})
+  })
 const turn = vi.fn()
 
 let root: Root
@@ -232,7 +235,8 @@ describe('AppTerminalButton — the service’s row in the device’s services',
 
 describe('AppTerminalAction — Open terminal in the device’s Apps', () => {
   it('while it runs, through its service’s port; nothing for an app that opens no terminal', async () => {
-    let container = await render(<AppTerminalAction device={device()} app={app('running')} />)
+    const action = (shell: DeviceApp) => <AppTerminalAction device={device()} app={shell} service={shell.services[0]} />
+    let container = await render(action(app('running')))
     await click(container.querySelector('[data-app-terminal]'))
     expect(openTerminal).toHaveBeenCalledWith({
       name: 'pi-evan.on.remote.it',
@@ -241,10 +245,10 @@ describe('AppTerminalAction — Open terminal in the device’s Apps', () => {
       service: 'S1',
     })
     act(() => root.unmount())
-    container = await render(<AppTerminalAction device={device()} app={app('starting')} />)
+    container = await render(action(app('starting')))
     expect(container.innerHTML).toBe('')
     act(() => root.unmount())
-    container = await render(<AppTerminalAction device={device()} app={app('running', { capabilities: [] })} />)
+    container = await render(action(app('running', { capabilities: [] })))
     expect(container.innerHTML).toBe('')
   })
 })

@@ -4,7 +4,8 @@ import type { TFunction } from 'i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import { Box, Button, Divider, List, Switch, TextField, Typography } from '@mui/material'
 import { DeviceContext } from '../services/Context'
-import { DeviceApp } from '../services/graphQLDeviceApps'
+import { DeviceApp, DeviceAppService } from '../services/graphQLDeviceApps'
+import { firstPortOf, formatPorts } from '../services/multiPortServices'
 import { CatalogApp, graphQLCatalogApp } from '../services/graphQLAppCatalog'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch, RootConsent } from '../components/AppRootConsent'
@@ -44,11 +45,13 @@ import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
      Version    the version it runs against the one offered on its channel: up to date, or held back with why and what
                 would release it (Update now… for a release waiting for root consent, Unpin for a pin, none for the rest)
      Channel    its channel (the account's, stable, beta) and its pin (none, or a release of it)
-     Service    its service, opened by its protocol — Open terminal for one that is ssh and signs people in by
-                certificate (components/AppTerminal), a page for http and https, a viewer for vnc and rdp, a connection
-                alone for udp (its port, said UDP, is for the person's own UDP client) —, the key it
-                presents where it reports one, and the port people connect to where its owner chooses it (portSetting:
-                that setting is edited here, not under Settings). A disabled app has no service to open (graphql gives
+     Service    each of its services, the primary first, opened by its protocol — Open terminal for one that is ssh
+                where the app signs people in by certificate (components/AppTerminal), a page for http and https, a
+                viewer for vnc and rdp, a connection alone for udp (its port, said UDP, is for the person's own UDP
+                client) —; a multi-port service's ports as a list, a connection reaching the first, its launch port,
+                and the rest by name on the device subnet; the key the app presents (under the primary); and the
+                ports its owner chooses (a service's portSetting, a listener's), each edited there, labelled with its
+                service or listener, not again under Settings. A disabled app has no service to open (graphql gives
                 none: kept, stopped): said stopped, where its app serves one (its release names a protocol)
      Sessions   how many it serves now, where it reports them; each session, as whom and since when, for those who
                 manage it
@@ -135,16 +138,14 @@ export const DeviceAppPage: React.FC = () => {
   // The machine's administrator refuses the switch either way (local), or enabling it (off); and its removal (local).
   const adminHeld = adminRefuses(app, app.enabled ? 'disable' : 'enable')
   const admin = adminLine(t, app)
-  // The setting that is its service's port (portSetting) is edited in one place: under Service, where its service is
-  // shown; in Settings otherwise (disabled, its service stopped).
-  const serviceShown = !!app.serviceId && !gone
-  const portSetting = serviceShown ? app.settings.find(setting => setting.name === app.portSetting) : undefined
-  const settings = app.settings.filter(
-    setting => (!setting.deprecated || setting.at) && setting !== portSetting
-  )
+  // Its services, the primary first, each shown while it is served. A setting that is a shown service's port, or one
+  // of its listeners', is edited in one place: under that service, labelled so; in Settings otherwise (disabled, its
+  // services stopped).
+  const shown = gone ? [] : app.services.filter(served => !!served.serviceId)
+  const ports = new Map(shown.flatMap(served => portSettingsOf(t, served)))
+  const settings = app.settings.filter(setting => (!setting.deprecated || setting.at) && !ports.has(setting.name))
   const accountChannel = catalog?.accountChannel ?? 'stable'
   const channel = app.channel || accountChannel
-  const service = device.services?.find(s => s.id === app.serviceId)
   const waitingRoot = app.heldBack?.reason === 'consent' || (!app.heldBack && !!app.awaitingRoot)
   // Held back for what its state already says (graphql gives both the same words: a withdrawal, one kept though
   // withdrawn, the device's refusal): said once, in State.
@@ -308,47 +309,74 @@ export const DeviceAppPage: React.FC = () => {
             </TextField>
           </Row>
         )}
-        {serviceShown && (
-          <Row label={t('apps.service', 'Service')} data="service">
-            <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="body2">
-                {!service
-                  ? app.name
-                  : app.protocol === 'udp'
-                  ? t('apps.serviceLineUdp', '{{name}} · UDP port {{port}}', { name: service.name, port: service.port })
-                  : t('apps.serviceLine', '{{name}} · port {{port}}', { name: service.name, port: service.port })}
-              </Typography>
-              {app.hostKey && (
-                <Typography
-                  variant="caption"
-                  component="div"
-                  color="textSecondary"
-                  sx={{ wordBreak: 'break-all' }}
-                  data-host-key
-                >
-                  {t('deviceApps.hostKey', 'Host key {{key}}', { key: app.hostKey })}
+        {shown.map((served, index) => {
+          const service = device.services?.find(s => s.id === served.serviceId)
+          const list = served.ports.length ? served.ports : service?.ports ?? []
+          const several = served.multiPort || list.length > 1 || !!list[0]?.includes('-')
+          const own = [...ports].filter(([, port]) => port.service === served)
+          return (
+            <Row key={served.key ?? ''} label={t('apps.service', 'Service')} data="service">
+              <Box sx={{ flexGrow: 1 }} data-app-service={served.key ?? ''}>
+                <Typography variant="body2">
+                  {several
+                    ? t('apps.serviceLinePorts', '{{name}} · ports {{ports}}', {
+                        name: service?.name ?? served.name,
+                        ports: formatPorts(list),
+                      })
+                    : !service
+                    ? served.name
+                    : served.protocol === 'udp'
+                    ? t('apps.serviceLineUdp', '{{name}} · UDP port {{port}}', { name: service.name, port: service.port })
+                    : t('apps.serviceLine', '{{name}} · port {{port}}', { name: service.name, port: service.port })}
                 </Typography>
-              )}
-              {portSetting && (
-                <List dense disablePadding data-app-port-setting={portSetting.name} sx={{ marginLeft: `-${spacing.sm}px` }}>
-                  <DeviceAppSetting
-                    setting={portSetting}
-                    label={t('apps.servicePort', 'Port people connect to')}
-                    help={portSetting.help}
-                    disabled={!canManage || saving === portSetting.name}
-                    onChange={value => change(portSetting.name, () => setSetting(app, portSetting.name, value))}
-                  />
-                </List>
-              )}
-            </Box>
-            {app.enabled &&
-              (opensTerminal(app) ? (
-                <AppTerminalAction device={device} app={app} />
-              ) : (
-                <AppOpen device={device} app={app} />
-              ))}
-          </Row>
-        )}
+                {/* A connection reaches its first port, the launch port; the rest by name on the device subnet
+                    (graphql-api docs/MULTI-PORT-SERVICES.md, "Clients: address mode only"). */}
+                {several && list.length > 0 && (
+                  <Typography variant="caption" component="div" color="textSecondary" data-app-service-ports>
+                    {t('multiPort.firstPortOnly', 'This connection reaches port {{port}} only.', {
+                      port: firstPortOf(list[0]),
+                    })}{' '}
+                    {t('multiPort.subnetReachesAll', 'All its ports, {{ports}}, are reached by name on the device subnet.', {
+                      ports: formatPorts(list),
+                    })}
+                  </Typography>
+                )}
+                {index === 0 && app.hostKey && (
+                  <Typography
+                    variant="caption"
+                    component="div"
+                    color="textSecondary"
+                    sx={{ wordBreak: 'break-all' }}
+                    data-host-key
+                  >
+                    {t('deviceApps.hostKey', 'Host key {{key}}', { key: app.hostKey })}
+                  </Typography>
+                )}
+                {own.map(([name, port]) => {
+                  const setting = app.settings.find(s => s.name === name)
+                  if (!setting) return null
+                  return (
+                    <List key={name} dense disablePadding data-app-port-setting={name} sx={{ marginLeft: `-${spacing.sm}px` }}>
+                      <DeviceAppSetting
+                        setting={setting}
+                        label={port.label}
+                        help={setting.help}
+                        disabled={!canManage || saving === name}
+                        onChange={value => change(name, () => setSetting(app, name, value))}
+                      />
+                    </List>
+                  )
+                })}
+              </Box>
+              {app.enabled &&
+                (opensTerminal(app, served) ? (
+                  <AppTerminalAction device={device} app={app} service={served} />
+                ) : (
+                  <AppOpen device={device} app={app} service={served} />
+                ))}
+            </Row>
+          )
+        })}
         {app.enabled && !gone && app.sessionsOpen > 0 && (
           <Row label={t('apps.sessions', 'Sessions')} data="sessions" top>
             <Box sx={{ paddingTop: 1 }}>
@@ -510,6 +538,22 @@ export const DeviceAppPage: React.FC = () => {
 }
 
 // One line of the page: its label, then what it says and its controls.
+/* The settings that are a service's ports, each with the words it is edited under there: a service of one port's
+   (portSetting), the port people connect to; a listener's, where it listens — a multi-port service's ports are its
+   listeners' own, so each is named by its listener. */
+function portSettingsOf(t: TFunction, service: DeviceAppService): [string, { service: DeviceAppService; label: string }][] {
+  const out: [string, { service: DeviceAppService; label: string }][] = []
+  if (service.portSetting) out.push([service.portSetting, { service, label: t('apps.servicePort', 'Port people connect to') }])
+  for (const listener of service.listeners) {
+    if (!listener.portSetting || out.some(([name]) => name === listener.portSetting)) continue
+    const label = listener.name
+      ? t('apps.listenerPort', 'Port of {{listener}}', { listener: listener.name })
+      : t('apps.listenPort', 'Port it listens on')
+    out.push([listener.portSetting, { service, label }])
+  }
+  return out
+}
+
 const Row: React.FC<{ label: string; data: string; top?: boolean; children: React.ReactNode }> = ({
   label,
   data,

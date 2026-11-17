@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Button, Typography } from '@mui/material'
 import browser from '../services/browser'
-import { DeviceApp } from '../services/graphQLDeviceApps'
+import { DeviceApp, DeviceAppService } from '../services/graphQLDeviceApps'
 import { ServiceApp, useServiceApp } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
 import { useSubnetName } from '../hooks/useLocalSubnetName'
@@ -13,17 +13,16 @@ import { IconButton } from '../buttons/IconButton'
 import { Link } from './Link'
 import { Icon } from './Icon'
 
-/* An app's service opened in our web SSH (pages/TerminalPage), for any app whose service is ssh and that signs people
-   in by remote.it certificate (helpers/sshHelper opensTerminal) — from wherever it is picked: the device's Apps
+/* An app's service opened in our web SSH (pages/TerminalPage), for any app's service that is ssh where the app signs
+   people in by remote.it certificate (helpers/sshHelper opensTerminal) — from wherever it is picked: the device's Apps
    section and the app's page there, its service's row in the device's services and its connect panel. Always the
    same: the device's name in device subnets, the service's port, the person's own account and a certificate for it,
    and the host key the device reports for the app, which the terminal checks. An option beside the service's own ways
    to connect, which stay as they are. Nothing where the device has no name in device subnets or the API has no apps.
    From the desktop and mobile apps it opens in the web portal, in the system browser (helpers/terminalHelper). */
 
-function open(app: DeviceApp, name: string, port: number) {
-  if (!app.serviceId) return
-  openTerminal({ name, port, title: app.name, service: app.serviceId })
+function open(app: DeviceApp, serviceId: string, name: string, port: number) {
+  openTerminal({ name, port, title: app.name, service: serviceId })
 }
 
 const label = (t: TFunction) =>
@@ -31,18 +30,23 @@ const label = (t: TFunction) =>
     ? t('appTerminal.openInBrowser', 'Open in web SSH, in your browser')
     : t('appTerminal.open', 'Open in web SSH')
 
-const servicePort = (device: IDevice | undefined, app: DeviceApp) =>
-  device?.services?.find(service => service.id === app.serviceId)?.port
+const servicePort = (device: IDevice | undefined, serviceId: string | null) =>
+  device?.services?.find(service => service.id === serviceId)?.port
 
-/** Open terminal, in the device's Apps section and on the app's page there: while it runs. */
-export const AppTerminalAction: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device, app }) => {
+/** Open terminal, in the device's Apps section and on the app's page there, for one of its services: while it runs. */
+export const AppTerminalAction: React.FC<{ device: IDevice; app: DeviceApp; service: DeviceAppService }> = ({
+  device,
+  app,
+  service,
+}) => {
   const { t } = useTranslation()
-  const terminal = opensTerminal(app)
+  const terminal = opensTerminal(app, service)
   const name = useSubnetName(terminal ? device.id : undefined)
-  const port = servicePort(device, app)
-  if (!terminal || app.state !== 'running' || !name || !port || !app.serviceId) return null
+  const port = servicePort(device, service.serviceId)
+  if (!terminal || app.state !== 'running' || !name || !port || !service.serviceId) return null
+  const serviceId = service.serviceId
   return (
-    <Button size="small" variant="contained" onClick={() => open(app, name, port)} data-app-terminal>
+    <Button size="small" variant="contained" onClick={() => open(app, serviceId, name, port)} data-app-terminal>
       {t('deviceApps.openTerminal', 'Open terminal')}
     </Button>
   )
@@ -51,11 +55,11 @@ export const AppTerminalAction: React.FC<{ device: IDevice; app: DeviceApp }> = 
 /** A service's row in its device's services: a terminal button while its app runs. */
 export const AppTerminalButton: React.FC<{ device: IDevice; service: IService }> = ({ device, service }) => {
   const { t } = useTranslation()
-  const { app } = useServiceApp(device, service)
-  const terminal = opensTerminal(app)
+  const { app, appService } = useServiceApp(device, service)
+  const terminal = opensTerminal(app, appService)
   const name = useSubnetName(terminal ? device.id : undefined)
   const port = service.port
-  if (!app || !terminal || app.state !== 'running' || !app.serviceId || !name || !port) return null
+  if (!app || !terminal || app.state !== 'running' || appService?.serviceId !== service.id || !name || !port) return null
   return (
     <IconButton
       icon="terminal"
@@ -65,7 +69,7 @@ export const AppTerminalButton: React.FC<{ device: IDevice; service: IService }>
       onClick={event => {
         // The row opens the service's page: the button is not the row.
         event.stopPropagation()
-        open(app, name, port)
+        open(app, service.id, name, port)
       }}
     />
   )
@@ -79,10 +83,10 @@ export const AppTerminalButton: React.FC<{ device: IDevice; service: IService }>
 export const AppTerminalOption: React.FC<{ device?: IDevice; service?: IService; serving: ServiceApp }> = ({
   device,
   service,
-  serving: { app, switching, turn, setRelease },
+  serving: { app, appService, switching, turn, setRelease },
 }) => {
   const { t } = useTranslation()
-  const terminal = opensTerminal(app)
+  const terminal = opensTerminal(app, appService)
   const name = useSubnetName(terminal ? device?.id : undefined)
   const { flip, consent } = useAppSwitch({ turn, setRelease }, undefined, undefined, device?.accountId)
   if (!app || !terminal || !name) return null
@@ -92,10 +96,11 @@ export const AppTerminalOption: React.FC<{ device?: IDevice; service?: IService;
 
   const port = service?.port
   if (app.state === 'running' && !switching) {
-    if (!app.serviceId || !port) return null
+    const serviceId = appService?.serviceId
+    if (!serviceId || !port) return null
     return (
       <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
-        <Link onClick={() => open(app, name, port)}>
+        <Link onClick={() => open(app, serviceId, name, port)}>
           <Icon name="terminal" size="sm" />
           {label(t)}
         </Link>
