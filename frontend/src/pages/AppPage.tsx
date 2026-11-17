@@ -154,14 +154,20 @@ export const AppPage: React.FC = () => {
 
   const devices = app.devices?.items ?? []
   const chosen = devices.filter(d => selected.includes(d.deviceId))
-  const waiting = chosen.filter(d => d.heldBack?.reason === 'consent')
-  const needsConsent = waiting.length > 0
-  // What the releases they wait for ask: to run as root where graphql says one does, and their capabilities where the
-  // catalogue lists them (their pin's, else their channel's).
-  const updateRoot = waiting.some(d => heldConsentRoot(d.heldBack!))
-  const updateAsks = [
-    ...new Set(waiting.flatMap(d => app.releases.find(r => r.version === (d.pinned || d.latest))?.capabilities ?? [])),
-  ]
+  /* Update selected unpins them (version ""): each is moved to the release its channel gives it (latest — graphql's,
+     by its bucket). It asks the yes where that release asks for one a device may not have: one held for a consent, or
+     one pinned elsewhere that it would move off (its consent unknown here; graphql keeps the newer yes). What it asks
+     is those releases' together, as the catalogue lists them — where it does not, root as graphql's words for the
+     held-back say. */
+  const releaseOf = (version: string | null) => app.releases.find(r => r.version === version)
+  const moving = chosen.filter(
+    d =>
+      d.heldBack?.reason === 'consent' ||
+      (d.enabled && !!d.pinned && d.latest !== d.pinned && asksConsent(releaseOf(d.latest)))
+  )
+  const needsConsent = moving.length > 0
+  const updateRoot = moving.some(d => releaseOf(d.latest)?.root ?? (!!d.heldBack && heldConsentRoot(d.heldBack)))
+  const updateAsks = [...new Set(moving.flatMap(d => releaseOf(d.latest)?.capabilities ?? []))]
   const standing = app.releases.filter(r => !r.withdrawn)
   const pinRelease = standing.find(r => r.version === pinTo)
   // A pin to a release that asks for a consent (asksConsent, graphql's rule) takes the yes: each device's own consent
