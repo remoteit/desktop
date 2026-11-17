@@ -115,6 +115,8 @@ describe('an app’s icon and service, from what the API says — never its id',
     expect(isAppService({ host: 'remoteit-app-acme-shell' })).toBe(true)
     expect(isAppService({ host: 'localhost' })).toBe(false)
     expect(isAppService(undefined)).toBe(false)
+    // No app is known by a host of its own: the console's service is at its app host like any app's.
+    expect(isAppService({ host: 'remoteit-console' })).toBe(false)
   })
 
   it('the app naming the service, or — disabled, naming none — the one at whose host it is', () => {
@@ -124,13 +126,5 @@ describe('an app’s icon and service, from what the API says — never its id',
     expect(serviceApp([app('acme.shell', 'S9')], service)).toBeUndefined()
     expect(serviceApp([app('acme.shell', 'S5')], { id: 'S5', host: 'localhost' })).toBeUndefined()
     expect(serviceApp(null, service)).toBeUndefined()
-  })
-
-  // TEMPORARY (services/consoleUntilDeclared): deleted with it.
-  it('until its migration, a service at the console’s own host is its app’s', () => {
-    expect(isAppService({ host: 'remoteit-console' })).toBe(true)
-    expect(serviceApp([app('remoteit.console', null)], { id: 'S1', host: 'remoteit-console' })?.id).toBe(
-      'remoteit.console'
-    )
   })
 })

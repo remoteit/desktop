@@ -319,17 +319,17 @@ describe('its service, settings, root, delivery and problems', () => {
     expect(push).toHaveBeenCalledWith({ pathname: '/devices/D1/S7/connect', state: { autoConnect: true, autoLaunch: true } })
   })
 
-  it('disabled: no Open — its service stopped, said where its app serves one', async () => {
+  it('disabled: no Open — its service stopped, said where its release names a protocol', async () => {
     // graphql 12c: a disabled app has no release, grant, heldBack or service.
     const disabled = { enabled: false, state: 'disabled' as const, release: null, grantUntil: null, heldBack: null, serviceId: null }
     apps.value.apps = [backup(disabled)]
-    catalog.mockResolvedValue({ ...CATALOG, serves: 'inetd' })
+    catalog.mockResolvedValue({ ...CATALOG, protocol: 'https' })
     let page = await render()
     expect(page.querySelector('[data-app-open]')).toBeNull()
     expect(text(page, 'service')).toContain('Stopped while the app is disabled: enable it to open it')
     act(() => root.unmount())
     container.remove()
-    catalog.mockResolvedValue({ ...CATALOG, serves: 'none' })
+    catalog.mockResolvedValue({ ...CATALOG, protocol: null })
     page = await render()
     expect(row(page, 'service')).toBeNull()
     act(() => root.unmount())
@@ -347,6 +347,48 @@ describe('its service, settings, root, delivery and problems', () => {
     params.appID = 'acme.shell'
     page = await render()
     expect(page.querySelector('[data-app-terminal]')).toBeNull()
+  })
+
+  it('Open in the words of its protocol: a page, a screen, else Open', async () => {
+    const words = async (protocol: string | null) => {
+      apps.value.apps = [backup({ protocol })]
+      const answer = (await render()).querySelector('[data-app-open]')?.textContent
+      act(() => root.unmount())
+      container.remove()
+      return answer
+    }
+    expect(await words('https')).toBe('Open page')
+    expect(await words('http')).toBe('Open page')
+    expect(await words('vnc')).toBe('Open screen')
+    expect(await words('rdp')).toBe('Open screen')
+    expect(await words('tcp')).toBe('Open')
+  })
+
+  it('a port its owner chooses is its service’s, edited under Service, not again under Settings', async () => {
+    const port = {
+      ...backup().settings[0],
+      name: 'port',
+      type: 'int',
+      label: 'Port',
+      default: 8443,
+      value: 8443,
+      choices: null,
+    }
+    apps.value.apps = [backup({ portSetting: 'port', settings: [...backup().settings, port] })]
+    let page = await render()
+    expect(row(page, 'service')?.querySelector('[data-app-port-setting="port"]')).not.toBeNull()
+    expect(row(page, 'service')?.textContent).toContain('Port people connect to')
+    expect(row(page, 'settings')?.querySelector('[data-app-port-setting]')).toBeNull()
+    expect(row(page, 'settings')?.textContent).not.toContain('Port')
+    act(() => root.unmount())
+    container.remove()
+    // Disabled, its service stopped: the setting is under Settings, where it can still be changed.
+    apps.value.apps = [
+      backup({ enabled: false, state: 'disabled', serviceId: null, portSetting: 'port', settings: [...backup().settings, port] }),
+    ]
+    page = await render()
+    expect(page.querySelector('[data-app-port-setting]')).toBeNull()
+    expect(row(page, 'settings')?.textContent).toContain('Port')
   })
 
   it('Open terminal in Open’s place, for any app whose service is ssh and that declares person-certificates', async () => {
@@ -384,19 +426,20 @@ describe('its service, settings, root, delivery and problems', () => {
     )
   })
 
-  it('its sessions: how many are open; who, as whom, by an AI and since when, for those who manage it', async () => {
+  it('its sessions: how many are open; each session, as whom, by an AI and since when, for those who manage it', async () => {
     expect(row(await render(), 'sessions')).toBeNull()
     act(() => root.unmount())
     container.remove()
     const sessions = [
-      { id: 'k1', login: 'r3-evan', person: 'evan@remote.it', via: null, since: null },
-      { id: 'k2', login: 'r3-evan', person: 'mcp@remote.it', via: 'ai', since: null },
+      { session: '9f2c1e0a77b3', login: 'r3-evan', via: null, since: null },
+      { session: 'a1b2', login: null, via: 'ai', since: null },
     ]
     apps.value.apps = [backup({ sessions, sessionsOpen: 3 })]
     let page = await render()
     expect(page.querySelector('[data-app-sessions-open]')?.textContent).toBe('3 open now')
-    expect(page.querySelector('[data-app-session="k1"]')?.textContent).toBe('evan@remote.it · as r3-evan')
-    expect(page.querySelector('[data-app-session="k2"]')?.textContent).toBe('mcp@remote.it · as r3-evan · by an AI')
+    // The session, never a person: an app knows sessions, not who is behind them.
+    expect(page.querySelector('[data-app-session="9f2c1e0a77b3"]')?.textContent).toBe('Session 9f2c1e0a · as r3-evan')
+    expect(page.querySelector('[data-app-session="a1b2"]')?.textContent).toBe('Session a1b2 · by an AI')
     expect(page.querySelector('[data-app-sessions-more]')?.textContent).toBe('1 more not listed')
     act(() => root.unmount())
     container.remove()

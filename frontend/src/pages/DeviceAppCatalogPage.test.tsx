@@ -2,11 +2,10 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { apps, push, catalog } = vi.hoisted(() => ({ apps: { value: {} as any }, push: vi.fn(), catalog: vi.fn() }))
+const { apps, push } = vi.hoisted(() => ({ apps: { value: {} as any }, push: vi.fn() }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }) }))
 vi.mock('../services/Context', async () => ({ DeviceContext: (await import('react')).createContext({}) }))
 vi.mock('../hooks/useDeviceApps', () => ({ useDeviceApps: () => apps.value }))
-vi.mock('../services/graphQLAppCatalog', () => ({ graphQLAppCatalog: catalog }))
 vi.mock('../services/graphQLDeviceApps', async () => ({
   ...(await import('../services/deviceAppsShared')),
   SCREENVIEW: 'remoteit.screenview',
@@ -75,7 +74,6 @@ afterEach(() => {
 beforeEach(() => {
   push.mockReset()
   turn.mockReset().mockResolvedValue(true)
-  catalog.mockReset().mockResolvedValue([])
   apps.value = { apps: [], available: [available()], switching: undefined, turn }
 })
 
@@ -157,14 +155,19 @@ describe('the catalogue for this device', () => {
     expect(page.querySelector('[data-catalog-empty]')?.textContent).toBe('There is no app this device does not have already.')
   })
 
-  it('what each asks of remote.it, from its catalogue entry, beside Runs as root — and named in the consent', async () => {
-    catalog.mockResolvedValue([
-      { id: 'acme.shell', capabilities: ['person-accounts', 'person-certificates'], protocol: 'ssh' },
-      { id: 'remoteit.files', capabilities: [], protocol: 'https' },
-    ])
-    apps.value.available = [available(), available({ id: 'acme.shell', name: 'Shell', publisher: 'Acme', root: true })]
+  it('what each asks of remote.it, as graphql gives it for the release offered, beside Runs as root — and named in the consent', async () => {
+    apps.value.available = [
+      available({ capabilities: [], protocol: 'https' }),
+      available({
+        id: 'acme.shell',
+        name: 'Shell',
+        publisher: 'Acme',
+        root: true,
+        capabilities: ['person-accounts', 'person-certificates'],
+        protocol: 'ssh',
+      }),
+    ]
     const page = await render()
-    expect(catalog).toHaveBeenCalledWith('A1')
     expect(offer(page, 'acme.shell').querySelector('[data-catalog-capabilities]')?.textContent).toBe(
       'Keeps accounts for the people you share with · Signs in people by remote.it certificate'
     )
@@ -180,12 +183,5 @@ describe('the catalogue for this device', () => {
       true,
       true
     )
-  })
-
-  it('where the API has no catalogue, nothing said of what they ask', async () => {
-    catalog.mockResolvedValue('UNSERVED')
-    const page = await render()
-    expect(offer(page, 'remoteit.files')).not.toBeNull()
-    expect(page.querySelector('[data-catalog-capabilities]')).toBeNull()
   })
 })

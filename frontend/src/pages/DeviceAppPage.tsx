@@ -44,11 +44,13 @@ import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
      Version    the version it runs against the one offered on its channel: up to date, or held back with why and what
                 would release it (Update now… for a release waiting for root consent, Unpin for a pin, none for the rest)
      Channel    its channel (the account's, stable, beta) and its pin (none, or a release of it)
-     Service    its service, opened as any service opens — Open terminal for one that is ssh and signs people in by
-                certificate (components/AppTerminal) —, and the key it presents where the device reports one. A
-                disabled app has no service to open (graphql gives none: kept, stopped): said stopped, where its app
-                serves one
-     Sessions   how many it serves now, where it reports them; who, as whom and since when, for those who manage it
+     Service    its service, opened by its protocol — Open terminal for one that is ssh and signs people in by
+                certificate (components/AppTerminal), a page for http and https, a viewer for vnc and rdp —, the key it
+                presents where it reports one, and the port people connect to where its owner chooses it (portSetting:
+                that setting is edited here, not under Settings). A disabled app has no service to open (graphql gives
+                none: kept, stopped): said stopped, where its app serves one (its release names a protocol)
+     Sessions   how many it serves now, where it reports them; each session, as whom and since when, for those who
+                manage it
      Settings   the app's options, the setting rows the device's settings use, in its release's words
      Root       who consented, when, to which release and how (root apps only)
      Delivery   when the delivery grant last given lapses; none while disabled
@@ -132,7 +134,13 @@ export const DeviceAppPage: React.FC = () => {
   // The machine's administrator refuses the switch either way (local), or enabling it (off); and its removal (local).
   const adminHeld = adminRefuses(app, app.enabled ? 'disable' : 'enable')
   const admin = adminLine(t, app)
-  const settings = app.settings.filter(setting => !setting.deprecated || setting.at)
+  // The setting that is its service's port (portSetting) is edited in one place: under Service, where its service is
+  // shown; in Settings otherwise (disabled, its service stopped).
+  const serviceShown = !!app.serviceId && !gone
+  const portSetting = serviceShown ? app.settings.find(setting => setting.name === app.portSetting) : undefined
+  const settings = app.settings.filter(
+    setting => (!setting.deprecated || setting.at) && setting !== portSetting
+  )
   const accountChannel = catalog?.accountChannel ?? 'stable'
   const channel = app.channel || accountChannel
   const service = device.services?.find(s => s.id === app.serviceId)
@@ -299,7 +307,7 @@ export const DeviceAppPage: React.FC = () => {
             </TextField>
           </Row>
         )}
-        {app.serviceId && !gone && (
+        {serviceShown && (
           <Row label={t('apps.service', 'Service')} data="service">
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="body2">
@@ -317,6 +325,17 @@ export const DeviceAppPage: React.FC = () => {
                 >
                   {t('deviceApps.hostKey', 'Host key {{key}}', { key: app.hostKey })}
                 </Typography>
+              )}
+              {portSetting && (
+                <List dense disablePadding data-app-port-setting={portSetting.name} sx={{ marginLeft: `-${spacing.sm}px` }}>
+                  <DeviceAppSetting
+                    setting={portSetting}
+                    label={t('apps.servicePort', 'Port people connect to')}
+                    help={portSetting.help}
+                    disabled={!canManage || saving === portSetting.name}
+                    onChange={value => change(portSetting.name, () => setSetting(app, portSetting.name, value))}
+                  />
+                </List>
               )}
             </Box>
             {app.enabled &&
@@ -336,11 +355,11 @@ export const DeviceAppPage: React.FC = () => {
               {canManage &&
                 app.sessions.map(session => (
                   <Typography
-                    key={session.id}
+                    key={session.session}
                     variant="caption"
                     component="div"
                     color="textSecondary"
-                    data-app-session={session.id}
+                    data-app-session={session.session}
                   >
                     {sessionLine(t, session)}
                   </Typography>
@@ -355,7 +374,7 @@ export const DeviceAppPage: React.FC = () => {
             </Box>
           </Row>
         )}
-        {!app.serviceId && !app.enabled && !gone && catalog && catalog.serves !== 'none' && (
+        {!app.serviceId && !app.enabled && !gone && catalog?.protocol && (
           <Row label={t('apps.service', 'Service')} data="service">
             <Typography variant="body2" color="textSecondary" data-app-service-stopped>
               {t('apps.serviceStopped', 'Stopped while the app is disabled: enable it to open it')}
@@ -507,10 +526,11 @@ const Row: React.FC<{ label: string; data: string; top?: boolean; children: Reac
   </Box>
 )
 
-// A session it serves: who, as whom on the device, by an AI where one opened it, and since when.
+// A session it serves, as the app reports it: the session (its id's first characters), as whom on the device, by an AI
+// where one opened it, and since when. Never who: an app knows a session, not a person.
 function sessionLine(t: TFunction, session: DeviceApp['sessions'][number]): string {
   return [
-    session.person,
+    t('apps.sessionId', 'Session {{id}}', { id: session.session.slice(0, 8) }),
     session.login && t('apps.sessionAs', 'as {{login}}', { login: session.login }),
     session.via === 'ai' && t('apps.sessionByAi', 'by an AI'),
     session.since && t('apps.sessionSince', 'since {{when}}', { when: when(session.since) }),

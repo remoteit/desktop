@@ -81,9 +81,12 @@ describe('the catalogue, where graphql serves it', () => {
     const app = await graphQLCatalogApp('acme.backup', { heldBack: true, heldBackReason: 'daemon' })
     const { query, variables } = post.mock.calls[1][0]
     expect(query).toContain(
-      'releases(first: $releases) { version created notes root capabilities protocol platforms withdrawn channels }'
+      'releases(first: $releases) { version created notes root capabilities protocol contract platforms withdrawn channels }'
     )
-    expect(query).toMatch(/runsAs root capabilities protocol kind/)
+    // Contract 1: how its service opens and the contract it is written to; no kind or serves (run and listen are the
+    // daemon's to read).
+    expect(query).toMatch(/runsAs root capabilities protocol contract platforms/)
+    expect(query).not.toMatch(/\bkind\b|\bserves\b/)
     expect(query).toContain('devices(first: 100, after: $after, heldBack: $heldBack, heldBackReason: $heldBackReason, version: $version)')
     expect(query).toContain('heldBackBy { reason count }')
     expect(query).toContain('heldBack { reason detail }')

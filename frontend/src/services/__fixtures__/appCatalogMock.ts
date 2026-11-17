@@ -75,8 +75,7 @@ export type MockCatalogApp = {
   root: boolean
   capabilities: string[]
   protocol: string | null
-  kind: string
-  serves: string
+  contract: number | null
   platforms: string[]
   version: string | null
   accountChannel: string | null
@@ -131,8 +130,7 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
     root: true,
     capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'],
     protocol: 'ssh',
-    kind: 'binary',
-    serves: 'inetd',
+    contract: 1,
     platforms: ['linux-amd64', 'linux-arm64', 'darwin-arm64', 'windows-amd64'],
     version: '1.4.0',
     accountChannel: null,
@@ -176,8 +174,7 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
     root: false,
     capabilities: [],
     protocol: 'https',
-    kind: 'binary',
-    serves: 'socket',
+    contract: 1,
     platforms: ['linux-amd64', 'linux-arm64'],
     version: '1.2.0',
     accountChannel: null,
@@ -207,8 +204,7 @@ export const MOCK_CATALOG: MockCatalogApp[] = [
     root: false,
     capabilities: [],
     protocol: null,
-    kind: 'binary',
-    serves: 'none',
+    contract: 1,
     platforms: ['linux-amd64', 'linux-arm64', 'linux-arm64-musl'],
     version: '1.4.0',
     accountChannel: 'stable',

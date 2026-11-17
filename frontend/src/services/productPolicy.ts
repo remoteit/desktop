@@ -1,6 +1,7 @@
 import { post } from './post'
 import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import type { NetworkDeviceRole } from './graphQLDeviceNetworks'
+import { choiceOf } from './deviceAppsShared'
 
 /* Product policy for Control Link devices (graphql-api docs/PROXY-GROUPS.md §11, "Wave 4: product policy"). A product
    holds settings and grants — networks, proxies, tags — and a sync level that says what its devices get of them:
@@ -485,7 +486,7 @@ export const productAppOf = (app: any): ProductApp => ({
       forcible: !!setting.forcible,
       locked: !!setting.locked,
       deprecated: setting.deprecated ?? null,
-      choices: setting.choices ?? null,
+      choices: setting.choices ? setting.choices.map(choiceOf) : null,
     })
   ),
   removedSettings: (app.removedSettings || []).map(

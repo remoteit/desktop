@@ -25,6 +25,7 @@ import {
   heldBackLine,
   managedLine,
   offered,
+  openWord,
   runsAsWord,
   stateWord,
 } from '../helpers/appsHelper'
@@ -210,7 +211,9 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
 }
 
 /* Open, for any app reached as a service (serviceId) while it runs: its service's connection, started and launched as
-   its application type launches — HTTP opens in the browser —, as any service's Connect page does. One whose service
+   its application type launches (graphql makes the type from the manifest's protocol: http and https open in the
+   browser, vnc and rdp in a viewer), as any service's Connect page does; said by its protocol (Open page, Open
+   screen). One whose service
    opens as a terminal (helpers/sshHelper opensTerminal) has Open terminal instead (components/AppTerminal). */
 export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device, app }) => {
   const { t } = useTranslation()
@@ -228,7 +231,7 @@ export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device,
         })
       }
     >
-      {t('deviceApps.open', 'Open')}
+      {openWord(t, app.protocol)}
     </Button>
   )
 }

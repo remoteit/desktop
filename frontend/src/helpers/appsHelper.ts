@@ -1,7 +1,6 @@
 import type { TFunction } from 'i18next'
 import type { AppHeldBack, AvailableApp, DeviceApp, DeviceAppRootConsent } from '../services/graphQLDeviceApps'
 import { needsNewer } from '../services/deviceAppsShared'
-import { untilConsoleMigrates } from '../services/consoleUntilDeclared'
 import type { SettingLock } from '../services/productPolicy'
 import { timeOptions } from '../components/Timestamp'
 
@@ -47,16 +46,36 @@ export function capabilityWords(t: TFunction, capability: string): string {
 export const capabilitiesLine = (t: TFunction, capabilities: string[] = []) =>
   capabilities.map(capability => capabilityWords(t, capability)).join(' · ')
 
-// An app's icon, from how its service opens: a terminal, a page, else a box. No app has one of its own.
+// An app's icon, from how its service opens: a terminal, a page, a screen, else a box. No app has one of its own.
 export const appIcon = (protocol?: string | null) =>
-  protocol === 'ssh' ? 'terminal' : protocol === 'http' || protocol === 'https' ? 'globe' : 'cube'
+  protocol === 'ssh'
+    ? 'terminal'
+    : protocol === 'http' || protocol === 'https'
+    ? 'globe'
+    : protocol === 'vnc' || protocol === 'rdp'
+    ? 'desktop'
+    : 'cube'
+
+// Open, in the words of how its service opens (its protocol): a page, a screen, else its service's connection.
+export function openWord(t: TFunction, protocol?: string | null): string {
+  switch (protocol) {
+    case 'http':
+    case 'https':
+      return t('deviceApps.openPage', 'Open page')
+    case 'vnc':
+    case 'rdp':
+      return t('deviceApps.openScreen', 'Open screen')
+    default:
+      return t('deviceApps.open', 'Open')
+  }
+}
 
 /* An app's service's host (graphql src/lib/service-host.ts appHost): remoteit-app-<publisher>-<app>, the id's dot a
    dash — the device itself, which its daemon serves. Every app's service is at its app's host, so only such a
    service is looked for among its device's apps. */
 const APP_HOST_PREFIX = 'remoteit-app-'
 export const appHost = (id: string) => `${APP_HOST_PREFIX}${id.toLowerCase().replace('.', '-')}`
-const hostOf = (service?: Pick<IService, 'host'>) => untilConsoleMigrates((service?.host ?? '').trim().toLowerCase())
+const hostOf = (service?: Pick<IService, 'host'>) => (service?.host ?? '').trim().toLowerCase()
 export const isAppService = (service?: Pick<IService, 'host'>) => hostOf(service).startsWith(APP_HOST_PREFIX)
 
 /* The app a service belongs to: the one that names it (DeviceApp.serviceId); while an app is disabled graphql names no
