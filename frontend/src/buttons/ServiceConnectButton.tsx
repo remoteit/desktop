@@ -11,11 +11,12 @@ import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from '../components/DesktopUI'
 import { Gutters } from '../components/Gutters'
 import { LocalSubnetConnect } from '../components/LocalSubnetConnect'
-import { isConsoleService } from '../helpers/sshHelper'
+import { opensTerminal } from '../helpers/sshHelper'
 import { useLocalSignIn, useSubnetReach } from '../hooks/useLocalSubnetName'
 import { LocalSignInNotice } from '../components/LocalSignInNotice'
 import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
-import { ConsoleTerminalOption } from '../components/ConsoleTerminal'
+import { AppTerminalOption } from '../components/AppTerminal'
+import { useServiceApp } from '../hooks/useDeviceApps'
 import { useApplication } from '../hooks/useApplication'
 import { Link } from '../components/Link'
 import { LocalPortConnect } from '../components/LocalPortConnect'
@@ -35,6 +36,10 @@ export const ServiceConnectButton: React.FC = () => {
   // (services/browserGateway), the proxy one step away as for a local name.
   const web = useApplication(service, connection).urlForm
   const ssh = service?.typeID === 28
+  // The app the service belongs to, where it does: one whose service is ssh and that signs people in by certificate
+  // opens in our web SSH as well, with the person's own account (components/AppTerminal).
+  const serving = useServiceApp(device, service)
+  const byCertificate = opensTerminal(serving.app, serving.appService)
   const gateway = !local && reach.checked && !!reach.name && (!!web || ssh) && !proxy
   // A local port of this machine (services/localPorts), where it runs our daemon: asked for here, or open already —
   // then it is what the panel shows, until it is disconnected.
@@ -125,7 +130,12 @@ export const ServiceConnectButton: React.FC = () => {
             ) : named ? (
               <Box sx={{ width: '100%' }}>
                 {local ? (
-                  <LocalSubnetConnect local={local} service={service} connection={connection} />
+                  <LocalSubnetConnect
+                    local={local}
+                    service={service}
+                    connection={connection}
+                    byCertificate={byCertificate}
+                  />
                 ) : (
                   <BrowserGatewayConnect
                     name={reach.name!}
@@ -135,7 +145,7 @@ export const ServiceConnectButton: React.FC = () => {
                             port: service.port || 22,
                             title: service.name,
                             service: service.id,
-                            console: isConsoleService(service),
+                            byCertificate,
                           }
                         : undefined
                     }
@@ -167,10 +177,10 @@ export const ServiceConnectButton: React.FC = () => {
               {portLink}
             </Gutters>
           )}
-          {/* The console: our web SSH, an option beside the ways above. */}
-          {isConsoleService(service) && (
+          {/* An app's ssh service that signs people in by certificate: our web SSH, an option beside the ways above. */}
+          {byCertificate && (
             <Gutters size="md" top={null} bottom={null}>
-              <ConsoleTerminalOption device={device} service={service} />
+              <AppTerminalOption device={device} service={service} serving={serving} />
             </Gutters>
           )}
           {/* The service's other ports here that this machine's daemon lists: the machine's, opened by someone else. */}

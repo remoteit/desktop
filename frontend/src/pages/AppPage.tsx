@@ -33,7 +33,6 @@ import {
 } from '../services/graphQLAppCatalog'
 import { DeviceAppChange, graphQLSetDeviceAppsRelease, refused } from '../services/graphQLDeviceApps'
 import { AppChangeResults } from '../components/AppChangeResults'
-import { firstPartyApp } from '../components/firstPartyApps'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Container } from '../components/Container'
 import { Confirm } from '../components/Confirm'
@@ -42,7 +41,19 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
-import { channelName, day, heldBackLine, heldBackReason, releaseChannelName, stateWord } from '../helpers/appsHelper'
+import { AppCapabilities } from '../components/AppRootConsent'
+import {
+  allowLine,
+  appIcon,
+  asksConsent,
+  capabilitiesLine,
+  channelName,
+  day,
+  heldBackLine,
+  heldBackReason,
+  releaseChannelName,
+  stateWord,
+} from '../helpers/appsHelper'
 
 const RELEASES_PAGE = 20
 // The version filter's choices besides a version: any (no filter), and none reported — catalogApp's devices(version: ""),
@@ -55,12 +66,14 @@ const NO_VERSION = '-'
 /* The app in the catalogue (presence-server docs/device-apps-design.md, "The Apps pages", /apps/:appID), from
    catalogApp:
 
-     its name and version, its publisher (Verified, Yours), Runs as root or Restricted, its description and platforms;
+     its name and version, its publisher (Verified, Yours), Runs as root or Restricted and what else it asks of
+     remote.it (its capabilities, in words), its description and platforms;
      Add… (/apps/:appID/add), and Manage releases for the account's own publisher (the Publisher page, where releases
      are published);
      Channels on this stage — each channel's release, its candidate and to how many of the devices — and the channel
      this account follows (setAccountAppChannel);
-     Releases, newest first: each version, its date, where this stage's channels point at it, root, its platforms,
+     Releases, newest first: each version, its date, where this stage's channels point at it, root and its
+     capabilities, its platforms,
      withdrawn, and its notes opened in place; Show more;
      Your devices: how many in all, enabled, disabled, up to date and held back, and the held back by why (fleet.total,
      fleet.heldBackBy); each device's version running, channel, state, and up to date or held back with the reason in
@@ -140,10 +153,25 @@ export const AppPage: React.FC = () => {
 
   const devices = app.devices?.items ?? []
   const chosen = devices.filter(d => selected.includes(d.deviceId))
-  const needsConsent = chosen.some(d => d.heldBack?.reason === 'consent')
+  /* Update selected unpins them (version ""): each is moved to the release its channel gives it (latest — graphql's,
+     by its bucket). It asks the yes where that release asks for one a device may not have: one held for a consent, or
+     one pinned elsewhere that it would move off (its consent unknown here; graphql keeps the newer yes). What it asks
+     is those releases' together, as the catalogue lists them; one it does not list is not known, and the yes waits. */
+  const releaseOf = (version: string | null) => app.releases.find(r => r.version === version)
+  const moving = chosen.filter(
+    d =>
+      d.heldBack?.reason === 'consent' ||
+      (d.enabled && !!d.pinned && d.latest !== d.pinned && (!releaseOf(d.latest) || asksConsent(releaseOf(d.latest))))
+  )
+  const needsConsent = moving.length > 0
+  const updateKnown = moving.every(d => !!releaseOf(d.latest))
+  const updateRoot = !updateKnown || moving.some(d => releaseOf(d.latest)?.root)
+  const updateAsks = [...new Set(moving.flatMap(d => releaseOf(d.latest)?.capabilities ?? []))]
   const standing = app.releases.filter(r => !r.withdrawn)
   const pinRelease = standing.find(r => r.version === pinTo)
-  const pinNeedsConsent = !!pinRelease?.root
+  // A pin to a release that asks for a consent (asksConsent, graphql's rule) takes the yes: each device's own consent
+  // may or may not cover it.
+  const pinNeedsConsent = asksConsent(pinRelease)
 
   const many = async (values: { version: string; consentRoot?: boolean }) => {
     setBusy(true)
@@ -176,7 +204,7 @@ export const AppPage: React.FC = () => {
     <Container gutterBottom bodyProps={{ verticalOverflow: true }} header={header(app.name)}>
       <Gutters top="sm" data-catalog-app-page={app.id}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-          <Icon name={firstPartyApp(app.id)?.icon ?? 'cube'} size="xl" fixedWidth />
+          <Icon name={appIcon(app.protocol)} size="xl" fixedWidth />
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="body2" data-app-about>
               {[
@@ -194,6 +222,11 @@ export const AppPage: React.FC = () => {
                 ? t('apps.runsAsRootFull', 'Runs as root: full control of the device')
                 : t('apps.restricted', 'Restricted')}
             </Typography>
+            {!!app.capabilities.length && (
+              <Typography variant="body2" color="textSecondary" data-app-asks>
+                {capabilitiesLine(t, app.capabilities)}
+              </Typography>
+            )}
             {app.description && (
               <Typography variant="body2" color="textSecondary" data-app-description>
                 {app.description}
@@ -443,7 +476,12 @@ export const AppPage: React.FC = () => {
       <Confirm
         open={asking === 'update'}
         color="error"
-        title={t('apps.updateRootTitle', 'Update {{app}} to run as root?', { app: app.name })}
+        disabled={!updateKnown}
+        title={
+          updateRoot
+            ? t('apps.updateRootTitle', 'Update {{app}} to run as root?', { app: app.name })
+            : t('apps.updateAsksTitle', 'Update {{app}} to a version that asks more?', { app: app.name })
+        }
         action={t('apps.updateRootAction', 'Consent and update')}
         onConfirm={() => {
           setAsking(undefined)
@@ -451,13 +489,31 @@ export const AppPage: React.FC = () => {
         }}
         onDeny={() => setAsking(undefined)}
       >
-        <Typography variant="body2" data-fleet-consent>
-          {t(
-            'apps.updateRootBody',
-            'A new version of {{app}}, published by {{publisher}}, runs as root: it gets full control of each device selected — every file, account and program on it. Update only if you trust {{publisher}} with them.',
-            { app: app.name, publisher: app.publisher.name }
-          )}
+        <Typography variant="body2" gutterBottom data-fleet-consent={updateRoot ? 'root' : 'capabilities'}>
+          {updateRoot
+            ? t(
+                'apps.updateRootBody',
+                'A new version of {{app}}, published by {{publisher}}, runs as root: it gets full control of each device selected — every file, account and program on it. Update only if you trust {{publisher}} with them.',
+                { app: app.name, publisher: app.publisher.name }
+              )
+            : t(
+                'apps.updateAsksBody',
+                'A new version of {{app}}, published by {{publisher}}, asks more of remote.it on each device selected. Update only if you trust {{publisher}} with them.',
+                { app: app.name, publisher: app.publisher.name }
+              )}
         </Typography>
+        {!updateKnown && (
+          <Typography variant="body2" color="error" gutterBottom data-fleet-consent-unknown>
+            {t(
+              'apps.asksUnknown',
+              'What this version asks could not be read, so it cannot be consented to here. Try again later.'
+            )}
+          </Typography>
+        )}
+        <AppCapabilities
+          capabilities={updateAsks}
+          title={updateRoot ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+        />
       </Confirm>
       <Confirm
         open={asking === 'pin'}
@@ -490,7 +546,13 @@ export const AppPage: React.FC = () => {
             </option>
           ))}
         </TextField>
-        {pinNeedsConsent && (
+        {pinNeedsConsent && pinRelease && (
+          <AppCapabilities
+            capabilities={pinRelease.capabilities}
+            title={pinRelease.root ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+          />
+        )}
+        {pinNeedsConsent && pinRelease && (
           <FormControlLabel
             sx={{ marginTop: 1 }}
             control={
@@ -500,10 +562,7 @@ export const AppPage: React.FC = () => {
                 inputProps={{ 'data-fleet-pin-consent': true } as any}
               />
             }
-            label={t('apps.allowRootDevices', 'I allow {{publisher}}’s {{app}} full control of these devices', {
-              publisher: app.publisher.name,
-              app: app.name,
-            })}
+            label={allowLine(t, pinRelease.root, false, app.publisher.name, app.name)}
           />
         )}
       </Confirm>
@@ -512,7 +571,7 @@ export const AppPage: React.FC = () => {
 }
 
 /* A release: its version, date, where this stage's channels point at it or that it was withdrawn, the first line of
-   its notes — opened in place to all of them, with root and its platforms. */
+   its notes — opened in place to all of them, with root, what else it asks of remote.it and its platforms. */
 const ReleaseRow: React.FC<{
   release: CatalogAppRelease
   channels: CatalogAppChannel[]
@@ -543,6 +602,7 @@ const ReleaseRow: React.FC<{
               release.root
                 ? t('apps.runsAsRootFull', 'Runs as root: full control of the device')
                 : t('apps.restricted', 'Restricted'),
+              capabilitiesLine(t, release.capabilities),
               release.platforms.join(' · '),
             ]
               .filter(Boolean)

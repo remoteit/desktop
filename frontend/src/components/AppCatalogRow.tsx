@@ -1,11 +1,12 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
-import { firstPartyApp } from './firstPartyApps'
+import { appIcon, capabilitiesLine } from '../helpers/appsHelper'
 import { Icon } from './Icon'
 
 /* One app in the catalogue (presence-server docs/device-apps-design.md, "The Apps pages"): its name, its publisher with
-   Verified: <domain> and Yours for the account's own, Runs as root or Restricted, its description, its platforms and
+   Verified: <domain> and Yours for the account's own, Runs as root or Restricted and what else it asks of remote.it
+   (its capabilities, in words), its icon from how its service opens, its description, its platforms and
    what is said beside them (how many devices have it, or why this device cannot take it). The row opens the app;
    its action (Add…) sits at its end. */
 export type AppCatalogRowProps = {
@@ -15,6 +16,8 @@ export type AppCatalogRowProps = {
   verifiedDomain?: string | null
   own?: boolean // the account's own publisher
   root: boolean
+  capabilities?: string[]
+  protocol?: string | null // how its service opens: its icon
   description?: string | null
   platforms?: string | null // as families
   aside?: React.ReactNode // beside the platforms: how many devices have it
@@ -30,6 +33,8 @@ export const AppCatalogRow: React.FC<AppCatalogRowProps> = ({
   verifiedDomain,
   own,
   root,
+  capabilities,
+  protocol,
   description,
   platforms,
   aside,
@@ -41,7 +46,7 @@ export const AppCatalogRow: React.FC<AppCatalogRowProps> = ({
   const body = (
     <>
       <ListItemIcon sx={{ alignSelf: 'flex-start', marginTop: 0.5 }}>
-        <Icon name={firstPartyApp(id)?.icon ?? 'cube'} size="md" fixedWidth />
+        <Icon name={appIcon(protocol)} size="md" fixedWidth />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -61,6 +66,11 @@ export const AppCatalogRow: React.FC<AppCatalogRowProps> = ({
                 ? t('apps.runsAsRootFull', 'Runs as root: full control of the device')
                 : t('apps.restricted', 'Restricted')}
             </Typography>
+            {!!capabilities?.length && (
+              <Typography variant="caption" color="textSecondary" data-catalog-capabilities>
+                {capabilitiesLine(t, capabilities)}
+              </Typography>
+            )}
           </Box>
         }
         secondaryTypographyProps={{ component: 'div' }}

@@ -3,19 +3,20 @@ import { useTranslation } from 'react-i18next'
 import { Box, ListItem, ListItemIcon, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
 import { Icon } from '../Icon'
 import { stateLine } from '../../helpers/appsHelper'
+import type { DeviceApp } from '../../services/graphQLDeviceApps'
 import { DeviceSetting, DeviceStatus, ExitRef, SettingValue } from '../../services/thisDevice'
 
 // What This device's parts share (pages/ThisDevicePage.tsx): the rows, the notes, and the words for each state.
 
 export type T = (k: string, d: string, v?: any) => string
 
+// The device's own settings' titles. An app's are its own (appSettings).
 export const SETTING_TITLES: { [name: string]: string } = {
   subnet: 'Access remote devices',
   exit_node: 'Exit node',
   printers: 'Show remote printers',
   services: 'Allow remote access to services',
   websocket: 'Relay',
-  'remoteit.console': 'Console',
   any_port: 'Connections to any port',
   proxy: 'Proxy',
   scripts: 'Scripts',
@@ -43,15 +44,30 @@ export const relayChoices = (t: T): { value: string; title: string; line: string
   },
 ]
 
-// Settings served only while the services are: not served while they are off, whatever their own value says.
-export const UNDER_SERVICES = ['remoteit.console', 'any_port']
-// An app's settings are options of its row, as on the device page's Apps: set in under it, labelled by what they allow.
-// Each option is named here with the setting whose row it sits under, and its words (the device page's).
-export const OPTIONS: { [name: string]: { of: string; title: (t: T) => string } } = {
-  'remoteit.console.ai_commands': {
-    of: 'remoteit.console',
-    title: t => t('deviceApps.consoleAiCommands', 'Allow AI commands'),
-  },
+// The device's own settings served only while the services are: not served while they are off, whatever their own
+// value says. An app's is too where it serves a service (appSettings).
+export const UNDER_SERVICES = ['any_port']
+
+/* An app's settings on this device, as on the device page's Apps: its on or off, named by its id — the daemon says it
+   is an app's (setting.app), or the API names an app by it —, and its own settings (<app>.<name>) options of its row,
+   set in under it. Their words are the API's (the device's apps, read by its UID): the app's name, and its release's
+   labels; where the API does not say, their names. Its on or off is not served while the services are off where the
+   app serves a service (its protocol). Nothing here names an app. */
+export function appSettings(listed: DeviceSetting[], apps?: DeviceApp[] | null) {
+  const app = (name: string) => apps?.find(a => a.id === name)
+  const isApp = (setting: DeviceSetting) => !!setting.app || !!app(setting.name)
+  // The app row an option sits under.
+  const of = (setting: DeviceSetting) =>
+    listed.find(parent => isApp(parent) && setting.name.startsWith(`${parent.name}.`))?.name
+  const title = (setting: DeviceSetting): string | undefined => {
+    const own = app(setting.name)
+    if (own) return own.name
+    const parent = of(setting)
+    return parent ? app(parent)?.settings.find(s => `${parent}.${s.name}` === setting.name)?.label : undefined
+  }
+  const underServices = (setting: DeviceSetting) =>
+    UNDER_SERVICES.includes(setting.name) || !!app(setting.name)?.protocol
+  return { of, title, underServices }
 }
 // A switch's words keep clear of the switch at the row's end, at a phone's width too.
 export const SWITCH_TEXT = { paddingRight: '72px' }
@@ -170,7 +186,7 @@ export const SettingRow: React.FC<{
   title?: string
   // websocket's: whether the relay carries the device's traffic now.
   relayUsing?: boolean
-  // Not served while the services are off (the console, any port), whatever its own value says.
+  // Not served while the services are off (any port, an app that serves a service), whatever its own value says.
   notServed?: boolean
   // An option of the switch above it (the printers, Access's): set in under it.
   indent?: boolean

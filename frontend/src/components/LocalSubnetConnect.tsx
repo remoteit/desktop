@@ -12,7 +12,7 @@ import { PromptModal } from './PromptModal'
 import { Confirm } from './Confirm'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { graphQLDetectedSchemes, redirectLoops } from '../services/graphQLDetectedScheme'
-import { isConsoleService, sshCommand } from '../helpers/sshHelper'
+import { sshCommand } from '../helpers/sshHelper'
 import { formatPorts, isMultiPort } from '../services/multiPortServices'
 import { Icon } from './Icon'
 
@@ -22,15 +22,16 @@ import { Icon } from './Icon'
    service's own port. A web service launches as https://<name>: port 443 on a name is the host's web service, under
    the stage's certificate, whatever port it is on (presence-server docs/subnet-https.md) — and that URL is what is
    shown and copied, since <name>:<port> is the service's own port, plain http. An SSH service is shown and copied as
-   the command that reaches it, plain `ssh`: the console's works as it is from a machine signed in on its remote.it
-   device app, which gets a certificate for its own ssh (connectd remoteit-device ssh-config). A multi-port
+   the command that reaches it, plain `ssh`: that of an app signing people in by certificate (byCertificate) works as it
+   is from a machine signed in on its remote.it device app, which gets a certificate for its own ssh (connectd
+   remoteit-device ssh-config), and says so. A multi-port
    service is reached here on every port it lists, each by its own number (graphql-api docs/MULTI-PORT-SERVICES.md), so
    they are all shown; what is copied and launched is the first, as for a connection. A web service whose device passed
    its redirect to https:// on the same host back to the browser (services/graphQLDetectedScheme redirectLoops) would
    only loop on its name: Launch says so first, and the way out is its type, HTTPS on the port it redirects to. */
-type Props = { local: LocalSubnetName; service?: IService; connection?: IConnection }
+type Props = { local: LocalSubnetName; service?: IService; connection?: IConnection; byCertificate?: boolean }
 
-export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection }) => {
+export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection, byCertificate }) => {
   const { t } = useTranslation()
   const port = service?.port
   const ssh = service?.typeID === 28
@@ -118,7 +119,7 @@ export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection
             {t('localSubnetConnect.address', 'resolves here to {{address}}', { address: local.address })}
           </Typography>
         )}
-        {isConsoleService(service) && (
+        {byCertificate && (
           <Typography variant="caption" color="textSecondary" component="div">
             {t('localSubnetConnect.sshHint', 'Works from a machine signed in on its remote.it device app')}
           </Typography>

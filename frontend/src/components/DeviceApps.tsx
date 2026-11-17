@@ -14,19 +14,30 @@ import {
   Typography,
 } from '@mui/material'
 import { useHistory } from 'react-router-dom'
-import { DeviceApp, SCREENVIEW } from '../services/graphQLDeviceApps'
+import { DeviceApp, DeviceAppService, SCREENVIEW } from '../services/graphQLDeviceApps'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
-import { firstPartyApp } from './firstPartyApps'
-import { adminLine, adminRefuses, heldBackLine, managedLine, offered, runsAsWord, stateWord } from '../helpers/appsHelper'
+import { AppTerminalAction } from './AppTerminal'
+import {
+  adminLine,
+  adminRefuses,
+  appIcon,
+  heldBackLine,
+  managedLine,
+  offered,
+  openWord,
+  runsAsWord,
+  stateWord,
+} from '../helpers/appsHelper'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
 /* A device's apps on its Configure page (presence-server docs/device-apps-design.md, "The Apps pages", the device's Apps
    section): the device's own apps, a row each — its publisher, Runs as root or Restricted, the version it runs, its
    state in a word, held back where it is —, its Enabled switch, and the row opening the app on this device
-   (/devices/:deviceID/apps/:appID), where its settings, channel, pin and Remove are. The console's Open terminal stays
-   in its row. Add opens the catalogue for this device (/devices/:deviceID/apps/add), offered only where there is
+   (/devices/:deviceID/apps/:appID), where its settings, channel, pin and Remove are. Every app is drawn from what the
+   API says of it, none by its id: its icon from how its service opens, and Open terminal in its row for one whose
+   service is ssh and that signs people in by certificate (components/AppTerminal). Add opens the catalogue for this device (/devices/:deviceID/apps/add), offered only where there is
    something it can add.
 
    Enabling runs code on the device, so it needs Scripting as well as Manage, and a root release no consent covers asks
@@ -40,11 +51,14 @@ import { Icon } from './Icon'
 export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const history = useHistory()
-  const deviceApps = useDeviceApps(device.id)
+  const deviceApps = useDeviceApps(device.id, { accountId: device.accountId })
   const { apps, available, switching } = deviceApps
   const [refusal, setRefusal] = useState<string>()
-  const { flip, consent } = useAppSwitch(deviceApps, reason =>
-    setRefusal(reason || t('apps.notChanged', 'The app was not changed.'))
+  const { flip, consent } = useAppSwitch(
+    deviceApps,
+    reason => setRefusal(reason || t('apps.notChanged', 'The app was not changed.')),
+    undefined,
+    device.accountId
   )
   const canManage = !!device.permissions?.includes('MANAGE')
   const canRun = canManage && !!device.permissions?.includes('SCRIPTING')
@@ -118,13 +132,12 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
         </ListItem>
       )}
       {apps.map(app => {
-        const own = firstPartyApp(app.id)
         const removing = app.state === 'removing'
         const enabled = switching === app.id ? !app.enabled : app.enabled
         const row = (
           <>
             <ListItemIcon>
-              <Icon name={own?.icon ?? 'cube'} size="md" fixedWidth />
+              <Icon name={appIcon(app.protocol)} size="md" fixedWidth />
             </ListItemIcon>
             <ListItemText
               primary={app.name}
@@ -159,10 +172,12 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
             />
           </>
         )
-        // The switch and the console's Open terminal act alone: a click on them is not the row's.
+        // The switch and Open terminal act alone: a click on them is not the row's.
         const actions = removing ? null : (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} onClick={event => event.stopPropagation()}>
-            {own?.Actions && <own.Actions device={device} app={app} />}
+            {app.services.map(service => (
+              <AppTerminalAction key={service.key ?? ''} device={device} app={app} service={service} />
+            ))}
             <Switch
               checked={enabled}
               disabled={
@@ -200,13 +215,20 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   )
 }
 
-/* Open, for any app reached as a service (serviceId) while it runs: its service's connection, started and launched as
-   its application type launches — HTTP opens in the browser —, as any service's Connect page does. remote.it's own apps
-   with a part of their own (components/firstPartyApps: the console's Open terminal) have theirs instead. */
-export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device, app }) => {
+/* Open, for one of an app's services while the app runs and the service is served (serviceId): its connection,
+   started and launched as its application type launches (graphql makes the type from the manifest's protocol: http and
+   https open in the browser, vnc and rdp in a viewer, udp nothing: a port for the person's own UDP client), as any
+   service's Connect page does — a multi-port service's on its first port, its launch port; said by its protocol (Open
+   page, Open screen, Connect). One that opens as a terminal (helpers/sshHelper opensTerminal) has Open terminal
+   instead (components/AppTerminal). */
+export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp; service: DeviceAppService }> = ({
+  device,
+  app,
+  service,
+}) => {
   const { t } = useTranslation()
   const history = useHistory()
-  if (!app.enabled || app.state !== 'running' || !app.serviceId) return null
+  if (!app.enabled || app.state !== 'running' || !service.serviceId) return null
   return (
     <Button
       size="small"
@@ -214,12 +236,13 @@ export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device,
       data-app-open
       onClick={() =>
         history.push({
-          pathname: `/devices/${device.id}/${app.serviceId}/connect`,
-          state: { autoConnect: true, autoLaunch: true },
+          pathname: `/devices/${device.id}/${service.serviceId}/connect`,
+          // A udp service's connection is all it has: its port is for the person's own UDP client.
+          state: service.protocol === 'udp' ? { autoConnect: true } : { autoConnect: true, autoLaunch: true },
         })
       }
     >
-      {t('deviceApps.open', 'Open')}
+      {openWord(t, service.protocol)}
     </Button>
   )
 }
