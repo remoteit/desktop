@@ -53,7 +53,7 @@ import { ProfilePage } from '../pages/ProfilePage'
 import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
-import { AIAssistantsPage } from '../pages/AIAssistantsPage'
+import { AIAgentsPage } from '../pages/AIAgentsPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
 import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
@@ -260,9 +260,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <FeedbackPage />
         </Panel>
       </Route>
-      <Route path="/ai-assistants">
+      <Route path="/ai-agents">
         <Panel layout={layout}>
-          <AIAssistantsPage />
+          <AIAgentsPage />
         </Panel>
       </Route>
       {/* Scripting */}

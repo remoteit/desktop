@@ -153,9 +153,6 @@ export const SidebarNav: React.FC = () => {
         />
       )}
       <ListItemLocation title={t('nav.logs', 'Logs')} to="/logs" icon="rectangle-history" dense exactMatch />
-      {brand.name === 'remoteit' && (
-        <ListItemLocation title={t('nav.aiAssistants', 'AI Assistants')} to="/ai-assistants" icon="robot" dense />
-      )}
       <Box
         sx={theme => ({
           width: '100%',
@@ -169,6 +166,9 @@ export const SidebarNav: React.FC = () => {
         <ResellerLogo reseller={reseller} marginLeft={4} size="small">
           <Divider />
         </ResellerLogo>
+        {brand.name === 'remoteit' && (
+          <ListItemLocation title={t('nav.aiAgents', 'AI Agents')} to="/ai-agents" icon="remote-ai" dense />
+        )}
         <ListItemLocation
           title={t('nav.announcements', 'Announcements')}
           to="/announcements"

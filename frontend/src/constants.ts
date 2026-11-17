@@ -195,7 +195,6 @@ export const SCREEN_VIEW_APP_LINK =
 // Client capabilities, not catalogue data — see platforms/README.md.
 export const OEM_GUIDE_LINK = 'https://link.remote.it/docs/oem-overview'
 export const DESKTOP_HELP_LINK = 'https://link.remote.it/documentation-desktop/overview'
-export const MCP_DOCS_LINK = 'https://docs.remote.it/mcp-server/mcp'
 export const MCP_CONNECT_DOCS_LINK = 'https://docs.remote.it/mcp-server/connect'
 export const DEVICE_SETUP_PATH = '/devices/setup'
 export const DEMO_SCRIPT_URL =

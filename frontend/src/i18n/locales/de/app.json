@@ -98,15 +98,14 @@
     "switch": "Wechseln",
     "title": "Konto wechseln?"
   },
-  "aiAssistantsPage": {
-    "connectGuides": "Schritt-für-Schritt-Anleitungen für Claude, ChatGPT, Grok, Gemini und Kiro",
+  "aiAgentsPage": {
     "howTo": "So verbinden Sie sich",
     "intro": "Verbinden Sie Claude, ChatGPT oder einen anderen KI-Assistenten mit Ihrem Remote.It-Konto. Bitten Sie ihn dann einfach, Ihre Geräte zu prüfen, Verbindungen zu öffnen oder Skripte auszuführen.",
-    "learnMore": "Was Ihr Assistent mit Remote.It tun kann",
+    "setupGuides": "Einrichtungsanleitungen für Claude, ChatGPT und mehr",
     "step1": "Kopieren Sie die URL des Remote.It-MCP-Servers.",
     "step2": "Fügen Sie in Ihrem KI-Assistenten einen benutzerdefinierten Connector (oder Remote-MCP-Server) hinzu und fügen Sie die URL ein.",
     "step3": "Melden Sie sich bei Aufforderung mit Ihrem Remote.It-Konto an. Keine API-Schlüssel erforderlich.",
-    "title": "KI-Assistenten"
+    "title": "KI-Agenten"
   },
   "androidSetup": {
     "guideBody": "Sie können Ihr Android-Gerät einrichten oder den einfachen Anweisungen folgen, um eine der gängigen Plattformen einzurichten.",
@@ -1258,7 +1257,7 @@
     "account": "Konto",
     "admin": "Admin",
     "agent": "Agent",
-    "aiAssistants": "KI-Assistenten",
+    "aiAgents": "KI-Agenten",
     "announcements": "Ankündigungen",
     "apis": "APIs",
     "bugReport": "Fehlerbericht",

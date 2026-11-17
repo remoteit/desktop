@@ -100,15 +100,14 @@
     "switch": "Cambiar",
     "title": "¿Cambiar de cuenta?"
   },
-  "aiAssistantsPage": {
-    "connectGuides": "Guías paso a paso para Claude, ChatGPT, Grok, Gemini y Kiro",
+  "aiAgentsPage": {
     "howTo": "Cómo conectarse",
     "intro": "Conecta Claude, ChatGPT u otro asistente de IA a tu cuenta de Remote.It. Después, solo pídele que revise tus dispositivos, abra conexiones o ejecute scripts.",
-    "learnMore": "Qué puede hacer tu asistente con Remote.It",
+    "setupGuides": "Guías de configuración para Claude, ChatGPT y más",
     "step1": "Copia la URL del servidor MCP de Remote.It.",
     "step2": "En tu asistente de IA, añade un conector personalizado (o servidor MCP remoto) y pega la URL.",
     "step3": "Inicia sesión con tu cuenta de Remote.It cuando se te pida. No se necesitan claves de API.",
-    "title": "Asistentes de IA"
+    "title": "Agentes de IA"
   },
   "androidSetup": {
     "guideBody": "Puedes configurar tu dispositivo Android o seguir las sencillas instrucciones para configurar una de las plataformas más utilizadas.",
@@ -1271,7 +1270,7 @@
     "account": "Cuenta",
     "admin": "Admin",
     "agent": "Agente",
-    "aiAssistants": "Asistentes de IA",
+    "aiAgents": "Agentes de IA",
     "announcements": "Anuncios",
     "apis": "API",
     "bugReport": "Informe de errores",
