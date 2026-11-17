@@ -61,8 +61,9 @@ export type AppListener = {
 /* One of an app's services (graphql's DeviceAppService), the primary first — the app's single-service fields
    (serviceId, protocol, portSetting) are the primary's. key: none for the primary, else its first listener's name. A
    multi-port service's ports are its listeners' own, in their order, the first its launch port; one of one port has a
-   port (or portSetting, the owner's). serviceId and ports: the service on the device and its ports and ranges there,
-   while the app is enabled and the service served. */
+   port (or portSetting, the owner's). serviceId: the service on the device, while the app is enabled and the service
+   served — where it listens is that service's (IDevice.services: its port and ports), as every connection to it reads
+   it. */
 export type DeviceAppService = {
   key: string | null
   name: string
@@ -72,7 +73,6 @@ export type DeviceAppService = {
   portSetting: string | null
   listeners: AppListener[]
   serviceId: string | null
-  ports: string[]
 }
 
 // Where one of an app's named listeners listens, as the device reports it while the app runs: tcp:<port>,
@@ -206,10 +206,11 @@ const SETTING_FIELDS =
   'name type label help default value at by onDevice control locked { product level } deprecated choices { value label } declaration'
 // The lifecycle's fields (enabled, added, latest, upToDate, heldBack, grantUntil) as the design pins them.
 const SESSION_FIELDS = 'session login via since'
-// An app's services as its release declares them (AppService), and as each is on the device (DeviceAppService).
+// An app's services as its release declares them (AppService), and which of the device's services each is
+// (DeviceAppService).
 const DECLARED_SERVICE_FIELDS =
   'key name protocol multiPort port portSetting listeners { name type port portSetting ports }'
-const SERVICE_FIELDS = `${DECLARED_SERVICE_FIELDS} serviceId ports`
+const SERVICE_FIELDS = `${DECLARED_SERVICE_FIELDS} serviceId`
 const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil adminControl state detail serviceId contract protocol capabilities hostKey sessions { ${SESSION_FIELDS} } sessionsOpen features portSetting services { ${SERVICE_FIELDS} } listeners { name listen } problems { name error detail } settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
@@ -239,7 +240,6 @@ const parsedService = (service: any): DeviceAppService => ({
     ports: listener.ports ?? null,
   })),
   serviceId: service.serviceId ?? null,
-  ports: service.ports ?? [],
 })
 
 export const parsedDeviceApp = (app: any): DeviceApp => ({

@@ -133,7 +133,7 @@ describe('an app’s icon and service, from what the API says — never its id',
 
   it('an app of several services: any of them is the app’s, and which of its services it is', () => {
     const stream: DeviceAppService = {
-      key: 'rtsp', name: 'Stream', protocol: 'tcp', multiPort: true, port: null, portSetting: null, listeners: [], serviceId: 'S6', ports: ['8554', '5004-5005'],
+      key: 'rtsp', name: 'Stream', protocol: 'tcp', multiPort: true, port: null, portSetting: null, listeners: [], serviceId: 'S6',
     }
     const camera = withServices(app('acme.camera', 'S5'))
     const both = { ...camera, services: [...camera.services, stream] }

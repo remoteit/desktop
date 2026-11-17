@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
+import type { Dispatch } from '../store'
 import {
   AppChange,
   AppRelease,
@@ -55,8 +57,17 @@ const waiting = (app?: DeviceApp) => app?.state === 'starting' || app?.state ===
 /* A device's apps (services/graphQLDeviceApps): added, enabled or disabled, its channel and pin, removed, and its
    settings. The device acts within seconds: what it says is waited for, up to half a minute — while it starts the app,
    or until it says the app is gone. What it may add is read too, unless the part asking does not offer any (offers
-   false). */
-export function useDeviceApps(deviceId?: string, { offers = true }: { offers?: boolean } = {}): DeviceApps {
+   false). accountId: the account the device is read under (IDevice.accountId).
+
+   An app's services are its device's services, and the device's services (its IDevice in the store) are where every
+   part of the portal finds them: their rows, connect panels, Open and Open terminal, and the app's page. A change that
+   went through, or a setting that is a port, may add, remove or move them, and nothing else says so while the service
+   stays online: the device is read again after one. */
+export function useDeviceApps(
+  deviceId?: string,
+  { offers = true, accountId }: { offers?: boolean; accountId?: string } = {}
+): DeviceApps {
+  const dispatch = useDispatch<Dispatch>()
   const [apps, setApps] = useState<DeviceApp[] | null>()
   const [switching, setSwitching] = useState<string>()
   const [available, setAvailable] = useState<AvailableApp[]>()
@@ -87,7 +98,11 @@ export function useDeviceApps(deviceId?: string, { offers = true }: { offers?: b
     }
   }, [deviceId])
 
-  // A change, then what the device says of it, every part of the page told.
+  const readDevice = useCallback(async () => {
+    if (deviceId) await dispatch.devices.fetchSingleFull({ id: deviceId, accountId, hidden: true, silent: true })
+  }, [dispatch, deviceId, accountId])
+
+  // A change, then what the device says of it, every part of the page told; then the device, its services as they are.
   const change = useCallback(
     async (app: DeviceApp, call: () => Promise<AppChange<unknown>>): Promise<AppChange<true>> => {
       if (!deviceId) return { reason: '' }
@@ -100,11 +115,12 @@ export function useDeviceApps(deviceId?: string, { offers = true }: { offers?: b
           if (!waiting(now?.find(a => a.id === app.id))) break
           await new Promise(resolve => setTimeout(resolve, 2_000))
         }
+        await readDevice()
       }
       setSwitching(undefined)
       return refused(answer) ? answer : true
     },
-    [deviceId]
+    [deviceId, readDevice]
   )
 
   const turn = useCallback(
@@ -136,14 +152,11 @@ export function useDeviceApps(deviceId?: string, { offers = true }: { offers?: b
         a.id === app.id ? { ...a, settings: a.settings.map(s => (s.name === name ? setting : s)) } : a
       )
       tell(deviceId, now)
-      // A port setting moves its service's ports, which graphql keeps in step: read them as it now has them.
-      if (isPortSetting(app, name)) {
-        const read = await graphQLDeviceApps(deviceId)
-        if (read) tell(deviceId, read)
-      }
+      // A port setting moves its service's port, which graphql keeps in step before it answers.
+      if (isPortSetting(app, name)) await readDevice()
       return true
     },
-    [deviceId, apps]
+    [deviceId, apps, readDevice]
   )
 
   return {
@@ -167,7 +180,10 @@ const isPortSetting = (app: DeviceApp, name: string) =>
    services ask nothing. */
 export type ServiceApp = DeviceApps & { app?: DeviceApp; appService?: DeviceAppService }
 export function useServiceApp(device?: IDevice, service?: IService): ServiceApp {
-  const deviceApps = useDeviceApps(isAppService(service) ? device?.id : undefined, { offers: false })
+  const deviceApps = useDeviceApps(isAppService(service) ? device?.id : undefined, {
+    offers: false,
+    accountId: device?.accountId,
+  })
   const app = serviceApp(deviceApps.apps, service)
   return { ...deviceApps, app, appService: appServiceOf(app, service) }
 }

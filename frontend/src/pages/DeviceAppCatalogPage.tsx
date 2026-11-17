@@ -29,7 +29,7 @@ export const DeviceAppCatalogPage: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
   const { device } = useContext(DeviceContext)
-  const deviceApps = useDeviceApps(device?.id)
+  const deviceApps = useDeviceApps(device?.id, { accountId: device?.accountId })
   const { apps, available, switching } = deviceApps
   const [refusal, setRefusal] = useState<string>()
   const { flip, consent } = useAppSwitch(

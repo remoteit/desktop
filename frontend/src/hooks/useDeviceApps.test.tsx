@@ -2,7 +2,8 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { read, setApp, addApp, setRelease, removeApp, setSetting, available } = vi.hoisted(() => ({
+const { read, setApp, addApp, setRelease, removeApp, setSetting, available, fetchSingleFull } = vi.hoisted(() => ({
+  fetchSingleFull: vi.fn(),
   available: vi.fn(),
   read: vi.fn(),
   setApp: vi.fn(),
@@ -21,6 +22,8 @@ vi.mock('../services/graphQLDeviceApps', () => ({
   graphQLSetDeviceAppSetting: setSetting,
   refused: (r: any) => !!r && typeof r === 'object' && 'reason' in r,
 }))
+// The device in the store, read again where an app's services may have moved.
+vi.mock('react-redux', () => ({ useDispatch: () => ({ devices: { fetchSingleFull } }) }))
 
 import { DeviceApps, ServiceApp, useDeviceApps, useServiceApp } from './useDeviceApps'
 import { withServices } from '../test/deviceApps'
@@ -61,12 +64,12 @@ const app = (state: string, enabled?: boolean) => withServices(rawApp(state, ena
 let root: Root
 const seen: Record<string, DeviceApps> = {}
 const Apps = ({ deviceId, name, offers }: { deviceId?: string; name: string; offers?: boolean }) => {
-  seen[name] = useDeviceApps(deviceId, offers === undefined ? undefined : { offers })
+  seen[name] = useDeviceApps(deviceId, offers === undefined ? { accountId: 'A1' } : { offers, accountId: 'A1' })
   return null
 }
 const served: Record<string, ServiceApp> = {}
 const Serving = ({ service, name }: { service: Partial<IService>; name: string }) => {
-  served[name] = useServiceApp({ id: 'D1' } as IDevice, service as IService)
+  served[name] = useServiceApp({ id: 'D1', accountId: 'A1' } as IDevice, service as IService)
   return null
 }
 
@@ -76,6 +79,7 @@ async function render(children: React.ReactNode) {
 }
 
 beforeEach(() => {
+  fetchSingleFull.mockReset().mockResolvedValue(undefined)
   read.mockReset().mockResolvedValue([app('disabled')])
   available.mockReset().mockResolvedValue([])
   setApp.mockReset().mockResolvedValue(app('running'))
@@ -137,6 +141,9 @@ describe('useDeviceApps', () => {
     expect(seen.a.apps?.[0].state).toBe('running')
     expect(seen.b.apps?.[0].state).toBe('running')
     expect(seen.a.switching).toBeUndefined()
+    // Its service added: the device is read again, once, under its account.
+    expect(fetchSingleFull).toHaveBeenCalledTimes(1)
+    expect(fetchSingleFull).toHaveBeenCalledWith({ id: 'D1', accountId: 'A1', hidden: true, silent: true })
   })
 
   it('passes the person’s consent to a root app’s full control', async () => {
@@ -179,6 +186,7 @@ describe('useDeviceApps', () => {
     })
     expect(done).toEqual({ reason: 'Managed by its product Kiosks' })
     expect(read).toHaveBeenCalledTimes(1)
+    expect(fetchSingleFull).not.toHaveBeenCalled()
     expect(seen.a.switching).toBeUndefined()
   })
 
@@ -231,22 +239,38 @@ describe('useDeviceApps', () => {
     expect(setSetting).toHaveBeenCalledWith('D1', 'remoteit.console', 'ai_commands', false)
     expect(seen.a.apps?.[0].settings[0].value).toBe(false)
     expect(seen.b.apps?.[0].settings[0].value).toBe(false)
-    // Not a port: the apps are not read again.
+    // Not a port: nothing read again.
     expect(read).toHaveBeenCalledTimes(1)
+    expect(fetchSingleFull).not.toHaveBeenCalled()
   })
 
-  it('a port setting — a service’s or a listener’s — reads the apps again: their services’ ports moved with it', async () => {
+  it('a port setting — a service’s or a listener’s — reads the device again: its service’s port moved with it', async () => {
     const stream = { key: 'rtsp', name: 'Stream', protocol: 'udp', multiPort: true, port: null, portSetting: null, serviceId: 'S8',
-      listeners: [{ name: 'rtsp', type: 'udp', port: null, portSetting: 'rtsp_port', ports: null }], ports: ['8554'] }
-    const camera = withServices({ ...rawApp('running'), services: undefined } as any)
+      listeners: [{ name: 'rtsp', type: 'udp', port: null, portSetting: 'rtsp_port', ports: null }] }
+    const camera = withServices({ ...rawApp('running'), portSetting: 'port', services: undefined } as any)
+    const port = { ...aiCommands(true), name: 'rtsp_port', type: 'int', value: 8554 }
     read.mockResolvedValue([{ ...camera, services: [...camera.services, stream] }])
     await render(<Apps deviceId="D1" name="a" />)
-    read.mockResolvedValue([{ ...camera, services: [...camera.services, { ...stream, ports: ['9554'] }] }])
+    setSetting.mockResolvedValue({ ...port, value: 9554 })
+    let done: unknown
     await act(async () => {
-      await seen.a.setSetting(seen.a.apps![0], 'rtsp_port', 9554)
+      done = await seen.a.setSetting(seen.a.apps![0], 'rtsp_port', 9554)
     })
-    expect(read).toHaveBeenCalledTimes(2)
-    expect(seen.a.apps?.[0].services[1].ports).toEqual(['9554'])
+    expect(done).toBe(true)
+    expect(fetchSingleFull).toHaveBeenCalledWith({ id: 'D1', accountId: 'A1', hidden: true, silent: true })
+    // The primary's own port setting too.
+    fetchSingleFull.mockClear()
+    await act(async () => {
+      await seen.a.setSetting(seen.a.apps![0], 'port', 2222)
+    })
+    expect(fetchSingleFull).toHaveBeenCalledTimes(1)
+    // A setting graphql refused: nothing moved, nothing read.
+    fetchSingleFull.mockClear()
+    setSetting.mockResolvedValue(null)
+    await act(async () => {
+      await seen.a.setSetting(seen.a.apps![0], 'rtsp_port', 22)
+    })
+    expect(fetchSingleFull).not.toHaveBeenCalled()
   })
 })
 
