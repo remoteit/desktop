@@ -311,7 +311,8 @@ export const DeviceAppPage: React.FC = () => {
         )}
         {shown.map((served, index) => {
           const service = device.services?.find(s => s.id === served.serviceId)
-          const list = served.ports.length ? served.ports : service?.ports ?? []
+          // Its ports as graphql has them (a port setting's change re-reads them), else as the device's service says.
+          const list = served.ports.length ? served.ports : service?.ports ?? (service ? [String(service.port)] : [])
           const several = served.multiPort || list.length > 1 || !!list[0]?.includes('-')
           const own = [...ports].filter(([, port]) => port.service === served)
           return (
@@ -323,11 +324,14 @@ export const DeviceAppPage: React.FC = () => {
                         name: service?.name ?? served.name,
                         ports: formatPorts(list),
                       })
-                    : !service
+                    : !list.length
                     ? served.name
                     : served.protocol === 'udp'
-                    ? t('apps.serviceLineUdp', '{{name}} · UDP port {{port}}', { name: service.name, port: service.port })
-                    : t('apps.serviceLine', '{{name}} · port {{port}}', { name: service.name, port: service.port })}
+                    ? t('apps.serviceLineUdp', '{{name}} · UDP port {{port}}', {
+                        name: service?.name ?? served.name,
+                        port: list[0],
+                      })
+                    : t('apps.serviceLine', '{{name}} · port {{port}}', { name: service?.name ?? served.name, port: list[0] })}
                 </Typography>
                 {/* A connection reaches its first port, the launch port; the rest by name on the device subnet
                     (graphql-api docs/MULTI-PORT-SERVICES.md, "Clients: address mode only"). */}

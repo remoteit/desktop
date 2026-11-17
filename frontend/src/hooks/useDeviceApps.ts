@@ -136,6 +136,11 @@ export function useDeviceApps(deviceId?: string, { offers = true }: { offers?: b
         a.id === app.id ? { ...a, settings: a.settings.map(s => (s.name === name ? setting : s)) } : a
       )
       tell(deviceId, now)
+      // A port setting moves its service's ports, which graphql keeps in step: read them as it now has them.
+      if (isPortSetting(app, name)) {
+        const read = await graphQLDeviceApps(deviceId)
+        if (read) tell(deviceId, read)
+      }
       return true
     },
     [deviceId, apps]
@@ -151,6 +156,11 @@ export function useDeviceApps(deviceId?: string, { offers = true }: { offers?: b
     setSetting,
   }
 }
+
+// Whether a setting is one of an app's ports: a service's (portSetting), or a listener's.
+const isPortSetting = (app: DeviceApp, name: string) =>
+  app.portSetting === name ||
+  app.services.some(service => service.portSetting === name || service.listeners.some(l => l.portSetting === name))
 
 /* The app a service of a device belongs to (helpers/appsHelper serviceApp) and which of its services it is
    (appServiceOf), with its device's apps to turn it on: read only for a service at an app's host, so a device's other
