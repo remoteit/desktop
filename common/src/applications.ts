@@ -264,6 +264,10 @@ export class Application {
     return this.cloudData ? this.cloudData.proxy : false
   }
 
+  get publicReverseProxy() {
+    return !!(this.reverseProxy && this.connection?.public && !this.connection.connectLink)
+  }
+
   getReverseProxyTemplate(secure: boolean) {
     return secure ? this.template.replace('http:', 'https:') : this.template.replace('https:', 'http:')
   }
@@ -275,10 +279,11 @@ export class Application {
 
   private resolvedDefaultTemplate(type?: LaunchMethod['type']): string {
     switch (type) {
-      case 'URL':
-        return (
+      case 'URL': {
+        const template =
           this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.defaultLaunchTemplate
-        )
+        return this.publicReverseProxy ? template.replace(':[port]', '') : template
+      }
       case 'COMMAND':
         return (
           this.service?.attributes.commandTemplate || this.globalDefaults.commandTemplate || this.defaultCommandTemplate
