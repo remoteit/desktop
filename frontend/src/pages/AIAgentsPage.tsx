@@ -37,45 +37,47 @@ const Step: React.FC<{ number: number; label: string; children?: React.ReactNode
 export const AIAgentsPage: React.FC = () => {
   const { t } = useTranslation()
   return (
-    <Container
-      gutterBottom
-      header={
-        <Typography variant="h1">
-          <Title>{t('aiAgentsPage.title', 'AI Agents')}</Title>
-        </Typography>
-      }
-    >
-      <Gutters>
-        <Typography variant="body1">
-          {t(
-            'aiAgentsPage.intro',
-            'Connect Claude, ChatGPT or another AI assistant to your Remote.It account. Then just ask it to check on your devices, open connections or run scripts.'
-          )}
-        </Typography>
-      </Gutters>
-      <Typography variant="subtitle1">{t('aiAgentsPage.howTo', 'How to connect')}</Typography>
-      <Gutters top={null} inset="md">
-        <Box component="ol" sx={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          <Step number={1} label={t('aiAgentsPage.step1', 'Copy the Remote.It MCP server URL.')}>
-            <CopyCodeBlock value={OAUTH_MCP_RESOURCE} hideCopyLabel sx={{ marginTop: 1 }} />
-          </Step>
-          <Step
-            number={2}
-            label={t(
-              'aiAgentsPage.step2',
-              'In your AI assistant, add a custom connector (or remote MCP server) and paste the URL.'
+    <Box sx={{ maxWidth: 720, height: '100%', minHeight: 0 }}>
+      <Container
+        gutterBottom
+        header={
+          <Typography variant="h1">
+            <Title>{t('aiAgentsPage.title', 'AI Agents')}</Title>
+          </Typography>
+        }
+      >
+        <Gutters>
+          <Typography variant="body1">
+            {t(
+              'aiAgentsPage.intro',
+              'Connect Claude, ChatGPT or another AI assistant to your Remote.It account. Then just ask it to check on your devices, open connections or run scripts.'
             )}
-          />
-          <Step
-            number={3}
-            label={t('aiAgentsPage.step3', 'Sign in with your Remote.It account when asked. No API keys needed.')}
-          />
-        </Box>
-        <Link href={MCP_CONNECT_DOCS_LINK} noUnderline>
-          {t('aiAgentsPage.setupGuides', 'Setup guides for Claude, ChatGPT and more')}
-          <Icon name="launch" size="sm" />
-        </Link>
-      </Gutters>
-    </Container>
+          </Typography>
+        </Gutters>
+        <Typography variant="subtitle1">{t('aiAgentsPage.howTo', 'How to connect')}</Typography>
+        <Gutters top={null} inset="md">
+          <Box component="ol" sx={{ listStyle: 'none', margin: 0, paddingX: 0, paddingY: 2 }}>
+            <Step number={1} label={t('aiAgentsPage.step1', 'Copy the Remote.It MCP server URL.')}>
+              <CopyCodeBlock value={OAUTH_MCP_RESOURCE} hideCopyLabel sx={{ marginTop: 1 }} />
+            </Step>
+            <Step
+              number={2}
+              label={t(
+                'aiAgentsPage.step2',
+                'In your AI assistant, add a custom connector (or remote MCP server) and paste the URL.'
+              )}
+            />
+            <Step
+              number={3}
+              label={t('aiAgentsPage.step3', 'Sign in with your Remote.It account when asked. No API keys needed.')}
+            />
+          </Box>
+          <Link href={MCP_CONNECT_DOCS_LINK} noUnderline>
+            {t('aiAgentsPage.setupGuides', 'Setup guides for Claude, ChatGPT and more')}
+            <Icon name="launch" size="sm" />
+          </Link>
+        </Gutters>
+      </Container>
+    </Box>
   )
 }
