@@ -1,17 +1,15 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
-import { State } from '../store'
-import { isReverseProxy } from '../models/applicationTypes'
+import { useApplication } from '../hooks/useApplication'
 import { setConnection } from '../helpers/connectionHelper'
 import { IP_OPEN, IP_LATCH } from '@common/constants'
 import { SelectSetting } from './SelectSetting'
 
 export const PublicSetting: React.FC<{ service: IService; connection?: IConnection }> = ({ service, connection }) => {
   const { t } = useTranslation()
-  const reverseProxy = useSelector((state: State) => isReverseProxy(state, service.typeID))
+  const app = useApplication(service, connection)
   // graphql-api opens every reverse proxy connection to all IPs, ignoring the latch
-  if (!connection || !connection.public || connection.connectLink || reverseProxy) return null
+  if (!connection || !connection.public || connection.connectLink || app.publicReverseProxy) return null
 
   const disabled = connection.enabled || service.attributes.route === 'p2p'
   const helpMessage =
