@@ -1,19 +1,23 @@
 import React from 'react'
 import { Box, Button, Divider, List, ListItem, ListItemText, Switch, Typography } from '@mui/material'
 import { PermissionName, ThisDevice } from '../../services/thisDevice'
+import { useDeviceApps } from '../../hooks/useDeviceApps'
 import { ThisDeviceModel } from './model'
-import { OPTIONS, SettingRow, SWITCH_TEXT, UNDER_SERVICES } from './shared'
+import { appSettings, SettingRow, SWITCH_TEXT } from './shared'
 
 /* This device's Advanced (pages/ThisDevicePage.tsx, /this-device/advanced): what is changed seldom — what the device
-   offers beyond the three switches (exit node, the console and its AI commands, any port, proxy, the relay), a phone's permissions,
+   offers beyond the three switches (exit node, its apps and their settings, any port, proxy, the relay), a phone's permissions,
    the app's own Open at login, the detailed logging and the diagnostics, and last its removal. */
 
 export const ThisDeviceAdvanced: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {
   const { t, has, status, kind, permissions, logging, app } = m
   const d = status?.device
-  // An option is listed under the setting it belongs to; one whose setting is not listed stands on its own.
-  const options = (name: string) => m.listed.filter(s => OPTIONS[s.name]?.of === name)
-  const standing = m.listed.filter(s => !m.listed.some(p => p.name === OPTIONS[s.name]?.of))
+  // Its apps' words, as the API says them (the device by its UID): its settings name none (shared appSettings).
+  const { apps } = useDeviceApps(d?.uid, { offers: false })
+  const words = appSettings(m.listed, apps)
+  // An option is listed under the app it belongs to; one whose app is not listed stands on its own.
+  const options = (name: string) => m.listed.filter(s => words.of(s) === name)
+  const standing = m.listed.filter(s => !words.of(s))
   const heading = (text: string) => (
     <Typography variant="subtitle1" paddingX={2}>
       {text}
@@ -29,9 +33,9 @@ export const ThisDeviceAdvanced: React.FC<{ device: ThisDevice; m: ThisDeviceMod
             <React.Fragment key={s.name}>
               <SettingRow
                 setting={s}
-                title={OPTIONS[s.name]?.title(t)}
+                title={words.title(s)}
                 relayUsing={s.name === 'websocket' ? status?.relay?.using : undefined}
-                notServed={m.servicesOff && UNDER_SERVICES.includes(s.name)}
+                notServed={m.servicesOff && words.underServices(s)}
                 disabled={m.busy}
                 onSet={value => m.setSetting(s.name, value)}
               />
@@ -39,7 +43,7 @@ export const ThisDeviceAdvanced: React.FC<{ device: ThisDevice; m: ThisDeviceMod
                 <SettingRow
                   key={o.name}
                   setting={o}
-                  title={OPTIONS[o.name].title(t)}
+                  title={words.title(o)}
                   indent
                   disabled={m.busy}
                   onSet={value => m.setSetting(o.name, value)}

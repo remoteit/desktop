@@ -2,23 +2,23 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { apps, catalog, push, params } = vi.hoisted(() => ({
+const { apps, catalog, push, params, openTerminal } = vi.hoisted(() => ({
   apps: { value: {} as any },
   catalog: vi.fn(),
   push: vi.fn(),
   params: { appID: 'acme.backup' },
+  openTerminal: vi.fn(),
 }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }), useParams: () => params }))
 vi.mock('../services/Context', async () => ({ DeviceContext: (await import('react')).createContext({}) }))
 vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: catalog }))
 vi.mock('../hooks/useDeviceApps', () => ({ useDeviceApps: () => apps.value }))
 vi.mock('../hooks/useLocalSubnetName', () => ({ useSubnetName: () => 'pi.on.remote.it' }))
-vi.mock('../helpers/terminalHelper', () => ({ openTerminal: vi.fn() }))
+vi.mock('../helpers/terminalHelper', () => ({ openTerminal }))
+vi.mock('../services/browser', () => ({ default: { isNative: false }, windowOpen: vi.fn() }))
 vi.mock('../services/graphQLDeviceApps', async () => ({
   ...(await import('../services/deviceAppsShared')),
-  CONSOLE: 'remoteit.console',
   SCREENVIEW: 'remoteit.screenview',
-  graphQLSshHostKey: vi.fn(async () => 'SHA256:abc'),
 }))
 vi.mock('../components/DeviceAppSetting', () => ({
   DeviceAppSetting: ({ setting, label, disabled, onChange }: any) => (
@@ -35,12 +35,12 @@ vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data
 vi.mock('../components/Link', () => ({ Link: ({ to, children, ...rest }: any) => <a data-to={to} {...rest}>{children}</a> }))
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
 vi.mock('../components/Confirm', () => ({
-  Confirm: ({ open, title, action, children, onConfirm, onDeny }: any) =>
+  Confirm: ({ open, title, action, children, disabled, onConfirm, onDeny }: any) =>
     open ? (
       <div data-confirm>
         <span data-confirm-title>{title}</span>
         {children}
-        <button data-confirm-ok onClick={onConfirm}>
+        <button data-confirm-ok disabled={disabled} onClick={onConfirm}>
           {action}
         </button>
         <button data-confirm-deny onClick={onDeny} />
@@ -76,6 +76,11 @@ const backup = (more: Partial<DeviceApp> = {}): DeviceApp => ({
   state: 'running',
   detail: null,
   serviceId: 'S7',
+  protocol: 'https',
+  capabilities: [],
+  hostKey: null,
+  sessions: [],
+  sessionsOpen: 0,
   settings: [
     {
       name: 'mode',
@@ -143,6 +148,7 @@ afterEach(() => {
 beforeEach(() => {
   params.appID = 'acme.backup'
   push.mockReset()
+  openTerminal.mockReset()
   catalog.mockReset().mockResolvedValue(CATALOG)
   turn.mockReset().mockResolvedValue(true)
   setRelease.mockReset().mockResolvedValue(true)
@@ -297,6 +303,44 @@ describe('channel and pin', () => {
     expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { version: '1.5.0', consentRoot: true })
   })
 
+  it('a consent names what the release it is given to asks, not the version running: a pin, and Update now', async () => {
+    const releases = [
+      { version: '1.5.0', root: true, withdrawn: null, capabilities: ['person-accounts', 'ssh-exec'] },
+      { version: '1.4.0', root: false, withdrawn: null, capabilities: [] },
+    ]
+    catalog.mockResolvedValue({ ...CATALOG, releases })
+    let page = await render()
+    await select(page.querySelector('[data-app-pin]') as HTMLSelectElement, '1.5.0')
+    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual([
+      'person-accounts',
+      'ssh-exec',
+    ])
+    act(() => root.unmount())
+    container.remove()
+    apps.value.apps = [backup({ awaitingRoot: '1.5.0', upToDate: false, heldBack: { reason: 'consent', detail: '' } })]
+    page = await render()
+    await click(page.querySelector('[data-app-update-now]'))
+    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual([
+      'person-accounts',
+      'ssh-exec',
+    ])
+    expect(catalog).toHaveBeenCalledWith('acme.backup', expect.objectContaining({ accountId: 'A1' }))
+  })
+
+  it('the yes waits while what the release asks is read; where the catalogue cannot say, the app’s own are named', async () => {
+    let answer: (value: unknown) => void = () => {}
+    catalog.mockResolvedValueOnce(CATALOG).mockReturnValueOnce(new Promise(resolve => (answer = resolve)))
+    apps.value.apps = [backup({ capabilities: ['person-certificates'] })]
+    const page = await render()
+    await select(page.querySelector('[data-app-pin]') as HTMLSelectElement, '1.5.0')
+    expect((page.querySelector('[data-confirm-ok]') as HTMLButtonElement).disabled).toBe(true)
+    await act(async () => answer('ERROR'))
+    expect((page.querySelector('[data-confirm-ok]') as HTMLButtonElement).disabled).toBe(false)
+    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual([
+      'person-certificates',
+    ])
+  })
+
   it('where the API has no catalogue: only the pin it has', async () => {
     catalog.mockResolvedValue('UNSERVED')
     apps.value.apps = [backup({ pinned: '1.3.0' })]
@@ -313,42 +357,138 @@ describe('its service, settings, root, delivery and problems', () => {
     expect(push).toHaveBeenCalledWith({ pathname: '/devices/D1/S7/connect', state: { autoConnect: true, autoLaunch: true } })
   })
 
-  it('disabled: no Open — its service stopped, said where its app serves one', async () => {
+  it('disabled: no Open — its service stopped, said where its release names a protocol', async () => {
     // graphql 12c: a disabled app has no release, grant, heldBack or service.
     const disabled = { enabled: false, state: 'disabled' as const, release: null, grantUntil: null, heldBack: null, serviceId: null }
     apps.value.apps = [backup(disabled)]
-    catalog.mockResolvedValue({ ...CATALOG, serves: 'inetd' })
+    catalog.mockResolvedValue({ ...CATALOG, protocol: 'https' })
     let page = await render()
     expect(page.querySelector('[data-app-open]')).toBeNull()
     expect(text(page, 'service')).toContain('Stopped while the app is disabled: enable it to open it')
     act(() => root.unmount())
     container.remove()
-    catalog.mockResolvedValue({ ...CATALOG, serves: 'none' })
+    catalog.mockResolvedValue({ ...CATALOG, protocol: null })
     page = await render()
     expect(row(page, 'service')).toBeNull()
     act(() => root.unmount())
     container.remove()
-    // Even one whose service graphql still names, disabled, offers no Open.
-    apps.value.apps = [backup({ ...disabled, serviceId: 'S7' }), backup({ id: 'remoteit.console', ...disabled, serviceId: 'S7' })]
+    // Even one whose service graphql still names, disabled, offers no Open, nor Open terminal.
+    const terminal = { protocol: 'ssh', capabilities: ['person-certificates'] }
+    apps.value.apps = [
+      backup({ ...disabled, serviceId: 'S7' }),
+      backup({ id: 'acme.shell', ...disabled, ...terminal, serviceId: 'S7' }),
+    ]
     page = await render()
     expect(page.querySelector('[data-app-open]')).toBeNull()
     act(() => root.unmount())
     container.remove()
-    params.appID = 'remoteit.console'
+    params.appID = 'acme.shell'
     page = await render()
-    expect(text(page, 'service')).not.toContain('Open terminal')
+    expect(page.querySelector('[data-app-terminal]')).toBeNull()
   })
 
-  it('the console’s Open terminal and host key in its place', async () => {
-    params.appID = 'remoteit.console'
-    apps.value.apps = [backup({ id: 'remoteit.console', name: 'Console', root: true, serviceId: 'S7' })]
-    const page = await render()
-    expect(text(page, 'service')).toContain('Open terminal')
-    expect(page.querySelector('[data-app-open]')).toBeNull()
+  it('Open in the words of its protocol: a page, a screen, else Open', async () => {
+    const words = async (protocol: string | null) => {
+      apps.value.apps = [backup({ protocol })]
+      const answer = (await render()).querySelector('[data-app-open]')?.textContent
+      act(() => root.unmount())
+      container.remove()
+      return answer
+    }
+    expect(await words('https')).toBe('Open page')
+    expect(await words('http')).toBe('Open page')
+    expect(await words('vnc')).toBe('Open screen')
+    expect(await words('rdp')).toBe('Open screen')
+    expect(await words('tcp')).toBe('Open')
   })
 
-  it('its settings as the device settings’ rows, set by setDeviceAppSetting; read-only without Manage', async () => {
+  it('a port its owner chooses is its service’s, edited under Service, not again under Settings', async () => {
+    const port = {
+      ...backup().settings[0],
+      name: 'port',
+      type: 'int',
+      label: 'Port',
+      default: 8443,
+      value: 8443,
+      choices: null,
+    }
+    apps.value.apps = [backup({ portSetting: 'port', settings: [...backup().settings, port] })]
     let page = await render()
+    expect(row(page, 'service')?.querySelector('[data-app-port-setting="port"]')).not.toBeNull()
+    expect(row(page, 'service')?.textContent).toContain('Port people connect to')
+    expect(row(page, 'settings')?.querySelector('[data-app-port-setting]')).toBeNull()
+    expect(row(page, 'settings')?.textContent).not.toContain('Port')
+    act(() => root.unmount())
+    container.remove()
+    // Disabled, its service stopped: the setting is under Settings, where it can still be changed.
+    apps.value.apps = [
+      backup({ enabled: false, state: 'disabled', serviceId: null, portSetting: 'port', settings: [...backup().settings, port] }),
+    ]
+    page = await render()
+    expect(page.querySelector('[data-app-port-setting]')).toBeNull()
+    expect(row(page, 'settings')?.textContent).toContain('Port')
+  })
+
+  it('Open terminal in Open’s place, for any app whose service is ssh and that declares person-certificates', async () => {
+    params.appID = 'acme.shell'
+    const shell = { id: 'acme.shell', name: 'Shell', protocol: 'ssh', capabilities: ['person-certificates'] }
+    apps.value.apps = [backup(shell)]
+    let page = await render()
+    expect(page.querySelector('[data-app-open]')).toBeNull()
+    await click(page.querySelector('[data-app-terminal]'))
+    expect(openTerminal).toHaveBeenCalledWith({ name: 'pi.on.remote.it', port: 30001, title: 'Shell', service: 'S7' })
+    act(() => root.unmount())
+    container.remove()
+    // ssh that does not sign people in by certificate: opened as any service is.
+    apps.value.apps = [backup({ ...shell, capabilities: ['ssh-exec'] })]
+    page = await render()
+    expect(page.querySelector('[data-app-terminal]')).toBeNull()
+    expect(page.querySelector('[data-app-open]')).not.toBeNull()
+  })
+
+  it('the key its service presents, where the device reports one — whatever the app', async () => {
+    expect((await render()).querySelector('[data-host-key]')).toBeNull()
+    act(() => root.unmount())
+    container.remove()
+    apps.value.apps = [backup({ hostKey: 'sha256:0f1e' })]
+    expect((await render()).querySelector('[data-host-key]')?.textContent).toBe('Host key sha256:0f1e')
+  })
+
+  it('what it asks of remote.it beyond running, beside how it runs; nothing for an ordinary app', async () => {
+    expect((await render()).querySelector('[data-app-asks]')).toBeNull()
+    act(() => root.unmount())
+    container.remove()
+    apps.value.apps = [backup({ root: true, capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'] })]
+    expect((await render()).querySelector('[data-app-asks]')?.textContent).toBe(
+      'Keeps accounts for the people you share with · Signs in people by remote.it certificate · AI commands go through this app'
+    )
+  })
+
+  it('its sessions: how many are open; each session, as whom, by an AI and since when, for those who manage it', async () => {
+    expect(row(await render(), 'sessions')).toBeNull()
+    act(() => root.unmount())
+    container.remove()
+    const sessions = [
+      { session: '9f2c1e0a77b3', login: 'r3-evan', via: null, since: null },
+      { session: 'a1b2', login: null, via: 'ai', since: null },
+    ]
+    apps.value.apps = [backup({ sessions, sessionsOpen: 3 })]
+    let page = await render()
+    expect(page.querySelector('[data-app-sessions-open]')?.textContent).toBe('3 open now')
+    // The session, never a person: an app knows sessions, not who is behind them.
+    expect(page.querySelector('[data-app-session="9f2c1e0a77b3"]')?.textContent).toBe('Session 9f2c1e0a · as r3-evan')
+    expect(page.querySelector('[data-app-session="a1b2"]')?.textContent).toBe('Session a1b2 · by an AI')
+    expect(page.querySelector('[data-app-sessions-more]')?.textContent).toBe('1 more not listed')
+    act(() => root.unmount())
+    container.remove()
+    page = await render(['VIEW', 'CONNECT'])
+    expect(page.querySelector('[data-app-sessions-open]')?.textContent).toBe('3 open now')
+    expect(page.querySelector('[data-app-session]')).toBeNull()
+  })
+
+  it('its settings as the device settings’ rows, in its release’s words, set by setDeviceAppSetting; read-only without Manage', async () => {
+    let page = await render()
+    expect(page.querySelector('[data-setting="mode"]')?.textContent).toBe('Back up')
     await click(page.querySelector('[data-setting="mode"]'))
     expect(setSetting).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), 'mode', false)
     act(() => root.unmount())

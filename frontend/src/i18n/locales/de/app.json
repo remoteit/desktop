@@ -223,6 +223,11 @@
     "anyVersion": "",
     "cancel": "",
     "candidate": "",
+    "capabilitiesAlso": "Außerdem verlangt sie von remote.it:",
+    "capabilitiesAsks": "Sie verlangt von remote.it:",
+    "capabilityPersonAccounts": "Führt Konten für die Personen, mit denen Sie teilen",
+    "capabilityPersonCertificates": "Meldet Personen per remote.it-Zertifikat an",
+    "capabilitySshExec": "KI-Befehle laufen über diese App",
     "catalogFailed": "",
     "catalogUnserved": "",
     "channel": "",
@@ -330,7 +335,15 @@
     "searchDevices": "",
     "service": "",
     "serviceLine": "",
+    "servicePort": "",
     "serviceStopped": "",
+    "sessionAs": "als {{login}}",
+    "sessionByAi": "von einer KI",
+    "sessionId": "",
+    "sessions": "Sitzungen",
+    "sessionSince": "seit {{when}}",
+    "sessionsMore": "{{number}} weitere nicht aufgeführt",
+    "sessionsOpen": "{{number}} jetzt offen",
     "settings": "",
     "showMore": "",
     "state": "",
@@ -364,6 +377,13 @@
     "withdrawnByPublisher": "",
     "yourDevices": "",
     "yours": ""
+  },
+  "appTerminal": {
+    "disabled": "{{app}} ist deaktiviert: Aktivieren Sie die App, um sie in Web-SSH zu öffnen",
+    "enable": "Aktivieren",
+    "open": "In Web-SSH öffnen",
+    "openInBrowser": "In Web-SSH öffnen, in Ihrem Browser",
+    "starting": "{{app}} startet: Web-SSH öffnet sie, sobald sie läuft"
   },
   "appType": {
     "adminPanel": {
@@ -886,13 +906,6 @@
     "permissionSubLabel": "Erfordert die Geräteberechtigung „Verwalten“",
     "webAuthenticationLabel": "Web-Authentifizierung"
   },
-  "consoleTerminal": {
-    "disabled": "",
-    "enable": "",
-    "open": "",
-    "openInBrowser": "",
-    "starting": ""
-  },
   "copyCodeBlock": {
     "copy": "Kopieren",
     "copyCode": "Code kopieren",
@@ -1167,11 +1180,6 @@
     "consentedDevice": "Auf dem Gerät von {{by}} als root eingeschaltet, {{when}}",
     "consentedProduct": "Läuft als root mit der Zustimmung seines Produkts: {{by}}, {{when}}",
     "consentedRegistration": "Läuft als root, seit sich dieses Gerät registriert hat, {{when}}",
-    "console": "",
-    "consoleAiCommands": "",
-    "consoleAiCommandsHelp": "",
-    "consoleDisabled": "",
-    "consoleRunning": "",
     "converting": "",
     "hostKey": "",
     "needsNewer": "Benötigt ein neueres remote.it auf diesem Gerät",
@@ -1179,6 +1187,8 @@
     "noMatch": "Muss {{pattern}} entsprechen",
     "noRelease": "Hier noch keine Version verfügbar",
     "open": "Öffnen",
+    "openPage": "",
+    "openScreen": "",
     "openTerminal": "",
     "publisher": "",
     "rootAction": "",

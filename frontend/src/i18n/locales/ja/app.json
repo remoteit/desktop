@@ -220,6 +220,11 @@
     "anyVersion": "",
     "cancel": "",
     "candidate": "",
+    "capabilitiesAlso": "さらに remote.it に求めるもの:",
+    "capabilitiesAsks": "remote.it に求めるもの:",
+    "capabilityPersonAccounts": "共有相手のアカウントを保持します",
+    "capabilityPersonCertificates": "remote.it の証明書でユーザーをサインインさせます",
+    "capabilitySshExec": "AI コマンドはこのアプリを経由します",
     "catalogFailed": "",
     "catalogUnserved": "",
     "channel": "",
@@ -323,7 +328,15 @@
     "searchDevices": "",
     "service": "",
     "serviceLine": "",
+    "servicePort": "",
     "serviceStopped": "",
+    "sessionAs": "{{login}} として",
+    "sessionByAi": "AI による",
+    "sessionId": "",
+    "sessions": "セッション",
+    "sessionSince": "{{when}} から",
+    "sessionsMore": "ほか {{number}} 件は一覧にありません",
+    "sessionsOpen": "現在 {{number}} 件が開いています",
     "settings": "",
     "showMore": "",
     "state": "",
@@ -357,6 +370,13 @@
     "withdrawnByPublisher": "",
     "yourDevices": "",
     "yours": ""
+  },
+  "appTerminal": {
+    "disabled": "{{app}} は無効です: Web SSH で開くには有効にしてください",
+    "enable": "有効にする",
+    "open": "Web SSH で開く",
+    "openInBrowser": "Web SSH で開く (ブラウザー)",
+    "starting": "{{app}} は起動中です: 実行されると Web SSH で開きます"
   },
   "appType": {
     "adminPanel": {
@@ -877,13 +897,6 @@
     "permissionSubLabel": "デバイスの「管理」権限が必要です",
     "webAuthenticationLabel": "Web認証"
   },
-  "consoleTerminal": {
-    "disabled": "",
-    "enable": "",
-    "open": "",
-    "openInBrowser": "",
-    "starting": ""
-  },
   "copyCodeBlock": {
     "copy": "コピー",
     "copyCode": "コードをコピー",
@@ -1153,11 +1166,6 @@
     "consentedDevice": "デバイス上で {{by}} が root として有効化 ({{when}})",
     "consentedProduct": "プロダクトの同意により root で実行: {{by}} ({{when}})",
     "consentedRegistration": "このデバイスの登録時から root で実行 ({{when}})",
-    "console": "",
-    "consoleAiCommands": "",
-    "consoleAiCommandsHelp": "",
-    "consoleDisabled": "",
-    "consoleRunning": "",
     "converting": "",
     "hostKey": "",
     "needsNewer": "このデバイスにはより新しい remote.it が必要です",
@@ -1165,6 +1173,8 @@
     "noMatch": "{{pattern}} に一致する必要があります",
     "noRelease": "ここではまだリリースがありません",
     "open": "開く",
+    "openPage": "",
+    "openScreen": "",
     "openTerminal": "",
     "publisher": "",
     "rootAction": "",

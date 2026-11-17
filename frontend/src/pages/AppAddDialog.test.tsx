@@ -210,6 +210,36 @@ describe('the root consent', () => {
     await select($('[data-app-add-version]'), '1.5.0-beta.2')
     expect($('[data-app-add-root]')).not.toBeNull()
   })
+
+  it('what it asks of remote.it is part of the consent — the release pinned’s, where one is', async () => {
+    const asks = ['person-accounts', 'person-certificates']
+    const app = mockCatalogApp('acme.backup')!
+    catalog.mockResolvedValue({
+      ...app,
+      root: true,
+      capabilities: asks,
+      releases: [{ ...app.releases[0], root: true, capabilities: ['ssh-exec'] }, ...app.releases.slice(1)],
+    })
+    await render()
+    const said = () =>
+      [...document.querySelectorAll('[data-app-add-root] [data-app-capability]')].map(c => c.textContent)
+    expect(said()).toEqual([
+      '· Keeps accounts for the people you share with',
+      '· Signs in people by remote.it certificate',
+    ])
+    await click($('[data-app-add-pin]'))
+    await select($('[data-app-add-version]'), '1.5.0-beta.2')
+    expect(said()).toEqual(['· AI commands go through this app'])
+  })
+
+  it('a restricted app says what it asks of remote.it above Add, with no consent asked', async () => {
+    catalog.mockResolvedValue({ ...mockCatalogApp('acme.backup'), capabilities: ['person-certificates'] })
+    await render()
+    expect($('[data-app-add-root]')).toBeNull()
+    expect($('[data-app-add-capabilities]').textContent).toBe(
+      'It asks of remote.it:· Signs in people by remote.it certificate'
+    )
+  })
 })
 
 describe('Add, to a tag or a product', () => {

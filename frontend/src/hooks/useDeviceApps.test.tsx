@@ -12,7 +12,6 @@ const { read, setApp, addApp, setRelease, removeApp, setSetting, available } = v
   setSetting: vi.fn(),
 }))
 vi.mock('../services/graphQLDeviceApps', () => ({
-  CONSOLE: 'remoteit.console',
   graphQLDeviceApps: read,
   graphQLAvailableApps: available,
   graphQLSetDeviceAppEnabled: setApp,
@@ -23,7 +22,7 @@ vi.mock('../services/graphQLDeviceApps', () => ({
   refused: (r: any) => !!r && typeof r === 'object' && 'reason' in r,
 }))
 
-import { DeviceApps, useDeviceApps } from './useDeviceApps'
+import { DeviceApps, ServiceApp, useDeviceApps, useServiceApp } from './useDeviceApps'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const aiCommands = (value: boolean) => ({
@@ -58,8 +57,13 @@ const app = (state: string, enabled = state !== 'disabled') => ({
 
 let root: Root
 const seen: Record<string, DeviceApps> = {}
-const Apps = ({ deviceId, name }: { deviceId?: string; name: string }) => {
-  seen[name] = useDeviceApps(deviceId)
+const Apps = ({ deviceId, name, offers }: { deviceId?: string; name: string; offers?: boolean }) => {
+  seen[name] = useDeviceApps(deviceId, offers === undefined ? undefined : { offers })
+  return null
+}
+const served: Record<string, ServiceApp> = {}
+const Serving = ({ service, name }: { service: Partial<IService>; name: string }) => {
+  served[name] = useServiceApp({ id: 'D1' } as IDevice, service as IService)
   return null
 }
 
@@ -88,7 +92,7 @@ describe('useDeviceApps', () => {
     read.mockResolvedValue([app('disabled'), { ...app('running'), id: 'remoteit.files' }])
     available.mockResolvedValue([])
     await act(async () => {
-      await seen.a.turn(seen.a.console!, true)
+      await seen.a.turn(seen.a.apps![0], true)
     })
     expect(available).toHaveBeenCalledTimes(2)
     expect(seen.a.available).toEqual([])
@@ -108,8 +112,8 @@ describe('useDeviceApps', () => {
       </>
     )
     expect(read).toHaveBeenCalledTimes(1)
-    expect(seen.a.console?.state).toBe('disabled')
-    expect(seen.b.console?.state).toBe('disabled')
+    expect(seen.a.apps?.[0].state).toBe('disabled')
+    expect(seen.b.apps?.[0].state).toBe('disabled')
     expect(seen.none.apps).toBeUndefined()
   })
 
@@ -123,12 +127,12 @@ describe('useDeviceApps', () => {
     read.mockResolvedValue([app('running')])
     let done: unknown
     await act(async () => {
-      done = await seen.a.turn(seen.a.console!, true)
+      done = await seen.a.turn(seen.a.apps![0], true)
     })
     expect(done).toBe(true)
     expect(setApp).toHaveBeenCalledWith('D1', 'remoteit.console', true, undefined)
-    expect(seen.a.console?.state).toBe('running')
-    expect(seen.b.console?.state).toBe('running')
+    expect(seen.a.apps?.[0].state).toBe('running')
+    expect(seen.b.apps?.[0].state).toBe('running')
     expect(seen.a.switching).toBeUndefined()
   })
 
@@ -136,7 +140,7 @@ describe('useDeviceApps', () => {
     await render(<Apps deviceId="D1" name="a" />)
     read.mockResolvedValue([app('running')])
     await act(async () => {
-      await seen.a.turn(seen.a.console!, true, true)
+      await seen.a.turn(seen.a.apps![0], true, true)
     })
     expect(setApp).toHaveBeenCalledWith('D1', 'remoteit.console', true, true)
   })
@@ -148,7 +152,7 @@ describe('useDeviceApps', () => {
       read.mockResolvedValueOnce([app('starting')]).mockResolvedValue([app('running')])
       let turning: Promise<unknown> | undefined
       act(() => {
-        turning = seen.a.turn(seen.a.console!, true)
+        turning = seen.a.turn(seen.a.apps![0], true)
       })
       await act(async () => {
         await vi.advanceTimersByTimeAsync(2_000)
@@ -157,7 +161,7 @@ describe('useDeviceApps', () => {
         await turning
       })
       expect(read).toHaveBeenCalledTimes(3) // the first read, then starting, then running
-      expect(seen.a.console?.state).toBe('running')
+      expect(seen.a.apps?.[0].state).toBe('running')
     } finally {
       vi.useRealTimers()
     }
@@ -168,7 +172,7 @@ describe('useDeviceApps', () => {
     setApp.mockResolvedValue({ reason: 'Managed by its product Kiosks' })
     let done: unknown
     await act(async () => {
-      done = await seen.a.turn(seen.a.console!, true)
+      done = await seen.a.turn(seen.a.apps![0], true)
     })
     expect(done).toEqual({ reason: 'Managed by its product Kiosks' })
     expect(read).toHaveBeenCalledTimes(1)
@@ -190,13 +194,13 @@ describe('useDeviceApps', () => {
     try {
       await render(<Apps deviceId="D1" name="a" />)
       await act(async () => {
-        await seen.a.setRelease(seen.a.console!, { version: '' })
+        await seen.a.setRelease(seen.a.apps![0], { version: '' })
       })
       expect(setRelease).toHaveBeenCalledWith('D1', 'remoteit.console', { version: '' })
       read.mockResolvedValueOnce([app('removing', false)]).mockResolvedValue([])
       let removing: Promise<unknown> | undefined
       act(() => {
-        removing = seen.a.remove(seen.a.console!)
+        removing = seen.a.remove(seen.a.apps![0])
       })
       await act(async () => {
         await vi.advanceTimersByTimeAsync(2_000)
@@ -219,10 +223,51 @@ describe('useDeviceApps', () => {
       </>
     )
     await act(async () => {
-      await seen.a.setSetting(seen.a.console!, 'ai_commands', false)
+      await seen.a.setSetting(seen.a.apps![0], 'ai_commands', false)
     })
     expect(setSetting).toHaveBeenCalledWith('D1', 'remoteit.console', 'ai_commands', false)
-    expect(seen.a.console?.settings[0].value).toBe(false)
-    expect(seen.b.console?.settings[0].value).toBe(false)
+    expect(seen.a.apps?.[0].settings[0].value).toBe(false)
+    expect(seen.b.apps?.[0].settings[0].value).toBe(false)
+  })
+})
+
+describe('useServiceApp: the app a service belongs to', () => {
+  const shell = (state: string, more: any = {}) => ({
+    ...app(state),
+    id: 'acme.shell',
+    serviceId: state === 'disabled' ? null : 'S5',
+    ...more,
+  })
+
+  it('the app naming the service; while disabled, the app whose host the service is at', async () => {
+    read.mockResolvedValue([app('running'), shell('running')])
+    await render(<Serving name="a" service={{ id: 'S5', host: 'remoteit-app-acme-shell' }} />)
+    expect(served.a.app?.id).toBe('acme.shell')
+    act(() => root.unmount())
+    read.mockResolvedValue([app('running'), shell('disabled')])
+    await render(<Serving name="b" service={{ id: 'S5', host: 'remoteit-app-acme-shell' }} />)
+    expect(served.b.app?.id).toBe('acme.shell')
+    act(() => root.unmount())
+    // One naming another service is not this one's: an earlier service of it, stopped.
+    read.mockResolvedValue([shell('running', { serviceId: 'S9' })])
+    await render(<Serving name="c" service={{ id: 'S5', host: 'remoteit-app-acme-shell' }} />)
+    expect(served.c.app).toBeUndefined()
+  })
+
+  it('reads nothing for a service at no app’s host, and never what the device may add', async () => {
+    await render(<Serving name="a" service={{ id: 'S2', host: 'localhost' }} />)
+    expect(read).not.toHaveBeenCalled()
+    expect(served.a.app).toBeUndefined()
+    act(() => root.unmount())
+    await render(<Serving name="b" service={{ id: 'S5', host: 'remoteit-app-acme-shell' }} />)
+    expect(read).toHaveBeenCalledWith('D1')
+    expect(available).not.toHaveBeenCalled()
+  })
+
+  it('reads nothing of what the device may add where the part asking offers none', async () => {
+    await render(<Apps deviceId="D1" name="a" offers={false} />)
+    expect(read).toHaveBeenCalledWith('D1')
+    expect(available).not.toHaveBeenCalled()
+    expect(seen.a.available).toBeUndefined()
   })
 })

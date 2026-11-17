@@ -104,6 +104,8 @@ export const AppsPage: React.FC = () => {
                 verifiedDomain={app.publisher.verifiedDomain}
                 own={app.publisher.own}
                 root={app.root}
+                capabilities={app.capabilities}
+                protocol={app.protocol}
                 description={app.description}
                 platforms={app.version ? platformsLine(t, app.platforms) : t('apps.noRelease', 'No release here yet')}
                 aside={

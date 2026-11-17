@@ -11,13 +11,13 @@ import {
   graphQLSetDeviceProductApp,
   graphQLSetDeviceProductAppSetting,
 } from '../services/productPolicy'
-import { firstPartyApp } from './firstPartyApps'
 import { RootConsent } from './AppRootConsent'
 import { deprecatedLine } from './DeviceSettingRow'
 import { SelectSetting } from './SelectSetting'
 import { timeOptions } from './Timestamp'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
+import { appIcon, capabilitiesLine } from '../helpers/appsHelper'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 
 type Props = {
@@ -33,14 +33,15 @@ const UNSET = ''
 
 /* The apps a product sets on its devices (presence-server docs/device-apps-design.md, "Product policy" under
    "Lifecycle: add, disable, remove", and "The Apps pages"): every catalogue app its account may take, a row each — its
-   publisher, its version and channel or pin, Runs as root where it does — with a select: Unset (each device's own),
+   publisher, its version and channel or pin, Runs as root where it does and what else it asks of remote.it (its
+   capabilities, where the API says them) — with a select: Unset (each device's own),
    Enabled (added and enabled), Disabled (added, nothing installed) or Removed (taken off its devices, and kept off);
    under enforced, Unset reads "Removed (not listed)", as an app the product does not list is removed. Its settings are
    its options, inside its row and lined up under its name. One the product sets is locked on its devices while it is
    synced or enforced; a setting the release says may not be forced is given to them but not locked, and is said so.
 
    A root app is enabled for the product only once the person says yes to its full control of every device in the
-   product, now and later (components/AppRootConsent); graphql keeps that consent on the product, and asks for it again
+   product, now and later, and to what else it asks of remote.it (components/AppRootConsent); graphql keeps that consent on the product, and asks for it again
    when a new release newly runs as root, its devices staying on its last restricted release meanwhile (or not turned
    on, where there is none). Turning an app on needs Scripting in the product's account as well as managing the
    product; graphql says so where it refuses, and its words are shown.
@@ -111,15 +112,13 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
       </Typography>
       <List dense disablePadding>
         {apps.map(app => {
-          const own = firstPartyApp(app.id)
-          const words = own?.settings?.(t) ?? {}
           const settings = app.settings.filter(setting => !setting.deprecated || setting.value !== null)
           const value = app.state ?? UNSET
           return (
             <Box component="li" key={app.id} data-product-app={app.id} sx={{ listStyle: 'none' }}>
               <ListItem component="div" disableGutters sx={{ alignItems: 'flex-start' }}>
                 <ListItemIcon sx={{ marginTop: 0.5 }}>
-                  <Icon name={own?.icon ?? 'cube'} size="md" fixedWidth />
+                  <Icon name={appIcon(app.protocol)} size="md" fixedWidth />
                 </ListItemIcon>
                 <ListItemText
                   primary={app.name}
@@ -132,6 +131,9 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
                         <Line data="root" color="warning.main">
                           {t('deviceApps.runsAsRoot', 'Runs as root: full control of this device')}
                         </Line>
+                      )}
+                      {!!app.capabilities.length && (
+                        <Line data="capabilities">{capabilitiesLine(t, app.capabilities)}</Line>
                       )}
                       {app.locked && <Line data="locked">{lockedLine(t, sync)}</Line>}
                       {app.rootConsent && !app.needsConsent && (
@@ -210,8 +212,8 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
                     key={setting.name}
                     setting={setting}
                     sync={sync}
-                    label={words[setting.name]?.label ?? setting.label}
-                    help={words[setting.name]?.help ?? setting.help}
+                    label={setting.label}
+                    help={setting.help}
                     disabled={!manage || saving === `${app.id}.${setting.name}`}
                     onChange={next => setSetting(app, setting.name, next)}
                   />
@@ -230,6 +232,7 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
         product
         app={asking}
         version={asking?.state === 'enabled' && asking.needsConsent ? asking.awaitingRoot : undefined}
+        release={asking?.awaitingRoot || asking?.version}
         action={asking?.state === 'enabled' ? t('productApps.consentAction', 'Consent to full control') : undefined}
         onConfirm={() => {
           const app = asking

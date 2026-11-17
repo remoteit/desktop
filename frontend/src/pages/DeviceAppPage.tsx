@@ -10,7 +10,7 @@ import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch, RootConsent } from '../components/AppRootConsent'
 import { DeviceAppSetting } from '../components/DeviceAppSetting'
 import { AppOpen } from '../components/DeviceApps'
-import { firstPartyApp } from '../components/firstPartyApps'
+import { AppTerminalAction } from '../components/AppTerminal'
 import { Container } from '../components/Container'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Confirm } from '../components/Confirm'
@@ -22,6 +22,8 @@ import { Icon } from '../components/Icon'
 import {
   adminLine,
   adminRefuses,
+  appIcon,
+  capabilitiesLine,
   channelName,
   consentLine,
   day,
@@ -30,7 +32,9 @@ import {
   publisherLine,
   runsAsLine,
   stateLine,
+  when,
 } from '../helpers/appsHelper'
+import { opensTerminal } from '../helpers/sshHelper'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 
 /* The app on this device (presence-server docs/device-apps-design.md, "The Apps pages",
@@ -40,9 +44,14 @@ import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
      Version    the version it runs against the one offered on its channel: up to date, or held back with why and what
                 would release it (Update now… for a release waiting for root consent, Unpin for a pin, none for the rest)
      Channel    its channel (the account's, stable, beta) and its pin (none, or a release of it)
-     Service    its service, opened as any service opens; the console's Open terminal and host key. A disabled app
-                has no service to open (graphql gives none: kept, stopped): said stopped, where its app serves one
-     Settings   the app's options, the setting rows the device's settings use
+     Service    its service, opened by its protocol — Open terminal for one that is ssh and signs people in by
+                certificate (components/AppTerminal), a page for http and https, a viewer for vnc and rdp —, the key it
+                presents where it reports one, and the port people connect to where its owner chooses it (portSetting:
+                that setting is edited here, not under Settings). A disabled app has no service to open (graphql gives
+                none: kept, stopped): said stopped, where its app serves one (its release names a protocol)
+     Sessions   how many it serves now, where it reports them; each session, as whom and since when, for those who
+                manage it
+     Settings   the app's options, the setting rows the device's settings use, in its release's words
      Root       who consented, when, to which release and how (root apps only)
      Delivery   when the delivery grant last given lapses; none while disabled
      Problems   what the device says is wrong with its settings
@@ -53,7 +62,10 @@ import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
    its machine's administrator keeps local says so up front, its switch and Remove greyed (its channel and pin stay);
    one turned off there, its Enable greyed (Disable and Remove stay): graphql refuses what they would ask. One
    being removed shows its state and version, and nothing to change. The releases offered for a pin are the
-   catalogue's (catalogApp); where the API has no catalogue, only the pin it has. */
+   catalogue's (catalogApp); where the API has no catalogue, only the pin it has.
+
+   Every app is drawn from what the API says of it, none by its id (presence-contract docs/self-contained-apps.md): its
+   icon from how its service opens, what it asks of remote.it beyond running (its capabilities) beside how it runs. */
 export const DeviceAppPage: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
@@ -67,7 +79,7 @@ export const DeviceAppPage: React.FC = () => {
   const [pinning, setPinning] = useState<string>() // a root release to pin, asking first
   const [catalog, setCatalog] = useState<CatalogApp | null>()
   const failed = (reason: string) => setRefusal(reason || t('apps.notChanged', 'The app was not changed.'))
-  const { flip, reconsent, consent } = useAppSwitch(deviceApps, failed)
+  const { flip, reconsent, consent } = useAppSwitch(deviceApps, failed, undefined, device?.accountId)
 
   const accountId = device?.accountId
   useEffect(() => {
@@ -112,8 +124,6 @@ export const DeviceAppPage: React.FC = () => {
       </Container>
     )
 
-  const own = firstPartyApp(app.id)
-  const words = own?.settings?.(t) ?? {}
   const canManage = !!device.permissions?.includes('MANAGE')
   const canRun = canManage && !!device.permissions?.includes('SCRIPTING')
   const gone = app.state === 'removing'
@@ -124,7 +134,13 @@ export const DeviceAppPage: React.FC = () => {
   // The machine's administrator refuses the switch either way (local), or enabling it (off); and its removal (local).
   const adminHeld = adminRefuses(app, app.enabled ? 'disable' : 'enable')
   const admin = adminLine(t, app)
-  const settings = app.settings.filter(setting => !setting.deprecated || setting.at)
+  // The setting that is its service's port (portSetting) is edited in one place: under Service, where its service is
+  // shown; in Settings otherwise (disabled, its service stopped).
+  const serviceShown = !!app.serviceId && !gone
+  const portSetting = serviceShown ? app.settings.find(setting => setting.name === app.portSetting) : undefined
+  const settings = app.settings.filter(
+    setting => (!setting.deprecated || setting.at) && setting !== portSetting
+  )
   const accountChannel = catalog?.accountChannel ?? 'stable'
   const channel = app.channel || accountChannel
   const service = device.services?.find(s => s.id === app.serviceId)
@@ -157,7 +173,7 @@ export const DeviceAppPage: React.FC = () => {
     <Container gutterBottom bodyProps={{ verticalOverflow: true }} header={header}>
       <Gutters top="sm" data-device-app={app.id}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-          <Icon name={own?.icon ?? 'cube'} size="xl" fixedWidth />
+          <Icon name={appIcon(app.protocol)} size="xl" fixedWidth />
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="body2" color="textSecondary" data-app-publisher>
               {publisherLine(t, app)}
@@ -165,6 +181,11 @@ export const DeviceAppPage: React.FC = () => {
             <Typography variant="body2" color={app.root ? 'warning.main' : 'textSecondary'} data-app-runs>
               {runsAsLine(t, app.root)}
             </Typography>
+            {!!app.capabilities.length && (
+              <Typography variant="body2" color="textSecondary" data-app-asks>
+                {capabilitiesLine(t, app.capabilities)}
+              </Typography>
+            )}
             {held && app.locked && (
               <Typography variant="body2" color="textSecondary" data-app-managed>
                 {managedLine(t, app.locked)}
@@ -190,9 +211,7 @@ export const DeviceAppPage: React.FC = () => {
             color={app.state === 'unavailable' && !busy ? 'error' : undefined}
             sx={{ flexGrow: 1 }}
           >
-            {switching === app.id
-              ? t('deviceApps.switching', 'Waiting for the device…')
-              : own?.state?.(t, app) ?? stateLine(t, app)}
+            {switching === app.id ? t('deviceApps.switching', 'Waiting for the device…') : stateLine(t, app)}
           </Typography>
           {!gone && (
             <>
@@ -288,7 +307,7 @@ export const DeviceAppPage: React.FC = () => {
             </TextField>
           </Row>
         )}
-        {app.serviceId && !gone && (
+        {serviceShown && (
           <Row label={t('apps.service', 'Service')} data="service">
             <Box sx={{ flexGrow: 1 }}>
               <Typography variant="body2">
@@ -296,12 +315,66 @@ export const DeviceAppPage: React.FC = () => {
                   ? t('apps.serviceLine', '{{name}} · port {{port}}', { name: service.name, port: service.port })
                   : app.name}
               </Typography>
-              {own?.Lines && <own.Lines device={device} app={app} />}
+              {app.hostKey && (
+                <Typography
+                  variant="caption"
+                  component="div"
+                  color="textSecondary"
+                  sx={{ wordBreak: 'break-all' }}
+                  data-host-key
+                >
+                  {t('deviceApps.hostKey', 'Host key {{key}}', { key: app.hostKey })}
+                </Typography>
+              )}
+              {portSetting && (
+                <List dense disablePadding data-app-port-setting={portSetting.name} sx={{ marginLeft: `-${spacing.sm}px` }}>
+                  <DeviceAppSetting
+                    setting={portSetting}
+                    label={t('apps.servicePort', 'Port people connect to')}
+                    help={portSetting.help}
+                    disabled={!canManage || saving === portSetting.name}
+                    onChange={value => change(portSetting.name, () => setSetting(app, portSetting.name, value))}
+                  />
+                </List>
+              )}
             </Box>
-            {app.enabled && (own?.Actions ? <own.Actions device={device} app={app} /> : <AppOpen device={device} app={app} />)}
+            {app.enabled &&
+              (opensTerminal(app) ? (
+                <AppTerminalAction device={device} app={app} />
+              ) : (
+                <AppOpen device={device} app={app} />
+              ))}
           </Row>
         )}
-        {!app.serviceId && !app.enabled && !gone && catalog && catalog.serves !== 'none' && (
+        {app.enabled && !gone && app.sessionsOpen > 0 && (
+          <Row label={t('apps.sessions', 'Sessions')} data="sessions" top>
+            <Box sx={{ paddingTop: 1 }}>
+              <Typography variant="body2" data-app-sessions-open>
+                {t('apps.sessionsOpen', '{{number}} open now', { number: app.sessionsOpen })}
+              </Typography>
+              {canManage &&
+                app.sessions.map(session => (
+                  <Typography
+                    key={session.session}
+                    variant="caption"
+                    component="div"
+                    color="textSecondary"
+                    data-app-session={session.session}
+                  >
+                    {sessionLine(t, session)}
+                  </Typography>
+                ))}
+              {canManage && app.sessions.length > 0 && app.sessionsOpen > app.sessions.length && (
+                <Typography variant="caption" component="div" color="textSecondary" data-app-sessions-more>
+                  {t('apps.sessionsMore', '{{number}} more not listed', {
+                    number: app.sessionsOpen - app.sessions.length,
+                  })}
+                </Typography>
+              )}
+            </Box>
+          </Row>
+        )}
+        {!app.serviceId && !app.enabled && !gone && catalog?.protocol && (
           <Row label={t('apps.service', 'Service')} data="service">
             <Typography variant="body2" color="textSecondary" data-app-service-stopped>
               {t('apps.serviceStopped', 'Stopped while the app is disabled: enable it to open it')}
@@ -320,8 +393,8 @@ export const DeviceAppPage: React.FC = () => {
                 <DeviceAppSetting
                   key={setting.name}
                   setting={setting}
-                  label={words[setting.name]?.label ?? setting.label}
-                  help={words[setting.name]?.help ?? setting.help}
+                  label={setting.label}
+                  help={setting.help}
                   disabled={!canManage || saving === setting.name}
                   onChange={value => change(setting.name, () => setSetting(app, setting.name, value))}
                   onClear={
@@ -400,6 +473,8 @@ export const DeviceAppPage: React.FC = () => {
       {consent}
       <RootConsent
         app={pinning ? app : undefined}
+        release={pinning}
+        accountId={device.accountId}
         action={t('apps.pinRootAction', 'Pin with full control')}
         onConfirm={() => {
           const version = pinning
@@ -452,6 +527,19 @@ const Row: React.FC<{ label: string; data: string; top?: boolean; children: Reac
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1, flexWrap: 'wrap' }}>{children}</Box>
   </Box>
 )
+
+// A session it serves, as the app reports it: the session (its id's first characters), as whom on the device, by an AI
+// where one opened it, and since when. Never who: an app knows a session, not a person.
+function sessionLine(t: TFunction, session: DeviceApp['sessions'][number]): string {
+  return [
+    t('apps.sessionId', 'Session {{id}}', { id: session.session.slice(0, 8) }),
+    session.login && t('apps.sessionAs', 'as {{login}}', { login: session.login }),
+    session.via === 'ai' && t('apps.sessionByAi', 'by an AI'),
+    session.since && t('apps.sessionSince', 'since {{when}}', { when: when(session.since) }),
+  ]
+    .filter(Boolean)
+    .join(' · ')
+}
 
 // What it runs against what it is offered: "1.4.0 running · 1.4.0 offered on stable · up to date".
 function versionLine(t: TFunction, app: DeviceApp, channel: string): string {

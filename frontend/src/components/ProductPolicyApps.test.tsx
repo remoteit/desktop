@@ -3,6 +3,8 @@ import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const { setApp, setAppSetting } = vi.hoisted(() => ({ setApp: vi.fn(), setAppSetting: vi.fn() }))
+// The release a consent names is read from its catalogue entry; none here: the app's own capabilities.
+vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: () => Promise.resolve('UNSERVED') }))
 vi.mock('../services/post', () => ({ post: vi.fn() }))
 vi.mock('../services/graphQL', () => ({
   graphQLGetErrors: vi.fn(),
@@ -82,6 +84,8 @@ const consoleApp = (more: Partial<ProductApp> = {}): ProductApp => ({
   publisher: 'remote.it',
   description: null,
   root: true,
+  capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'],
+  protocol: 'ssh',
   version: '1.4.0',
   state: null,
   channel: 'stable',
@@ -91,7 +95,13 @@ const consoleApp = (more: Partial<ProductApp> = {}): ProductApp => ({
   locked: false,
   at: null,
   by: null,
-  settings: [aiCommands()],
+  // Its words are its release's, as the API gives them.
+  settings: [
+    aiCommands({
+      label: 'Allow AI commands',
+      help: 'AI assistants you authorize may run commands on this device through remote.it’s MCP server.',
+    }),
+  ],
   ...more,
 })
 
@@ -101,6 +111,8 @@ const logs = (more: Partial<ProductApp> = {}): ProductApp => ({
   publisher: 'Acme',
   description: 'Reads the device’s logs',
   root: false,
+  capabilities: [],
+  protocol: null,
   version: null,
   state: null,
   channel: null,
@@ -169,6 +181,11 @@ describe('a product’s Apps block', () => {
     expect(line(page, 'remoteit.console', 'about')).toBe('By remote.it · 1.4.0 · Stable')
     expect(line(page, 'remoteit.console', 'root')).toBe('Runs as root: full control of this device')
     expect(row(page, 'remoteit.console').querySelector('[data-icon="terminal"]')).not.toBeNull()
+    expect(line(page, 'remoteit.console', 'capabilities')).toBe(
+      'Keeps accounts for the people you share with · Signs in people by remote.it certificate · AI commands go through this app'
+    )
+    expect(row(page, 'acme.logs').querySelector('[data-icon="cube"]')).not.toBeNull()
+    expect(line(page, 'acme.logs', 'capabilities')).toBeUndefined()
     expect(line(page, 'acme.logs', 'about')).toBe('By Acme · No release here yet')
     expect(line(page, 'acme.logs', 'description')).toBe('Reads the device’s logs')
     expect(line(page, 'acme.logs', 'root')).toBeUndefined()
@@ -229,6 +246,12 @@ describe('a product’s Apps block', () => {
     expect(body).toContain('full control of this device')
     expect(body).toContain('every device in this product, now and later')
     expect(confirm.textContent).toContain('Turn it on only if you trust remote.it with every device in this product.')
+    // What else it asks of remote.it is part of the consent.
+    expect([...confirm.querySelectorAll('[data-app-capability]')].map(c => c.textContent)).toEqual([
+      '· Keeps accounts for the people you share with',
+      '· Signs in people by remote.it certificate',
+      '· AI commands go through this app',
+    ])
     await click(confirm.querySelector('[data-confirm-ok]'))
     expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', {
       channel: 'stable',

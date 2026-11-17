@@ -93,7 +93,8 @@ export const TerminalPage: React.FC = () => {
           )
         : 'ERROR'
       const account = own === 'ERROR' ? null : own?.data?.data?.sshAccount
-      // The host key the device reports for its console: one that matches is let through, another refused.
+      // The host key the device reports for the app serving it (graphql sshHostKey): one that matches is let through,
+      // another refused.
       const expectedHostKey: string = (own === 'ERROR' ? null : own?.data?.data?.sshHostKey) || ''
       if (account) term.write(`login as: ${account}\r\n`)
       const user = account || (await readLine('login as: ', true)).trim()

@@ -223,6 +223,11 @@
     "anyVersion": "Any version",
     "cancel": "Cancel",
     "candidate": "Candidate {{version}} to {{share}}% of devices",
+    "capabilitiesAlso": "It also asks of remote.it:",
+    "capabilitiesAsks": "It asks of remote.it:",
+    "capabilityPersonAccounts": "Keeps accounts for the people you share with",
+    "capabilityPersonCertificates": "Signs in people by remote.it certificate",
+    "capabilitySshExec": "AI commands go through this app",
     "catalogFailed": "The apps could not be read.",
     "catalogUnserved": "This server does not have the app catalogue yet.",
     "channel": "Channel",
@@ -330,7 +335,15 @@
     "searchDevices": "Search devices…",
     "service": "Service",
     "serviceLine": "{{name}} · port {{port}}",
+    "servicePort": "Port people connect to",
     "serviceStopped": "Stopped while the app is disabled: enable it to open it",
+    "sessionAs": "as {{login}}",
+    "sessionByAi": "by an AI",
+    "sessionId": "Session {{id}}",
+    "sessions": "Sessions",
+    "sessionSince": "since {{when}}",
+    "sessionsMore": "{{number}} more not listed",
+    "sessionsOpen": "{{number}} open now",
     "settings": "Settings",
     "showMore": "Show more",
     "state": "State",
@@ -364,6 +377,13 @@
     "withdrawnByPublisher": "Withdrawn by its publisher",
     "yourDevices": "Your devices",
     "yours": "Yours"
+  },
+  "appTerminal": {
+    "disabled": "{{app}} is disabled: enable it to open it in web SSH",
+    "enable": "Enable it",
+    "open": "Open in web SSH",
+    "openInBrowser": "Open in web SSH, in your browser",
+    "starting": "{{app}} is starting: web SSH opens it once it runs"
   },
   "appType": {
     "adminPanel": {
@@ -886,13 +906,6 @@
     "permissionSubLabel": "Requires device 'Manage' permission",
     "webAuthenticationLabel": "Web Authentication"
   },
-  "consoleTerminal": {
-    "disabled": "The console is disabled: enable it to open it in web SSH",
-    "enable": "Enable it",
-    "open": "Open in web SSH",
-    "openInBrowser": "Open in web SSH, in your browser",
-    "starting": "The console is starting: web SSH opens it once it runs"
-  },
   "copyCodeBlock": {
     "copy": "Copy",
     "copyCode": "Copy code",
@@ -1167,11 +1180,6 @@
     "consentedDevice": "Turned on as root on the device by {{by}}, {{when}}",
     "consentedProduct": "Runs as root by its product’s consent: {{by}}, {{when}}",
     "consentedRegistration": "Runs as root since this device registered, {{when}}",
-    "console": "Console",
-    "consoleAiCommands": "Allow AI commands",
-    "consoleAiCommandsHelp": "AI assistants you authorize may run commands on this device's console through remote.it's MCP server. The device's administrator can turn this off on the machine.",
-    "consoleDisabled": "Disabled — a terminal on this device, from this app, by certificate",
-    "consoleRunning": "Running — logins by certificate, nothing listening on the device",
     "converting": "Converting from the old install",
     "hostKey": "Host key {{key}}",
     "needsNewer": "Needs a newer remote.it on this device",
@@ -1179,6 +1187,8 @@
     "noMatch": "Must match {{pattern}}",
     "noRelease": "No release of it here yet",
     "open": "Open",
+    "openPage": "Open page",
+    "openScreen": "Open screen",
     "openTerminal": "Open terminal",
     "publisher": "By {{publisher}}",
     "rootAction": "Turn on with full control",
