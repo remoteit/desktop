@@ -33,7 +33,7 @@ import { AppChangeResults } from '../components/AppChangeResults'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
 import { AppCapabilities } from '../components/AppRootConsent'
-import { adminControlLine, channelName } from '../helpers/appsHelper'
+import { addAsks, adminControlLine, channelName } from '../helpers/appsHelper'
 
 type Target = 'devices' | 'tag' | 'product'
 
@@ -48,9 +48,11 @@ type Target = 'devices' | 'tag' | 'product'
           A product — its devices now and later: set Enabled on the product (setDeviceProductApp state enabled), with
                the product's root consent.
      Channel  the account's, stable or beta; and a version to pin, where wanted.
-     A root app (or a root release pinned) asks the person's yes in words before Add is offered: full control of each
-     device — of every device in the product, now and later, for a product —, and what else it asks of remote.it (its
-     capabilities, the release's), said in the same place; a restricted app says them above Add.
+     What it asks is the releases the choice gives (helpers/appsHelper addAsks): the pin, else the channel's — not the
+     account's channel's where another is chosen. One that runs as root asks the person's yes in words before Add is
+     offered: full control of each device — of every device in the product, now and later, for a product —, and what
+     else it asks of remote.it (its capabilities), said in the same place; a restricted one says them above Add. The yes
+     is to those releases, for that target (and product): another choice asks it again.
 
    Devices and a tag call addDeviceApps (at most 500 devices a call: more, and it says to add it to a product); each
    device's result is listed after — Added · Enabled · Already there · Refused: <why>. */
@@ -77,7 +79,7 @@ export const AppAddDialog: React.FC = () => {
   const [channel, setChannel] = useState('')
   const [pinning, setPinning] = useState(false)
   const [version, setVersion] = useState('')
-  const [consented, setConsented] = useState(false)
+  const [consentedTo, setConsentedTo] = useState<string>()
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<string>()
   const [results, setResults] = useState<DeviceAppChange[]>()
@@ -124,9 +126,11 @@ export const AppAddDialog: React.FC = () => {
 
   const ready = app && app !== 'ERROR' ? app : undefined
   const standing = ready?.releases.filter(r => !r.withdrawn) ?? []
-  const pinned = pinning && version ? standing.find(r => r.version === version) : undefined
-  const root = pinned ? pinned.root : !!ready?.root
-  const capabilities = pinned ? pinned.capabilities : ready?.capabilities
+  const asks = ready ? addAsks(ready, channel, pinning ? version : undefined) : undefined
+  const root = !!asks?.root
+  const capabilities = asks?.capabilities
+  const consentFor = [target, target === 'product' ? productId : '', ...(asks?.versions ?? [])].join('/')
+  const consented = consentedTo === consentFor
   const product = products.find(p => p.id === productId)
   const count = target === 'devices' ? ticked.length : target === 'tag' ? tagCount ?? 0 : 0
   const tooMany = target !== 'product' && count > MANY_DEVICES_MAX
@@ -346,10 +350,7 @@ export const AppAddDialog: React.FC = () => {
                   variant="standard"
                   label={t('apps.pin', 'Pin')}
                   value={version}
-                  onChange={e => {
-                    setVersion(e.target.value)
-                    setConsented(false)
-                  }}
+                  onChange={e => setVersion(e.target.value)}
                   SelectProps={{ native: true }}
                   InputLabelProps={{ shrink: true }}
                   inputProps={{ 'data-app-add-version': true }}
@@ -390,7 +391,7 @@ export const AppAddDialog: React.FC = () => {
                       <Checkbox
                         size="small"
                         checked={consented}
-                        onChange={e => setConsented(e.target.checked)}
+                        onChange={e => setConsentedTo(e.target.checked ? consentFor : undefined)}
                         inputProps={{ 'data-app-add-consent': true } as any}
                       />
                     }

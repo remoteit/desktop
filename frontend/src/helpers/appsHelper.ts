@@ -8,6 +8,7 @@ import type {
 } from '../services/graphQLDeviceApps'
 import { needsNewer } from '../services/deviceAppsShared'
 import type { SettingLock } from '../services/productPolicy'
+import type { CatalogApp } from '../services/graphQLAppCatalog'
 import { timeOptions } from '../components/Timestamp'
 
 /* The words the Apps pages share (presence-server docs/device-apps-design.md, "The Apps pages"): who publishes an app,
@@ -135,6 +136,32 @@ export function releaseChannelName(
         share,
       })
     : t('apps.channelCandidate', '{{channel}} candidate', { channel: channelName(t, channel) })
+}
+
+/* What adding an app gives the devices, and so what it asks (graphql's releaseFor and channelVersion): the release
+   pinned; else what the channel chosen gives — the account's where none is, else stable —: its candidate to the
+   devices in its share, its current to the rest, and a channel naming none stable's. A withdrawn release is given to
+   none. versions: those releases; root and capabilities: all they ask together, each release's as the catalogue lists
+   it — one not among the releases read (the newest only) as the app's own says, graphql refusing an add whose consent
+   does not cover what its release asks. */
+export type AddAsks = { versions: string[]; root: boolean; capabilities: string[] }
+export function addAsks(app: CatalogApp, channel: string | null | undefined, pin?: string | null): AddAsks {
+  const gives = (name: string): string[] => {
+    const row = app.channels.find(c => c.channel === name)
+    const candidate = row?.candidate && row.share > 0 ? [row.candidate] : []
+    if (row?.current) return [...candidate, row.current]
+    return name === 'stable' ? candidate : [...candidate, ...gives('stable')]
+  }
+  const versions = pin ? [pin] : [...new Set(gives(channel || app.accountChannel || 'stable'))]
+  const given = versions
+    .map(version => ({ version, release: app.releases.find(release => release.version === version) }))
+    .filter(({ release }) => !release?.withdrawn)
+  const asks = given.length ? given.map(({ release }) => release ?? app) : [app]
+  return {
+    versions: given.map(({ version }) => version),
+    root: asks.some(release => release.root),
+    capabilities: [...new Set(asks.flatMap(release => release.capabilities))],
+  }
 }
 
 /* What the machine's administrator refuses of an app here (DeviceApp.adminControl), as graphql refuses it: under

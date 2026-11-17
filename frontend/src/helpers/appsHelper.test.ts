@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { TFunction } from 'i18next'
 import {
+  addAsks,
   appHost,
   appIcon,
   capabilitiesLine,
@@ -145,5 +146,53 @@ describe('an app’s icon and service, from what the API says — never its id',
     const disabled = withServices({ ...app('acme.camera', null), services: undefined, protocol: 'http' })
     expect(appServiceOf(disabled, { id: 'S5', host: 'remoteit-app-acme-camera' })?.key).toBeNull()
     expect(appServiceOf(disabled, { id: 'S5', host: 'remoteit-app-acme-other' })).toBeUndefined()
+  })
+})
+
+describe('addAsks: what adding an app gives, and so asks', () => {
+  const release = (version: string, more: any = {}) => ({ version, root: false, capabilities: [], withdrawn: null, ...more })
+  const app = (more: any = {}) =>
+    ({
+      root: false,
+      capabilities: [],
+      accountChannel: null,
+      channels: [
+        { channel: 'stable', current: '1.0.0', candidate: null, share: 0 },
+        { channel: 'beta', current: '1.1.0', candidate: '1.2.0', share: 10 },
+      ],
+      releases: [
+        release('1.2.0', { root: true }),
+        release('1.1.0', { capabilities: ['ssh-exec'] }),
+        release('1.0.0', { capabilities: ['person-accounts'] }),
+      ],
+      ...more,
+    } as any)
+
+  it('the account’s channel, else stable: its current, and its candidate where it has a share', () => {
+    expect(addAsks(app(), '')).toEqual({ versions: ['1.0.0'], root: false, capabilities: ['person-accounts'] })
+    expect(addAsks(app({ accountChannel: 'beta' }), '')).toEqual({
+      versions: ['1.2.0', '1.1.0'],
+      root: true,
+      capabilities: ['ssh-exec'],
+    })
+    // The channel chosen over the account's.
+    expect(addAsks(app({ accountChannel: 'beta' }), 'stable').versions).toEqual(['1.0.0'])
+    // A candidate at no share goes to no device.
+    const none = app().channels.map((c: any) => ({ ...c, share: 0 }))
+    expect(addAsks(app({ channels: none }), 'beta')).toEqual({ versions: ['1.1.0'], root: false, capabilities: ['ssh-exec'] })
+  })
+
+  it('a pin over the channel; a channel naming none gives stable’s; a withdrawn release none', () => {
+    expect(addAsks(app(), 'beta', '1.0.0').versions).toEqual(['1.0.0'])
+    const bare = [app().channels[0], { channel: 'beta', current: null, candidate: null, share: 0 }]
+    expect(addAsks(app({ channels: bare }), 'beta').versions).toEqual(['1.0.0'])
+    // Beta's current withdrawn, its candidate rolling out: the candidate alone is given.
+    const withdrawn = app({ releases: [release('1.2.0'), release('1.1.0', { withdrawn: '2026-11-01' })] })
+    expect(addAsks(withdrawn, 'beta').versions).toEqual(['1.2.0'])
+  })
+
+  it('a release not among those read asks what the app’s own fields say', () => {
+    const own = app({ root: true, capabilities: ['person-certificates'], releases: [] })
+    expect(addAsks(own, 'beta')).toEqual({ versions: ['1.2.0', '1.1.0'], root: true, capabilities: ['person-certificates'] })
   })
 })
