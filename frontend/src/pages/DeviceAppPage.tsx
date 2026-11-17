@@ -21,14 +21,18 @@ import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
 import {
+  addAsks,
   adminLine,
   adminRefuses,
   appIcon,
+  asksConsent,
   capabilitiesLine,
   channelName,
+  consentCovers,
   consentLine,
   day,
   heldBackLine,
+  heldConsentWords,
   managedLine,
   publisherLine,
   runsAsLine,
@@ -37,6 +41,8 @@ import {
 } from '../helpers/appsHelper'
 import { opensTerminal } from '../helpers/sshHelper'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
+
+type Move = { channel?: string; version?: string } // a channel ("" its account's) or a pin ("" none)
 
 /* The app on this device (presence-server docs/device-apps-design.md, "The Apps pages",
    /devices/:deviceID/apps/:appID), from the device's apps (Device.apps):
@@ -80,7 +86,8 @@ export const DeviceAppPage: React.FC = () => {
   const [refusal, setRefusal] = useState<string>()
   const [saving, setSaving] = useState<string>()
   const [removing, setRemoving] = useState(false)
-  const [pinning, setPinning] = useState<string>() // a root release to pin, asking first
+  // A channel or pin whose release asks for a consent, asked first: the change, and the releases the yes is to.
+  const [moving, setMoving] = useState<{ key: string; values: Move; releases: string[] }>()
   const [catalog, setCatalog] = useState<CatalogApp | null>()
   const failed = (reason: string) => setRefusal(reason || t('apps.notChanged', 'The app was not changed.'))
   const { flip, reconsent, consent } = useAppSwitch(deviceApps, failed, undefined, device?.accountId)
@@ -89,7 +96,7 @@ export const DeviceAppPage: React.FC = () => {
   useEffect(() => {
     let current = true
     setCatalog(undefined)
-    graphQLCatalogApp(appID, { accountId, releases: 50 }).then(
+    graphQLCatalogApp(appID, { accountId, releases: 100 }).then(
       answer => current && setCatalog(typeof answer === 'object' ? answer : null)
     )
     return () => {
@@ -165,11 +172,27 @@ export const DeviceAppPage: React.FC = () => {
 
   const pins = (catalog?.releases ?? []).filter(r => !r.withdrawn).map(r => r.version)
   if (app.pinned && !pins.includes(app.pinned)) pins.unshift(app.pinned)
-  const pin = (version: string) => {
-    const root = catalog?.releases.find(r => r.version === version)?.root
-    if (version && root && !app.rootConsent) return setPinning(version)
-    release('pin', { version })
+  /* A channel or a pin (or none): the releases it gives the device (helpers/appsHelper addAsks — a channel's candidate
+     or current, by its bucket). While the app is enabled, one that asks for a consent the one kept with the app does
+     not cover is asked first, as graphql refuses it without — every such release named, as which of them the device
+     is given is its bucket's, graphql's to say; a disabled app is given no release, and asks nothing until it is
+     enabled. */
+  const move = (key: string, values: Move) => {
+    const releases = catalog?.releases ?? []
+    const given =
+      app.enabled && catalog
+        ? addAsks(catalog, values.channel ?? app.channel, values.version ?? app.pinned).versions
+        : []
+    // One not among the releases read is not known: asked, and the yes waits (RootConsent says so).
+    const asking = given.filter(version => {
+      const named = releases.find(r => r.version === version)
+      return !named || (asksConsent(named) && !consentCovers(app.rootConsent, named, releases))
+    })
+    if (asking.length) return setMoving({ key, values, releases: asking })
+    release(key, values)
   }
+  // Whether the release waiting for a consent runs as root, where the catalogue lists it; else as the app's own does.
+  const awaitingRoot = catalog?.releases.find(r => r.version === app.awaitingRoot)?.root ?? app.root
 
   return (
     <Container gutterBottom bodyProps={{ verticalOverflow: true }} header={header}>
@@ -246,9 +269,7 @@ export const DeviceAppPage: React.FC = () => {
             )}
             {app.enabled && !app.heldBack && app.awaitingRoot && (
               <Typography variant="body2" color="warning.main" data-app-held-back="consent">
-                {t('apps.heldBack', 'Held back: {{reason}}', {
-                  reason: t('apps.heldConsent', 'A new version needs to run as root'),
-                })}
+                {t('apps.heldBack', 'Held back: {{reason}}', { reason: heldConsentWords(t, awaitingRoot) })}
               </Typography>
             )}
           </Box>
@@ -264,7 +285,12 @@ export const DeviceAppPage: React.FC = () => {
             </Button>
           )}
           {app.enabled && app.heldBack?.reason === 'pinned' && !held && (
-            <Button size="small" disabled={runLocked || !!saving} onClick={() => release('pin', { version: '' })} data-app-unpin>
+            <Button
+              size="small"
+              disabled={runLocked || !!saving}
+              onClick={() => move('pin', { version: '' })}
+              data-app-unpin
+            >
               {t('apps.unpin', 'Unpin')}
             </Button>
           )}
@@ -277,7 +303,7 @@ export const DeviceAppPage: React.FC = () => {
               variant="standard"
               value={app.channel ?? ''}
               disabled={runLocked || !!saving}
-              onChange={e => e.target.value !== (app.channel ?? '') && release('channel', { channel: e.target.value })}
+              onChange={e => e.target.value !== (app.channel ?? '') && move('channel', { channel: e.target.value })}
               SelectProps={{ native: true }}
               inputProps={{ 'data-app-channel': true, 'aria-label': t('apps.channel', 'Channel') }}
             >
@@ -296,7 +322,7 @@ export const DeviceAppPage: React.FC = () => {
               variant="standard"
               value={app.pinned ?? ''}
               disabled={runLocked || !!saving}
-              onChange={e => e.target.value !== (app.pinned ?? '') && pin(e.target.value)}
+              onChange={e => e.target.value !== (app.pinned ?? '') && move('pin', { version: e.target.value })}
               SelectProps={{ native: true }}
               inputProps={{ 'data-app-pin': true, 'aria-label': t('apps.pin', 'Pin') }}
             >
@@ -508,16 +534,22 @@ export const DeviceAppPage: React.FC = () => {
       )}
       {consent}
       <RootConsent
-        app={pinning ? app : undefined}
-        release={pinning}
+        app={moving ? app : undefined}
+        release={moving?.releases}
         accountId={device.accountId}
-        action={t('apps.pinRootAction', 'Pin with full control')}
+        action={root =>
+          moving?.values.version
+            ? root
+              ? t('apps.pinRootAction', 'Pin with full control')
+              : t('apps.pinAsksAction', 'Allow and pin')
+            : t('deviceApps.rootUpdateAction', 'Consent and update')
+        }
         onConfirm={() => {
-          const version = pinning
-          setPinning(undefined)
-          if (version) release('pin', { version, consentRoot: true })
+          const move = moving
+          setMoving(undefined)
+          if (move) release(move.key, { ...move.values, consentRoot: true })
         }}
-        onDeny={() => setPinning(undefined)}
+        onDeny={() => setMoving(undefined)}
       />
       <Confirm
         open={removing}

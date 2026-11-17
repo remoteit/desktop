@@ -288,6 +288,38 @@ describe('the switch enables and disables', () => {
     expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.console' }), true, true)
   })
 
+  it('a restricted app that declares capabilities asks the yes to them first, in their words', async () => {
+    apps.value = { ...apps.value, apps: [backup({ capabilities: ['ssh-exec'] })] }
+    const page = await render(<DeviceApps device={device()} />)
+    await click(switchOf(appRow(page, 'acme.backup')))
+    expect(turn).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Allow Backup what it asks?')
+    expect(page.querySelector('[data-root-consent]')?.getAttribute('data-root-consent')).toBe('capabilities')
+    expect(page.querySelector('[data-confirm] [data-app-capability]')?.getAttribute('data-app-capability')).toBe('ssh-exec')
+    expect(page.querySelector('[data-confirm-ok]')?.textContent).toBe('Allow and turn on')
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), true, true)
+  })
+
+  it('a consent kept that covers its release (none awaited): turned on at once; one awaited asks again', async () => {
+    const consent = { by: 'U1', email: null, at: '2026-11-10T00:00:00Z', version: '1.4.0', via: 'person' }
+    apps.value = { ...apps.value, apps: [consoleApp({ enabled: false, state: 'disabled', rootConsent: consent })] }
+    let page = await render(<DeviceApps device={device()} />)
+    await click(switchOf(appRow(page, 'remoteit.console')))
+    expect(page.querySelector('[data-confirm]')).toBeNull()
+    expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.console' }), true)
+    act(() => root.unmount())
+    turn.mockClear()
+    apps.value = {
+      ...apps.value,
+      apps: [consoleApp({ enabled: false, state: 'disabled', rootConsent: consent, awaitingRoot: '1.5.0' })],
+    }
+    page = await render(<DeviceApps device={device()} />)
+    await click(switchOf(appRow(page, 'remoteit.console')))
+    expect(turn).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Console as root?')
+  })
+
   it('a restricted app at once; any app disabled at once', async () => {
     const page = await render(<DeviceApps device={device()} />)
     await click(switchOf(appRow(page, 'acme.backup')))

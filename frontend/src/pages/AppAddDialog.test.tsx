@@ -236,13 +236,33 @@ describe('the root consent', () => {
     expect(said()).toEqual(['· AI commands go through this app'])
   })
 
-  it('a restricted app says what it asks of remote.it above Add, with no consent asked', async () => {
+  it('a restricted app that declares capabilities asks the yes to them, as graphql does: Add only once it is given', async () => {
     catalog.mockResolvedValue(accountRelease({ capabilities: ['person-certificates'] }))
     await render()
+    await tick('D1')
     expect($('[data-app-add-root]')).toBeNull()
     expect($('[data-app-add-capabilities]').textContent).toBe(
-      'It asks of remote.it:· Signs in people by remote.it certificate'
+      'It asks of remote.it:· Signs in people by remote.it certificateI allow Acme’s Backup what it asks on these devices'
     )
+    expect(submit().disabled).toBe(true)
+    await click($('[data-app-add-consent]'))
+    await click(submit())
+    expect(addMany).toHaveBeenCalledWith('acme.backup', { deviceIds: ['D1'], accountId: undefined, consentRoot: true })
+    // For a product: every device in it.
+    await act(async () => root.unmount())
+    container.remove()
+    await render()
+    await click($('[data-app-add-to="product"] input'))
+    expect($('[data-app-add-capabilities]').textContent).toContain('I allow Acme’s Backup what it asks on every device in this product')
+  })
+
+  it('a release that asks for nothing: no yes asked', async () => {
+    await render()
+    await tick('D1')
+    expect($('[data-app-add-root]')).toBeNull()
+    expect($('[data-app-add-capabilities]')).toBeNull()
+    await click(submit())
+    expect(addMany).toHaveBeenCalledWith('acme.backup', { deviceIds: ['D1'], accountId: undefined })
   })
 
   it('a channel chosen: what the releases it gives ask — its current’s, and its candidate’s for the devices in its share', async () => {
@@ -253,8 +273,17 @@ describe('the root consent', () => {
     await tick('D1')
     expect($('[data-app-add-capabilities]')).toBeNull()
     await select($('[data-app-add-channel]'), 'beta')
-    expect($('[data-app-add-capabilities]').textContent).toBe('It asks of remote.it:· AI commands go through this app')
+    expect($('[data-app-add-capabilities]').textContent).toBe(
+      'It asks of remote.it:· AI commands go through this appI allow Acme’s Backup what it asks on these devices'
+    )
     expect($('[data-app-add-root]')).toBeNull()
+    expect(submit().disabled).toBe(true)
+    // Its candidate (1.5.0-rc.1) is not among the releases read: what it asks is not known, and Add waits.
+    expect($('[data-app-add-unknown]').textContent).toBe(
+      'What this version asks could not be read, so it cannot be consented to here. Try again later.'
+    )
+    await click($('[data-app-add-consent]'))
+    expect(submit().disabled).toBe(true)
     // Its candidate (1.5.0-rc.1, to 10% of its devices) runs as root: the yes is asked, for beta's releases.
     act(() => root.unmount())
     container.remove()

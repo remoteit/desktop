@@ -7,6 +7,7 @@ import {
   ProductAppState,
   ProductAppSetting,
   ProductRemovedSetting,
+  ProductRootConsent,
   ProductSync,
   graphQLSetDeviceProductApp,
   graphQLSetDeviceProductAppSetting,
@@ -17,11 +18,13 @@ import { SelectSetting } from './SelectSetting'
 import { timeOptions } from './Timestamp'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
-import { appIcon, capabilitiesLine } from '../helpers/appsHelper'
+import { appIcon, asksConsent, capabilitiesLine, consentCovers, productRelease } from '../helpers/appsHelper'
+import { graphQLCatalogApp } from '../services/graphQLAppCatalog'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 
 type Props = {
   productId: string
+  accountId: string | undefined // the account the product was read under, whose catalogue names its releases
   apps: ProductApp[]
   sync: ProductSync
   manage: boolean
@@ -40,20 +43,24 @@ const UNSET = ''
    its options, inside its row and lined up under its name. One the product sets is locked on its devices while it is
    synced or enforced; a setting the release says may not be forced is given to them but not locked, and is said so.
 
-   A root app is enabled for the product only once the person says yes to its full control of every device in the
-   product, now and later, and to what else it asks of remote.it (components/AppRootConsent); graphql keeps that consent on the product, and asks for it again
-   when a new release newly runs as root, its devices staying on its last restricted release meanwhile (or not turned
-   on, where there is none). Turning an app on needs Scripting in the product's account as well as managing the
-   product; graphql says so where it refuses, and its words are shown.
+   An app whose release asks for a consent (helpers/appsHelper asksConsent: it runs as root, or declares capabilities)
+   is enabled for the product only once the person says yes — to its full control of every device in the product, now
+   and later, where it runs as root, and to what it asks of remote.it (components/AppRootConsent); graphql keeps that
+   consent on the product, and asks for it again when a new release newly asks for more (needsConsent), its devices
+   staying on the release before meanwhile (or not turned on, where there is none). graphql says whether the consent
+   kept covers its release only while the app is enabled (needsConsent): turning one on, the release the product names
+   (productRelease) is read from the catalogue, under the product's account, and weighed as graphql weighs it
+   (consentCovers) — asked where the catalogue cannot say. Turning an app on needs Scripting in the product's account
+   as well as managing the product; graphql says so where it refuses, and its words are shown.
 
    A setting a release deprecates is shown, with why, only where the product sets a value; one a later release removed
    is listed as Removed in <version>, with no effect on its devices, until graphql's daily sweep deletes it — or the
    product clears it here. */
-export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, manage, onChanged }) => {
+export const ProductPolicyApps: React.FC<Props> = ({ productId, accountId, apps, sync, manage, onChanged }) => {
   const { t } = useTranslation()
   const [saving, setSaving] = useState<string>()
   const [refusal, setRefusal] = useState<string>()
-  const [asking, setAsking] = useState<ProductApp>()
+  const [asking, setAsking] = useState<{ app: ProductApp; release: string | null }>()
 
   if (!apps.length) return null
 
@@ -67,11 +74,16 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
     onChanged()
   }
 
-  // Enabling a root app without a consent that covers its release asks for one first — one whose devices stay on a
-  // restricted release (root says that one) while a root one waits (needsConsent) included.
-  const setApp = (app: ProductApp, state: ProductAppState | null, consentRoot?: boolean) => {
-    if (state === 'enabled' && !consentRoot && (app.root || app.needsConsent) && (!app.rootConsent || app.needsConsent))
-      return setAsking(app)
+  // Enabling an app whose release asks for a consent the product's does not cover asks for it first — one whose devices
+  // stay on the release before while a new one waits (needsConsent) included.
+  const setApp = async (app: ProductApp, state: ProductAppState | null, consentRoot?: boolean) => {
+    if (state === 'enabled' && !consentRoot) {
+      if (app.needsConsent) return setAsking({ app, release: app.awaitingRoot ?? null })
+      if (asksConsent(app)) {
+        const asks = await namedAsks(app)
+        if (asks !== false) return setAsking({ app, release: asks })
+      }
+    }
     write(app.id, t('productApps.notChanged', 'The app was not changed.'), () =>
       graphQLSetDeviceProductApp(
         productId,
@@ -82,6 +94,19 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
           : {}
       )
     )
+  }
+
+  // The release enabling names, where it asks for a consent the product's does not cover (none where the catalogue
+  // cannot say which); false where it asks for none, or is covered.
+  const namedAsks = async (app: ProductApp): Promise<string | null | false> => {
+    setSaving(app.id)
+    const answer = await graphQLCatalogApp(app.id, { accountId, releases: 100 })
+    setSaving(undefined)
+    const catalog = typeof answer === 'object' && answer ? answer : undefined
+    const named = catalog && productRelease(catalog, app.channel, app.pinned)
+    if (!catalog || !named) return null
+    if (!asksConsent(named) || consentCovers(app.rootConsent, named, catalog.releases)) return false
+    return named.version
   }
 
   const setSetting = (app: ProductApp, name: string, value: any) =>
@@ -137,28 +162,19 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
                       )}
                       {app.locked && <Line data="locked">{lockedLine(t, sync)}</Line>}
                       {app.rootConsent && !app.needsConsent && (
-                        <Line data="consent">
-                          {t(
-                            'productApps.consentedAll',
-                            'Consented to run as root by {{by}}, {{when}}: for every device in this product, now and later',
-                            {
-                              by: app.rootConsent.email || app.rootConsent.by,
-                              when: when(app.rootConsent.at),
-                            }
-                          )}
-                        </Line>
+                        <Line data="consent">{consentedLine(t, app.root, app.rootConsent)}</Line>
                       )}
                       {app.needsConsent && (
                         <Line data="needs-consent" color="warning.main">
                           {app.awaitingRoot && app.version
                             ? t(
-                                'productApps.needsConsentStay',
-                                'A new version ({{version}}) needs to run as root: its devices stay on {{current}} until you consent',
+                                'productApps.needsConsentAsksStay',
+                                'A new version ({{version}}) needs your consent: its devices stay on {{current}} until you consent',
                                 { version: app.awaitingRoot, current: app.version }
                               )
                             : t(
-                                'productApps.needsConsent',
-                                'A new version needs to run as root: its devices are not turned on until you consent'
+                                'productApps.needsConsentAsks',
+                                'A new version needs your consent: its devices are not turned on until you consent'
                               )}
                         </Line>
                       )}
@@ -170,7 +186,7 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
                     size="small"
                     color="warning"
                     disabled={saving === app.id}
-                    onClick={() => setAsking(app)}
+                    onClick={() => setAsking({ app, release: app.awaitingRoot ?? null })}
                     data-product-app-consent-action
                   >
                     {t('productApps.consent', 'Consent…')}
@@ -230,12 +246,20 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, apps, sync, mana
       )}
       <RootConsent
         product
-        app={asking}
-        version={asking?.state === 'enabled' && asking.needsConsent ? asking.awaitingRoot : undefined}
-        release={asking?.awaitingRoot || asking?.version}
-        action={asking?.state === 'enabled' ? t('productApps.consentAction', 'Consent to full control') : undefined}
+        app={asking?.app}
+        version={asking?.app.state === 'enabled' && asking.app.needsConsent ? asking.app.awaitingRoot : undefined}
+        release={asking?.release || asking?.app.version}
+        accountId={accountId}
+        action={
+          asking?.app.state === 'enabled'
+            ? root =>
+                root
+                  ? t('productApps.consentAction', 'Consent to full control')
+                  : t('productApps.consentAsksAction', 'Consent')
+            : undefined
+        }
         onConfirm={() => {
-          const app = asking
+          const app = asking?.app
           setAsking(undefined)
           if (app) setApp(app, 'enabled', true)
         }}
@@ -406,6 +430,22 @@ function about(t: TFunction, app: ProductApp) {
   ]
     .filter(Boolean)
     .join(' · ')
+}
+
+// Who consented for the product, and when: to its running as root where it does, else to what it asks.
+function consentedLine(t: TFunction, root: boolean, consent: ProductRootConsent): string {
+  const words = { by: consent.email || consent.by, when: when(consent.at) }
+  return root
+    ? t(
+        'productApps.consentedAll',
+        'Consented to run as root by {{by}}, {{when}}: for every device in this product, now and later',
+        words
+      )
+    : t(
+        'productApps.consentedAllAsks',
+        'Consented by {{by}}, {{when}}: for every device in this product, now and later',
+        words
+      )
 }
 
 const lockedLine = (t: TFunction, sync: ProductSync) =>

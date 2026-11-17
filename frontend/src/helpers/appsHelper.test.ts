@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest'
 import type { TFunction } from 'i18next'
 import {
   addAsks,
+  asksConsent,
+  consentCovers,
+  heldBackReason,
+  productRelease,
   appHost,
   appIcon,
   capabilitiesLine,
@@ -169,17 +173,23 @@ describe('addAsks: what adding an app gives, and so asks', () => {
     } as any)
 
   it('the account’s channel, else stable: its current, and its candidate where it has a share', () => {
-    expect(addAsks(app(), '')).toEqual({ versions: ['1.0.0'], root: false, capabilities: ['person-accounts'] })
+    expect(addAsks(app(), '')).toEqual({ versions: ['1.0.0'], root: false, capabilities: ['person-accounts'], known: true })
     expect(addAsks(app({ accountChannel: 'beta' }), '')).toEqual({
       versions: ['1.2.0', '1.1.0'],
       root: true,
       capabilities: ['ssh-exec'],
+      known: true,
     })
     // The channel chosen over the account's.
     expect(addAsks(app({ accountChannel: 'beta' }), 'stable').versions).toEqual(['1.0.0'])
     // A candidate at no share goes to no device.
     const none = app().channels.map((c: any) => ({ ...c, share: 0 }))
-    expect(addAsks(app({ channels: none }), 'beta')).toEqual({ versions: ['1.1.0'], root: false, capabilities: ['ssh-exec'] })
+    expect(addAsks(app({ channels: none }), 'beta')).toEqual({
+      versions: ['1.1.0'],
+      root: false,
+      capabilities: ['ssh-exec'],
+      known: true,
+    })
   })
 
   it('a pin over the channel; a channel naming none gives stable’s; a withdrawn release none', () => {
@@ -191,8 +201,62 @@ describe('addAsks: what adding an app gives, and so asks', () => {
     expect(addAsks(withdrawn, 'beta').versions).toEqual(['1.2.0'])
   })
 
-  it('a release not among those read asks what the app’s own fields say', () => {
-    const own = app({ root: true, capabilities: ['person-certificates'], releases: [] })
-    expect(addAsks(own, 'beta')).toEqual({ versions: ['1.2.0', '1.1.0'], root: true, capabilities: ['person-certificates'] })
+  it('a release not among those read: not known — never what the app’s own fields say of another release', () => {
+    const own = app({ root: true, capabilities: ['person-certificates'], releases: [release('1.1.0', { capabilities: ['ssh-exec'] })] })
+    expect(addAsks(own, 'beta')).toEqual({ versions: ['1.2.0', '1.1.0'], root: false, capabilities: ['ssh-exec'], known: false })
+  })
+})
+
+describe('consent, as graphql asks it (app-catalog.ts consentAsked, coversRootAmong)', () => {
+  const r = (version: string, root: boolean, capabilities: string[] = []) => ({ version, root, capabilities })
+  // Newest first, as the catalogue lists them.
+  const releases = [r('1.6.0', true, ['ssh-exec']), r('1.5.0', true), r('1.4.0', false), r('1.3.0', true)]
+
+  it('asked by a release that runs as root, or declares any capability; not by one that does neither', () => {
+    expect(asksConsent(r('1', true))).toBe(true)
+    expect(asksConsent(r('1', false, ['person-certificates']))).toBe(true)
+    expect(asksConsent(r('1', false))).toBe(false)
+    expect(asksConsent(undefined)).toBe(false)
+  })
+
+  it('a consent covers the release it was given to, earlier ones, and later ones asking nothing more with none between lacking it', () => {
+    const to = (version: string | null) => ({ version })
+    expect(consentCovers(null, releases[1], releases)).toBe(false)
+    expect(consentCovers(to(null), releases[0], releases)).toBe(true) // from before consents were kept
+    expect(consentCovers(to('1.5.0'), releases[1], releases)).toBe(true)
+    expect(consentCovers(to('1.5.0'), releases[3], releases)).toBe(true)
+    // 1.6.0 asks ssh-exec as well: not covered by 1.5.0's.
+    expect(consentCovers(to('1.5.0'), releases[0], releases)).toBe(false)
+    // Root, restricted, root: 1.3.0's does not reach 1.5.0 past 1.4.0.
+    expect(consentCovers(to('1.3.0'), releases[1], releases)).toBe(false)
+    // Given to a release that asked less: not covered.
+    expect(consentCovers(to('1.4.0'), releases[1], releases)).toBe(false)
+    // One not among those read: only its own release.
+    expect(consentCovers(to('1.0.0'), releases[1], releases)).toBe(false)
+    expect(consentCovers(to('1.0.0'), r('1.0.0', true), releases)).toBe(true)
+  })
+
+  it('a product’s release: its pin, else its channel’s current, the account’s or stable’s', () => {
+    const app = {
+      accountChannel: 'beta',
+      channels: [
+        { channel: 'stable', current: '1.4.0', candidate: null, share: 0 },
+        { channel: 'beta', current: '1.5.0', candidate: '1.6.0', share: 50 },
+      ],
+      releases: [{ ...r('1.6.0', true), withdrawn: null }, { ...r('1.5.0', true), withdrawn: null }, { ...r('1.4.0', false), withdrawn: null }],
+    } as any
+    expect(productRelease(app, null, null)?.version).toBe('1.5.0')
+    expect(productRelease(app, 'stable', null)?.version).toBe('1.4.0')
+    expect(productRelease(app, 'stable', '1.6.0')?.version).toBe('1.6.0')
+    expect(productRelease({ ...app, channels: [app.channels[0]] }, 'beta', null)?.version).toBe('1.4.0')
+  })
+
+  it('held for consent, in words for what the release waiting asks, as graphql says it', () => {
+    expect(heldBackReason(t, { reason: 'consent', detail: 'A new version needs to run as root' })).toBe(
+      'A new version needs to run as root'
+    )
+    expect(heldBackReason(t, { reason: 'consent', detail: 'A new version asks for ssh-exec' })).toBe(
+      'A new version asks more of remote.it'
+    )
   })
 })
