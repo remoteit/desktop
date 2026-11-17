@@ -75,7 +75,7 @@ export const DeviceAppPage: React.FC = () => {
   const history = useHistory()
   const { appID } = useParams<{ appID: string }>()
   const { device } = useContext(DeviceContext)
-  const deviceApps = useDeviceApps(device?.id)
+  const deviceApps = useDeviceApps(device?.id, { accountId: device?.accountId })
   const { apps, switching, setRelease, remove, setSetting } = deviceApps
   const [refusal, setRefusal] = useState<string>()
   const [saving, setSaving] = useState<string>()
@@ -311,8 +311,9 @@ export const DeviceAppPage: React.FC = () => {
         )}
         {shown.map((served, index) => {
           const service = device.services?.find(s => s.id === served.serviceId)
-          // Its ports as graphql has them (a port setting's change re-reads them), else as the device's service says.
-          const list = served.ports.length ? served.ports : service?.ports ?? (service ? [String(service.port)] : [])
+          // Its ports as the device's service has them, as every connection to it reads them (a port setting's change
+          // reads the device again: hooks/useDeviceApps).
+          const list = service?.ports ?? (service ? [String(service.port)] : [])
           const several = served.multiPort || list.length > 1 || !!list[0]?.includes('-')
           const own = [...ports].filter(([, port]) => port.service === served)
           return (

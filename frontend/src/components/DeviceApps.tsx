@@ -51,7 +51,7 @@ import { Icon } from './Icon'
 export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const history = useHistory()
-  const deviceApps = useDeviceApps(device.id)
+  const deviceApps = useDeviceApps(device.id, { accountId: device.accountId })
   const { apps, available, switching } = deviceApps
   const [refusal, setRefusal] = useState<string>()
   const { flip, consent } = useAppSwitch(

@@ -121,7 +121,10 @@ const device = (permissions = ['VIEW', 'CONNECT', 'MANAGE', 'SCRIPTING']) =>
     name: 'pi-kitchen',
     accountId: 'A1',
     permissions,
-    services: [{ id: 'S7', name: 'Backup', port: 30001 }],
+    services: [
+      { id: 'S7', name: 'Backup', port: 30001 },
+      { id: 'S8', name: 'Stream', port: 8554, ports: ['8554', '5004-5005'] },
+    ],
   } as unknown as IDevice)
 
 const turn = vi.fn()
@@ -458,12 +461,12 @@ describe('its service, settings, root, delivery and problems', () => {
       settings: [...backup().settings, setting('web_port', 'Web port'), setting('rtsp_port', 'RTSP port')],
       services: [
         { key: null, name: 'Camera', protocol: 'http', multiPort: false, port: null, portSetting: 'web_port',
-          listeners: [{ name: 'web', type: 'tcp', port: null, portSetting: null, ports: null }], serviceId: 'S7', ports: ['30001'] },
+          listeners: [{ name: 'web', type: 'tcp', port: null, portSetting: null, ports: null }], serviceId: 'S7' },
         { key: 'rtsp', name: 'Stream', protocol: 'udp', multiPort: true, port: null, portSetting: null,
           listeners: [
             { name: 'rtsp', type: 'udp', port: null, portSetting: 'rtsp_port', ports: null },
             { name: 'rtp', type: 'udp', port: null, portSetting: null, ports: '5004-5005' },
-          ], serviceId: 'S8', ports: ['8554', '5004-5005'] },
+          ], serviceId: 'S8' },
       ],
     })
     apps.value.apps = [camera]
@@ -488,7 +491,7 @@ describe('its service, settings, root, delivery and problems', () => {
     act(() => root.unmount())
     container.remove()
     // Disabled, its services stopped: its port settings are under Settings, by their own labels.
-    apps.value.apps = [{ ...camera, enabled: false, state: 'disabled', serviceId: null, services: camera.services.map(s => ({ ...s, serviceId: null, ports: [] })) }]
+    apps.value.apps = [{ ...camera, enabled: false, state: 'disabled', serviceId: null, services: camera.services.map(s => ({ ...s, serviceId: null })) }]
     const stopped = await render()
     expect(stopped.querySelectorAll('[data-app-service]').length).toBe(0)
     expect(row(stopped, 'settings')?.textContent).toContain('Web port')

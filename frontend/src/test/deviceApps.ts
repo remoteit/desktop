@@ -14,7 +14,6 @@ export function withServices(app: Omit<DeviceApp, 'services'> & { services?: Dev
     portSetting: app.portSetting ?? null,
     listeners: [],
     serviceId: app.serviceId,
-    ports: [],
   }
   return { ...app, services: serves ? [primary] : [] }
 }
