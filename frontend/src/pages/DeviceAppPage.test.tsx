@@ -400,6 +400,19 @@ describe('its service, settings, root, delivery and problems', () => {
     expect(await words('vnc')).toBe('Open screen')
     expect(await words('rdp')).toBe('Open screen')
     expect(await words('tcp')).toBe('Open')
+    expect(await words('udp')).toBe('Connect')
+  })
+
+  it('udp: a connection alone — its port, said UDP, for the person’s own UDP client; never a terminal or a page', async () => {
+    params.appID = 'acme.dns'
+    // Even one that declares person-certificates: only ssh opens a terminal.
+    apps.value.apps = [backup({ id: 'acme.dns', name: 'DNS', protocol: 'udp', capabilities: ['person-certificates'] })]
+    const page = await render()
+    expect(text(page, 'service')).toContain('Backup · UDP port 30001')
+    expect(page.querySelector('[data-app-terminal]')).toBeNull()
+    expect(page.querySelector('[data-app-open]')?.textContent).toBe('Connect')
+    await click(page.querySelector('[data-app-open]'))
+    expect(push).toHaveBeenCalledWith({ pathname: '/devices/D1/S7/connect', state: { autoConnect: true } })
   })
 
   it('a port its owner chooses is its service’s, edited under Service, not again under Settings', async () => {

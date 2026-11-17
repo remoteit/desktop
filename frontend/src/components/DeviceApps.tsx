@@ -215,8 +215,8 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
 
 /* Open, for any app reached as a service (serviceId) while it runs: its service's connection, started and launched as
    its application type launches (graphql makes the type from the manifest's protocol: http and https open in the
-   browser, vnc and rdp in a viewer), as any service's Connect page does; said by its protocol (Open page, Open
-   screen). One whose service
+   browser, vnc and rdp in a viewer, udp nothing: a port for the person's own UDP client), as any service's Connect
+   page does; said by its protocol (Open page, Open screen, Connect). One whose service
    opens as a terminal (helpers/sshHelper opensTerminal) has Open terminal instead (components/AppTerminal). */
 export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device, app }) => {
   const { t } = useTranslation()
@@ -230,7 +230,8 @@ export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp }> = ({ device,
       onClick={() =>
         history.push({
           pathname: `/devices/${device.id}/${app.serviceId}/connect`,
-          state: { autoConnect: true, autoLaunch: true },
+          // A udp service's connection is all it has: its port is for the person's own UDP client.
+          state: app.protocol === 'udp' ? { autoConnect: true } : { autoConnect: true, autoLaunch: true },
         })
       }
     >

@@ -4,6 +4,7 @@ import { Button, ListItem, TextField } from '@mui/material'
 import type { TFunction } from 'i18next'
 import { AppStringRules, DeviceAppSetting as Setting } from '../services/graphQLDeviceApps'
 import { settingLocked } from '../services/graphQLDeviceSettings'
+import { productLockNote } from '../helpers/productPolicyHelper'
 import { DeviceSettingChoice, DeviceSettingRow, deprecatedLine, settingNote } from './DeviceSettingRow'
 import { spacing } from '../styling'
 
@@ -43,9 +44,25 @@ export const DeviceAppSetting: React.FC<Props> = props => {
   )
 }
 
+// Whether the device's administrator holds the setting (graphql's DeviceAppSetting.control, the device's
+// `<app>.<name>_control`): off, on (where its release says forcible, as the console's ai_commands) or a choice it fixes.
+// The device applies the held value, and graphql refuses a change to it.
+export const adminHolds = (setting: Setting) =>
+  !!setting.control && !['cloud+local', 'cloud', 'local'].includes(setting.control)
+
+/* Why an app's setting is as it is, where that is not the portal's doing: held by the device's administrator — and by
+   its product too, where its product locks it — else what a device setting's row says (set only on the device, its
+   product's lock, a change made on the device). None for one set here. */
+export function appSettingNote(t: TFunction, setting: Setting): string | undefined {
+  if (!adminHolds(setting)) return settingNote(t, setting)
+  const held = t('deviceApps.settingAdminHeld', 'Set by this device’s administrator')
+  return setting.locked ? `${held} · ${productLockNote(t, setting.locked)}` : held
+}
+
 const AppSettingControl: React.FC<Props> = ({ setting, label, help, disabled, onChange }) => {
   const { t } = useTranslation()
   const deprecated = deprecatedLine(t, setting.deprecated)
+  const note = appSettingNote(t, setting)
 
   switch (setting.type) {
     case 'bool':
@@ -55,7 +72,8 @@ const AppSettingControl: React.FC<Props> = ({ setting, label, help, disabled, on
           hideIcon
           disableGutters
           label={label}
-          subLabel={help}
+          subLabel={note || help}
+          quiet
           deprecated={setting.deprecated}
           disabled={disabled}
           onChange={onChange}
@@ -71,6 +89,7 @@ const AppSettingControl: React.FC<Props> = ({ setting, label, help, disabled, on
           label={label}
           value={fixed ? setting.control : String(setting.value ?? '')}
           choices={choices}
+          why={note}
           note={deprecated || help || undefined}
           disabled={disabled}
           onChange={onChange}
@@ -148,7 +167,7 @@ const AppSettingField: React.FC<Props> = ({ setting, label, help, disabled, onCh
     onChange(list ? listItems(text) : text)
   }
 
-  const note = [deprecatedLine(t, setting.deprecated), settingNote(t, setting) || help].filter(Boolean).join(' · ')
+  const note = [deprecatedLine(t, setting.deprecated), appSettingNote(t, setting) || help].filter(Boolean).join(' · ')
   const max = setting.type === 'string' ? setting.declaration?.string?.max : undefined
 
   return (
