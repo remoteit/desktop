@@ -167,7 +167,7 @@ export const SidebarNav: React.FC = () => {
           <Divider />
         </ResellerLogo>
         {brand.name === 'remoteit' && (
-          <ListItemLocation title={t('nav.aiAgents', 'AI Agents')} to="/ai-agents" icon="remote-ai" dense />
+          <ListItemLocation title={t('nav.connectAi', 'Connect AI')} to="/connect-ai" icon="remote-ai" dense />
         )}
         <ListItemLocation
           title={t('nav.announcements', 'Announcements')}

@@ -96,15 +96,6 @@
     "switch": "切り替える",
     "title": "アカウントを切り替えますか？"
   },
-  "aiAgentsPage": {
-    "howTo": "接続方法",
-    "intro": "Claude、ChatGPT などの AIアシスタントを Remote.It アカウントに接続しましょう。あとはデバイスの確認、接続の開始、スクリプトの実行を頼むだけです。",
-    "setupGuides": "Claude、ChatGPT などの設定ガイド",
-    "step1": "Remote.It MCP サーバーの URL をコピーします。",
-    "step2": "AIアシスタントでカスタムコネクタ(またはリモート MCP サーバー)を追加し、URL を貼り付けます。",
-    "step3": "求められたら Remote.It アカウントでサインインします。API キーは不要です。",
-    "title": "AIエージェント"
-  },
   "androidSetup": {
     "guideBody": "お使いのAndroidデバイスをセットアップするか、簡単な手順に従ってよく使われるプラットフォームのいずれかをセットアップできます。",
     "guideTitle": "デバイスを選択",
@@ -496,6 +487,15 @@
     "empty": "空",
     "logs": "ログ",
     "resetConnection": "接続をリセット"
+  },
+  "connectAiPage": {
+    "howTo": "接続方法",
+    "intro": "Claude、ChatGPT などの AIアシスタントを Remote.It アカウントに接続しましょう。あとはデバイスの確認、接続の開始、スクリプトの実行を頼むだけです。",
+    "setupGuides": "Claude、ChatGPT などの設定ガイド",
+    "step1": "Remote.It MCP サーバーの URL をコピーします。",
+    "step2": "AIアシスタントでカスタムコネクタ(またはリモート MCP サーバー)を追加し、URL を貼り付けます。",
+    "step3": "求められたら Remote.It アカウントでサインインします。API キーは不要です。",
+    "title": "お使いのAIを接続"
   },
   "connectedAppDetailPage": {
     "accounts": "アカウント",
@@ -1244,10 +1244,10 @@
     "account": "アカウント",
     "admin": "管理",
     "agent": "エージェント",
-    "aiAgents": "AIエージェント",
     "announcements": "お知らせ",
     "apis": "API",
     "bugReport": "バグ報告",
+    "connectAi": "AIを接続",
     "connections": "コネクト",
     "connectionsTooltip": "接続 {{connections}} 件 - 接続中 {{active}} 件",
     "devices": "デバイス",

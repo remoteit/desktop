@@ -100,15 +100,6 @@
     "switch": "Cambiar",
     "title": "¿Cambiar de cuenta?"
   },
-  "aiAgentsPage": {
-    "howTo": "Cómo conectarse",
-    "intro": "Conecta Claude, ChatGPT u otro asistente de IA a tu cuenta de Remote.It. Después, solo pídele que revise tus dispositivos, abra conexiones o ejecute scripts.",
-    "setupGuides": "Guías de configuración para Claude, ChatGPT y más",
-    "step1": "Copia la URL del servidor MCP de Remote.It.",
-    "step2": "En tu asistente de IA, añade un conector personalizado (o servidor MCP remoto) y pega la URL.",
-    "step3": "Inicia sesión con tu cuenta de Remote.It cuando se te pida. No se necesitan claves de API.",
-    "title": "Agentes de IA"
-  },
   "androidSetup": {
     "guideBody": "Puedes configurar tu dispositivo Android o seguir las sencillas instrucciones para configurar una de las plataformas más utilizadas.",
     "guideTitle": "Selecciona un dispositivo",
@@ -504,6 +495,15 @@
     "empty": "Vacío",
     "logs": "Registros",
     "resetConnection": "Restablecer conexión"
+  },
+  "connectAiPage": {
+    "howTo": "Cómo conectarse",
+    "intro": "Conecta Claude, ChatGPT u otro asistente de IA a tu cuenta de Remote.It. Después, solo pídele que revise tus dispositivos, abra conexiones o ejecute scripts.",
+    "setupGuides": "Guías de configuración para Claude, ChatGPT y más",
+    "step1": "Copia la URL del servidor MCP de Remote.It.",
+    "step2": "En tu asistente de IA, añade un conector personalizado (o servidor MCP remoto) y pega la URL.",
+    "step3": "Inicia sesión con tu cuenta de Remote.It cuando se te pida. No se necesitan claves de API.",
+    "title": "Conecta tu IA"
   },
   "connectedAppDetailPage": {
     "accounts": "Cuentas",
@@ -1270,10 +1270,10 @@
     "account": "Cuenta",
     "admin": "Admin",
     "agent": "Agente",
-    "aiAgents": "Agentes de IA",
     "announcements": "Anuncios",
     "apis": "API",
     "bugReport": "Informe de errores",
+    "connectAi": "Conectar IA",
     "connections": "Conexiones",
     "connectionsTooltip": "{{connections}} Conexiones - {{active}} Conectadas",
     "devices": "Dispositivos",

@@ -98,15 +98,6 @@
     "switch": "Wechseln",
     "title": "Konto wechseln?"
   },
-  "aiAgentsPage": {
-    "howTo": "So verbinden Sie sich",
-    "intro": "Verbinden Sie Claude, ChatGPT oder einen anderen KI-Assistenten mit Ihrem Remote.It-Konto. Bitten Sie ihn dann einfach, Ihre Geräte zu prüfen, Verbindungen zu öffnen oder Skripte auszuführen.",
-    "setupGuides": "Einrichtungsanleitungen für Claude, ChatGPT und mehr",
-    "step1": "Kopieren Sie die URL des Remote.It-MCP-Servers.",
-    "step2": "Fügen Sie in Ihrem KI-Assistenten einen benutzerdefinierten Connector (oder Remote-MCP-Server) hinzu und fügen Sie die URL ein.",
-    "step3": "Melden Sie sich bei Aufforderung mit Ihrem Remote.It-Konto an. Keine API-Schlüssel erforderlich.",
-    "title": "KI-Agenten"
-  },
   "androidSetup": {
     "guideBody": "Sie können Ihr Android-Gerät einrichten oder den einfachen Anweisungen folgen, um eine der gängigen Plattformen einzurichten.",
     "guideTitle": "Gerät auswählen",
@@ -500,6 +491,15 @@
     "empty": "Leer",
     "logs": "Protokolle",
     "resetConnection": "Verbindung zurücksetzen"
+  },
+  "connectAiPage": {
+    "howTo": "So verbinden Sie sich",
+    "intro": "Verbinden Sie Claude, ChatGPT oder einen anderen KI-Assistenten mit Ihrem Remote.It-Konto. Bitten Sie ihn dann einfach, Ihre Geräte zu prüfen, Verbindungen zu öffnen oder Skripte auszuführen.",
+    "setupGuides": "Einrichtungsanleitungen für Claude, ChatGPT und mehr",
+    "step1": "Kopieren Sie die URL des Remote.It-MCP-Servers.",
+    "step2": "Fügen Sie in Ihrem KI-Assistenten einen benutzerdefinierten Connector (oder Remote-MCP-Server) hinzu und fügen Sie die URL ein.",
+    "step3": "Melden Sie sich bei Aufforderung mit Ihrem Remote.It-Konto an. Keine API-Schlüssel erforderlich.",
+    "title": "Ihre KI verbinden"
   },
   "connectedAppDetailPage": {
     "accounts": "Konten",
@@ -1257,10 +1257,10 @@
     "account": "Konto",
     "admin": "Admin",
     "agent": "Agent",
-    "aiAgents": "KI-Agenten",
     "announcements": "Ankündigungen",
     "apis": "APIs",
     "bugReport": "Fehlerbericht",
+    "connectAi": "KI verbinden",
     "connections": "Verbindungen",
     "connectionsTooltip": "{{connections}} Verbindungen – {{active}} verbunden",
     "devices": "Geräte",
