@@ -99,7 +99,7 @@ A `prepare` job first resolves the release repository for the selected brand
 (`brands/<brand>/config.ts` — `cachengo` publishes to `cachengo/desktop`) and
 creates the **draft** release there for the version (on tag builds only; if
 that version is already published it fails, so bump the version), then a
-matrix of ubuntu-latest / macos-14 / windows-latest reads
+matrix of ubuntu-latest / macos-15 / windows-latest reads
 the version from `package.json` (not from the tag) and attaches the installers
 to it. The draft is created up front on purpose: electron-builder otherwise
 creates it lazily from whichever runner uploads first, and concurrent runners
@@ -111,7 +111,9 @@ reaches the repository the workflow runs in, so a tag build for a brand that
 publishes elsewhere needs the `RELEASE_TOKEN` secret (a token with write access
 there); `prepare` checks it before anything is built, and it is used only for
 that repository — a same-repository build keeps the automatic token. Branch
-builds publish nothing, skip the check, and never touch a draft. Node comes from `.nvmrc` — electron-builder
+builds publish nothing, skip the check, and never touch a draft: electron-builder runs with
+`--publish onTag`, because its CI default uploads into any draft of the same version, which put a
+branch build's unsigned installers into the 4.0.0 draft. Node comes from `.nvmrc` — electron-builder
 needs Node >= 20.19 / 22.12, so don't pin it lower.
 
 Windows ships three installers, one per arch (`-ia32`, `-x64`, `-arm64`), and
