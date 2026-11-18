@@ -1,0 +1,22 @@
+{
+  "contract": 1,
+  "app": "fixture.a",
+  "version": "1.0.0",
+  "name": "a",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "web": {
+      "type": "tcp",
+      "port": "${setting.port}"
+    }
+  },
+  "settings": {
+    "port": {
+      "type": "int",
+      "default": 8000,
+      "min": 1
+    }
+  }
+}

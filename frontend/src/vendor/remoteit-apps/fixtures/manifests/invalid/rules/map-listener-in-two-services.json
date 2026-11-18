@@ -1,0 +1,27 @@
+{
+  "contract": 1,
+  "app": "fixture.a",
+  "version": "1.0.0",
+  "name": "a",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "web": {
+      "type": "tcp",
+      "port": 80
+    }
+  },
+  "service": [
+    {
+      "name": "A",
+      "protocol": "http",
+      "listen": "web"
+    },
+    {
+      "name": "B",
+      "protocol": "http",
+      "listen": "web"
+    }
+  ]
+}

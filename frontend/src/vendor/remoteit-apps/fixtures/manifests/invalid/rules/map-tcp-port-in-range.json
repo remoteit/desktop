@@ -1,0 +1,19 @@
+{
+  "contract": 1,
+  "app": "fixture.a",
+  "version": "1.0.0",
+  "name": "a",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "a": {
+      "type": "tcp",
+      "port": 8000
+    },
+    "b": {
+      "type": "tcp",
+      "ports": "7990-8010"
+    }
+  }
+}

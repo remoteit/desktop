@@ -1,0 +1,25 @@
+{
+  "contract": 1,
+  "app": "fixture.one",
+  "version": "1.0.0",
+  "name": "one",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "${remoteit.listen.main.port}"
+    ]
+  },
+  "listen": {
+    "main": {
+      "type": "tcp"
+    }
+  },
+  "service": {
+    "name": "Main",
+    "protocol": "http",
+    "listen": "main"
+  },
+  "health": {
+    "type": "tcp"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "contract": 1,
+  "app": "fixture.a",
+  "version": "1.0.0",
+  "name": "a",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "a": {
+      "type": "udp",
+      "ports": "5000-5010"
+    },
+    "b": {
+      "type": "udp",
+      "ports": "5010-5020"
+    }
+  }
+}

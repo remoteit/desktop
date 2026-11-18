@@ -1,0 +1,25 @@
+{
+  "contract": 1,
+  "app": "fixture.tcpsvc",
+  "version": "1.0.0",
+  "name": "tcpsvc",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "${remoteit.listen.main.port}"
+    ]
+  },
+  "listen": {
+    "main": {
+      "type": "tcp"
+    }
+  },
+  "service": [
+    {
+      "name": "Main",
+      "protocol": "tcp",
+      "port": 7000,
+      "listen": "main"
+    }
+  ]
+}
