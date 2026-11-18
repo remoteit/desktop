@@ -253,6 +253,31 @@ describe('New app, files to Done', () => {
     expect(page.querySelector('[data-new-app-form]')).not.toBeNull()
   })
 
+  it('a release still packing when the account changes never lands in the new account’s flow', async () => {
+    const page = await render()
+    await describePanel(page)
+    await act(async () => (page.querySelector('[data-platform-chosen="any"]') as HTMLElement).click())
+    const input = page.querySelector('[data-platform-input="any"]') as HTMLInputElement
+    Object.defineProperty(input, 'files', { value: [new File(['x'], 'panel')], configurable: true })
+    await act(async () => input.dispatchEvent(new Event('change', { bubbles: true })))
+    let finish: (value: any) => void = () => {}
+    build.mockReturnValue(new Promise(resolve => (finish = resolve)))
+    await act(async () => (page.querySelector('[data-new-app-pack]') as HTMLElement).click())
+    state.value = { user: { id: 'U1' }, active: 'ORG2' }
+    await act(async () =>
+      root.render(
+        <MemoryRouter initialEntries={['/apps/new']}>
+          <NewAppPage />
+        </MemoryRouter>
+      )
+    )
+    await act(async () =>
+      finish({ manifest: { app: 'acme.panel', version: '1.0.0' }, text: '', bytes: new Uint8Array(), archives: [] })
+    )
+    expect(page.querySelector('[data-new-app-review]')).toBeNull()
+    expect(page.querySelector('[data-new-app-form]')).not.toBeNull()
+  })
+
   it('a release that cannot be packed says why in words', async () => {
     const { ReleaseRefused } = await import('../helpers/appRelease')
     const page = await render()

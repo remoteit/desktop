@@ -138,6 +138,14 @@ export async function buildRelease(
           .filter(Boolean) as string[]
       ),
     ]
+    // The program's path is held to the same rule as every file the archive holds: relative, no . or .. part.
+    for (const program of programs) {
+      try {
+        safePath(program)
+      } catch {
+        throw new ReleaseRefused('badPath', { platform: key, path: program })
+      }
+    }
     const entries = await entriesOf(
       key,
       inputs[key],
