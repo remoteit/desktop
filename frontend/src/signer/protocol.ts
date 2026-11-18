@@ -13,7 +13,10 @@ export type CreateLabels = {
   create: string
   creating: string
   download: string
-  downloaded: string
+  downloadAgain: string
+  saveIntro: string
+  saved: string
+  registering: string
   mismatch: string
   short: string
   keyId: string

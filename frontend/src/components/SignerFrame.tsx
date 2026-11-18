@@ -63,7 +63,13 @@ export function useCreateLabels(): CreateRequest['labels'] {
     create: t('signer.create', 'Create key'),
     creating: t('signer.creating', 'Making and encrypting the key…'),
     download: t('signer.download', 'Download key file'),
-    downloaded: t('signer.downloaded', 'Saved. Keep the file and its passphrase somewhere safe.'),
+    downloadAgain: t('signer.downloadAgain', 'Download again'),
+    saveIntro: t(
+      'signer.saveIntro',
+      'Download the key file and keep it somewhere safe. The key is registered only once you say the file is saved; close this without saving and the key is gone.'
+    ),
+    saved: t('signer.saved', 'I saved the file'),
+    registering: t('signer.registering', 'Registering the key…'),
     mismatch: t('signer.mismatch', 'The two passphrases differ.'),
     short: t('signer.short', 'A passphrase of at least 12 characters.'),
     keyId: t('signer.keyId', 'Key id'),
