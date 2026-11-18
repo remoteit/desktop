@@ -27,6 +27,10 @@ export const PLATFORMS = [
   'any',
 ]
 export const COMMAND_OSES = ['linux', 'darwin', 'windows']
+
+// The platforms a manifest can have archives for: those whose OS run.command runs something on, and `any`.
+export const offeredPlatforms = (m: Record<string, any>) =>
+  PLATFORMS.filter(key => key === 'any' || commandOf(m, key.split('-')[0]) !== undefined)
 export const FILES_MOST = 32 // with manifest.json and manifest.json.sig (graphql UPLOAD_FILES_MAX)
 export const READ_MOST = 256 << 20 // what the page reads in all: a mistaken folder fails at once
 
@@ -111,6 +115,9 @@ export async function buildRelease(
   inputs: Record<string, Given>,
   fileMax: number
 ): Promise<Built> {
+  // The archives are the build's to write, from the files given: a source that names some is refused, as the tool
+  // refuses it, so nothing signed can name a file that is not uploaded.
+  if ('archives' in source) throw new ReleaseRefused('archivesGiven')
   const keys = Object.keys(inputs).sort()
   const read = keys.reduce((n, key) => n + sizeOf(inputs[key]), 0)
   if (read > READ_MOST)

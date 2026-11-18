@@ -13,7 +13,7 @@ import { Title } from '../components/Title'
 import { NewAppForm } from '../components/NewAppForm'
 import { Inputs, NewAppFiles } from '../components/NewAppFiles'
 import { NewAppPublish } from '../components/NewAppPublish'
-import { Built, buildRelease, Given, ReleaseRefused } from '../helpers/appRelease'
+import { Built, buildRelease, Given, offeredPlatforms, ReleaseRefused } from '../helpers/appRelease'
 import { AppPublisher, AppPublishing, graphQLAppPublisher } from '../services/graphQLAppPublishers'
 import {
   AppForm,
@@ -80,6 +80,8 @@ export const NewAppPage: React.FC = () => {
       const twice = duplicateMembers(json).map(path =>
         t('newApp.memberTwice', '{{path}} is named twice: a manifest names each once', { path })
       )
+      if (parsed && typeof parsed === 'object' && 'archives' in parsed)
+        twice.push(t('newApp.archivesGiven', 'archives is written when the files are packed: leave it out'))
       return { manifest: parsed as Record<string, any>, problems: twice.length ? twice : manifestProblems(parsed) }
     }
     const lost = formProblems(form).map(({ code, value }) =>
@@ -103,12 +105,15 @@ export const NewAppPage: React.FC = () => {
 
   // The release packed from the platforms' files, or why it cannot be, in the person's words.
   const pack = async () => {
-    const missing = Object.keys(inputs).find(key => !inputs[key])
+    // Only the platforms the manifest runs on now: one chosen before run.command changed is no longer offered, nor packed.
+    const offered = offeredPlatforms(manifest!)
+    const chosen = Object.fromEntries(Object.entries(inputs).filter(([key]) => offered.includes(key)))
+    const missing = Object.keys(chosen).find(key => !chosen[key])
     if (missing) return setRefusal(t('newApp.noFilesFor', '{{platform}}: no files yet', { platform: missing }))
     setPacking(true)
     setRefusal(undefined)
     try {
-      setBuilt(await buildRelease(manifest!, inputs as Record<string, Given>, fileMax))
+      setBuilt(await buildRelease(manifest!, chosen as Record<string, Given>, fileMax))
       setStep('review')
     } catch (error) {
       setRefusal(error instanceof ReleaseRefused ? refusalWords(t, error) : (error as Error).message)
@@ -378,6 +383,8 @@ function refusalWords(t: (key: string, text: string, values?: any) => string, er
         '{{platform}}: the archive is {{mb}} MB; remote.it takes at most {{most}} MB a file',
         v
       )
+    case 'archivesGiven':
+      return t('newApp.archivesGiven', 'archives is written when the files are packed: leave it out', v)
     case 'tooMany':
       return t('newApp.refusedTooMany', 'At most {{most}} archives', v)
     default:

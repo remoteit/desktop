@@ -93,6 +93,12 @@ describe('a release built in the browser', () => {
       'tooBig'
     )
     expect(await refused(buildRelease(source(), {}, MAX))).toEqual(['noPlatform', {}])
+    // archives are the build's: a source naming some, for files never given, is refused.
+    const stock = source({
+      run: { command: '/bin/sh' },
+      archives: { any: { file: 'x.tar.gz', sha256: '0'.repeat(64) } },
+    })
+    expect(await refused(buildRelease(stock, {}, MAX))).toEqual(['archivesGiven', {}])
   })
 
   it('a stock tool needs no files', async () => {

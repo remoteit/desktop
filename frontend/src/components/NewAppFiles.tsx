@@ -2,7 +2,7 @@ import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Button, Checkbox, FormControlLabel, MenuItem, TextField, Typography } from '@mui/material'
 import { Gutters } from './Gutters'
-import { Given, PLATFORMS } from '../helpers/appRelease'
+import { Given, offeredPlatforms } from '../helpers/appRelease'
 
 /* New app's files (presence-server docs/device-apps-new-app.md, "Files and packaging"): the platforms the app is built
    for, and for each what to pack — the program alone, a folder, or a .tar.gz of its files. Only platforms whose OS the
@@ -13,12 +13,9 @@ export type Inputs = Record<string, Given | null> // a platform chosen, with its
 
 type Props = { manifest: Record<string, any>; inputs: Inputs; fileMax: number; onChange: (inputs: Inputs) => void }
 
-const commandOf = (m: Record<string, any>, os: string) =>
-  typeof m.run?.command === 'string' ? m.run.command : m.run?.command?.[os]
-
 export const NewAppFiles: React.FC<Props> = ({ manifest, inputs, fileMax, onChange }) => {
   const { t } = useTranslation()
-  const offered = PLATFORMS.filter(key => key === 'any' || commandOf(manifest, key.split('-')[0]) !== undefined)
+  const offered = offeredPlatforms(manifest)
   return (
     <Box data-new-app-files>
       <Gutters>
