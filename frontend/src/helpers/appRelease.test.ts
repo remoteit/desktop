@@ -93,6 +93,11 @@ describe('a release built in the browser', () => {
       'tooBig'
     )
     expect(await refused(buildRelease(source(), {}, MAX))).toEqual(['noPlatform', {}])
+    // The program's own path is held to an archive's rule: a Windows path that climbs out is refused.
+    const climbs = source({ run: { command: { windows: '..\\panel.exe' } } })
+    expect(
+      await refused(buildRelease(climbs, { 'windows-amd64': { kind: 'program', file: file('p', 'MZ') } }, MAX))
+    ).toEqual(['badPath', { platform: 'windows-amd64', path: '../panel.exe' }])
     // archives are the build's: a source naming some, for files never given, is refused.
     const stock = source({
       run: { command: '/bin/sh' },

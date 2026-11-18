@@ -82,6 +82,30 @@ describe('a release archive', () => {
     await expect(untarGz(enc('not gzip'))).rejects.toThrow(/not gzip/)
   })
 
+  it('reads past what describes an entry in a PAX header, and refuses what changes it (a sparse map, a size)', async () => {
+    const record = (kv: string) => {
+      let n = kv.length + 3
+      while (`${n} ${kv}\n`.length !== n) n = `${n} ${kv}\n`.length
+      return `${n} ${kv}\n`
+    }
+    const described = foreign([
+      {
+        name: 'PaxHeader',
+        type: 'x',
+        data: record('mtime=1700000000.5') + record('SCHILY.xattr.com.apple.quarantine=x'),
+      },
+      { name: 'run.sh', type: '0', mode: 0o755, data: 'echo' },
+    ])
+    expect((await untarGz(described)).map(e => e.name)).toEqual(['run.sh'])
+    for (const kv of ['GNU.sparse.map=0,512', 'size=99999999999', 'linkpath=/etc/passwd', 'made.up=1']) {
+      const archive = foreign([
+        { name: 'PaxHeader', type: 'x', data: record(kv) },
+        { name: 'data.db', type: '0', data: 'x' },
+      ])
+      await expect(untarGz(archive), kv).rejects.toThrow(/cannot repack as it is/)
+    }
+  })
+
   it('refuses an archive that is not whole, or that unpacks to more than the page reads', async () => {
     // An entry that says 1,000 bytes and holds 20, at the archive's end.
     await expect(

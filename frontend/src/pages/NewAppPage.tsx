@@ -30,13 +30,22 @@ import {
    rules graphql takes a release by and devices hold it to (helpers/appManifest, vendored from remoteit/apps); then its
    files for each platform, packed here (helpers/appRelease); then Review and sign, where the publisher signs it with
    their key file in the signer and it is published as the new private app's first release; then Done, with Add to a
-   device. Nothing is sent to remote.it until it is published, and the key never is. Needs the account's publisher (the Publisher page claims one) and a
-   standing key to sign with (Create key there). The account admin's, as the Publisher page is. */
+   device. Nothing is sent to remote.it until it is published, and the key never is. Needs the account's publisher
+   (the Publisher page claims one) and a standing key to sign with (Create key there). The account admin's, as the
+   Publisher page is.
+
+   Each account is its own New app: the flow is keyed by the account, so switching organizations ends the last one's
+   — its form, its files, a release packing or packed, a publish under way — and nothing of it can land in the new
+   one's (an answer for a flow that has ended changes nothing). */
 export const NewAppPage: React.FC = () => {
-  const { t } = useTranslation()
   const accountId = useSelector((state: State) => selectActiveAccountId(state))
   const userId = useSelector((state: State) => state.user.id)
   const account = accountId && accountId !== userId ? accountId : undefined
+  return <NewAppFlow key={account ?? ''} account={account} />
+}
+
+const NewAppFlow: React.FC<{ account?: string }> = ({ account }) => {
+  const { t } = useTranslation()
   const [read, setRead] = useState<{ publisher: AppPublisher | null; publishing: AppPublishing } | null>()
   const [form, setForm] = useState<AppForm>(newAppForm)
   // Edit as JSON: the manifest's text, the source while it is set.
@@ -51,16 +60,8 @@ export const NewAppPage: React.FC = () => {
   const [publishing, setPublishing] = useState(false)
   const history = useHistory()
 
-  // Each account its own New app: switching organizations starts again, so nothing packed or signed for the last
-  // account's publisher goes on under the new one's.
   useEffect(() => {
     let current = true
-    setRead(undefined)
-    setStep('describe')
-    setInputs({})
-    setBuilt(undefined)
-    setPublished(undefined)
-    setRefusal(undefined)
     graphQLAppPublisher(account).then(answer => current && setRead(answer ?? null))
     return () => {
       current = false

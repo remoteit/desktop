@@ -137,6 +137,35 @@ export function safePath(name: string): string {
   return clean
 }
 
+// A PAX header's records, refused where one changes what the entry is rather than describing it — its size, a sparse
+// file's map, a link's target, or a key this reader does not know: repacked as an ordinary file, such an entry would be
+// other bytes than its author's. What describes an entry (times, owners, extended attributes) is read past: the
+// daemon unpacks files without them.
+const PAX_DESCRIBES =
+  /^(path|mtime|atime|ctime|uid|gid|uname|gname|charset|hdrcharset|comment|(SCHILY|LIBARCHIVE)\.(xattr|acl)\..+|SCHILY\.(fflags|dev|ino|nlink)|LIBARCHIVE\.creationtime)$/
+function paxRecords(body: Uint8Array): Record<string, string> {
+  const records: Record<string, string> = {}
+  const bytes = body
+  for (let at = 0; at < bytes.length; ) {
+    const space = bytes.indexOf(0x20, at)
+    const length = parseInt(new TextDecoder().decode(bytes.subarray(at, space)), 10)
+    if (space < 0 || !Number.isSafeInteger(length) || length <= 0 || at + length > bytes.length)
+      throw new ArchiveRefused('a PAX header is damaged')
+    const record = new TextDecoder().decode(bytes.subarray(space + 1, at + length - 1))
+    const eq = record.indexOf('=')
+    const key = record.slice(0, eq)
+    if (eq < 1 || !PAX_DESCRIBES.test(key))
+      throw new ArchiveRefused(
+        `it holds ${
+          key || 'a damaged PAX record'
+        }, which this reader cannot repack as it is (a sparse file, a link, a size beyond ustar's)`
+      )
+    records[key] = record.slice(eq + 1)
+    at += length
+  }
+  return records
+}
+
 const text = (block: Uint8Array, at: number, length: number) => {
   const field = block.subarray(at, at + length)
   const end = field.indexOf(0)
@@ -167,11 +196,11 @@ export async function untarGz(bytes: Uint8Array, most = 256 << 20): Promise<Entr
     const type = String.fromCharCode(h[156] || 0x30)
     const body = raw.subarray(at + BLOCK, at + BLOCK + size)
     at += BLOCK + size + ((BLOCK - (size % BLOCK)) % BLOCK)
-    if (type === 'x') {
-      longName = /(?:^|\n)\d+ path=([^\n]*)\n/.exec(new TextDecoder().decode(body))?.[1]
+    if (type === 'x' || type === 'g') {
+      const records = paxRecords(body)
+      if (type === 'x') longName = records.path
       continue
     }
-    if (type === 'g') continue
     if (type === 'L') {
       longName = text(body, 0, body.length)
       continue
