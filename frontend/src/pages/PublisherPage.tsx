@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -49,6 +50,7 @@ import {
    publishing tool (appReleaseUploads, then setAppRelease); they are listed here. The account admin's. */
 export const PublisherPage: React.FC = () => {
   const { t } = useTranslation()
+  const history = useHistory()
   const accountId = useSelector((state: State) => selectActiveAccountId(state))
   const userId = useSelector((state: State) => state.user.id)
   const account = accountId && accountId !== userId ? accountId : undefined
@@ -363,16 +365,19 @@ export const PublisherPage: React.FC = () => {
           </Gutters>
 
           <Typography variant="subtitle1">{t('publisherPage.apps', 'Apps')}</Typography>
-          {!publisher.apps.length && (
-            <Gutters>
-              <Typography variant="body2" color="textSecondary">
+          <Gutters>
+            {!publisher.apps.length && (
+              <Typography variant="body2" color="textSecondary" gutterBottom>
                 {t(
-                  'publisherPage.noApps',
-                  'No apps yet. Publish one with the publishing tool: its files are hosted by remote.it, and it reaches this account’s own devices.'
+                  'publisherPage.noAppsYet',
+                  'No apps yet. Make one here, signed in your browser with your key file, or with the publishing tool: its files are hosted by remote.it, and it reaches this account’s own devices.'
                 )}
               </Typography>
-            </Gutters>
-          )}
+            )}
+            <Button variant="contained" size="small" onClick={() => history.push('/apps/new')} data-publisher-new-app>
+              {t('publisherPage.newApp', 'New app')}
+            </Button>
+          </Gutters>
           <List dense data-publisher-apps>
             {publisher.apps.map(app => (
               <ListItem key={app.id} data-publisher-app={app.id} sx={{ display: 'block' }}>
