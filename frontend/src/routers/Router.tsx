@@ -84,7 +84,6 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const registered = useSelector((state: State) => !!state.backend.thisId)
   const os = useSelector((state: State) => state.backend.environment.os) || getOs()
   // Connected Apps depends on an API that ships with the MCP production release
-  const testUI = useSelector((state: State) => !!state.ui.testUI)
 
   useEffect(() => {
     const initialRoute = showPendingNotice()
@@ -405,16 +404,12 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Route path="/account/accessKey">
                 <AccessKeyPage />
               </Route>
-              {testUI && (
-                <Route path="/account/connected/:clientId">
-                  <ConnectedAppDetailPage />
-                </Route>
-              )}
-              {testUI && (
-                <Route path="/account/connected">
-                  <ConnectedAppsPage />
-                </Route>
-              )}
+              <Route path="/account/connected/:clientId">
+                <ConnectedAppDetailPage />
+              </Route>
+              <Route path="/account/connected">
+                <ConnectedAppsPage />
+              </Route>
               <Route path={['/account', '/account/overview']}>
                 <ProfilePage />
               </Route>
