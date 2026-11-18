@@ -33,6 +33,7 @@ export const optionalService = (_: State, service?: IService) => service
 export const getConnectionDefaults = (state: State) => state.user.attributes?.connectionDefaults || EMPTY_CONNECTION_DEFAULTS
 export const getApplicationTypes = (state: State) => state.applicationTypes
 export const getAllApplicationTypes = (state: State) => state.applicationTypes.all
+export const getEnvironment = (state: State) => state.backend.environment
 export const getApplicationService = (_: State, service?: IService) => service
 export const getApplicationConnection = (_: State, _service?: IService, connection?: IConnection) => connection
 

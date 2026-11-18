@@ -268,6 +268,11 @@ export class Application {
     return !!(this.reverseProxy && this.connection?.public && !this.connection.connectLink)
   }
 
+  // Desktop keeps one template for public and local routes, so only the portal can rewrite it for the public proxy
+  get publicOnlyTemplate() {
+    return this.portal && this.publicReverseProxy
+  }
+
   getReverseProxyTemplate(secure: boolean) {
     return secure ? this.template.replace('http:', 'https:') : this.template.replace('https:', 'http:')
   }
@@ -281,7 +286,7 @@ export class Application {
 
   // The cloud reverse proxy serves only https, on no port
   private publicReverseProxyTemplate(template: string) {
-    if (!this.publicReverseProxy) return template
+    if (!this.publicOnlyTemplate) return template
     return template.replace(/^http:/i, 'https:').replace(/:\[port\]/g, '')
   }
 

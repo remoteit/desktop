@@ -6,12 +6,13 @@ import {
   getApplicationConnection,
   getApplicationTypes,
   getAllApplicationTypes,
+  getEnvironment,
 } from './state'
 import { selectActiveAccountId } from './accounts'
 
-// getApplication reads the types through the adaptor, so they are an input only to drop a result built before they loaded
+// getApplication reads the types and environment through the adaptor; as inputs they drop stale results
 export const selectApplication = createSelector(
-  [getConnectionDefaults, getApplicationService, getApplicationConnection, getAllApplicationTypes],
+  [getConnectionDefaults, getApplicationService, getApplicationConnection, getAllApplicationTypes, getEnvironment],
   (globalDefaults, service, connection) => getApplication(service, connection, globalDefaults)
 )
 

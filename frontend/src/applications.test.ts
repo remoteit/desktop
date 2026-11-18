@@ -1,14 +1,15 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterEach } from 'vitest'
 import { initialize } from '@common/adaptor'
 import { getApplication } from '@common/applications'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '@common/constants'
 
 const HTTP = 7
 const TCP = 1
+const environment = { portal: true } as IEnvironment
 
 beforeAll(() =>
   initialize({
-    getState: () => ({ environment: { portal: true } as IEnvironment, preferences: {} as IPreferences }),
+    getState: () => ({ environment, preferences: {} as IPreferences }),
     getCloudData: typeId => ({ proxy: typeId === HTTP } as IApplicationType),
     escapeRegex: string => string,
   })
@@ -27,6 +28,10 @@ const connection = (update: Partial<IConnection>): IConnection => ({
 })
 
 describe('public reverse proxy launch template', () => {
+  afterEach(() => {
+    environment.portal = true
+  })
+
   it('drops the port, which the cloud reverse proxy never has', () => {
     const app = getApplication(service(HTTP), connection({ public: true }))
     expect(app.publicReverseProxy).toBe(true)
@@ -81,6 +86,14 @@ describe('public reverse proxy launch template', () => {
       connection({ public: false, launchTemplates: { URL: 'http://[host]:[port]/admin' } })
     )
     expect(app.template).toBe('http://[host]:[port]/admin')
+  })
+
+  it('keeps the template on desktop, where the connection can go back to a local route', () => {
+    environment.portal = false
+    const app = getApplication(service(HTTP, { launchTemplate: 'http://[host]:[port]' }), connection({ public: true }))
+    expect(app.publicReverseProxy).toBe(true)
+    expect(app.publicOnlyTemplate).toBe(false)
+    expect(app.template).toBe('http://[host]:[port]')
   })
 
   it('is not a public reverse proxy on a persistent connect link', () => {
