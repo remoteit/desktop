@@ -148,6 +148,10 @@ describe('New app', () => {
     }
     await type(editor, JSON.stringify(named))
     expect(page.querySelector('[data-manifest-ok]')).not.toBeNull()
+    await type(editor, '{"contract": 1, "app": "acme.x", "version": "1.0.0", "run": {"command": "a", "command": "b"}}')
+    expect(page.querySelector('[data-manifest-problems]')?.textContent).toBe(
+      '/run/command is named twice: a manifest names each once'
+    )
     await type(editor, JSON.stringify({ ...named, app: 'other.cam' }))
     expect(page.querySelector('[data-new-app-check]')?.textContent).toContain('starts with your publisher id')
   })
