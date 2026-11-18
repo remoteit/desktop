@@ -19,15 +19,20 @@ export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connectio
   const secureReverseProxy = app.publicReverseProxy ? null : isSecureReverseProxy(app.template)
 
   const update = (template: string) => {
-    if (!connection || !app.launchType) return
+    // A public reverse proxy shows templates as https with no port; storing that view would break local routes
+    if (!connection || !app.launchType || template === app.template) return
     const launchTemplates = { ...connection.launchTemplates }
-    // a public reverse proxy's default has no port, so storing it would carry a port-less template back to a local route
-    if (template === app.defaultTemplate) delete launchTemplates[app.launchType]
+    const reset = template === app.defaultTemplate
+    if (reset) delete launchTemplates[app.launchType]
     else launchTemplates[app.launchType] = template
+    const localTemplate =
+      reset && app.publicReverseProxy
+        ? service.attributes.launchTemplate || app.globalDefaults.launchTemplate
+        : template
     setConnection({
       ...connection,
       launchTemplates,
-      disableSecurity: isSecureReverseProxy(template) === false,
+      disableSecurity: isSecureReverseProxy(localTemplate) === false,
     })
   }
 

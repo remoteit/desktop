@@ -274,16 +274,23 @@ export class Application {
 
   private getTemplate(type: LaunchMethod['type']) {
     if (this.connection?.connectLink) return this.resolvedDefaultTemplate(type)
-    return this.connection?.launchTemplates?.[type] || this.resolvedDefaultTemplate(type)
+    const template = this.connection?.launchTemplates?.[type]
+    if (!template) return this.resolvedDefaultTemplate(type)
+    return type === 'URL' ? this.publicReverseProxyTemplate(template) : template
+  }
+
+  // The cloud reverse proxy serves only https, on no port
+  private publicReverseProxyTemplate(template: string) {
+    if (!this.publicReverseProxy) return template
+    return template.replace(/^http:/i, 'https:').replace(/:\[port\]/g, '')
   }
 
   private resolvedDefaultTemplate(type?: LaunchMethod['type']): string {
     switch (type) {
-      case 'URL': {
-        const template =
+      case 'URL':
+        return this.publicReverseProxyTemplate(
           this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.defaultLaunchTemplate
-        return this.publicReverseProxy ? template.replace(/:\[port\]/g, '') : template
-      }
+        )
       case 'COMMAND':
         return (
           this.service?.attributes.commandTemplate || this.globalDefaults.commandTemplate || this.defaultCommandTemplate
