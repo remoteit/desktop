@@ -36,11 +36,14 @@ export const BuildAppPage: React.FC = () => {
     }
   }, [account])
 
-  const publisher = read?.publisher?.id ?? 'you'
+  // The publisher the starter and the steps are named for: none until it is read, and then the account's or none.
+  const id = read?.publisher?.id
+  const publisher = id ?? '<publisher>'
   const downloads = read?.publishing.downloads
 
   const downloadStarter = async () => {
-    const bytes = await starterArchive(publisher)
+    if (!id) return
+    const bytes = await starterArchive(id)
     const url = URL.createObjectURL(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: 'application/gzip' }))
     const a = Object.assign(document.createElement('a'), { href: url, download: `${publisher}.hello-starter.tar.gz` })
     a.click()
@@ -117,9 +120,20 @@ export const BuildAppPage: React.FC = () => {
             'A web page with a title its owner sets: its manifest, its program and its release notes.'
           )}
         </Typography>
-        <Button size="small" variant="outlined" onClick={downloadStarter} data-build-starter>
-          {t('buildApp.starterDownload', 'Download the starter')}
-        </Button>
+        {read && !id ? (
+          <Notice
+            severity="info"
+            button={<Link to="/account/publisher">{t('buildApp.claimLink', 'Publisher page')}</Link>}
+          >
+            <span data-build-claim>
+              {t('buildApp.claimFirst', 'Claim a publisher id first: the starter is named after it.')}
+            </span>
+          </Notice>
+        ) : (
+          <Button size="small" variant="outlined" disabled={!id} onClick={downloadStarter} data-build-starter>
+            {t('buildApp.starterDownload', 'Download the starter')}
+          </Button>
+        )}
         {code(
           `tar xzf ${publisher}.hello-starter.tar.gz && cd hello\nremoteit-app validate          # the manifest, against the contract\nremoteit-app run . --set title=Hi   # the app on this machine, as the device runs it`
         )}

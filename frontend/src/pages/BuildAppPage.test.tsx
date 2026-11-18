@@ -55,12 +55,24 @@ describe('Build it yourself', () => {
     })
     const page = await render()
     expect(page.textContent).toContain('remoteit-app sign    dist/acme.hello/1.0.0')
+    expect((page.querySelector('[data-build-starter]') as HTMLButtonElement).disabled).toBe(false)
     expect(page.querySelector('[data-build-tool-download]')?.getAttribute('href')).toBe(
       'https://downloads.test/tools/remoteit-app.tgz'
     )
     expect(page.querySelector('[data-build-tool]')?.textContent).toContain(
       'npm install -g https://downloads.test/tools/remoteit-app.tgz'
     )
+  })
+
+  it('offers the starter only for a publisher it has read; without one, says to claim one', async () => {
+    let answer: (value: any) => void = () => {}
+    read.mockReturnValue(new Promise(resolve => (answer = resolve)))
+    const page = await render()
+    expect((page.querySelector('[data-build-starter]') as HTMLButtonElement).disabled).toBe(true)
+    expect(page.textContent).toContain('dist/<publisher>.hello/1.0.0')
+    await act(async () => answer({ publisher: null, publishing: { certifies: true, downloads: null } }))
+    expect(page.querySelector('[data-build-starter]')).toBeNull()
+    expect(page.querySelector('[data-build-claim]')).not.toBeNull()
   })
 
   it('a stage that hosts no tool says so', async () => {

@@ -547,6 +547,8 @@
   },
   "buildApp": {
     "appTitle": "3. Start from the starter, or your own app",
+    "claimFirst": "Claim a publisher id first: the starter is named after it.",
+    "claimLink": "Publisher page",
     "intro": "Publish from a terminal, a script or CI with remoteit-app, the publishing tool. It builds, signs and publishes exactly as New app does — the same manifest, the same packing, the same key file — and it signs on your own machine.",
     "key": "Use the key file you downloaded with Create key on the Publisher page. Its passphrase is asked for on the terminal; in CI, put it in REMOTEIT_APP_KEY_PASSPHRASE as a secret. The tool speaks for your account with an access key (Account, Access Keys), kept in ~/.remoteit/credentials as the remote.it CLI keeps it.",
     "keyTitle": "2. Your key and your account",

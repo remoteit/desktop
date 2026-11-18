@@ -539,6 +539,8 @@
   },
   "buildApp": {
     "appTitle": "",
+    "claimFirst": "",
+    "claimLink": "",
     "intro": "",
     "key": "",
     "keyTitle": "",
