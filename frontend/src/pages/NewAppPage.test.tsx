@@ -85,6 +85,7 @@ afterEach(() => {
 })
 beforeEach(() => {
   build.mockReset()
+  state.value = { user: { id: 'U1' }, active: 'U1' }
   read.mockReset()
   read.mockResolvedValue({
     publisher: acme(),
@@ -233,6 +234,23 @@ describe('New app, files to Done', () => {
     })
     await act(async () => (page.querySelector('[data-new-app-pack]') as HTMLElement).click())
     expect(build.mock.calls[0][1]).toEqual({ 'windows-amd64': { kind: 'program', file: program } })
+  })
+
+  it('switching accounts starts again: nothing chosen for the last publisher goes on', async () => {
+    const page = await render()
+    await describePanel(page)
+    expect(page.querySelector('[data-new-app-files]')).not.toBeNull()
+    state.value = { user: { id: 'U1' }, active: 'ORG2' }
+    await act(async () =>
+      root.render(
+        <MemoryRouter initialEntries={['/apps/new']}>
+          <NewAppPage />
+        </MemoryRouter>
+      )
+    )
+    expect(read).toHaveBeenLastCalledWith('ORG2')
+    expect(page.querySelector('[data-new-app-files]')).toBeNull()
+    expect(page.querySelector('[data-new-app-form]')).not.toBeNull()
   })
 
   it('a release that cannot be packed says why in words', async () => {
