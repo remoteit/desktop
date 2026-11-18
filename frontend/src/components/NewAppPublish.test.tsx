@@ -112,6 +112,24 @@ describe('Review and sign', () => {
     expect(onPublished).toHaveBeenCalled()
   })
 
+  it('holds the page while it signs and publishes, and a review left behind says nothing', async () => {
+    let finish: (value: any) => void = () => {}
+    publish.mockReturnValue(new Promise(resolve => (finish = resolve)))
+    const onBusy = vi.fn()
+    const onPublished = vi.fn()
+    const page = await render(
+      <NewAppPublish built={built() as any} publisher="acme" keys={KEYS} onPublished={onPublished} onBusy={onBusy} />
+    )
+    await click(page.querySelector('[data-sign-publish]'))
+    expect(onBusy).toHaveBeenLastCalledWith(true)
+    await click(document.querySelector('[data-signer="sign"]'))
+    expect(onBusy).toHaveBeenLastCalledWith(true)
+    act(() => root.unmount())
+    await act(async () => finish({ ok: { manifest: 'https://d/m', devices: 1 } }))
+    expect(onPublished).not.toHaveBeenCalled()
+    root = createRoot(container) // for afterEach
+  })
+
   it('without a standing key, nothing can be signed', async () => {
     const page = await render(<NewAppPublish built={built() as any} publisher="acme" keys={[]} onPublished={vi.fn()} />)
     expect((page.querySelector('[data-sign-publish]') as HTMLButtonElement).disabled).toBe(true)

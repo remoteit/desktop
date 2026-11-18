@@ -74,7 +74,7 @@ async function entriesOf(key: string, given: Given, program: string | undefined,
   }
   if (given.kind === 'archive') {
     try {
-      return await untarGz(await bytesOf(given.file))
+      return await untarGz(await bytesOf(given.file), READ_MOST)
     } catch (error) {
       if (error instanceof ArchiveRefused) throw new ReleaseRefused('badArchive', { platform: key, why: error.message })
       throw error

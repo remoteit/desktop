@@ -47,6 +47,8 @@ export const NewAppPage: React.FC = () => {
   const [refusal, setRefusal] = useState<string>()
   const [built, setBuilt] = useState<Built>()
   const [published, setPublished] = useState<{ manifest: string; devices: number }>()
+  // A release being signed or published is held still: no going back to change it meanwhile.
+  const [publishing, setPublishing] = useState(false)
   const history = useHistory()
 
   useEffect(() => {
@@ -276,7 +278,12 @@ export const NewAppPage: React.FC = () => {
                 </Notice>
               )}
               <Gutters>
-                <Button onClick={() => setStep('describe')} sx={{ marginRight: 1 }} data-new-app-back>
+                <Button
+                  disabled={packing}
+                  onClick={() => setStep('describe')}
+                  sx={{ marginRight: 1 }}
+                  data-new-app-back
+                >
                   {t('newApp.back', 'Back')}
                 </Button>
                 <Button variant="contained" disabled={packing} onClick={pack} data-new-app-pack>
@@ -291,13 +298,14 @@ export const NewAppPage: React.FC = () => {
                 built={built}
                 publisher={publisher.id}
                 keys={standing}
+                onBusy={setPublishing}
                 onPublished={result => {
                   setPublished(result)
                   setStep('done')
                 }}
               />
               <Gutters>
-                <Button onClick={() => setStep('files')} data-new-app-back>
+                <Button disabled={publishing} onClick={() => setStep('files')} data-new-app-back>
                   {t('newApp.back', 'Back')}
                 </Button>
               </Gutters>

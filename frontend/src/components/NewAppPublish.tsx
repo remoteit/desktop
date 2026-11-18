@@ -31,9 +31,11 @@ type Props = {
   publisher: string
   keys: StandingKey[]
   onPublished: (result: { manifest: string; devices: number }) => void
+  // Whether a signature or a publish is under way: the page holds the release still meanwhile.
+  onBusy?: (busy: boolean) => void
 }
 
-export const NewAppPublish: React.FC<Props> = ({ built, publisher, keys, onPublished }) => {
+export const NewAppPublish: React.FC<Props> = ({ built, publisher, keys, onPublished, onBusy }) => {
   const { t } = useTranslation()
   const labels = useSignLabels()
   const root = built.manifest.run?.as === 'root'
@@ -45,6 +47,15 @@ export const NewAppPublish: React.FC<Props> = ({ built, publisher, keys, onPubli
   const [reason, setReason] = useState<string>()
   const [uploaded, setUploaded] = useState<string[]>([])
   const done = useRef(new Set<string>())
+  // A publish answers only the review that started it: one left behind says nothing.
+  const mounted = useRef(true)
+  useEffect(
+    () => () => {
+      mounted.current = false
+    },
+    []
+  )
+  useEffect(() => onBusy?.(busy || !!signing), [busy, signing, onBusy])
 
   useEffect(() => {
     sha256Hex(built.bytes).then(setSha)
@@ -58,9 +69,14 @@ export const NewAppPublish: React.FC<Props> = ({ built, publisher, keys, onPubli
       { name: 'manifest.json', data: built.bytes },
       { name: 'manifest.json.sig', data: new TextEncoder().encode(signature.signature) },
     ]
-    const result = await publishRelease(built.manifest.app, built.manifest.version, files, done.current, name =>
-      setUploaded(names => [...names, name])
+    const result = await publishRelease(
+      built.manifest.app,
+      built.manifest.version,
+      files,
+      done.current,
+      name => mounted.current && setUploaded(names => [...names, name])
     )
+    if (!mounted.current) return
     setBusy(false)
     if ('reason' in result) return setReason(result.reason || t('newApp.publishFailed', 'That did not go through'))
     onPublished(result.ok)
