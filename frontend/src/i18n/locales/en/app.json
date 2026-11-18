@@ -492,6 +492,15 @@
     "logs": "Logs",
     "resetConnection": "Reset connection"
   },
+  "connectAiPage": {
+    "howTo": "How to connect",
+    "intro": "Connect Claude, ChatGPT or another AI assistant to your Remote.It account. Then just ask it to check on your devices, open connections or run scripts.",
+    "setupGuides": "Setup guides for Claude, ChatGPT and more",
+    "step1": "Copy the Remote.It MCP server URL.",
+    "step2": "In your AI assistant, add a custom connector (or remote MCP server) and paste the URL.",
+    "step3": "Sign in with your Remote.It account when asked. No API keys needed.",
+    "title": "Connect your AI"
+  },
   "connectedAppDetailPage": {
     "accounts": "Accounts",
     "addAccount": "{{label}} — add",
@@ -1251,6 +1260,7 @@
     "announcements": "Announcements",
     "apis": "APIs",
     "bugReport": "Bug Report",
+    "connectAi": "Connect AI",
     "connections": "Connections",
     "connectionsTooltip": "{{connections}} Connections - {{active}} Connected",
     "devices": "Devices",

@@ -1,4 +1,5 @@
 import React from 'react'
+import brand from '@common/brand/config'
 import { useMobile } from '../hooks/useMobile'
 import browser from '../services/browser'
 import { useTranslation } from 'react-i18next'
@@ -165,6 +166,9 @@ export const SidebarNav: React.FC = () => {
         <ResellerLogo reseller={reseller} marginLeft={4} size="small">
           <Divider />
         </ResellerLogo>
+        {brand.name === 'remoteit' && (
+          <ListItemLocation title={t('nav.connectAi', 'Connect AI')} to="/connect-ai" icon="remote-ai" dense />
+        )}
         <ListItemLocation
           title={t('nav.announcements', 'Announcements')}
           to="/announcements"
