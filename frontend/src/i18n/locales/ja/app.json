@@ -537,6 +537,24 @@
     "terminal": "",
     "title": ""
   },
+  "buildApp": {
+    "appTitle": "",
+    "intro": "",
+    "key": "",
+    "keyTitle": "",
+    "newAppLink": "",
+    "publish": "",
+    "publishTitle": "",
+    "starter": "",
+    "starterDownload": "",
+    "title": "",
+    "toolDownload": "",
+    "toolNeeds": "",
+    "toolNotHere": "",
+    "toolTitle": "",
+    "why": "",
+    "whyTitle": ""
+  },
   "changeEmailDialog": {
     "cancel": "キャンセル",
     "currentEmail": "現在のメールアドレス:",
@@ -3793,6 +3811,7 @@
     "addKeyHelp": "秘密鍵は自分のマシンに保管してください。鍵を切り替えるには、新しい鍵を追加して新しいリリースに署名し、その後で古い鍵を失効させます。",
     "addOtherKey": "",
     "apps": "アプリ",
+    "buildApp": "",
     "cancel": "",
     "claim": "取得",
     "claimIntro": "自分のデバイス向けに自分のアプリを公開できます。発行者 ID を選んでください: 公開するアプリはすべて <id>.<app> という名前になります。ID は先着順です。remote.it の名前やよく知られた名前は予約されており、ID は永久にあなたのものになります。",

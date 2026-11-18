@@ -377,6 +377,9 @@ export const PublisherPage: React.FC = () => {
             <Button variant="contained" size="small" onClick={() => history.push('/apps/new')} data-publisher-new-app>
               {t('publisherPage.newApp', 'New app')}
             </Button>
+            <Button size="small" onClick={() => history.push('/apps/build')} sx={{ marginLeft: 1 }} data-publisher-build-app>
+              {t('publisherPage.buildApp', 'Build it yourself')}
+            </Button>
           </Gutters>
           <List dense data-publisher-apps>
             {publisher.apps.map(app => (
