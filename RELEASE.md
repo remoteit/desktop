@@ -111,7 +111,9 @@ reaches the repository the workflow runs in, so a tag build for a brand that
 publishes elsewhere needs the `RELEASE_TOKEN` secret (a token with write access
 there); `prepare` checks it before anything is built, and it is used only for
 that repository — a same-repository build keeps the automatic token. Branch
-builds publish nothing, skip the check, and never touch a draft. Node comes from `.nvmrc` — electron-builder
+builds publish nothing, skip the check, and never touch a draft: electron-builder runs with
+`--publish onTag`, because its CI default uploads into any draft of the same version, which put a
+branch build's unsigned installers into the 4.0.0 draft. Node comes from `.nvmrc` — electron-builder
 needs Node >= 20.19 / 22.12, so don't pin it lower.
 
 Windows ships three installers, one per arch (`-ia32`, `-x64`, `-arm64`), and
