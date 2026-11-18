@@ -210,6 +210,31 @@ describe('New app, files to Done', () => {
     expect(page.querySelector('[data-location]')?.getAttribute('data-location')).toBe('/apps/acme.panel/add')
   })
 
+  it('packs only the platforms the manifest still runs on', async () => {
+    const page = await render()
+    await describePanel(page)
+    await act(async () => (page.querySelector('[data-platform-chosen="linux-arm64"]') as HTMLElement).click())
+    await act(async () => (page.querySelector('[data-platform-chosen="windows-amd64"]') as HTMLElement).click())
+    const input = page.querySelector('[data-platform-input="windows-amd64"]') as HTMLInputElement
+    const program = new File(['MZ'], 'panel.exe')
+    Object.defineProperty(input, 'files', { value: [program], configurable: true })
+    await act(async () => input.dispatchEvent(new Event('change', { bubbles: true })))
+    // Back: the program for Windows alone; linux-arm64, chosen with no files, is no longer offered.
+    await act(async () => (page.querySelector('[data-new-app-back]') as HTMLElement).click())
+    await act(async () => (page.querySelector('[data-field-per-os] input, [data-field-per-os]') as HTMLElement).click())
+    await type(page.querySelector('[data-field-command-windows]'), 'bin/panel.exe')
+    await act(async () => (page.querySelector('[data-new-app-continue]') as HTMLElement).click())
+    expect(page.querySelector('[data-platform="linux-arm64"]')).toBeNull()
+    build.mockResolvedValue({
+      manifest: { app: 'acme.panel', version: '1.0.0' },
+      text: '',
+      bytes: new Uint8Array(),
+      archives: [],
+    })
+    await act(async () => (page.querySelector('[data-new-app-pack]') as HTMLElement).click())
+    expect(build.mock.calls[0][1]).toEqual({ 'windows-amd64': { kind: 'program', file: program } })
+  })
+
   it('a release that cannot be packed says why in words', async () => {
     const { ReleaseRefused } = await import('../helpers/appRelease')
     const page = await render()

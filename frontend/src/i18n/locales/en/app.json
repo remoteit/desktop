@@ -2792,6 +2792,7 @@
     "addToDevice": "Add to a device",
     "anyPlatform": "any: one archive for every platform (a script, a bundle)",
     "appTitle": "The app",
+    "archivesGiven": "archives is written when the files are packed: leave it out",
     "args": "Arguments, one a line",
     "argsHelp": "Values: ${setting.NAME} for a setting, ${remoteit.port} for the port remote.it picks, and the others the contract lists",
     "as": "Runs as",
