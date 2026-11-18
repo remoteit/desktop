@@ -28,8 +28,11 @@ export const BuildAppPage: React.FC = () => {
   const account = accountId && accountId !== userId ? accountId : undefined
   const [read, setRead] = useState<{ publisher: AppPublisher | null; publishing: AppPublishing } | null>()
 
+  // Read afresh for each account: switching organizations here must not leave the last one's publisher to name the
+  // starter until the new one is known.
   useEffect(() => {
     let current = true
+    setRead(undefined)
     graphQLAppPublisher(account).then(answer => current && setRead(answer ?? null))
     return () => {
       current = false

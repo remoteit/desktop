@@ -45,7 +45,10 @@ afterEach(() => {
   act(() => root.unmount())
   container.remove()
 })
-beforeEach(() => read.mockReset())
+beforeEach(() => {
+  read.mockReset()
+  state.value = { user: { id: 'U1' }, active: 'U1' }
+})
 
 describe('Build it yourself', () => {
   it('names the publisher in the steps, and offers the tool from the stage’s downloads', async () => {
@@ -73,6 +76,27 @@ describe('Build it yourself', () => {
     await act(async () => answer({ publisher: null, publishing: { certifies: true, downloads: null } }))
     expect(page.querySelector('[data-build-starter]')).toBeNull()
     expect(page.querySelector('[data-build-claim]')).not.toBeNull()
+  })
+
+  it('switching accounts reads the publisher afresh, the starter off meanwhile', async () => {
+    read.mockResolvedValue({
+      publisher: { id: 'acme', keys: [], apps: [] },
+      publishing: { certifies: true, downloads: null },
+    })
+    const page = await render()
+    expect((page.querySelector('[data-build-starter]') as HTMLButtonElement).disabled).toBe(false)
+    read.mockReturnValue(new Promise(() => {}))
+    state.value = { user: { id: 'U1' }, active: 'ORG2' }
+    await act(async () =>
+      root.render(
+        <MemoryRouter>
+          <BuildAppPage />
+        </MemoryRouter>
+      )
+    )
+    expect(read).toHaveBeenLastCalledWith('ORG2')
+    expect((page.querySelector('[data-build-starter]') as HTMLButtonElement).disabled).toBe(true)
+    expect(page.textContent).toContain('dist/<publisher>.hello/1.0.0')
   })
 
   it('a stage that hosts no tool says so', async () => {
