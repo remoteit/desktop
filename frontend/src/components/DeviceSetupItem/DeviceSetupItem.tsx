@@ -1,5 +1,5 @@
 import React from 'react'
-import { GUIDE_START_DATE } from '../../constants'
+import { DEVICE_SETUP_PATH, GUIDE_START_DATE } from '../../constants'
 import { useTranslation } from 'react-i18next'
 import browser, { getOs } from '../../services/browser'
 import { safeHostname } from '@common/nameHelper'
@@ -72,7 +72,7 @@ export const DeviceSetupItem: React.FC<Props> = ({ className, onClick }) => {
     }
   }
 
-  let thisLink = '/devices/setup'
+  let thisLink = DEVICE_SETUP_PATH
   if (!browser.hasBackend) thisLink = `/add/${getOs()}`
 
   return (

@@ -21,6 +21,7 @@ export default createModel<RootModel>()({
               contacts {
                 id
                 email
+                picture
               }
             }
           }`
@@ -30,8 +31,8 @@ export default createModel<RootModel>()({
       dispatch.contacts.set({ all })
     },
 
-    async parse(result: AxiosResponse<any> | undefined) {
-      return result?.data?.data?.login?.contacts
+    async parse(result: AxiosResponse<any>) {
+      return result.data?.data?.login?.contacts
     },
   }),
 

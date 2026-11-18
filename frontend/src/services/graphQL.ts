@@ -1,25 +1,38 @@
 import { AxiosResponse } from 'axios'
 import { post, resetErrorCount } from './post'
+import { rememberPictures } from './userPictures'
 import { store } from '../store'
 
 const CLIENT_DEPRECATED = '121'
 
-export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}) {
-  const response = await post({ query, variables })
-  const errors = graphQLGetErrors(response, false, { query, variables })
+export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}, silent = false) {
+  const response = await post({ query, variables }, '', silent)
+  if (response === 'ERROR') return response
+  const errors = graphQLGetErrors(response, silent, { query, variables })
+  if (!errors && query.includes('picture')) rememberPictures(response.data?.data)
   return errors ? 'ERROR' : response
 }
 
+// For batched per-account queries: one account the token can't read must not discard the ones that resolved.
+export async function graphQLPartialRequest(query: String, variables: ILookup<any> = {}) {
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return response
+  graphQLGetErrors(response, false, { query, variables })
+  if (query.includes('picture')) rememberPictures(response.data?.data, response.data?.errors)
+  const fields = Object.values(response.data?.data || {})
+  const resolved = fields.some(field => Object.values(field || {}).some(alias => alias != null))
+  return resolved ? response : 'ERROR'
+}
+
 export function graphQLGetErrors(
-  response: AxiosResponse | 'ERROR' | void,
+  response: AxiosResponse,
   silent?: boolean,
   details?: { query: String; variables: ILookup<any> }
 ) {
-  if (!response || response === 'ERROR') return
   const { ui } = store.dispatch
 
-  const errors: undefined | Error[] = response?.data?.errors
-  const warning: undefined | string = response?.headers?.['X-R3-Warning']
+  const errors: undefined | Error[] = response.data?.errors
+  const warning: undefined | string = response.headers?.['X-R3-Warning']
 
   if (warning) {
     const code = warning.split(' ')[0]

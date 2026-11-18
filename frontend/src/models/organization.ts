@@ -143,6 +143,9 @@ export default createModel<RootModel>()({
       const result = await graphQLFetchOrganizations(ids)
       if (result === 'ERROR') return
       const accounts = await dispatch.organization.parse({ result, ids })
+      ids.forEach(id => {
+        if (!accounts[id] && state.organization.accounts[id]) accounts[id] = state.organization.accounts[id]
+      })
       console.log('ORGANIZATION FETCH', accounts)
       if (accounts) await dispatch.organization.set({ accounts, initialized: true })
       else await dispatch.organization.clearActive()
@@ -151,14 +154,18 @@ export default createModel<RootModel>()({
     async fetchGuests(_: void, state) {
       const accountId = selectActiveAccountId(state)
       const result = await graphQLFetchGuests(accountId)
-      if (result === 'ERROR') return
+      if (result === 'ERROR') {
+        // Without guestsLoaded, OrganizationGuestList shows its spinner until remount.
+        await dispatch.organization.setActive({ guestsLoaded: true, id: accountId })
+        return
+      }
       const guests = parseGuests(result)
       console.log('LOAD GUESTS', accountId, guests)
       await dispatch.organization.setActive({ guests, guestsLoaded: true, id: accountId })
     },
 
-    async parse({ result, ids }: { result: AxiosResponse<any> | undefined; ids: string[] }) {
-      const data = result?.data?.data?.login
+    async parse({ result, ids }: { result: AxiosResponse<any>; ids: string[] }) {
+      const data = result.data?.data?.login
       let orgs: IOrganizationAccountState['accounts'] = {}
       ids.forEach((id, index) => {
         if (!data?.[`_${index}`]) return
@@ -247,6 +254,7 @@ export default createModel<RootModel>()({
             defaultValue: 'Successfully removed “{{name}}”.',
           }),
         })
+        dispatch.organization.fetch()
       }
     },
 
@@ -414,8 +422,8 @@ export default createModel<RootModel>()({
   },
 })
 
-function parseGuests(result: AxiosResponse<any> | undefined) {
-  const guest = result?.data?.data?.login?.account?.guest || []
+function parseGuests(result: AxiosResponse<any>) {
+  const guest = result.data?.data?.login?.account?.guest || []
   const parsed: IOrganizationState['guests'] = guest.map(g => ({
     id: g.user.id,
     email: g.user.email || g.user.id,

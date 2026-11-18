@@ -1,0 +1,21 @@
+name: WIP
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  wip:
+    # main's branch protection requires a check named exactly "WIP": renaming this job blocks every merge.
+    name: WIP
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Title has no work-in-progress marker
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if grep -qiP '(?<![A-Za-z0-9_])(wip|work in progress)(?![A-Za-z0-9_])|🚧' <<< "$TITLE"; then
+            echo "::error::The pull request title marks it as work in progress (WIP, Work in progress or 🚧). Remove the marker to allow the merge."
+            exit 1
+          fi

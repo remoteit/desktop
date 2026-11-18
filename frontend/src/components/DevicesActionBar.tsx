@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { selectLimitsLookup, selectPermissions } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { getSelectedTags } from '../helpers/selectedHelper'
-import { useContainerWidth } from '../hooks/useContainerWidth'
+import { useContainerNarrowerThan } from '../hooks/useContainerWidth'
 import { canEditTags } from '../models/tags'
 import { IconButton } from '../buttons/IconButton'
 import { useHistory } from 'react-router-dom'
@@ -29,8 +29,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
   const removing = useSelector((state: State) => state.tags.removing)
   const permissions = useSelector(selectPermissions)
   const canEdit = useSelector((state: State) => canEditTags(state, accountId))
-  const { containerRef, containerWidth } = useContainerWidth()
-  const mobile = containerWidth < MOBILE_WIDTH
+  const { containerRef, narrow: mobile } = useContainerNarrowerThan(MOBILE_WIDTH)
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { t } = useTranslation()

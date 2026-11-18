@@ -54,9 +54,10 @@ class Controller extends EventEmitter {
       ui.set({ errorMessage: '' })
       // This is the app's only entry into auth.init, so it has to run whether or
       // not the window has focus - a window launched in the background still has
-      // to sign in. Unattended, though, nobody asked for this and nobody is
-      // watching, so a failed session check shouldn't leave a toast waiting.
-      auth.init({ silent: !network.isActive() })
+      // to sign in. It used to pass silent:true when unattended, to spare nobody a
+      // toast; that suppressed the record of a FAILED sign in, which is what stops
+      // the app retrying it, so an unattended window looped the authorize instead.
+      auth.init()
     }
   }
 
@@ -146,6 +147,14 @@ class Controller extends EventEmitter {
     return this
   }
 
+  emitWithAck = (event: SocketAction, timeout: number): Promise<unknown> =>
+    this.socket?.connected
+      ? this.socket
+          .timeout(timeout)
+          .emitWithAck(event)
+          .catch(() => undefined)
+      : Promise.resolve(undefined)
+
   emit = (event: SocketAction, ...args: any[]): boolean => {
     if (!this.socket?.connected) {
       if (browser.hasBackend) this.log('EMIT CANCELED - LOCAL SOCKET DISCONNECTED', event, ...args)
@@ -209,6 +218,9 @@ function getEventHandlers() {
     },
 
     'signed-out': () => auth.signedOut(),
+
+    // The tray's Sign out: the same sign-out as the avatar menu, AS session included.
+    'sign-out': () => auth.signOut(),
 
     pool: (result: IConnection[]) => {
       controller.log('event: socket pool', result)

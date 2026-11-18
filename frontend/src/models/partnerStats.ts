@@ -1,7 +1,6 @@
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { graphQLPartnerEntities } from '../services/graphQLRequest'
-import { graphQLGetErrors } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { State } from '../store'
 
@@ -135,7 +134,7 @@ export default createModel<RootModel>()({
       const accountId = selectActiveAccountId(state)
       dispatch.partnerStats.set({ fetching: true, accountId })
       const response = await graphQLPartnerEntities(accountId)
-      if (response !== 'ERROR' && !graphQLGetErrors(response)) {
+      if (response !== 'ERROR') {
         const entities = response?.data?.data?.login?.account?.partnerEntities || []
         const flattened = flattenPartners(entities)
         dispatch.partnerStats.set({ all: entities, flattened, initialized: true, accountId })

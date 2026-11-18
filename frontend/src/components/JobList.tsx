@@ -1,6 +1,5 @@
 import React from 'react'
-import { MOBILE_WIDTH } from '../constants'
-import { useMediaQuery } from '@mui/material'
+import { useMobile } from '../hooks/useMobile'
 import { JobListItem } from './JobListItem'
 import { JobLoadMore } from './LoadMore'
 import { Attribute } from './Attributes'
@@ -29,7 +28,7 @@ export const JobList: React.FC<ScriptListProps> = ({
   loadMore,
   jobOnlyRoute,
 }) => {
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   return (
     <GridList {...{ attributes, required, fetching, columnWidths, mobile }} headerIcon>
       {jobs?.map((job, index) => (

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { MOBILE_WIDTH } from '../constants'
-import { useMediaQuery, Box, Typography, Collapse } from '@mui/material'
+import { useMobile } from '../hooks/useMobile'
+import { Box, Typography, Collapse } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -22,7 +22,7 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
   const selected = useSelector(getProductsSelected)
   const admin = useSelector(selectPermissions).includes('ADMIN')
   const [deleting, setDeleting] = useState(false)
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const history = useHistory()
   const { t } = useTranslation()
 
@@ -69,6 +69,7 @@ export const ProductsActionBar: React.FC<Props> = ({ select }) => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <ConfirmIconButton
             icon="trash"
+            label={t('productsActionBar.deleteSelected', 'Delete selected')}
             title={
               admin
                 ? t('productsActionBar.deleteSelected', 'Delete selected')

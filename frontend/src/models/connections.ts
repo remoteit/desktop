@@ -2,8 +2,17 @@ import sleep from '../helpers/sleep'
 import browser from '../services/browser'
 import structuredClone from '@ungap/structured-clone'
 import { createModel } from '@rematch/core'
-import { parse as urlParse } from 'url'
 import { alphaSort, pickTruthy } from '../helpers/utilHelper'
+
+// Browser-native replacement for node's url.parse (which rode in on a dependency shim
+// that left with Amplify): same host/hostname/port fields, empty object on bad input.
+const urlParse = (value?: string): { host?: string; hostname?: string; port?: string } => {
+  try {
+    return value ? new URL(value) : {}
+  } catch {
+    return {}
+  }
+}
 import { DEFAULT_CONNECTION, IP_PRIVATE } from '@common/constants'
 import { REGEX_HIDDEN_PASSWORD, CERTIFICATE_DOMAIN } from '../constants'
 import {
@@ -78,7 +87,10 @@ export default createModel<RootModel>()({
       const accountId = state.auth.user?.id || state.user.id
       const serviceIds = getFetchConnectionIds(state)
       const gqlResponse = await graphQLFetchConnections({ ids: serviceIds })
-      if (gqlResponse === 'ERROR') return
+      if (gqlResponse === 'ERROR') {
+        await dispatch.connections.set({ initialized: true })
+        return
+      }
 
       const gqlDevices = gqlResponse?.data?.data?.login?.device || []
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })
@@ -325,6 +337,7 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') {
         connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
         setConnection(connection)
+        dispatch.ui.clearAutoLaunch(connection.id)
         if (connection.deviceID) dispatch.devices.fetchSingleFull({ id: connection.deviceID })
       } else {
         const data = result?.data?.data?.connect
@@ -353,11 +366,12 @@ export default createModel<RootModel>()({
         connecting: false,
         starting: false,
       }
+      const disconnected = { ...disconnecting, connected: false, disconnecting: false, ready: false }
       setConnection(disconnecting)
 
       if (!connection.sessionId) {
         console.warn('No sessionId for connection to proxy disconnect', connection)
-        setConnection({ ...disconnecting, connected: false, disconnecting: false })
+        setConnection(disconnected)
         return
       }
 
@@ -366,7 +380,7 @@ export default createModel<RootModel>()({
       if (result === 'ERROR') {
         setConnection(connection)
       } else {
-        setConnection({ ...disconnecting, connected: false, disconnecting: false })
+        setConnection(disconnected)
         console.log('PROXY DISCONNECTED', result)
       }
     },
@@ -444,6 +458,7 @@ export default createModel<RootModel>()({
       connection = structuredClone(connection)
       const [service] = selectById(state, undefined, connection.id)
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: connection.id })
+      else dispatch.ui.clearAutoLaunch(connection.id)
       connection.online = service ? service?.state === 'active' : connection.online
       connection.host = undefined
       connection.error = undefined
@@ -480,6 +495,7 @@ export default createModel<RootModel>()({
         connecting: connection.connecting,
         starting: connection.starting,
       })
+      dispatch.ui.clearAutoLaunch(connection.id)
 
       if (connection.public || !browser.hasBackend) {
         dispatch.connections.proxyDisconnect(connection)

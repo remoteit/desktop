@@ -3,20 +3,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Box, Dialog, Grow } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { Dispatch, State } from '../store'
-import { selectLatestAnnouncement, selectLatestUnreadAnnouncement } from '../selectors/announcements'
+import { selectLatestAnnouncement, selectPresentableAnnouncement } from '../selectors/announcements'
 import { AnnouncementCard } from './AnnouncementCard'
 import { spacing } from '../styling'
 
 export const AnnouncementDialog: React.FC = () => {
-  const [dismissedIds, setDismissedIds] = useState<string[]>([])
+  const [presentedIds, setPresentedIds] = useState<string[]>([])
   const [activeId, setActiveId] = useState<string>()
   const [activeTest, setActiveTest] = useState(false)
   const [open, setOpen] = useState(false)
   const [lastPresentationTest, setLastPresentationTest] = useState<number>()
-  const latestUnread = useSelector((state: State) => selectLatestUnreadAnnouncement(state))
+  const presentable = useSelector((state: State) => selectPresentableAnnouncement(state))
   const latestAnnouncement = useSelector((state: State) => selectLatestAnnouncement(state))
   const presentationTest = useSelector((state: State) => state.ui.announcementPresentationTest)
-  const presentedThrough = useSelector((state: State) => state.announcements.presentedThrough)
+  const fetched = useSelector((state: State) => state.ui.announcementsFetched)
   const activeAnnouncement = useSelector((state: State) => state.announcements.all.find(a => a.id === activeId))
   const { announcements } = useDispatch<Dispatch>()
 
@@ -27,26 +27,24 @@ export const AnnouncementDialog: React.FC = () => {
     setActiveTest(true)
     setOpen(true)
     setLastPresentationTest(presentationTest)
+    setPresentedIds(ids => (ids.includes(latestAnnouncement.id) ? ids : [...ids, latestAnnouncement.id]))
   }, [lastPresentationTest, latestAnnouncement?.id, presentationTest])
 
   useEffect(() => {
-    // Wait until the watermark is seeded before presenting, otherwise the brief undefined window
-    // on load lets an already-seen notice slip through and reopen on every reload.
-    if (presentedThrough === undefined || !latestUnread || activeId || dismissedIds.includes(latestUnread.id)) return
+    // Until this session's fetch lands, the persisted list can be another account's on this browser.
+    // Marking read can fail, which would reopen the same notice as soon as it closes.
+    if (!fetched || !presentable || presentedIds.includes(presentable.id) || activeId) return
 
-    setActiveId(latestUnread.id)
+    setActiveId(presentable.id)
     setActiveTest(false)
     setOpen(true)
-    // Advance the watermark as soon as we present, so a reload (or any close) won't replay it.
-    // Marking it read still happens on dismiss to clear the navigation badge.
-    announcements.setPresentedThrough(latestUnread.modified?.getTime() || 0)
-  }, [activeId, announcements, dismissedIds, latestUnread?.id, presentedThrough])
+    setPresentedIds(ids => [...ids, presentable.id])
+  }, [activeId, fetched, presentable?.id, presentedIds])
 
   const handleClose = useCallback(() => {
     if (!activeAnnouncement) return
 
     setOpen(false)
-    setDismissedIds(ids => (ids.includes(activeAnnouncement.id) ? ids : [...ids, activeAnnouncement.id]))
     if (activeTest) return
 
     announcements.read(activeAnnouncement.id).catch(error => console.warn('Failed to mark announcement read', error))

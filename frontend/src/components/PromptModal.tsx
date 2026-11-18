@@ -25,47 +25,43 @@ type Props = {
 
 export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) => {
   const { t } = useTranslation()
-  const toLookup = () => app.missingTokens.reduce((obj, item) => ({ ...obj, [item]: '' }), {})
-  const [tokens, setTokens] = useState<ILookup<string>>(toLookup())
+  const [tokens, setTokens] = useState<ILookup<string>>({})
   const [error, setError] = useState<string>()
+  // Derived each render, not seeded into state on open: the host can arrive while open, and a seeded empty entry
+  // blocked Save and would have blanked the host on submit
+  const missing: ILookup<string> = Object.fromEntries(
+    app.missingTokens.map(token => [token, typeof tokens[token] === 'string' ? tokens[token] : ''])
+  )
 
   useEffect(() => {
-    setTokens(toLookup())
+    setTokens({})
+    setError(undefined)
   }, [open])
 
-  const update = (token: string, value: string) => {
-    let updated: ILookup<string> = { ...tokens, [token]: value }
-    if (!value) delete updated[token]
-    setTokens(updated)
-  }
+  const update = (token: string, value: string) => setTokens({ ...tokens, [token]: value })
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <form
         onSubmit={event => {
           event.preventDefault()
-          let foundError = false
-          Object.keys(tokens).forEach(key => {
-            if (!tokens[key]) {
-              setError(key)
-              foundError = true
-            }
-          })
-          if (!foundError) onSubmit(tokens)
+          const empty = Object.keys(missing).find(key => !missing[key])
+          if (empty) setError(empty)
+          else onSubmit(missing)
         }}
       >
         <DialogTitle>{t('promptModal.title', 'Missing info found')}</DialogTitle>
         <DialogContent>
-          <Typography variant="h4">{app.preview(tokens)}</Typography>
+          <Typography variant="h4">{app.preview(missing)}</Typography>
           <List dense>
-            {app.missingTokens.map((token, index) =>
+            {Object.keys(missing).map((token, index) =>
               isFileToken(token) && browser.hasBackend ? (
                 <InlineFileFieldSetting
                   key={token}
                   token={token}
                   disableGutters
                   label={t('promptModal.applicationPath', 'Application path')}
-                  value={app.value(token)}
+                  value={missing[token]}
                   variant="filled"
                   onSave={value => update(token, value || '')}
                 />
@@ -76,9 +72,9 @@ export const PromptModal: React.FC<Props> = ({ app, open, onSubmit, onClose }) =
                     autoFocus={index === 0}
                     variant="filled"
                     label={token}
-                    value={tokens[token]}
+                    value={missing[token]}
                     error={token === error}
-                    onChange={event => setTokens({ ...tokens, [token]: event.target.value })}
+                    onChange={event => update(token, event.target.value)}
                   />
                 </ListItem>
               )

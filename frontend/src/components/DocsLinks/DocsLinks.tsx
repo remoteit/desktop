@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material'
 import { spacing } from '../../styling'
 import { Icon } from '../../components/Icon'
 import { Link } from '../../components/Link'
+import { DESKTOP_HELP_LINK } from '../../constants'
 
 export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
   return (
@@ -19,7 +20,7 @@ export const DocsLinks: React.FC<{ os?: Ios }> = ({ os }) => {
       <Typography variant="body2" align="center" gutterBottom>
         See how to:
       </Typography>
-      <Link href="https://link.remote.it/documentation-desktop/overview">
+      <Link href={DESKTOP_HELP_LINK}>
         Use Remote.It Desktop
         <Icon rotate={-45} name="arrow-right" size="sm" type="regular" />
       </Link>

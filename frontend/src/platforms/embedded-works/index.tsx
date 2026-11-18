@@ -8,7 +8,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'embedded-works',
-  name: 'Embedded Works',
   component: Component,
-  types: { 1223: 'Embedded Works' },
 })

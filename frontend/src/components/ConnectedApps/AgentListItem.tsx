@@ -4,13 +4,18 @@ import { ListItemLocation } from '../ListItemLocation'
 import { AgentAvatar } from './AgentAvatar'
 import { Timestamp } from '../Timestamp'
 import { spacing } from '../../styling'
-import { reachSummary, useAccountLabel } from './helpers'
 
 // One authorized app — a compact two-line row; the full breakdown and all
 // actions live on the detail page it links to.
 export const AgentListItem: React.FC<{ agent: IAuthorizedAgent }> = ({ agent }) => {
-  const accountLabel = useAccountLabel()
-  const name = agent.clientName || agent.clientId
+  const name = agent.app || agent.clientId
+  // The areas this grant reaches — the same names the detail page headers use.
+  const areas = [
+    ...new Set([
+      ...(agent.groups ?? []).map(g => g.typeLabel),
+      ...(agent.scopeGroups ?? []).map(g => g.api),
+    ].filter(Boolean)),
+  ] as string[]
 
   return (
     <ListItemLocation to={`/account/connected/${encodeURIComponent(agent.clientId)}`} dense>
@@ -21,14 +26,14 @@ export const AgentListItem: React.FC<{ agent: IAuthorizedAgent }> = ({ agent }) 
         primary={name}
         secondary={
           <>
-            {reachSummary(agent.reach, accountLabel)}
-            {' · '}
-            {agent.lastActive ? (
+            {!agent.active ? 'Revoked · ' : ''}
+            {areas.length ? `${areas.join(', ')} · ` : ''}
+            {agent.lastUsedAt ? (
               <>
-                Active <Timestamp date={new Date(agent.lastActive)} variant="short" />
+                Last used <Timestamp date={new Date(agent.lastUsedAt)} variant="short" />
               </>
             ) : (
-              'No activity yet'
+              'Not used yet'
             )}
           </>
         }

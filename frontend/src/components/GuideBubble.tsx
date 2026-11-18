@@ -14,6 +14,14 @@ const boxSx = (highlight?: boolean) => (theme: Theme) => ({
 
 const arrowSx = (theme: Theme) => ({ color: theme.palette.guide.main })
 
+// MUI stacks tooltips above modals; without this, bubbles float over dialogs and menus
+const popperSx = (theme: Theme) => ({ zIndex: theme.zIndex.modal - 1 })
+
+// The bubble is portalled, but React still bubbles its events to the anchor's ancestors: in the
+// mobile bottom bar, pressing "Ok" also pressed the AI button around it and toggled the chat
+const stopPropagation = (event: React.SyntheticEvent) => event.stopPropagation()
+const contained = { onClick: stopPropagation, onMouseDown: stopPropagation, onTouchStart: stopPropagation }
+
 const tipSx = (theme: Theme) => ({
   backgroundColor: theme.palette.guide.main,
   color: theme.palette.white.main,
@@ -129,12 +137,14 @@ export const GuideBubble: React.FC<Props> = ({
   const cohortExpired = useSelector((state: State) => {
     // An explicit "Reset interactive guides" re-anchors the cohort to the reset
     // moment, so even accounts that predate the guides get onboarded again.
-    // `created` is absent until the account loads, and an invalid Date persists as
-    // null (Date#toJSON) and rehydrates as null — so it can be missing or NaN.
-    // Guard both, or Math.max returns NaN and every comparison below is false,
-    // silently ungating every bubble.
-    const created = state.user.created?.getTime()
-    const cohortAnchor = Math.max(created && !Number.isNaN(created) ? created : 0, state.ui.guidesResetDate || 0)
+    // `created` may be NaN (no created date in the account payload) or, in a browser that
+    // persisted a failed login before models/user.ts parse() refused to store one, null —
+    // redux-persist writes an invalid date as null and the date transform leaves null alone.
+    // Either reads as "unknown" (0): a throw here took the whole app down on every boot, and
+    // Math.max with NaN would silently ungate every bubble.
+    const createdDate = state.user.created
+    const created = createdDate instanceof Date ? createdDate.getTime() : NaN
+    const cohortAnchor = Math.max(Number.isNaN(created) ? 0 : created, state.ui.guidesResetDate || 0)
     return startDate.getTime() > cohortAnchor && !state.ui.testUI
   })
   const dismissed = useSelector((state: State) => dismissedAt(state.ui.expireBubbles))
@@ -182,7 +192,7 @@ export const GuideBubble: React.FC<Props> = ({
 
   return (
     <Tooltip
-      slotProps={{ tooltip: { sx: tipSx }, arrow: { sx: arrowSx } }}
+      slotProps={{ tooltip: { sx: tipSx }, arrow: { sx: arrowSx }, popper: { sx: popperSx, ...contained } }}
       open={open}
       arrow={!hideArrow}
       placement={placement || 'top'}

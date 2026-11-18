@@ -1,25 +1,30 @@
 import electron, { Menu, dialog } from 'electron'
+import { CHAT_POPOUT_PARAM, CHAT_POPOUT_SIZE } from '@common/constants'
 import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
 import { t, setLanguage } from './i18n'
-import { EVENTS, PROTOCOL, brand, environment, preferences, EventBus, Logger } from './backend'
+import { EVENTS, PROTOCOL, START_URL, START_ORIGIN, brand, environment, preferences, EventBus, Logger } from './backend'
 
 const URL_REGEX = new RegExp('^https?://')
-const IP_PRIVATE = '127.0.0.1'
+// An auth deep link carries the OAuth code and state in its query, so logs keep only the part before it.
+const withoutQuery = (url = '') => url.split('?')[0]
 
 export default class ElectronApp {
   public app: electron.App
   public tray?: electron.Tray
+  public readonly deepLinks: boolean
   private window?: electron.BrowserWindow
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
   private isMaximized: boolean
   private deepLinkUrl?: string
   private authCallback?: boolean
+  private takenAuthStates = new Set<string>()
   private errorShown: boolean
   private protocol: string
   private bluetoothCallback?: (deviceId: string) => void
+  private lastFileDirs = new Map<string, string>()
 
   constructor() {
     this.app = electron.app
@@ -38,7 +43,9 @@ export default class ElectronApp {
 
     Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
 
-    if (preferences.get().disableDeepLinks) {
+    // The server reports this rather than the live preference: the scheme is only (un)registered here, at launch.
+    this.deepLinks = !preferences.get().disableDeepLinks
+    if (!this.deepLinks) {
       this.app.removeAsDefaultProtocolClient(this.protocol)
       Logger.info('REMOVED AS DEFAULT PROTOCOL HANDLER', { protocol: this.protocol })
     } else {
@@ -104,7 +111,7 @@ export default class ElectronApp {
 
   private handleSecondInstance = (_: electron.Event, argv: string[]) => {
     // Windows deep link support
-    Logger.info('SECOND INSTANCE ARGS', { argv })
+    Logger.info('SECOND INSTANCE ARGS', { argv: argv.map(withoutQuery) })
     this.setDeepLink(argv.pop())
     this.openWindow()
   }
@@ -116,7 +123,7 @@ export default class ElectronApp {
 
   private handleOpenUrl = (event: electron.Event, url: string) => {
     // Mac deep link support
-    Logger.info('OPEN URL', { url })
+    Logger.info('OPEN URL', { url: withoutQuery(url) })
     event.preventDefault()
     this.setDeepLink(url)
     this.openWindow()
@@ -159,14 +166,21 @@ export default class ElectronApp {
   private handleFilePrompt = async (type: 'app' | string) => {
     if (!this.window) return
 
+    // Electron 43+ opens dialogs in Downloads when no defaultPath is given, and the OS no longer remembers the last folder
+    // ProgramW6432: under WOW64 the ia32 build sees ProgramFiles as "Program Files (x86)"
+    const applicationsPath = environment.isMac ? '/Applications' : process.env.ProgramW6432 ?? process.env.ProgramFiles
     const result = await dialog.showOpenDialog(this.window, {
       title: t('dialog.findApplicationTitle'),
       message: t('dialog.findApplicationMessage'),
       buttonLabel: t('dialog.findApplicationButton'),
+      defaultPath: this.lastFileDirs.get(type) ?? (type === 'app' ? applicationsPath : undefined),
     })
 
     let filePath = result?.filePaths[0]
-    if (type === 'app' && environment.isMac) filePath = path.basename(filePath, '.app')
+    if (filePath) {
+      this.lastFileDirs.set(type, path.dirname(filePath))
+      if (type === 'app' && environment.isMac) filePath = path.basename(filePath, '.app')
+    }
 
     EventBus.emit(EVENTS.filePath, filePath)
     Logger.info('FILE PROMPT RESULT', { result, filePath })
@@ -190,10 +204,12 @@ export default class ElectronApp {
 
     if (url.includes(scheme)) {
       this.deepLinkUrl = url.substring(scheme.length)
-      Logger.info('SET DEEP LINK', { url: this.deepLinkUrl })
+      Logger.info('SET DEEP LINK', { url: withoutQuery(this.deepLinkUrl) })
     }
 
     if (url.includes('authCallback')) {
+      // The RENDERER owns the exchange (D8): reload the window with the callback query —
+      // the app boots with ?code&state exactly like the web return.
       this.authCallback = true
       Logger.info('SET AUTH CALLBACK')
     }
@@ -222,9 +238,7 @@ export default class ElectronApp {
       autoHideMenuBar: true,
     })
 
-    const startUrl = this.getStartUrl()
-
-    this.window.loadURL(startUrl)
+    this.window.loadURL(START_URL)
 
     this.window.on('close', event => {
       this.saveWindowState()
@@ -240,16 +254,44 @@ export default class ElectronApp {
     })
 
     this.window.webContents.setWindowOpenHandler(({ url }) => {
-      Logger.info('OPEN EXTERNAL URL', { url })
-      electron.shell.openExternal(url)
+      // The dev chat panel pops out into its own window (?chatPopout on our
+      // own origin); every other window.open goes to the system browser.
+      if (this.isAppOrigin(url) && new URL(url).searchParams.has(CHAT_POPOUT_PARAM)) {
+        return {
+          action: 'allow',
+          overrideBrowserWindowOptions: { ...CHAT_POPOUT_SIZE, autoHideMenuBar: true },
+        }
+      }
+      this.openExternal(url)
       return { action: 'deny' }
     })
 
-    this.window.webContents.on('will-navigate', (event, url) => {
-      if (url.includes('auth.remote.it')) {
-        Logger.info('AUTH NAVIGATION DETECTED')
+    // The allowed chat popout is a real child window: give it the same
+    // external-URL discipline as the main window, or window.open /
+    // target=_blank / link navigation inside it spawns unguarded native
+    // windows on remote content instead of the system browser
+    this.window.webContents.on('did-create-window', child => {
+      child.webContents.setWindowOpenHandler(({ url }) => {
+        this.openExternal(url)
+        return { action: 'deny' }
+      })
+      child.webContents.on('will-navigate', (event, url) => {
+        if (this.isAppOrigin(url)) return
         event.preventDefault()
-        electron.shell.openExternal(url)
+        this.openExternal(url)
+      })
+    })
+
+    this.window.webContents.on('will-navigate', (event, url) => {
+      // This window hosts exactly ONE origin: the app's own UI. Any other navigation —
+      // the auth journey above all — belongs in the SYSTEM browser, where the user's
+      // password manager, passkeys and single sign-on session live. Keyed on origin,
+      // not configuration: the packaged main process has no .env, so an issuer-based
+      // match fails CLOSED into this window; an origin rule fails open to the browser.
+      if (!this.isAppOrigin(url)) {
+        Logger.info('EXTERNAL NAVIGATION -> SYSTEM BROWSER', { url })
+        event.preventDefault()
+        this.openExternal(url)
       }
     })
 
@@ -268,6 +310,13 @@ export default class ElectronApp {
     })
 
     this.logWebErrors()
+  }
+
+  /* The external-URL discipline: everything leaving the renderer opens in
+     the system browser, logged */
+  private openExternal(url: string) {
+    Logger.info('OPEN EXTERNAL URL', { url })
+    electron.shell.openExternal(url)
   }
 
   private validateWindowState(state?: IPreferences['windowState']): IPreferences['windowState'] {
@@ -330,8 +379,12 @@ export default class ElectronApp {
     lastWindow?.destroy()
   }
 
-  private getStartUrl(): string {
-    return process.env.NODE_ENV === 'development' ? `http://${IP_PRIVATE}:3003` : `http://${IP_PRIVATE}:29999`
+  private isAppOrigin(url: string): boolean {
+    try {
+      return new URL(url).origin === START_ORIGIN
+    } catch {
+      return false
+    }
   }
 
   private createSystemTray() {
@@ -385,19 +438,55 @@ export default class ElectronApp {
     if (location && this.authCallback) {
       this.authCallback = false
       const index = location.indexOf('?')
-      let fullUrl = this.getStartUrl()
-      if (index != -1) {
-        const parameters = location.substring(index)
-        fullUrl = fullUrl + parameters
-      }
-      Logger.info('OPENING AUTH URL', { url: fullUrl })
-      this.window.loadURL(fullUrl)
+      void this.deliverAuthCallback(index != -1 ? location.substring(index) : '')
     } else if (location) {
       Logger.info('OPENING WINDOW LOCATION', { location })
       this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
     }
 
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
+  }
+
+  /* A signed-in window completes the callback itself, so it can release the agent before the
+     new account signs in; reloading with it is only for a window that isn't signed in. */
+  private async deliverAuthCallback(parameters: string) {
+    if (await this.callWindow('authCallback', parameters))
+      return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
+    const fullUrl = START_URL + parameters
+    Logger.info('OPENING AUTH URL', { url: withoutQuery(fullUrl) })
+    this.window?.loadURL(fullUrl)
+  }
+
+  async takeAuthCallback(parameters: string): Promise<string | undefined> {
+    const state = new URLSearchParams(parameters).get('state')
+    if (!state || this.deepLinks) return
+    // A refreshed tab re-sends a taken callback; delivering it again would redeem its single-use code twice.
+    if (!this.takenAuthStates.has(state)) {
+      if (!(await this.callWindow('authFlowPending', state))) return
+      this.takenAuthStates.add(state)
+      Logger.info('AUTH CALLBACK ON LOOPBACK')
+      this.openWindow()
+      this.app.focus({ steal: true })
+      void this.deliverAuthCallback(parameters)
+    }
+    const title = t('authCallback.title', { appName: brand.appName })
+    const message = t('authCallback.message', { appName: brand.appName })
+    return `<!doctype html>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="color-scheme" content="light dark">
+      <link rel="icon" href="/brand/icon.svg">
+      <title>${title}</title>
+      <body style="font-family: system-ui, sans-serif; text-align: center; margin-top: 30vh">
+        <h1>${title}</h1>
+        <p>${message}</p>
+      </body>`
+  }
+
+  private async callWindow(name: 'authCallback' | 'authFlowPending', argument: string): Promise<boolean> {
+    const webContents = this.window?.webContents
+    if (!webContents || webContents.isLoadingMainFrame() || !this.isAppOrigin(webContents.getURL())) return false
+    return webContents.executeJavaScript(`window.${name}?.(${JSON.stringify(argument)}) === true`).catch(() => false)
   }
 
   private closeWindow() {

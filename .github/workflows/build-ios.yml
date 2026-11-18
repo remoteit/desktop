@@ -44,7 +44,9 @@ jobs:
           npm config set "//npm.fontawesome.com/:_authToken" ${{ secrets.FONT_AWESOME_AUTH_TOKEN }}
 
       - name: Create .env file
-        run: echo "${{ secrets.ENV_FILE }}" > .env
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+          echo "VITE_APNS_ENVIRONMENT=production" >> .env
 
       - name: Install root dependencies
         run: npm install

@@ -40,13 +40,11 @@ export default createModel<RootModel>()({
             }
           }`
       )
-      if (result === 'ERROR') return
-      dispatch.billing.parse(result)
+      if (result !== 'ERROR') dispatch.billing.parse(result)
       dispatch.billing.set({ loading: false })
     },
-    async parse(result: AxiosResponse<any> | undefined) {
-      if (!result) return
-      const invoices = result?.data?.data?.login?.invoices
+    async parse(result: AxiosResponse<any>) {
+      const invoices = result.data?.data?.login?.invoices
       console.log('LICENSING', result)
       dispatch.billing.set({
         invoices: invoices.map(i => ({

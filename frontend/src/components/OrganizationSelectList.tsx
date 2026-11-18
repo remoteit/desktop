@@ -5,9 +5,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { ListItemButton, ListSubheader, ListItemIcon, ListItemText, Chip } from '@mui/material'
 import { getOwnOrganization } from '../models/organization'
-import { selectOrganization } from '../selectors/organizations'
+import { selectOrganization, selectOrganizationOptions } from '../selectors/organizations'
 import { IconButton } from '../buttons/IconButton'
-import { byName } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
 
 const AVATAR_SIZE = 28
@@ -18,17 +17,7 @@ export const OrganizationSelectList: React.FC = () => {
   const { accounts } = useDispatch<Dispatch>()
   const { options, activeOrg, ownOrg, user } = useSelector((state: State) => ({
     activeOrg: selectOrganization(state),
-    options: state.accounts.membership.map(m => {
-      const org = selectOrganization(state, m.account.id)
-      return {
-        id: m.account.id,
-        email: m.account.email,
-        name: org.name,
-        roleId: m.roleId,
-        roleName: m.roleName,
-        disabled: !org.id,
-      }
-    }),
+    options: selectOrganizationOptions(state),
     ownOrg: getOwnOrganization(state),
     user: state.user,
   }))
@@ -41,7 +30,6 @@ export const OrganizationSelectList: React.FC = () => {
     }
   }
 
-  options.sort(byName)
   if (!options.length) return null
 
   return (

@@ -34,6 +34,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'remoteit',
-  name: 'Remote.It',
   component: Component,
 })

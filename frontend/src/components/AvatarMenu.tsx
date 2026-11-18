@@ -2,8 +2,8 @@ import React, { useState, useRef, useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
-import { HIDE_SIDEBAR_WIDTH } from '../constants'
-import { useMediaQuery, ButtonBase, Divider, Menu } from '@mui/material'
+import { ButtonBase, Divider, Menu } from '@mui/material'
+import { useHideSidebar } from '../hooks/useChatEnabled'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
 import { ListItemLocation } from './ListItemLocation'
@@ -13,7 +13,10 @@ import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
+import { oidcAccounts, oidcRefreshBrowserAccounts } from '../services/oidc'
 import { emit } from '../services/Controller'
+import browser from '../services/browser'
+import { DESKTOP_HELP_LINK } from '../constants'
 
 const ENTER_DELAY = 300
 const LEAVE_DELAY = 400 // must be longer than transition duration
@@ -24,22 +27,32 @@ const AVATAR_BORDER = 6
 export const AvatarMenu: React.FC = () => {
   const history = useHistory()
   const [open, setOpen] = useState<boolean>(false)
+  // The registry's accounts, re-read after each refresh of the browser's set on open.
+  const [accounts, setAccounts] = useState(oidcAccounts)
   const [altMenu, setAltMenu] = useState<boolean>(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const enterTimer = useRef<number>()
   const leaveTimer = useRef<number>()
   const dispatch = useDispatch<Dispatch>()
   const { t } = useTranslation()
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
+  const sidebarHidden = useHideSidebar()
   const user = useSelector((state: State) => state.auth.user)
   const remoteUI = useSelector(isRemoteUI)
   const testUI = useSelector((state: State) => ['ON', 'HIGHLIGHT'].includes(state.ui?.testUI || ''))
   const backendAuthenticated = useSelector((state: State) => state.auth.backendAuthenticated)
+  const switchConfirm = {
+    title: t('agentSwitch.title', 'Switch accounts?'),
+    action: t('agentSwitch.switch', 'Switch'),
+    children: t('agentSwitch.message', 'Switching accounts will stop all connections.'),
+  }
   const licenseIndicator = useSelector(selectLicenseIndicator)
   const activeUser = useSelector(selectActiveUser)
   const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
 
+  // handleOpen is reached from the hover timer, the click and every re-entry of the menu paper;
+  // the browser's accounts are asked for once per opening, not per pointer crossing.
   const handleOpen = () => {
+    if (!open) void oidcRefreshBrowserAccounts().finally(() => setAccounts(oidcAccounts()))
     window.addEventListener('keydown', checkAltMenu)
     setOpen(true)
   }
@@ -113,12 +126,7 @@ export const AvatarMenu: React.FC = () => {
           badge={licenseIndicator}
           onClick={handleClose}
         />
-        <ListItemLink
-          title={t('nav.support', 'Support')}
-          icon="life-ring"
-          href="https://link.remote.it/documentation-desktop/overview"
-          dense
-        />
+        <ListItemLink title={t('nav.support', 'Support')} icon="life-ring" href={DESKTOP_HELP_LINK} dense />
         <ListItemLink title={t('nav.apis', 'APIs')} icon="books" href="https://link.remote.it/docs/api" dense />
         <ListItemLocation
           title={t('nav.bugReport', 'Bug Report')}
@@ -178,6 +186,41 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         </DesktopUI>
+        {/* The other accounts this app has signed into (services/oidc.ts registry) — one
+            click makes one active. Emails render as-is (identities are not translated);
+            the AS chooser behind "Switch account" below remains the way to ADD one. */}
+        {accounts
+          .filter(a => !a.active)
+          .map(a => (
+            <ListItemSetting
+              key={a.sub}
+              label={a.name || a.email || a.sub}
+              subLabel={
+                a.known
+                  ? t('nav.signedInOnBrowser', 'Signed in on this browser')
+                  : a.name && a.email
+                  ? a.email
+                  : undefined
+              }
+              icon={<Avatar email={a.email} picture={a.picture} fallback={a.name} size={24} />}
+              confirm={browser.hasBackend}
+              confirmProps={switchConfirm}
+              onClick={async () => {
+                handleClose()
+                await dispatch.auth.activateAccount(a.sub)
+              }}
+            />
+          ))}
+        <ListItemSetting
+          label={t('nav.switchAccount', 'Switch account')}
+          icon="users"
+          confirm={browser.hasBackend}
+          confirmProps={switchConfirm}
+          onClick={async () => {
+            handleClose()
+            await dispatch.auth.switchAccount()
+          }}
+        />
         <ListItemSetting
           confirm={backendAuthenticated}
           label={t('nav.signOut', 'Sign out')}

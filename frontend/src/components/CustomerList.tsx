@@ -1,10 +1,10 @@
 import React from 'react'
+import { useMobile } from '../hooks/useMobile'
 import { State } from '../store'
 import { useSelector } from 'react-redux'
 import { customerAttributes } from './CustomerAttributes'
-import { MOBILE_WIDTH } from '../constants'
 import { removeObject } from '../helpers/utilHelper'
-import { useMediaQuery, Stack, Typography } from '@mui/material'
+import { Stack, Typography } from '@mui/material'
 import { CustomerListItem } from './CustomerListItem'
 import { GridList } from './GridList'
 import { Avatar } from './Avatar'
@@ -16,7 +16,7 @@ export interface CustomerListProps {
 }
 
 export const CustomerList: React.FC<CustomerListProps> = ({ customers = [], disabled }) => {
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const [required, attributes] = removeObject(customerAttributes, a => a.required === true)
 

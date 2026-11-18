@@ -1,15 +1,17 @@
-import { REGEX_FIRST_PATH, HIDE_SIDEBAR_WIDTH, MOBILE_WIDTH } from '../../constants'
+import { REGEX_FIRST_PATH, ADMIN_ADDONS_ROUTE } from '../../constants'
+import { useMobile } from '../../hooks/useMobile'
+import { useChatToggle } from '../../hooks/useChatEnabled'
+import { ChatAgentGuide } from '../Chat/ChatAgentGuide'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
 import browser from '../../services/browser'
 import { State } from '../../store'
-import { Dispatch } from '../../store'
-import { useMediaQuery, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { selectPermissions } from '../../selectors/organizations'
 import { useLocation, Switch, Route } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { HeaderDeviceOptionMenu } from '../HeaderDeviceOptionMenu'
 import { ProductsHeaderButtons } from './ProductsHeaderButtons'
 import { UpgradeNotice } from '../UpgradeNotice'
@@ -18,6 +20,7 @@ import { RefreshButton } from '../../buttons/RefreshButton'
 import { GlobalSearch } from '../GlobalSearch'
 import { FilterButton } from '../../buttons/FilterButton'
 import { IconButton } from '../../buttons/IconButton'
+import { SidebarMenuButton } from '../../buttons/SidebarMenuButton'
 import { Title } from '../Title'
 import { Box } from '@mui/material'
 
@@ -29,23 +32,34 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   const { t } = useTranslation()
   const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
+  const chat = useChatToggle()
   const layout = useSelector((state: State) => state.ui.layout)
   const overlapHeader = layout.hideSidebar && browser.isElectron && browser.isMac
 
   const navigateUp = useNavigationUp(panels)
   const [showSearch, setShowSearch] = useState<boolean>(false)
-  const sidebarHidden = useMediaQuery(`(max-width:${HIDE_SIDEBAR_WIDTH}px)`)
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const sidebarHidden = layout.hideSidebar
+  const mobile = useMobile()
+  const agentInBottomMenu = (mobile || browser.isMobile) && sidebarHidden
   const inputRef = useRef<HTMLInputElement>(null)
-  const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
 
   const manager = permissions.includes('MANAGE')
   const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0]
 
   // Admin pages have two-level roots: /admin/users and /admin/partners (without IDs)
-  const adminRootPages = ['/admin/users', '/admin/admins', '/admin/partners', '/admin/enterprise-licenses', '/admin/devices', '/admin/notices', '/partner-stats']
-  const isAdminRootPage = adminRootPages.includes(location.pathname)
+  const adminRootPages = [
+    '/admin/users',
+    '/admin/admins',
+    '/admin/partners',
+    '/admin/enterprise-licenses',
+    '/admin/devices',
+    '/admin/notices',
+    '/partner-stats',
+  ]
+  // The add-ons page keys its product into the URL (/admin/add-ons/:productId): that is its root
+  // list, not a detail with a level above it.
+  const isAdminRootPage = adminRootPages.includes(location.pathname) || location.pathname.startsWith(ADMIN_ADDONS_ROUTE)
   const isRootMenu = menu === location.pathname || isAdminRootPage
 
   return (
@@ -63,12 +77,16 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
           marginTop: overlapHeader ? 3.5 : 1.5,
         }}
       >
-        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && (
-          <IconButton name="bars" size="md" color="grayDarker" onClick={() => dispatch.ui.set({ sidebarMenu: true })} />
-        )}
+        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && <SidebarMenuButton />}
         {(layout.hideSidebar || browser.isMobile) && (
           <Route path="/add" exact>
-            <IconButton title={t('header.back', 'Back')} to="/devices" icon="chevron-left" size="md" color="grayDarker" />
+            <IconButton
+              title={t('header.back', 'Back')}
+              to="/devices"
+              icon="chevron-left"
+              size="md"
+              color="grayDarker"
+            />
           </Route>
         )}
         {!isRootMenu && (
@@ -79,6 +97,18 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             size="md"
             color="grayDarker"
           />
+        )}
+        {chat.show && !agentInBottomMenu && (
+          <ChatAgentGuide placement="bottom">
+            <IconButton
+              fixedWidth
+              icon="remote-ai"
+              size="lg"
+              color={chat.open ? 'primary' : 'grayDarker'}
+              title={t('nav.agent', 'Agent')}
+              onClick={chat.toggle}
+            />
+          </ChatAgentGuide>
         )}
         {!showSearch && <RefreshButton size="md" color="grayDarker" />}
         {sidebarHidden && (

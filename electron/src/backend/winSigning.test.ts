@@ -1,0 +1,111 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const {
+  LEGACY_PUBLISHER,
+  signingMode,
+  expectedPublisher,
+  publisherMatches,
+  withSigning,
+} = require('../../scripts/win-signing')
+
+const SSL_SUBJECT =
+  'CN="remot3.it, Inc.", O="remot3.it, Inc.", L=Palo Alto, S=California, C=US, SERIALNUMBER=4797542, OID.2.5.4.15=Private Organization'
+const AZURE_PUBLISHER = 'CN="remot3.it, Inc.", O="remot3.it, Inc.", L=Palo Alto, S=California, C=US'
+const AZURE = {
+  AZURE_SIGN_ENDPOINT: 'https://wus2.codesigning.azure.net',
+  AZURE_SIGN_ACCOUNT: 'remoteit',
+  AZURE_SIGN_PROFILE: 'remoteit-public',
+  AZURE_SIGN_PUBLISHER: AZURE_PUBLISHER,
+}
+const BASE = {
+  productName: 'Remote.It',
+  win: { signtoolOptions: { sign: './scripts/sign.js', signingHashAlgorithms: ['sha256'] }, target: ['nsis'] },
+}
+
+describe('signingMode', () => {
+  test('skip wins over everything', () => {
+    expect(signingMode({ SKIP_SIGNING: 'true', ...AZURE })).toBe('skip')
+  })
+
+  test('azure when all four variables are set, signtool when none are', () => {
+    expect(signingMode(AZURE)).toBe('azure')
+    expect(signingMode({})).toBe('signtool')
+    expect(signingMode({ SKIP_SIGNING: 'false' })).toBe('signtool')
+  })
+
+  test('a partial Azure configuration is an error, not a silent fallback', () => {
+    const { AZURE_SIGN_PUBLISHER, ...partial } = AZURE
+    expect(() => signingMode(partial)).toThrow('AZURE_SIGN_PUBLISHER')
+  })
+})
+
+describe('withSigning', () => {
+  test('skip removes the signing hook and nothing else', () => {
+    const config = withSigning(BASE, { SKIP_SIGNING: 'true' })
+    expect(config.win).toEqual({ target: ['nsis'] })
+    expect(config.productName).toBe('Remote.It')
+  })
+
+  test('signtool is the package.json config untouched', () => {
+    expect(withSigning(BASE, {})).toBe(BASE)
+  })
+
+  test('azure replaces the hook and lists both publishers, new one first', () => {
+    const config = withSigning(BASE, AZURE)
+    expect(config.win).toEqual({
+      target: ['nsis'],
+      azureSignOptions: {
+        endpoint: AZURE.AZURE_SIGN_ENDPOINT,
+        codeSigningAccountName: 'remoteit',
+        certificateProfileName: 'remoteit-public',
+        publisherName: AZURE_PUBLISHER,
+      },
+    })
+    expect(config.publish).toEqual({ provider: 'github', publisherName: [AZURE_PUBLISHER, LEGACY_PUBLISHER] })
+    expect(config.productName).toBe('Remote.It')
+  })
+
+  test('azure keeps a publish block a brand may have set', () => {
+    const config = withSigning({ ...BASE, publish: { provider: 'github', owner: 'cachengo', repo: 'desktop' } }, AZURE)
+    expect(config.publish).toEqual({
+      provider: 'github',
+      owner: 'cachengo',
+      repo: 'desktop',
+      publisherName: [AZURE_PUBLISHER, LEGACY_PUBLISHER],
+    })
+  })
+})
+
+describe('expectedPublisher', () => {
+  test('the SSL.com name, or under Azure the Azure subject alone', () => {
+    expect(expectedPublisher({})).toBe(LEGACY_PUBLISHER)
+    expect(expectedPublisher(AZURE)).toBe(AZURE_PUBLISHER)
+  })
+})
+
+describe('publisherMatches', () => {
+  test('the subject as Windows PowerShell renders it, OID attributes first', () => {
+    const windows =
+      'OID.1.3.6.1.4.1.311.60.2.1.3=US, OID.1.3.6.1.4.1.311.60.2.1.2=Delaware, OID.2.5.4.15=Private Organization, CN="remot3.it, Inc.", SERIALNUMBER=4797542, O="remot3.it, Inc.", L=Palo Alto, S=California, C=US'
+    expect(publisherMatches(windows, [LEGACY_PUBLISHER])).toBe(true)
+    expect(publisherMatches(windows, [AZURE_PUBLISHER])).toBe(true)
+    expect(publisherMatches(windows, ['CN=Someone Else'])).toBe(false)
+  })
+
+  test('a bare name matches the CN only', () => {
+    expect(publisherMatches(SSL_SUBJECT, ['remot3.it, Inc.'])).toBe(true)
+    expect(publisherMatches(SSL_SUBJECT, ['remot3.it, Inc'])).toBe(false)
+    expect(publisherMatches(SSL_SUBJECT, ['Remot3.it, Inc.'])).toBe(false)
+  })
+
+  test('a distinguished name must agree on every attribute it lists', () => {
+    expect(publisherMatches(SSL_SUBJECT, [AZURE_PUBLISHER])).toBe(true)
+    expect(publisherMatches(SSL_SUBJECT, ['CN="remot3.it, Inc.", L=Houston'])).toBe(false)
+    expect(publisherMatches(SSL_SUBJECT, ['CN="remot3.it, Inc.", OU=Desktop'])).toBe(false)
+  })
+
+  test('any listed publisher is enough, and no subject matches nothing', () => {
+    expect(publisherMatches(SSL_SUBJECT, ['CN=Someone Else', LEGACY_PUBLISHER])).toBe(true)
+    expect(publisherMatches(undefined, [LEGACY_PUBLISHER])).toBe(false)
+    expect(publisherMatches(SSL_SUBJECT, [])).toBe(false)
+  })
+})

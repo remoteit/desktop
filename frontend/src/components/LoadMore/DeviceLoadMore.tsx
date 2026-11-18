@@ -13,8 +13,7 @@ export const DeviceLoadMore: React.FC = () => {
 
   const onLoadMore = () => {
     const nextFrom = (Math.floor(from / size) + 1) * size
-    dispatch.devices.set({ from: nextFrom, append: true })
-    dispatch.devices.fetchList()
+    dispatch.devices.fetchPage({ from: nextFrom, append: true })
   }
 
   return <LoadMore {...{ from, size, count, fetching, onLoadMore }} />

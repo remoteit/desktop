@@ -1,6 +1,6 @@
-import { Checkbox,useMediaQuery } from '@mui/material'
+import { Checkbox } from '@mui/material'
+import { useMobile } from '../hooks/useMobile'
 import React from 'react'
-import { MOBILE_WIDTH } from '../constants'
 import { IDeviceProduct } from '../models/products'
 import { GridList } from './GridList'
 import { Icon } from './Icon'
@@ -32,7 +32,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   onSelect,
   onSelectAll,
 }) => {
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const allSelected = products.length > 0 && selected.length === products.length
   const someSelected = selected.length > 0 && selected.length < products.length
 

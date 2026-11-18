@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
-import { Dispatch } from '../store'
-import { useDispatch } from 'react-redux'
+import { State, Dispatch } from '../store'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectActiveAccountId } from '../selectors/accounts'
+import { selectVisibleDevices } from '../selectors/devices'
 import { Chip, Menu, MenuItem, ListSubheader, ListItemIcon, ListItemText } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { Icon } from './Icon'
@@ -12,8 +14,15 @@ export const DeviceScriptingMenu: React.FC<Props> = ({ device }) => {
   const handleClick = event => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
   const dispatch = useDispatch<Dispatch>()
+  const inActiveAccount = useSelector(
+    (state: State) =>
+      device?.owner.id === selectActiveAccountId(state) || selectVisibleDevices(state).some(d => d.id === device?.id)
+  )
 
   if (!device?.permissions.includes('SCRIPTING')) return null
+  // Choose Script lists the active account's scripts, but DevicePage can show another account's device. Neither
+  // device.accountId (fetch-by-id stamps the active one) nor device.access (only managers see shares) can tell.
+  if (!inActiveAccount) return null
 
   return (
     <>

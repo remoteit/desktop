@@ -32,6 +32,7 @@ export type ServiceFormProps = {
   disabled?: boolean
   adding?: boolean
   compact?: boolean
+  hostPort?: boolean
   actionGuttersSize?: Sizes | null
   onChange?: (form: IService) => void /// swap for URL form?
   onSubmit: (form: IService) => void
@@ -46,6 +47,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   disabled,
   adding,
   compact,
+  hostPort,
   actionGuttersSize = 'xxs',
   onChange,
   onSubmit,
@@ -82,7 +84,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   const [error, setError] = useState<string>()
   const [form, setForm] = useState<IService>()
   const application = useApplication(form)
-  const [urlField, setUrlField, urlError] = useURLForm(form, setForm, application.urlForm)
+  const urlForm = application.urlForm && !hostPort
+  const [urlField, setUrlField, urlError] = useURLForm(form, setForm, urlForm)
   const appType = findType(applicationTypes, form?.typeID)
   const changed = !isEqual(form, defaultForm)
 
@@ -186,7 +189,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                   </Notice>
                 </ListItem>
               )}
-              {application.urlForm ? (
+              {urlForm ? (
                 <ListItem sx={fieldSx}>
                   <TextField
                     required

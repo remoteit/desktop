@@ -264,19 +264,36 @@ export class Application {
     return this.cloudData ? this.cloudData.proxy : false
   }
 
+  get publicReverseProxy() {
+    return !!(this.reverseProxy && this.connection?.public && !this.connection.connectLink)
+  }
+
+  // Desktop keeps one template for public and local routes, so only the portal can rewrite it for the public proxy
+  get publicOnlyTemplate() {
+    return this.portal && this.publicReverseProxy
+  }
+
   getReverseProxyTemplate(secure: boolean) {
     return secure ? this.template.replace('http:', 'https:') : this.template.replace('https:', 'http:')
   }
 
   private getTemplate(type: LaunchMethod['type']) {
     if (this.connection?.connectLink) return this.resolvedDefaultTemplate(type)
-    return this.connection?.launchTemplates?.[type] || this.resolvedDefaultTemplate(type)
+    const template = this.connection?.launchTemplates?.[type]
+    if (!template) return this.resolvedDefaultTemplate(type)
+    return type === 'URL' ? this.publicReverseProxyTemplate(template) : template
+  }
+
+  // The cloud reverse proxy serves only https, on no port
+  private publicReverseProxyTemplate(template: string) {
+    if (!this.publicOnlyTemplate) return template
+    return template.replace(/^http:/i, 'https:').replace(/:\[port\]/g, '')
   }
 
   private resolvedDefaultTemplate(type?: LaunchMethod['type']): string {
     switch (type) {
       case 'URL':
-        return (
+        return this.publicReverseProxyTemplate(
           this.service?.attributes.launchTemplate || this.globalDefaults.launchTemplate || this.defaultLaunchTemplate
         )
       case 'COMMAND':

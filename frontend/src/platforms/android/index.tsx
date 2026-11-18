@@ -1,6 +1,5 @@
 import React from 'react'
 import feature from './feature.png'
-import { SCREEN_VIEW_APP_LINK } from '../../constants'
 import { Tooltip, Typography } from '@mui/material'
 import { platforms } from '..'
 import { Icon } from '../../components/Icon'
@@ -21,10 +20,7 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'android',
-  name: 'Android',
   component: Component,
-  types: { 1213: 'Android Phone' },
-  services: [{ application: 48 }],
   listItemTitle: (
     <>
       Android &nbsp;
@@ -39,9 +35,6 @@ platforms.register({
     </>
   ),
   installation: {
-    download: true,
-    command: '[CODE]',
-    qualifier: 'To register an Android phone or tablet',
     instructions: (
       <>
         <img src={feature} width={450} style={{ borderRadius: 8, marginBottom: 12 }} />
@@ -50,6 +43,5 @@ platforms.register({
         services
       </>
     ),
-    link: SCREEN_VIEW_APP_LINK,
   },
 })

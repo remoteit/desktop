@@ -1,4 +1,4 @@
-import { graphQLBasicRequest } from './graphQL'
+import { graphQLBasicRequest, graphQLPartialRequest } from './graphQL'
 
 export async function graphQLLogin() {
   return await graphQLBasicRequest(
@@ -138,6 +138,8 @@ export async function graphQLUser(accountId: string) {
               urlNotifications
               notificationEmail
               notificationUrl
+              pushNotifications
+              pushCategories
             }
             attributes
             info {
@@ -151,6 +153,24 @@ export async function graphQLUser(accountId: string) {
         }
       }`,
     { accountId }
+  )
+}
+
+// Silent and separate from graphQLUser: an API without the field errors, and the page then hides the section.
+export async function graphQLOrganizationNotificationSettings() {
+  return await graphQLBasicRequest(
+    ` query OrganizationNotificationSettings {
+        login {
+          notificationSettings {
+            organizations {
+              organizationId
+              pushNotifications
+            }
+          }
+        }
+      }`,
+    {},
+    true
   )
 }
 
@@ -206,6 +226,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
             owner {
               id
               email
+              picture
             }
             connections {
               service {
@@ -226,6 +247,7 @@ export async function graphQLPreloadNetworks(accountId: string) {
               user {
                 id
                 email
+                picture
               }
             }
           }
@@ -342,7 +364,7 @@ export async function graphQLFetchPlans() {
 }
 
 export async function graphQLFetchOrganizations(ids: string[]) {
-  return await graphQLBasicRequest(
+  return await graphQLPartialRequest(
     ` query Organizations {
         login {
           ${ids
@@ -378,6 +400,7 @@ export async function graphQLFetchOrganizations(ids: string[]) {
                   user {
                     id
                     email
+                    picture
                   }
                 }
                 reseller {
@@ -391,6 +414,7 @@ export async function graphQLFetchOrganizations(ids: string[]) {
                     user {
                       id
                       email
+                      picture
                       created
                       limits {
                         ${LIMITS_QUERY}
@@ -501,6 +525,7 @@ export async function graphQLFetchGuests(accountId: string) {
               user {
                 id
                 email
+                picture
               }
               devices {
                 id
@@ -643,6 +668,52 @@ export async function graphQLAdminEnterpriseCustomers(
         }
       }`,
     { from: options.from || 0, size: options.size || 50, search: search || undefined }
+  )
+}
+
+// Add-on licences (graphql-api docs/AI-AGENT-LICENSE.md): generic over add-on products, of which
+// ai-agent is the first. A product is selected on the admin page, then its holders are listed.
+export async function graphQLAdminAddonProducts() {
+  return await graphQLBasicRequest(
+    ` query AdminAddonProducts {
+        admin {
+          addonProducts {
+            id
+            name
+            description
+            enabled
+          }
+        }
+      }`
+  )
+}
+
+export async function graphQLAdminAddonCustomers(
+  product: string,
+  options: { from?: number; size?: number },
+  search?: string
+) {
+  return await graphQLBasicRequest(
+    ` query AdminAddonCustomers($product: String!, $from: Int, $size: Int, $search: String) {
+        admin {
+          addonCustomers(product: $product, from: $from, size: $size, search: $search) {
+            items {
+              productId
+              userId
+              email
+              name
+              deviceCount
+              memberCount
+              licenseId
+              created
+              expiration
+            }
+            total
+            hasMore
+          }
+        }
+      }`,
+    { product, from: options.from || 0, size: options.size || 50, search: search || undefined }
   )
 }
 

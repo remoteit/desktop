@@ -25,12 +25,5 @@ const Component = ({ darkMode, ...props }) => {
 
 platforms.register({
   id: 'aws',
-  name: 'AWS',
   component: Component,
-  types: { 1185: 'AWS' },
-  installation: {
-    command: true,
-    qualifier: 'For any Linux based AWS virtual machine',
-    link: 'https://link.remote.it/support/streamline-install',
-  },
 })

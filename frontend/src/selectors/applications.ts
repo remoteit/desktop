@@ -1,10 +1,18 @@
 import { createSelector } from 'reselect'
 import { getApplication } from '@common/applications'
-import { getConnectionDefaults, getApplicationService, getApplicationConnection, getApplicationTypes } from './state'
+import {
+  getConnectionDefaults,
+  getApplicationService,
+  getApplicationConnection,
+  getApplicationTypes,
+  getAllApplicationTypes,
+  getEnvironment,
+} from './state'
 import { selectActiveAccountId } from './accounts'
 
+// getApplication reads the types and environment through the adaptor; as inputs they drop stale results
 export const selectApplication = createSelector(
-  [getConnectionDefaults, getApplicationService, getApplicationConnection],
+  [getConnectionDefaults, getApplicationService, getApplicationConnection, getAllApplicationTypes, getEnvironment],
   (globalDefaults, service, connection) => getApplication(service, connection, globalDefaults)
 )
 

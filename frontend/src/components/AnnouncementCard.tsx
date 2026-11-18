@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { Dispatch } from '../store'
 import { dateDefaults } from './Duration/Duration'
+import { publishedAt } from '../helpers/noticeHelper'
 import { Tooltip, Card, CardContent, CardMedia, CardHeader, CardActions, Button, Typography } from '@mui/material'
 
 export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: number; hideMarkReadAction?: boolean }> = ({
@@ -23,7 +24,7 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
   const cardRef = useRef<HTMLDivElement>(null)
 
   const unread = !(data.read && data.read < new Date())
-  const modified = data.modified && data.modified.toLocaleString(navigator.language, dateDefaults)
+  const published = publishedAt(data)?.toLocaleString(navigator.language, dateDefaults)
 
   const handleRead = () => {
     setRead(true)
@@ -60,7 +61,7 @@ export const AnnouncementCard: React.FC<{ data: IAnnouncement; scrollPosition?: 
           backgroundColor: unread ? theme.palette.primary.main : theme.palette.grayDarker.main,
         })}
         title={types[data.type] || types.GENERIC}
-        action={modified}
+        action={published}
       />
       {data.image && (
         <CardMedia

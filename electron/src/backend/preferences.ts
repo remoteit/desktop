@@ -17,9 +17,6 @@ export class Preferences {
     disableDeepLinks: false,
     allowPrerelease: false,
     useCertificate: true,
-    switchApi: false,
-    apiURL: '',
-    apiGraphqlURL: '',
     windowState: structuredClone(this.windowDefaultState),
     sshConfig: false,
   }

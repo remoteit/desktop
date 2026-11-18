@@ -1,29 +1,155 @@
 import brand from '@common/brand/config'
+import { CATALOGUE } from './platforms/catalogue'
+import pkg from '../package.json'
 const env = import.meta.env
 
 export const MODE = env.MODE || 'development'
-export const CLIENT_ID = env.VITE_CLIENT_ID
-export const MOBILE_CLIENT_ID = env.VITE_MOBILE_CLIENT_ID
-export const COGNITO_USER_POOL_ID = env.VITE_COGNITO_USER_POOL_ID || 'us-west-2_6nKjyW7yg'
-export const COGNITO_AUTH_DOMAIN = env.VITE_COGNITO_AUTH_DOMAIN || 'auth.remote.it'
+
+/* The license limit that gates the Remote.It AI chat. The whole surface hangs off this
+   one name — the header button, the docked column and everything the panel loads — so
+   switching the feature on for a user is a licensing change rather than a release:
+   the ai-agent ADD-ON licence, granted per user from Admin → Add-ons (graphql-api
+   docs/AI-AGENT-LICENSE.md). It is the ONLY switch. Until 2026-09-14 a dev build and the
+   AI portal defaulted the flag on ahead of the licence (PENDING_FEATURES / CHAT_ALWAYS_ON);
+   now a user without the licence — a developer included — sees no chat anywhere. */
+export const CHAT_FEATURE = 'ai-agent'
+export const ADMIN_ADDONS_ROUTE = '/admin/add-ons'
+
+// One stage sets the login server with every endpoint: a token works only where its own login server
+// is trusted, and the dev agent accepts login.dev tokens alone.
+export const STAGES = {
+  prod: {
+    name: 'Production',
+    issuer: 'https://login.remote.it',
+    api: 'https://cloud.remote.it/api',
+    agent: 'https://agent.remote.it',
+    mcp: 'https://cloud.remote.it/mcp',
+  },
+  dev: {
+    name: 'Dev',
+    issuer: 'https://login.dev.remote.it',
+    api: 'https://cloud.dev.remote.it/api',
+    agent: 'https://agent.dev.remote.it',
+    mcp: 'https://cloud.dev.remote.it/mcp',
+  },
+}
+export type StageName = keyof typeof STAGES
+export const STAGE_NAMES = Object.keys(STAGES) as StageName[]
+export const STAGE_KEY = 'r3.stage'
+const isStage = (value: unknown): value is StageName =>
+  typeof value === 'string' && Object.prototype.hasOwnProperty.call(STAGES, value)
+export const DEFAULT_STAGE: StageName = /alpha|beta/.test(pkg.version) ? 'dev' : 'prod'
+export function readStage(): StageName {
+  try {
+    const stored = window.localStorage.getItem(STAGE_KEY)
+    return isStage(stored) ? stored : DEFAULT_STAGE
+  } catch {
+    return DEFAULT_STAGE
+  }
+}
+export const STAGE_PINNED = [
+  env.VITE_OAUTH_ISSUER,
+  env.VITE_OAUTH_GRAPHQL_RESOURCE,
+  env.VITE_OAUTH_AGENT_RESOURCE,
+  env.VITE_OAUTH_MCP_RESOURCE,
+  env.VITE_GRAPHQL_API,
+  env.VITE_WEBSOCKET_URL,
+  env.VITE_AGENT_URL,
+].some(Boolean)
+const pinnedIssuer = env.VITE_OAUTH_ISSUER?.replace(/\/+$/, '')
+export const STAGE: StageName | undefined = STAGE_PINNED
+  ? STAGE_NAMES.find(name => STAGES[name].issuer === pinnedIssuer)
+  : readStage()
+const stage = STAGES[STAGE ?? 'prod']
+
+// Renderer-owned OIDC (permitteer docs/remoteit-desktop-login.md, D8) — identical on
+// web and desktop; the backend never touches auth.
+export const OAUTH_ISSUER = env.VITE_OAUTH_ISSUER || stage.issuer
+export const OAUTH_CLIENT_ID = env.VITE_OAUTH_CLIENT_ID || 'remoteit_desktop'
+export const OAUTH_ACCOUNT_RESOURCE = `${OAUTH_ISSUER}/account/api`
+// The UNIFIED FRONT (graphql-permitteer docs/CLOUD-EDGE.md). The identifier is the
+// TREE, not the graphql URL: /api covers graphql, the user REST surface and the events socket, so
+// one token serves all three. Was https://graphql.dev.remote.it/graphql until 2026-09-06, when
+// that host was destroyed — a build falling back to the old default now asks for an audience whose
+// resource server is being retired, and gets invalid_target.
+export const OAUTH_GRAPHQL_RESOURCE = env.VITE_OAUTH_GRAPHQL_RESOURCE || stage.api
+// The two front shapes, recognised in ONE place (graphql-permitteer docs/CLOUD-EDGE.md): the unified
+// front's TREE identifier, with graphql and the socket as paths inside it, and the legacy per-stage
+// hosts, one each for graphql and events. Group 1 is the stage, absent on prod.
+export const CLOUD_TREE_RE = /^https:\/\/cloud(?:\.([a-z0-9-]+))?\.remote\.it\/api$/
+export const CLOUD_GRAPHQL_RE = /^(https:\/\/cloud(?:\.[a-z0-9-]+)?\.remote\.it\/api)\/graphql$/
+export const LEGACY_GRAPHQL_RE = /^https:\/\/graphql(?:\.([a-z0-9-]+))?\.remote\.it\/graphql$/
+export const LEGACY_EVENTS_RE = /^wss:\/\/ws(?:\.([a-z0-9-]+))?\.remote\.it\/v1$/
+// The pre-OIDC shared-domain API: no registered resource, so the AS refuses any token for it.
+export const LEGACY_SHARED_GRAPHQL_RE = /^https:\/\/api\.remote\.it\/graphql\//
+export const cloudTreeUrls = (tree: string) => ({
+  graphql: `${tree}/graphql`,
+  ws: `${tree.replace(/^https:/, 'wss:')}/ws`,
+})
+/** The RESOURCE (RFC 8707 audience) to mint for when calling a given GraphQL URL — the ONE rule,
+ *  whichever lane chose the URL. On the legacy per-stage hosts the identifier IS the graphql URL.
+ *  On the unified front one identifier covers graphql, the REST surface and the socket as PATHS
+ *  inside it; asking the AS for the leaf answers invalid_target, correctly, so the leaf comes off. */
+export const resourceForApiURL = (url: string): string => url.match(CLOUD_GRAPHQL_RE)?.[1] ?? url
+/** The audience the events socket is minted for where it is its OWN resource — the legacy per-stage
+ *  hosts, whose ws URL is the identifier. Undefined where the socket rides the API's token: the
+ *  unified front (the socket is a path inside the /api resource — minting for the socket URL there
+ *  answers invalid_target) and the legacy shared-domain URL (not a registered resource at all). */
+export const resourceForEventsURL = (url: string): string | undefined => (LEGACY_EVENTS_RE.test(url) ? url : undefined)
+// The AI agent lane (permitteer docs/remoteit-ai-agent.md D1/D5): chat requests carry
+// tokens ADDRESSED to the agent service, and the sign-in declares the stage's MCP detail
+// delegated onward to the service actor — which is what makes those tokens exchangeable.
+export const OAUTH_AGENT_RESOURCE = env.VITE_OAUTH_AGENT_RESOURCE || stage.agent
+export const OAUTH_MCP_RESOURCE = env.VITE_OAUTH_MCP_RESOURCE || stage.mcp
+// FALLBACK only: the live name is DISCOVERED from the MCP resource's PRM at sign-in
+// (services/oidc.ts) — per-resource keying made it stage-stable, and the 2026-08-31
+// retirement of the _dev names is exactly why a pinned copy can't be the source of truth.
+export const OAUTH_MCP_DETAIL = env.VITE_OAUTH_MCP_DETAIL || 'remoteit_mcp'
+export const OAUTH_AGENT_ACTOR = 'svc_ai_agent'
+// Dev rides the vite /agent proxy (same-origin, CSP-clean) even when VITE_AGENT_URL is set; an
+// unpinned build calls the stage's agent at its own audience, a pinned one keeps its /agent route.
+export const AGENT_URL = env.DEV ? '/agent' : env.VITE_AGENT_URL || (STAGE_PINNED ? '/agent' : OAUTH_AGENT_RESOURCE)
+
 export const API_URL = env.VITE_API_URL || 'https://api.remote.it/apv/v27'
-export const AUTH_API_URL = env.VITE_AUTH_API_URL || env.AUTH_API_URL || 'https://auth.api.remote.it/v1'
-export const GRAPHQL_API = env.VITE_GRAPHQL_API || 'https://api.remote.it/graphql/v1'
-export const GRAPHQL_BETA_API = env.VITE_GRAPHQL_BETA_API || 'https://api.remote.it/graphql/beta'
+// The data plane defaults to the resource we mint for rather than to a fixed stage — otherwise an
+// install that sets only the OIDC vars calls one stage with another stage's token and 401s with
+// nothing in the UI explaining why. Set VITE_GRAPHQL_API (or pick a stage in Test Settings) to
+// override.
+//
+// Two front shapes exist, and the audience means a different thing in each. On the legacy per-stage
+// HOSTS the identifier IS the graphql URL (https://graphql.<stage>.remote.it/graphql). On the
+// UNIFIED FRONT (graphql-permitteer docs/CLOUD-EDGE.md) one host carries every surface under PATH
+// TREES, so the identifier is the TREE — https://cloud.<stage>.remote.it/api — and graphql and the
+// socket are paths INSIDE it. Calling the audience directly there would POST queries at the tree
+// root, so the tree has to be recognised and the leaf appended.
+const cloudTree = CLOUD_TREE_RE.test(OAUTH_GRAPHQL_RESOURCE)
+export const GRAPHQL_API =
+  env.VITE_GRAPHQL_API || (cloudTree ? cloudTreeUrls(OAUTH_GRAPHQL_RESOURCE).graphql : OAUTH_GRAPHQL_RESOURCE)
+// Test Settings: an ad-hoc request header injected on API calls (helpers/apiHelper.getTestHeader).
+export const TEST_HEADER = 'test-header'
 export const PORTAL = (env.VITE_PORTAL || env.PORTAL) === 'true' ? true : false
 export const PORTAL_URL = env.VITE_PORTAL_URL || brand.package?.homepage || 'https://app.remote.it'
 export const DEVELOPER_KEY = env.VITE_DEVELOPER_KEY || 'Mjc5REIzQUQtMTQyRC00NTcxLTlGRDktMTVGNzVGNDYxQkE3'
 
 export const PROTOCOL = env.PROTOCOL || `${brand.name}://`
-export const REDIRECT_URL = env.VITE_REDIRECT_URL || PROTOCOL + 'authCallback'
-export const SIGNOUT_REDIRECT_URL = PROTOCOL + 'signoutCallback'
-export const CALLBACK_URL =
-  env.VITE_CALLBACK_URL || env.MODE === 'development'
-    ? env.VITE_DEV_CALLBACK_URL || 'https://dev-auth.internal.remote.it/v1/callback/'
-    : env.VITE_PROD_CALLBACK_URL || 'https://auth.api.remote.it/v1/callback/'
 
-export const WEBSOCKET_URL = env.VITE_WEBSOCKET_URL
-export const WEBSOCKET_BETA_URL = env.VITE_WEBSOCKET_BETA_URL
+// Pairs with the GraphQL stage above, the same pairing Test Settings' stage picker applies:
+// graphql.<stage>…/graphql <-> wss://ws.<stage>…/v1 on the legacy hosts, and the tree's own /ws
+// path on the unified front. Previously these had NO fallback: dropping the env var left the
+// socket URL undefined, which breaks the app before the UI that could fix it is reachable.
+//
+// The cloud branch is not a nicety. The legacy regex CANNOT match a tree identifier, and its miss
+// falls through to the unlabelled `wss://ws.remote.it/v1` — PRODUCTION's socket. A dev build that
+// merely stopped setting VITE_WEBSOCKET_URL would have connected there silently.
+//
+// Both shapes are read off the EFFECTIVE graphql URL, not off the OAuth resource: VITE_GRAPHQL_API
+// may point at a legacy stage while the resource stays a cloud tree, and pairing the socket with
+// the resource there would split API and event traffic across stages.
+const graphqlTree = GRAPHQL_API.match(CLOUD_GRAPHQL_RE)?.[1]
+const graphqlStage = GRAPHQL_API.match(LEGACY_GRAPHQL_RE)?.[1]
+export const WEBSOCKET_URL =
+  env.VITE_WEBSOCKET_URL ||
+  (graphqlTree ? cloudTreeUrls(graphqlTree).ws : `wss://ws${graphqlStage ? `.${graphqlStage}` : ''}.remote.it/v1`)
 export const PORT = env.VITE_PORT || 29999
 export const PASSWORD_MIN_LENGTH = env.PASSWORD_MIN_LENGTH ? Number(env.PASSWORD_MIN_LENGTH) : 7
 export const PASSWORD_MAX_LENGTH = env.PASSWORD_MAX_LENGTH ? Number(env.PASSWORD_MAX_LENGTH) : 64
@@ -43,7 +169,6 @@ export const REGISTRATION_CODE_EXPIRATION_HOURS = 24
 
 export const DEMO_DEVICE_CLAIM_CODE = 'GUESTVPC'
 export const DEMO_DEVICE_ID = '80:00:01:7F:7E:00:48:1B'
-export const TEST_HEADER = 'test-header'
 
 // When the guide bubble system shipped — bubbles are hidden from accounts created before their start date
 export const GUIDE_START_DATE = new Date('2022-09-20')
@@ -63,7 +188,15 @@ export const GOOGLE_TAG_MANAGER_IOS_KEY = env.VITE_GOOGLE_TAG_MANAGER_IOS_KEY
 
 export const CERTIFICATE_DOMAIN = 'at.remote.it'
 export const ANONYMOUS_MANUFACTURER_CODE = 34560
-export const SCREEN_VIEW_APP_LINK = 'https://play.google.com/store/apps/details?id=it.remote.screenview'
+// The catalogue owns this URL (android.link); the fallback only covers a stale snapshot.
+export const SCREEN_VIEW_APP_LINK =
+  CATALOGUE.installations.android?.link ?? 'https://play.google.com/store/apps/details?id=it.remote.screenview'
+
+// Client capabilities, not catalogue data — see platforms/README.md.
+export const OEM_GUIDE_LINK = 'https://link.remote.it/docs/oem-overview'
+export const DESKTOP_HELP_LINK = 'https://link.remote.it/documentation-desktop/overview'
+export const MCP_CONNECT_DOCS_LINK = 'https://docs.remote.it/mcp-server/connect'
+export const DEVICE_SETUP_PATH = '/devices/setup'
 export const DEMO_SCRIPT_URL =
   'https://raw.githubusercontent.com/remoteit/code_samples/refs/heads/main/scripts/linux/script_demo.sh'
 
@@ -89,14 +222,55 @@ export const REGEX_SERVICE_ID = /^..(:..){7}$/
 export const REGEX_SCHEME = /^(.*?):\/\//
 
 export const DESKTOP_EPOCH = new Date('2020-01-01T00:00:00')
-export const MOBILE_LAUNCH_DATE = new Date('2023-12-20')
 export const FRONTEND_RETRY_DELAY = 20000
 // How long sign out waits for the local backend to come back before giving up and
 // tearing down the frontend on its own. Short: it's a localhost socket.
 export const SIGN_OUT_BACKEND_TIMEOUT = 3000
+export const AGENT_RELEASE_TIMEOUT = 10000
+// How long "Sign out everywhere" waits for the AS to end every session before signing out
+// locally regardless — a stalled token mint must never leave the person signed in here.
+export const SIGN_OUT_EVERYWHERE_TIMEOUT = 10000
+// How long sign out waits for the AS to end this account's session: one request, no token mint,
+// and the person is watching the button — past this the app signs out locally regardless.
+export const SIGN_OUT_SESSION_TIMEOUT = 5000
+export const PUSH_UNREGISTER_TIMEOUT = 3000
+// Long enough to sign in after a tap, short enough that a tap the app never opened isn't replayed on a later launch
+export const PENDING_NOTIFICATION_TTL = 10 * 60 * 1000
+
+// The APNs environment follows the build's signing, not the API it talks to: a development
+// profile gets sandbox tokens, TestFlight and the App Store production ones (build-ios.yml).
+export const APNS_ENVIRONMENT: IApnsEnvironment = env.VITE_APNS_ENVIRONMENT === 'production' ? 'production' : 'sandbox'
+export const FIREBASE_CONFIGURED = !!env.VITE_FIREBASE_CONFIGURED
+export const PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs', 'account']
+// Mirrors DEFAULT_PUSH_CATEGORIES in graphql-api/src/constants.ts — keep in sync
+export const DEFAULT_PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access', 'jobs', 'account']
+export const DEVICE_PUSH_CATEGORIES: IPushCategory[] = ['state', 'connect', 'access']
 export const MAX_CONNECTION_NAME_LENGTH = 62
 export const MAX_DESCRIPTION_LENGTH = 1024
 export const SIDEBAR_WIDTH = 250
+export const CHAT_PANEL_WIDTH = 400
+export const CHAT_PANEL_WIDTH_MIN = 320
+/* When the AI chat tour shipped. GuideBubble's `added` — a "dismiss all" from before
+   this date does not suppress it, so users who opted out of the older guides still
+   get introduced to a feature that did not exist back then. */
+export const CHAT_GUIDE_DATE = new Date('2026-08-27')
+export const CHAT_AGENT_GUIDE = 'chatAgent'
+export const ANNOUNCEMENT_POPUP_DATE = new Date('2026-07-20T00:00:00-07:00')
+/* Content that must survive beside a docked chat column. The column shrinks to
+   preserve it, so the chat keeps its column on small desktop windows instead of
+   taking the screen — that only happens at phone size (MOBILE_WIDTH). */
+export const CHAT_MIN_CONTENT_WIDTH = 500
+// Reading measure for the transcript column — text much wider than this is hard to
+// track back to the start of the next line. Applied to the COLUMN, so the panel itself
+// may be any width without the conversation spreading across it.
+export const CHAT_MAX_MESSAGE_WIDTH = 800
+/* Widest the column is worth dragging — the point at which the transcript stops growing,
+   so past it the drag only buys empty panel around a column already at full width. Built
+   from what actually stands between the two: the 20px gutter either side of the
+   transcript (ChatMessages' paddingX) and the 8px the docked column insets itself by
+   (ChatPanel's INSET). Derived rather than written down, because a round number here
+   lands just short and the transcript never quite reaches its own measure. */
+export const CHAT_PANEL_WIDTH_MAX = CHAT_MAX_MESSAGE_WIDTH + 20 * 2 + 8
 export const ORGANIZATION_BAR_WIDTH = 70
 export const HIDE_SIDEBAR_WIDTH = 1150
 export const HIDE_TWO_PANEL_WIDTH = 750

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { platformText } from '../platforms/text'
 import { useHistory } from 'react-router-dom'
 import { selectDevice } from '../selectors/devices'
 import { DEMO_DEVICE_CLAIM_CODE, DEMO_DEVICE_ID } from '../constants'
@@ -78,7 +79,14 @@ export const AddPage: React.FC = () => {
             [theme.breakpoints.up('sm')]: { width: 200 },
           },
           '& .addIcons': {
-            '& .MuiListItemButton-root, & .MuiListItem-root': { width: 140, minWidth: 140, minHeight: 100, margin: '1px' },
+            '& .MuiListItemButton-root, & .MuiListItem-root': {
+              width: 140,
+              minWidth: 140,
+              minHeight: 100,
+              margin: '1px',
+              textAlign: 'center',
+            },
+            '& .MuiListItemIcon-root': { display: 'flex' },
             [theme.breakpoints.down('sm')]: {
               '& .MuiListItemButton-root, & .MuiListItem-root': { width: 110, minWidth: 110 },
             },
@@ -119,7 +127,7 @@ export const AddPage: React.FC = () => {
                 iconSize="xxl"
                 icon={platform.id}
                 to={`/add/${platform.id}`}
-                title={platform.name}
+                title={platformText(t, platform).name}
                 subtitle={platform.subtitle}
                 disableGutters
               />
@@ -156,7 +164,7 @@ export const AddPage: React.FC = () => {
                 iconSize="xxl"
                 icon={platform.id}
                 to={platform.route || `/add/${platform.id}`}
-                title={<>{platform.listItemTitle || platform.name}</>}
+                title={<>{platform.listItemTitle || platformText(t, platform).name}</>}
                 subtitle={platform.subtitle}
                 disableGutters
               />

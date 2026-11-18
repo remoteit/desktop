@@ -21,16 +21,17 @@ export const ChangePassword = () => {
   const evaluateCurrentPassword = (e: { target: { value: React.SetStateAction<string> } }) => {
     setCurrentPassword(e.target.value.toString())
   }
+  const reset = () => {
+    setCurrentPassword('')
+    setPassword('')
+    setValid(false)
+    setKey(k => k + 1)
+  }
   const updatePassword = async () => {
     setSaving(true)
     const success = await auth.changePassword({ currentPassword, password })
     setSaving(false)
-    if (success) {
-      setCurrentPassword('')
-      setPassword('')
-      setValid(false)
-      setKey(k => k + 1)
-    }
+    if (success) reset()
   }
   return (
     <>
@@ -66,7 +67,8 @@ export const ChangePassword = () => {
             children: (
               <>
                 <Typography variant="body2" gutterBottom>
-                  {t('changePassword.noticeBefore', 'Changing your password will')} <b>{t('changePassword.noticeEmphasis', 'NOT')}</b>{' '}
+                  {t('changePassword.noticeBefore', 'Changing your password will')}{' '}
+                  <b>{t('changePassword.noticeEmphasis', 'NOT')}</b>{' '}
                   {t('changePassword.noticeAfter', 'automatically sign you out of other sessions.')}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">

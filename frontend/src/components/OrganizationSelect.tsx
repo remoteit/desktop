@@ -1,16 +1,16 @@
 import React from 'react'
+import { useMobile } from '../hooks/useMobile'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import { REGEX_FIRST_PATH, MOBILE_WIDTH } from '../constants'
-import { useMediaQuery, Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem, Theme } from '@mui/material'
-import { getOwnOrganization, defaultState } from '../models/organization'
+import { REGEX_FIRST_PATH } from '../constants'
+import { Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem, Theme } from '@mui/material'
+import { getOwnOrganization } from '../models/organization'
 import { selectAllConnectionSessions } from '../selectors/connections'
-import { selectOrganization } from '../selectors/organizations'
+import { selectOrganization, selectOrganizationOptions } from '../selectors/organizations'
 import { GuideBubble } from './GuideBubble'
 import { fontSizes } from '../styling'
-import { byName } from '../helpers/utilHelper'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
 
@@ -100,24 +100,12 @@ export const OrganizationSelect: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
-  const mobile = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const mobile = useMobile()
   const { accounts } = useDispatch<Dispatch>()
 
   let activeOrg = useSelector(selectOrganization)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
-  const memberships = useSelector((state: State) => state.accounts.membership)
-  const organizations = useSelector((state: State) => state.organization.accounts)
-  const options = memberships.map(m => {
-    const org = organizations[m.account.id] || defaultState
-    return {
-      id: m.account.id,
-      email: m.account.email,
-      name: org.name,
-      roleId: m.roleId,
-      roleName: m.roleName,
-      disabled: !org.id,
-    }
-  })
+  const options = useSelector(selectOrganizationOptions)
 
   const ownOrg = useSelector(getOwnOrganization)
   const sessions = useSelector(selectAllConnectionSessions)
@@ -143,7 +131,6 @@ export const OrganizationSelect: React.FC = () => {
     }
   }
 
-  options.sort(byName)
   if (!options.length) return null
 
   const mySessions = sessions.filter(s => s.target.accountId === ownOrg?.id).length
@@ -281,4 +268,3 @@ function Title({ primary, count }: { primary: string; count: number }) {
     </>
   )
 }
-

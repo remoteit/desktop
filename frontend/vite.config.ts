@@ -1,28 +1,66 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import fs from 'fs'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  build: {
-    outDir: 'build',
-    minify: mode === 'production',
-    emptyOutDir: true,
-    sourcemap: true,
-    assetsInlineLimit: 0,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return 'vendor'
-          }
+export default defineConfig(({ mode }) => {
+  // loadEnv sees frontend/.env files; process.env would only see shell vars
+  const env = loadEnv(mode, __dirname, '')
+  return {
+    build: {
+      outDir: 'build',
+      minify: mode === 'production',
+      emptyOutDir: true,
+      sourcemap: true,
+      assetsInlineLimit: 0,
+      rollupOptions: {
+        output: {
+          manualChunks(id: string) {
+            if (id.includes('node_modules')) {
+              // Keep the markdown renderer's parser tree out of the always-
+              // loaded vendor chunk — it belongs to the lazy-loaded chat panel
+              // (small shared utils it pulls in may still land in vendor)
+              if (
+                /[\\/]node_modules[\\/](react-markdown|remark-|rehype-|micromark|mdast-|unified|hast-|vfile|unist-)/.test(
+                  id
+                )
+              )
+                return
+              return 'vendor'
+            }
+          },
         },
       },
     },
-  },
-  plugins: [react()],
-  resolve: {
-    alias: { '@common': path.resolve(__dirname, '../common/src') },
-  },
-  type: 'module',
-}))
+    plugins: [react()],
+    define: {
+      // Gradle applies Firebase only when this file has content, and without Firebase the push
+      // plugin's register() crashes the Android app (Capacitor rethrows the native exception)
+      'import.meta.env.VITE_FIREBASE_CONFIGURED': JSON.stringify(
+        !!fs.statSync(path.resolve(__dirname, '../android/app/google-services.json'), { throwIfNoEntry: false })?.size
+      ),
+    },
+    resolve: {
+      alias: { '@common': path.resolve(__dirname, '../common/src') },
+    },
+    server: {
+      // Dev-only: same-origin path to the ai-agent service, so the app's CSP
+      // ('self') passes without loosening. Defaults to the local dev service;
+      // set AGENT_PROXY_TARGET in frontend/.env to point at a deployed agent
+      // (e.g. http://dev-ai-agent.remote.it — its ALB is HTTP-only for now, so
+      // the same-origin proxy also sidesteps the CSP https:-only rule).
+      // Staging/prod builds set VITE_AGENT_URL instead — no proxy in builds.
+      proxy: {
+        '/agent': {
+          target: env.AGENT_PROXY_TARGET || 'http://localhost:3001',
+          changeOrigin: true,
+          rewrite: (p: string) => p.replace(/^\/agent/, ''),
+        },
+        // The desktop backend names the sign-in redirect (oidc.ts redirectUri) and sends no CORS headers.
+        '/authRedirect': `http://127.0.0.1:${env.VITE_PORT || 29999}`,
+      },
+    },
+    type: 'module',
+  }
+})

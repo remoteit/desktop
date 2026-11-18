@@ -1,0 +1,26 @@
+name: Preview link
+
+# Amplify's branch previews (readme, "Sign-in (permitteer OIDC)") post nothing to the PR, unlike the
+# pull request previews they replaced, so this comments the branch's address once.
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  comment:
+    if: github.event.pull_request.head.repo.full_name == github.repository && (startsWith(github.head_ref, 'feat/') || startsWith(github.head_ref, 'fix/'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- amplify-preview-link -->'
+            const {owner, repo} = context.repo
+            const issue_number = context.payload.pull_request.number
+            const comments = await github.paginate(github.rest.issues.listComments, {owner, repo, issue_number})
+            if (comments.some(comment => comment.body?.includes(marker))) return
+            const url = `https://${context.payload.pull_request.head.ref.replace(/\//g, '-')}.d20k671nqqv4kl.amplifyapp.com`
+            await github.rest.issues.createComment({owner, repo, issue_number, body: `${marker}\nAmplify branch preview (ready once the build finishes): ${url}`})

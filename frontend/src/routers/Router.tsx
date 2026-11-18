@@ -53,6 +53,7 @@ import { ProfilePage } from '../pages/ProfilePage'
 import { AccountPage } from '../pages/AccountPage'
 import { SecurityPage } from '../pages/SecurityPage'
 import { FeedbackPage } from '../pages/FeedbackPage'
+import { ConnectAIPage } from '../pages/ConnectAIPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
 import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
@@ -63,11 +64,14 @@ import { AdminConfirmPage } from '../pages/AdminConfirmPage'
 import { AdminAdminsPage } from '../pages/AdminAdminsPage/AdminAdminsPage'
 import { AdminPartnersPage } from '../pages/AdminPartnersPage/AdminPartnersPage'
 import { AdminEnterpriseLicensesListPage } from '../pages/AdminEnterpriseLicensesPage/AdminEnterpriseLicensesListPage'
+import { AdminAddonLicensesListPage } from '../pages/AdminAddonLicensesPage/AdminAddonLicensesListPage'
 import { AdminNoticesPage } from '../pages/AdminNoticesPage/AdminNoticesPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
+import { showPendingNotice } from '../services/openNotification'
 import { AdminRouteGuard } from './AdminRouteGuard'
+import { ADMIN_ADDONS_ROUTE } from '../constants'
 
 export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const history = useHistory()
@@ -83,11 +87,10 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const testUI = useSelector((state: State) => !!state.ui.testUI)
 
   useEffect(() => {
-    const initialRoute = window.localStorage.getItem('initialRoute')
+    const initialRoute = showPendingNotice()
     if (initialRoute) {
       if (initialRoute !== location.pathname) history.push(initialRoute)
       console.log('UI REDIRECT INIT', initialRoute)
-      window.localStorage.removeItem('initialRoute')
     }
   }, [])
 
@@ -96,6 +99,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       console.log('UI REDIRECT', redirect)
       history.push(redirect)
       ui.set({ redirect: undefined })
+      // A notification tap writes both; left behind, the next cold start would replay it
+      showPendingNotice(redirect)
     }
     analytics.pageView(location.pathname)
   }, [history.location, ui, redirect])
@@ -253,6 +258,11 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       <Route path="/feedback">
         <Panel layout={layout}>
           <FeedbackPage />
+        </Panel>
+      </Route>
+      <Route path="/connect-ai">
+        <Panel layout={layout}>
+          <ConnectAIPage />
         </Panel>
       </Route>
       {/* Scripting */}
@@ -438,6 +448,9 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               </Route>
               <Route path="/admin/enterprise-licenses">
                 <AdminEnterpriseLicensesListPage />
+              </Route>
+              <Route path={`${ADMIN_ADDONS_ROUTE}/:productId?`}>
+                <AdminAddonLicensesListPage />
               </Route>
               <Route path="/admin/notices/:noticeId?">
                 <AdminNoticesPage />

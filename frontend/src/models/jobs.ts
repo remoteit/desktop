@@ -39,7 +39,7 @@ export default createModel<RootModel>()({
       const fileID = args?.fileID
       const from = args?.from ?? 0
       const size = state.jobs.size || defaultState.size
-      dispatch.jobs.set({ fetching: true, from })
+      dispatch.jobs.set({ fetching: true })
       const fileIds = fileID ? [fileID] : undefined
       const result = await graphQLJobs({ accountId, fileIds, from, size })
       if (result === 'ERROR') {
@@ -52,7 +52,7 @@ export default createModel<RootModel>()({
       const merge = from > 0 || !!fileID
       if (merge) dispatch.jobs.appendJobs({ accountId, jobs })
       else dispatch.jobs.setAccount({ accountId, jobs })
-      dispatch.jobs.set({ fetching: false, initialized: true, total })
+      dispatch.jobs.set({ fetching: false, initialized: true, total, from })
     },
     async loadMore(args: { fileID?: string } | void, state) {
       if (state.jobs.fetching) return
@@ -71,7 +71,10 @@ export default createModel<RootModel>()({
 
       accountId = accountId || selectActiveAccountId(state)
       const result = await graphQLJobs({ accountId, ids: [jobId] })
-      if (result === 'ERROR') return
+      if (result === 'ERROR') {
+        dispatch.jobs.set({ fetching: false })
+        return
+      }
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED JOB', accountId, jobs)
       dispatch.jobs.setJobs({ accountId, jobs })
@@ -82,7 +85,10 @@ export default createModel<RootModel>()({
       accountId = accountId || selectActiveAccountId(state)
 
       const result = await graphQLJobs({ accountId, fileIds })
-      if (result === 'ERROR') return
+      if (result === 'ERROR') {
+        dispatch.jobs.set({ fetching: false })
+        return
+      }
 
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED FILE JOBS', accountId, jobs)
@@ -94,8 +100,8 @@ export default createModel<RootModel>()({
       accountId = accountId || selectActiveAccountId(state)
       if (!state.jobs.all[accountId]) dispatch.jobs.fetch({ accountId })
     },
-    async parse(result: AxiosResponse<any> | undefined): Promise<IJob[]> {
-      const data = result?.data?.data?.login?.account
+    async parse(result: AxiosResponse<any>): Promise<IJob[]> {
+      const data = result.data?.data?.login?.account
       return (
         data?.jobs.items.map(j => ({
           ...j,

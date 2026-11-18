@@ -29,6 +29,29 @@ A release marked **Pre-release** is only offered to users who have opted in
 That is the whole difference between a beta and a public release — a
 pre-release that is never promoted is invisible to everyone else.
 
+## Before you bump: refresh the platform catalogue
+
+`frontend/src/platforms/catalogue.generated.json` is a committed snapshot of the API's platform
+catalogue — the names, install commands and `/add` page copy that used to be hard-coded here. It
+does not refresh itself, so a release can ship stale platform copy if the catalogue changed in the
+database and nobody propagated it.
+
+```bash
+npm run platforms:generate
+```
+
+No diff is the normal case and means the snapshot is current. A diff means the database moved
+since the last regeneration: review it as a content change, and note that English copy changes
+also need the translations in `frontend/src/i18n/locales/*/platforms.json` updated. Land it as its
+own pull request rather than folding it into the version bump.
+
+The primary control is upstream of this — whoever edits the catalogue should regenerate and open
+that pull request at the time — so this step is a backstop for when that did not happen.
+
+Until the platform catalogue is deployed to the stage the CLI points at, this reports that the
+schema has no catalogue fields. That is expected, not a failure: skip the step and leave the
+committed snapshot as it is.
+
 ## 1. Bump the version
 
 From `main`, with everything merged and CI green:
@@ -58,16 +81,24 @@ Then push the commit and the tag `npm version` created.
 
 ## 2. Desktop: build
 
-Run **Build / Electron** (`workflow_dispatch`) **from the version tag** — in
-"Use workflow from", switch to Tags and pick `vN.N.N`, not `main`. `brand`
-defaults to `remoteit`; **uncheck `skip_signing`** for a real release, since it
-defaults to `true`. Only a tag build creates the draft and publishes into it; a
-branch build compiles and discards everything, so with `skip_signing` off the
-`prepare` job refuses to start rather than pay for signatures nobody receives.
+Run **Build / Electron** (`workflow_dispatch`) from `main`, the default in "Use
+workflow from". A run on `main` builds nothing itself: it starts the workflow
+again on `main`'s version tag (`v` plus the version in `package.json`) with the
+same inputs, and its summary links to that run. The tag has to be pushed first,
+or the run fails and says so. Picking `vN.N.N` under Tags does the same thing
+directly. `brand` defaults to `remoteit`; **uncheck `skip_signing`** for a real
+release, since it defaults to `true`. Only a tag build creates the draft and
+publishes into it. Checking `build_main` builds `main` itself instead; that, and
+a run on any other branch, compiles and discards everything, so with
+`skip_signing` off the `prepare` job refuses to start rather than pay for
+signatures nobody receives.
+Which certificate signs a Windows build, and how the result is checked, is under
+[Windows code signing](#windows-code-signing).
 
 A `prepare` job first resolves the release repository for the selected brand
 (`brands/<brand>/config.ts` — `cachengo` publishes to `cachengo/desktop`) and
-creates the **draft** release there for the version (on tag builds only), then a
+creates the **draft** release there for the version (on tag builds only; if
+that version is already published it fails, so bump the version), then a
 matrix of ubuntu-latest / macos-14 / windows-latest reads
 the version from `package.json` (not from the tag) and attaches the installers
 to it. The draft is created up front on purpose: electron-builder otherwise
@@ -127,6 +158,10 @@ community post, a support reply — not back onto GitHub.
 
 Mark the GitHub release **Latest** for a public release, or **Pre-release** for
 a beta. This is what gates the in-app auto update.
+
+A version with `alpha` or `beta` in it (`v3.50.0-beta.1`) boots on the **dev stage**: dev
+login, API and agent. A plain version boots on production, whether or not it is marked
+Pre-release. Testers can switch either way under Test Settings → API Target.
 
 ## 5. Desktop: copy to S3
 
@@ -193,8 +228,57 @@ Empty means it is safe to fast-forward and something else is wrong (branch
 protection, most likely). Not empty means there is work on `release` to merge
 back into `main` first.
 
-Amplify builds the branch. Its build settings live in the Amplify console, not
-in this repo, so there is no `amplify.yml` here to change.
+Amplify builds the branch from `amplify.yml` in this repo. A branch that
+contains it ignores the build settings in the Amplify console.
+
+## Windows code signing
+
+electron-builder reads a config file _instead of_ package.json's `build`, never
+both, so `electron/electron-builder.config.js` spreads the branded `build` and
+adds only the signing part, chosen from the environment by
+`electron/scripts/win-signing.js`:
+
+- **`SKIP_SIGNING=true`** (the `skip_signing` input): no signing configuration
+  at all. Nothing is signed and nothing is verified. The config file also loads
+  `electron/.env`, which electron-builder itself would not, so a local build
+  that sets it there is unsigned too.
+- **`AZURE_SIGN_*` set**: `win.azureSignOptions` — Microsoft Artifact Signing.
+- **Otherwise**: package.json's `build` untouched, i.e. the SSL.com eSigner hook
+  in `scripts/sign.js`.
+
+The Azure side is four repository **variables** — `AZURE_SIGN_ENDPOINT` (the
+per-region URL, e.g. `https://wus2.codesigning.azure.net`), `AZURE_SIGN_ACCOUNT`,
+`AZURE_SIGN_PROFILE`, and `AZURE_SIGN_PUBLISHER` (the certificate subject,
+verbatim) — and three **secrets** for `azure/login`: `AZURE_CLIENT_ID`,
+`AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`. Login is OIDC through the `signing`
+environment the `release` job runs in, so there is no client secret anywhere.
+Setting all four variables is the switch; unset, SSL.com keeps signing; set only
+some of them and the build fails rather than guess.
+
+An Azure-signed build also writes `publisherName` into the app's
+`app-update.yml`: the new subject and the SSL.com name `remot3.it, Inc.`. From
+that build on, the updater verifies the **next** installer's signature against
+that list before running it. Nothing shipped since 3.15 verifies anything today
+(the eSigner hook gave electron-builder no certificate to derive a name from), so
+the first Azure-signed release installs everywhere and the second is the one that
+proves the list. Keep the SSL.com name in the list until that certificate is
+retired, so a hotfix signed with it still installs over an Azure-signed release.
+
+After every signed Windows build, `verify-win-installers.js` runs
+`Get-AuthenticodeSignature` — the cmdlet electron-updater's own check is built
+on — over each installer and the executables inside its payload
+(`Remote.It.exe`, `remoteit.exe`, `connectd.exe`, `muxer.exe`, `demuxer.exe`;
+electron-builder signs all of them) and reports any signature that is not valid,
+timestamped, and from an expected publisher. Under Azure that fails the build
+and removes the installers from the draft; under SSL.com it is a `::warning::`
+annotation only, because eSigner bills per signature and a finding must never
+force a re-sign. This is the guard; electron-builder's `forceCodeSigning` cannot
+be, since it only fires when no signing configuration exists at all. The
+expected publisher is `AZURE_SIGN_PUBLISHER` when set and the SSL.com name
+otherwise — under Azure the SSL.com name is *not* accepted, so a build that was
+still signed by eSigner cannot pass as migrated — matched by electron-updater's
+rule: a full distinguished name must agree on every attribute it lists, a bare
+name must equal the certificate's CN.
 
 ## Windows installer payloads
 
@@ -269,8 +353,9 @@ Two things fix that, and both are automatic:
 
 1. **Build / Electron** runs `electron/scripts/finalize-win-update-manifests.js`
    after the Windows build. Like electron-builder's own publish step, it uploads
-   only into the **draft** release for this version — so dispatch the workflow
-   **on the tag**; a branch build creates no release and has nowhere to upload to.
+   only into the **draft** release for this version — so the build has to run
+   **on the tag** (a run from `main` hands itself to the tag); a branch build
+   creates no release and has nowhere to upload to.
    It never writes to a published release: if the version is already live the
    job fails rather than rewrite a live manifest. Changing a live `latest.yml`
    is only ever the deliberate manual step below. It reorders `files` to `ia32, x64, arm64` — ia32

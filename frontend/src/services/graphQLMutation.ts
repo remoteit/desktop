@@ -10,21 +10,19 @@ export async function graphQLSetAttributes(attributes: ILookup<string | number |
   )
 }
 
-export async function graphQLSetDeviceNotification(
-  deviceID: string,
-  emailNotifications?: boolean | null,
-  desktopNotifications?: boolean | null
-) {
+export async function graphQLSetDeviceNotification(deviceID: string, settings: IDevice['notificationSettings']) {
   return await graphQLBasicRequest(
-    ` mutation SetDeviceNotification($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean ){
+    ` mutation SetDeviceNotification($deviceID: String!, $emailNotifications: Boolean, $desktopNotifications: Boolean, $pushNotifications: Boolean, $pushCategories: [String!] ){
         setNotificationSettings(
           serviceId: $deviceID, 
           emailNotifications: $emailNotifications, 
-          desktopNotifications: $desktopNotifications
+          desktopNotifications: $desktopNotifications,
+          pushNotifications: $pushNotifications,
+          pushCategories: $pushCategories
         )
       }
     `,
-    { emailNotifications, desktopNotifications, deviceID }
+    { ...settings, deviceID }
   )
 }
 
@@ -447,15 +445,51 @@ export async function graphQLDeleteTag(name: string, accountId: string) {
 
 export async function graphQLNotificationSettings(params: INotificationSetting) {
   return await graphQLBasicRequest(
-    ` mutation NotificationSettings($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String) {
+    ` mutation NotificationSettings($emailNotifications: Boolean, $desktopNotifications: Boolean, $urlNotifications: Boolean, $notificationUrl: String, $pushNotifications: Boolean, $pushCategories: [String!]) {
         setNotificationSettings(
           emailNotifications: $emailNotifications, 
           desktopNotifications: $desktopNotifications, 
           urlNotifications: $urlNotifications, 
-          notificationUrl: $notificationUrl
+          notificationUrl: $notificationUrl,
+          pushNotifications: $pushNotifications,
+          pushCategories: $pushCategories
         )
       }`,
     params
+  )
+}
+
+export async function graphQLSetOrganizationNotificationSettings(organizationId: string, pushNotifications: boolean | null) {
+  return await graphQLBasicRequest(
+    ` mutation SetOrganizationNotificationSettings($organizationId: ID!, $pushNotifications: Boolean) {
+        setOrganizationNotificationSettings(organizationId: $organizationId, pushNotifications: $pushNotifications)
+      }`,
+    { organizationId, pushNotifications }
+  )
+}
+
+export async function graphQLRegisterPushToken(
+  platform: 'ios' | 'android',
+  token: string,
+  apnsEnvironment: IApnsEnvironment,
+  appVersion: string
+) {
+  return await graphQLBasicRequest(
+    ` mutation RegisterPushToken($platform: String!, $token: String!, $apnsEnvironment: String!, $appVersion: String!) {
+        registerPushToken(platform: $platform, token: $token, apnsEnvironment: $apnsEnvironment, appVersion: $appVersion)
+      }`,
+    { platform, token, apnsEnvironment, appVersion },
+    true
+  )
+}
+
+export async function graphQLUnregisterPushToken(token: string) {
+  return await graphQLBasicRequest(
+    ` mutation UnregisterPushToken($token: String!) {
+        unregisterPushToken(token: $token)
+      }`,
+    { token },
+    true
   )
 }
 
@@ -705,6 +739,37 @@ export async function graphQLRemoveEnterpriseCustomer(userId: string) {
         removeEnterpriseCustomer(userId: $userId)
       }`,
     { userId }
+  )
+}
+
+// Add-on licence grants. `expiration` is a String on purpose — the API parses it strictly (a
+// malformed date is refused rather than read as open-ended); undefined leaves an existing grant's
+// expiry alone, null clears it.
+export async function graphQLAddAddonCustomer(product: string, email: string, expiration?: string | null) {
+  return await graphQLBasicRequest(
+    ` mutation AddAddonCustomer($product: String!, $email: String!, $expiration: String) {
+        addAddonCustomer(product: $product, email: $email, expiration: $expiration) {
+          productId
+          userId
+          email
+          name
+          deviceCount
+          memberCount
+          licenseId
+          created
+          expiration
+        }
+      }`,
+    { product, email, expiration }
+  )
+}
+
+export async function graphQLRemoveAddonCustomer(product: string, userId: string) {
+  return await graphQLBasicRequest(
+    ` mutation RemoveAddonCustomer($product: String!, $userId: String!) {
+        removeAddonCustomer(product: $product, userId: $userId)
+      }`,
+    { product, userId }
   )
 }
 

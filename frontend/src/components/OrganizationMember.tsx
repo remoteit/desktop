@@ -1,8 +1,8 @@
 import React from 'react'
+import { useMobile } from '../hooks/useMobile'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
-import { MOBILE_WIDTH } from '../constants'
-import { Box, useMediaQuery, ListItemSecondaryAction } from '@mui/material'
+import { Box, ListItemSecondaryAction } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { LicenseSelect } from './LicenseSelect'
 import { RoleSelect } from './RoleSelect'
@@ -19,7 +19,7 @@ type Props = {
 }
 
 export const OrganizationMember: React.FC<Props> = ({ member, roles = [], disabled, enterprise, link = true }) => {
-  const hideActions = useMediaQuery(`(max-width:${MOBILE_WIDTH}px)`)
+  const hideActions = useMobile()
   const dispatch = useDispatch<Dispatch>()
   return (
     <ListItemLocation

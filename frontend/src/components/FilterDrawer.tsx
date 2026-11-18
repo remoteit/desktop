@@ -70,13 +70,21 @@ export const FilterDrawer: React.FC = () => {
 
   const onOwner = value => update({ owner: value })
 
-  const onPlatform = value => {
-    let result = Array.isArray(state.platform) ? [...state.platform] : undefined
-    const index = result && result.indexOf(value)
+  const platformOptions = React.useMemo(() => {
+    const ids: Record<string, number[]> = {}
+    for (const [id, name] of Object.entries(platforms.pageTypes)) (ids[name] ??= []).push(Number(id))
+    return Object.entries(ids)
+      .map(([name, group]) => ({ value: group[0], group, name }))
+      .sort(byName)
+  }, [])
 
-    if (index !== undefined && index >= 0) result?.splice(index, 1)
-    else if (value === -1) result = undefined
-    else result === undefined ? (result = [value]) : result.push(value)
+  const onPlatform = value => {
+    const group = platformOptions.find(option => option.value === value)?.group ?? [value]
+    let result = Array.isArray(state.platform) ? [...state.platform] : undefined
+
+    if (value === -1) result = undefined
+    else if (result?.includes(value)) result = result.filter(v => !group.includes(v))
+    else result = [...(result ?? []), ...group]
 
     if (!result?.length) result = undefined
     update({ platform: result })
@@ -133,11 +141,7 @@ export const FilterDrawer: React.FC = () => {
                 icon="check"
                 value={state.platform === undefined ? [-1] : state.platform}
                 onSelect={onPlatform}
-                filterList={platformFilter.concat(
-                  Object.keys(platforms.nameLookup)
-                    .map(p => ({ value: parseInt(p), name: platforms.nameLookup[p] }))
-                    .sort(byName)
-                )}
+                filterList={platformFilter.concat(platformOptions)}
               />
             ),
           },

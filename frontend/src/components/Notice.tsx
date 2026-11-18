@@ -2,7 +2,7 @@ import React from 'react'
 import { Icon } from './Icon'
 import { IconButton } from '../buttons/IconButton'
 import { spacing, fontSizes, toSxArray } from '../styling'
-import { alpha, SxProps, Theme, Paper, Box } from '@mui/material'
+import { alpha, darken, SxProps, Theme, Paper, Box } from '@mui/material'
 
 const severityColors = { info: 'calm', error: 'error', warning: 'warning', success: 'success' } as const
 
@@ -10,7 +10,11 @@ const severitySx = (theme: Theme, severity: 'info' | 'warning' | 'error' | 'succ
   const color = theme.palette[severityColors[severity]].main
   return solid
     ? { color: theme.palette.alwaysWhite.main, backgroundColor: color }
-    : { color, backgroundColor: alpha(color, 0.1) }
+    : {
+        // Plain amber and blue text reads under 3:1 on its own 10% wash; darkened 40% it clears 4.5:1 in the same hue.
+        color: theme.palette.mode === 'light' ? darken(color, 0.4) : color,
+        backgroundColor: alpha(color, 0.1),
+      }
 }
 
 export type NoticeProps = {
@@ -92,6 +96,8 @@ export const Notice: React.FC<NoticeProps> = ({
             paddingBottom: `${spacing.sm}px`,
           },
           '& em': { display: 'block', fontWeight: 400, fontSize: fontSizes.sm, fontStyle: 'normal' },
+          // The theme colors captions grayDark, which otherwise wins over the severity color inherited from here.
+          '& .MuiTypography-caption': { color: 'inherit' },
           '& strong': { fontSize: fontSizes.base, fontWeight: 500 },
           '& .MuiButton-root': { marginTop: '5px' },
         },

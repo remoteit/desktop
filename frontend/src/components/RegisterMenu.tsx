@@ -70,6 +70,7 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
             '&.Mui-disabled': { backgroundColor: 'white.main', color: 'gray.main' },
           }),
         }}
+        label={t('registerMenu.addDevice', 'Add device')}
         title={
           unauthorized
             ? t(

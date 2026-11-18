@@ -44,7 +44,8 @@ import { Duration } from 'luxon'
 import { AxiosResponse } from 'axios'
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
-import { State } from '../store'
+import { State, store } from '../store'
+import { inOrder } from '../helpers/inOrder'
 
 export type IDeviceState = {
   all: IDevice[]
@@ -100,6 +101,8 @@ type IDeviceAccountState = {
   [accountId: string]: IDeviceState
 }
 
+const settingsWrites = inOrder(() => store.getState().auth.user?.id)
+
 const defaultAccountState: IDeviceAccountState = {
   default: { ...defaultState },
 }
@@ -133,8 +136,16 @@ export default createModel<RootModel>()({
       }
 
       set({ fetching: true, accountId })
-      const { devices, total, error } = await graphQLListProcessor(options)
+      const result = await graphQLListProcessor(options)
 
+      // A failed fetch must not mark the account initialized: DevicesPage reads an
+      // initialized empty list as "no devices" and redirects to /add.
+      if (!result) {
+        set({ fetching: false, append: false, accountId })
+        return false
+      }
+
+      const { devices, total } = result
       if (searched) set({ results: total, accountId })
       else set({ total, accountId })
 
@@ -144,10 +155,18 @@ export default createModel<RootModel>()({
         await truncateMergeDevices({ devices, accountId })
       }
 
-      if (!error) dispatch.search.updateSearch()
+      dispatch.search.updateSearch()
       // Record the name the current list was actually filtered by (the live `query` can
       // be ahead of the results until re-submitted) so new devices match the same view.
       set({ fetching: false, append: false, initialized: true, appliedName: query, accountId })
+      return true
+    },
+
+    async fetchPage({ from, append = false }: { from: number; append?: boolean }, state) {
+      const accountId = selectActiveAccountId(state)
+      const previous = selectDeviceModelAttributes(state, accountId).from
+      await dispatch.devices.set({ from, append, accountId })
+      if (!(await dispatch.devices.fetchList())) await dispatch.devices.set({ from: previous, accountId })
     },
 
     async fetchIfEmpty(_: void, state) {
@@ -246,7 +265,7 @@ export default createModel<RootModel>()({
           suppressAdd: newDevice && !matchesFilter,
         })
       } else {
-        if (!isService && state.ui.silent !== id)
+        if (gqlResponse !== 'ERROR' && !isService && state.ui.silent !== id)
           dispatch.ui.set({
             noticeMessage: isService
               ? i18n.t('notices:access.noService', {
@@ -379,7 +398,7 @@ export default createModel<RootModel>()({
 
     async graphQLListProcessor(options: gqlOptions) {
       const gqlResponse = await graphQLFetchDeviceList(options)
-      if (gqlResponse === 'ERROR') return { devices: [], total: 0, error: true }
+      if (!gqlResponse || gqlResponse === 'ERROR') return
 
       const [gqlDevices, total] = graphQLMetadata(gqlResponse)
       const devices = graphQLDeviceAdaptor({
@@ -428,13 +447,14 @@ export default createModel<RootModel>()({
       dispatch.accounts.setDevice({ id: device.id, device })
     },
 
-    async setNotificationDevice(device: IDevice) {
-      graphQLSetDeviceNotification(
-        device.id,
-        device.notificationSettings.emailNotifications,
-        device.notificationSettings.desktopNotifications
+    async setNotificationDevice({ device, settings }: { device: IDevice; settings: IDevice['notificationSettings'] }) {
+      settingsWrites(() => graphQLSetDeviceNotification(device.id, settings)).catch(error =>
+        console.warn('DEVICE NOTIFICATION SAVE FAILED', error)
       )
-      dispatch.accounts.setDevice({ id: device.id, device })
+      dispatch.accounts.setDevice({
+        id: device.id,
+        device: { ...device, notificationSettings: { ...device.notificationSettings, ...settings } },
+      })
     },
 
     async setServiceAttributes(service: IService, state) {
@@ -595,8 +615,8 @@ export default createModel<RootModel>()({
             }),
           })
         }
-        dispatch.ui.set({ claiming: false })
       }
+      dispatch.ui.set({ claiming: false })
     },
 
     async createRegistration({
@@ -867,10 +887,10 @@ export default createModel<RootModel>()({
   },
 })
 
-function graphQLMetadata(gqlData?: AxiosResponse) {
-  const total = gqlData?.data?.data?.login?.account?.devices?.total || 0
-  const devices = gqlData?.data?.data?.login?.account?.devices?.items || []
-  const id = gqlData?.data?.data?.login?.id
+function graphQLMetadata(gqlData: AxiosResponse) {
+  const total = gqlData.data?.data?.login?.account?.devices?.total || 0
+  const devices = gqlData.data?.data?.login?.account?.devices?.items || []
+  const id = gqlData.data?.data?.login?.id
   return [devices, total, id]
 }
 

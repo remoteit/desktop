@@ -1,6 +1,12 @@
-import { GRAPHQL_API, GRAPHQL_BETA_API, API_URL, WEBSOCKET_BETA_URL, WEBSOCKET_URL, TEST_HEADER } from '../constants'
+import {
+  GRAPHQL_API,
+  API_URL,
+  WEBSOCKET_URL,
+  TEST_HEADER,
+  LEGACY_SHARED_GRAPHQL_RE,
+  resourceForApiURL,
+} from '../constants'
 import { graphQLRentANode } from '../services/graphQLMutation'
-import { version } from './versionHelper'
 import { store } from '../store'
 
 export function getApiURL(): string | undefined {
@@ -8,11 +14,18 @@ export function getApiURL(): string | undefined {
 
   const { apiGraphqlURL, switchApi } = store.getState().ui.apis
   const { overrides } = store.getState().backend.environment
-  const defaultURL =
-    version.includes('alpha') || version.includes('beta')
-      ? overrides?.betaApiURL || GRAPHQL_BETA_API
-      : overrides?.apiURL || GRAPHQL_API
+  const override = overrides?.apiURL
+  const defaultURL = override && !LEGACY_SHARED_GRAPHQL_RE.test(override) ? override : GRAPHQL_API
   return apiGraphqlURL && switchApi ? apiGraphqlURL : defaultURL
+}
+
+// D10 (permitteer docs/remoteit-desktop-login.md Phase 4c): the token's audience follows the URL
+// the app CALLS — whichever lane chose it: the build's default, a backend override, the Test
+// Settings switcher or a hand-typed target — so a URL and a token can never disagree about the
+// stage. An off-allowlist target fails at MINT with a legible invalid_target instead of as
+// ambient 401s an hour later.
+export function getApiResource(): string {
+  return resourceForApiURL(getApiURL() ?? GRAPHQL_API)
 }
 
 export function getRestApi(): string | undefined {
@@ -29,8 +42,7 @@ export function getWebSocketURL(): string | undefined {
   if (!store) return WEBSOCKET_URL
 
   const apis = store.getState().ui.apis
-  const defaultURL = version.includes('alpha') || version.includes('beta') ? WEBSOCKET_BETA_URL : WEBSOCKET_URL
-  return apis?.webSocketURL && apis?.switchApi ? apis.webSocketURL : defaultURL
+  return apis?.webSocketURL && apis?.switchApi ? apis.webSocketURL : WEBSOCKET_URL
 }
 
 export function getTestHeader(): { [key: string]: string } {

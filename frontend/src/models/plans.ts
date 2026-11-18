@@ -27,6 +27,9 @@ type ILicenseLookup = { productId: string; platform?: number }
 
 export const REMOTEIT_PRODUCT_ID = 'b999e047-5532-11eb-8872-063ce187bcd7'
 export const AWS_PRODUCT_ID = '55d9e884-05fd-11eb-bda8-021f403e8c27'
+// The ai-agent ADD-ON product (graphql-api docs/AI-AGENT-LICENSE.md): a licence for it is the
+// user's entitlement to Remote.It AI, granted per user from Admin → Add-ons.
+export const AI_AGENT_PRODUCT_ID = '96aa515b-cf6b-40bf-8d04-7972cbbc7c39'
 export const PERSONAL_PLAN_ID = 'e147a026-81d7-11eb-afc8-02f048730623'
 export const PROFESSIONAL_PLAN_ID = '6b5e1e70-045d-11ec-8a08-02ea65a4da2d'
 export const BUSINESS_PLAN_ID = '85ce6edf-9e70-11ec-b51a-0a63867cb0b9'
@@ -162,9 +165,8 @@ export default createModel<RootModel>()({
       await dispatch.plans.parse(result)
     },
 
-    async parse(gqlResponse: AxiosResponse<any> | void) {
-      if (!gqlResponse) return
-      const data = gqlResponse?.data?.data
+    async parse(gqlResponse: AxiosResponse<any>) {
+      const data = gqlResponse.data?.data
       await dispatch.plans.set({
         plans: data.plans,
         updating: undefined,

@@ -1,9 +1,8 @@
 import { exec } from '@vscode/sudo-prompt'
 
-export const sudoPromise = async (command: string): Promise<{ stdout: string; stderr: string }> =>
-  new Promise(async (resolve, reject) =>
-    exec(command, { name: 'remoteit' }, (error, stdout, stderr) => {
-      if (error) reject(error)
-      resolve({ stdout, stderr })
-    })
+export const sudoPromise = (command: string): Promise<{ stdout: string; stderr: string }> =>
+  new Promise((resolve, reject) =>
+    exec(command, { name: 'remoteit' }, (error, stdout, stderr) =>
+      error ? reject(error) : resolve({ stdout, stderr })
+    )
   )

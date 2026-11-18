@@ -26,15 +26,18 @@ export const LicensingSetting: React.FC<{ licenses: ILicense[]; limits?: ILimit[
                 </Typography>
               }
               secondary={
-                !license.id ? (
-                  t('licensingSetting.notSubscribed', 'Not subscribed')
-                ) : (
-                  license.expiration && (
-                    <>
-                      {t('licensingSetting.renews', 'Renews')} <Timestamp date={license.expiration} variant="long" />
-                    </>
-                  )
-                )
+                !license.id
+                  ? t('licensingSetting.notSubscribed', 'Not subscribed')
+                  : license.expiration && (
+                      <>
+                        {/* Billing renews a SUBSCRIBED licence at this date. Any other licence with an
+                          expiration — an admin-granted add-on's time-box, a custom term — ends there. */}
+                        {license.subscription
+                          ? t('licensingSetting.renews', 'Renews')
+                          : t('licensingSetting.expires', 'Expires')}{' '}
+                        <Timestamp date={license.expiration} variant="long" />
+                      </>
+                    )
               }
             />
           </ListItem>
