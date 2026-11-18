@@ -19,20 +19,31 @@ const ENTRIES: Entry[] = [
 ]
 
 // A raw tar of one header per entry, as another tool might write it: name, type, mode, and data.
-function foreign(items: { name: string; type: string; mode?: number; data?: string; link?: string }[]) {
+function foreign(
+  items: { name: string; type: string; mode?: number; data?: string; link?: string; size?: number }[],
+  end = true
+) {
   const blocks: Buffer[] = []
   for (const item of items) {
     const h = Buffer.alloc(512)
     const data = Buffer.from(item.data ?? '')
     h.write(item.name, 0)
     h.write(`${(item.mode ?? 0o644).toString(8).padStart(7, '0')}\0`, 100)
-    h.write(`${data.length.toString(8).padStart(11, '0')}\0`, 124)
+    h.write(`${(item.size ?? data.length).toString(8).padStart(11, '0')}\0`, 124)
     h.write(item.type, 156)
     if (item.link) h.write(item.link, 157)
     h.write('ustar\0', 257)
+    h.fill(0x20, 148, 156)
+    h.write(
+      `${h
+        .reduce((n, b) => n + b, 0)
+        .toString(8)
+        .padStart(6, '0')}\0 `,
+      148
+    )
     blocks.push(h, data, Buffer.alloc((512 - (data.length % 512)) % 512))
   }
-  blocks.push(Buffer.alloc(1024))
+  if (end) blocks.push(Buffer.alloc(1024))
   return new Uint8Array(gzipSync(Buffer.concat(blocks)))
 }
 
@@ -69,5 +80,17 @@ describe('a release archive', () => {
     await expect(untarGz(foreign([{ name: '../escape', type: '0', data: 'x' }]))).rejects.toBeInstanceOf(ArchiveRefused)
     await expect(untarGz(foreign([{ name: '/etc/x', type: '0', data: 'x' }]))).rejects.toBeInstanceOf(ArchiveRefused)
     await expect(untarGz(enc('not gzip'))).rejects.toThrow(/not gzip/)
+  })
+
+  it('refuses an archive that is not whole, or that unpacks to more than the page reads', async () => {
+    // An entry that says 1,000 bytes and holds 20, at the archive's end.
+    await expect(
+      untarGz(foreign([{ name: 'bin/panel', type: '0', data: 'x'.repeat(20), size: 1000 }], false))
+    ).rejects.toThrow(/cut short/)
+    await expect(untarGz(foreign([{ name: 'bin/panel', type: '0', data: 'x' }], false))).rejects.toThrow(/no end/)
+    const damaged = Buffer.from(require('zlib').gunzipSync(foreign([{ name: 'a', type: '0', data: 'x' }])))
+    damaged[0] = 0x62 // the name changed after the checksum was summed
+    await expect(untarGz(new Uint8Array(gzipSync(damaged)))).rejects.toThrow(/checksum/)
+    await expect(untarGz(await tarGz(ENTRIES), 4096)).rejects.toThrow(/unpacks to more than/)
   })
 })

@@ -95,6 +95,32 @@ async function through(bytes: Uint8Array, stream: CompressionStream | Decompress
 
 export const tarGz = async (entries: Entry[]) => through(tar(entries), new CompressionStream('gzip'))
 
+// A gzip's contents, read only up to most bytes: a small archive that unpacks to gigabytes is refused as it is read,
+// before the page holds it.
+async function gunzip(bytes: Uint8Array, most: number): Promise<Uint8Array> {
+  const reader = new Blob([bytes as Uint8Array<ArrayBuffer>])
+    .stream()
+    .pipeThrough(new DecompressionStream('gzip'))
+    .getReader()
+  const parts: Uint8Array[] = []
+  let size = 0
+  for (;;) {
+    let chunk: ReadableStreamReadResult<Uint8Array>
+    try {
+      chunk = await reader.read()
+    } catch {
+      throw new ArchiveRefused('not gzip')
+    }
+    if (chunk.done) return concat(parts)
+    size += chunk.value.length
+    if (size > most) {
+      await reader.cancel()
+      throw new ArchiveRefused(`it unpacks to more than ${Math.round(most / 2 ** 20)} MB`)
+    }
+    parts.push(chunk.value)
+  }
+}
+
 export class ArchiveRefused extends Error {}
 
 // A path an archive may hold: relative, no . or .. part, no backslash or NUL. Directories end in /.
@@ -119,20 +145,25 @@ const text = (block: Uint8Array, at: number, length: number) => {
 const number = (block: Uint8Array, at: number, length: number) => parseInt(text(block, at, length).trim() || '0', 8)
 
 // A .tar.gz's entries: regular files (with their exec bit) and directories alone, each at a safe path. A link, a
-// device, an absolute path or one with .. is refused, saying which: the daemon would unpack none of them.
-export async function untarGz(bytes: Uint8Array): Promise<Entry[]> {
-  let raw: Uint8Array
-  try {
-    raw = await through(bytes, new DecompressionStream('gzip'))
-  } catch {
-    throw new ArchiveRefused('not gzip')
-  }
+// device, an absolute path or one with .. is refused, saying which: the daemon would unpack none of them. So is an
+// archive that is not whole — a header whose checksum fails, an entry cut short, no end — rather than packed again
+// as fewer bytes than its author's; and one that unpacks to more than most bytes.
+export async function untarGz(bytes: Uint8Array, most = 256 << 20): Promise<Entry[]> {
+  const raw = await gunzip(bytes, most)
   const out: Entry[] = []
   let longName: string | undefined
+  let ended = false
   for (let at = 0; at + BLOCK <= raw.length; ) {
     const h = raw.subarray(at, at + BLOCK)
-    if (h.every(b => b === 0)) break
+    if (h.every(b => b === 0)) {
+      ended = true
+      break
+    }
+    const sum = h.reduce((n, b, i) => n + (i >= 148 && i < 156 ? 0x20 : b), 0)
+    if (sum !== number(h, 148, 8)) throw new ArchiveRefused('a header is damaged (its checksum fails)')
     const size = number(h, 124, 12)
+    if (!Number.isSafeInteger(size) || size < 0 || at + BLOCK + size > raw.length)
+      throw new ArchiveRefused(`${text(h, 0, 100)} is cut short: the archive is not whole`)
     const type = String.fromCharCode(h[156] || 0x30)
     const body = raw.subarray(at + BLOCK, at + BLOCK + size)
     at += BLOCK + size + ((BLOCK - (size % BLOCK)) % BLOCK)
@@ -154,6 +185,7 @@ export async function untarGz(bytes: Uint8Array): Promise<Entry[]> {
       out.push({ name: safePath(name), data: body.slice(), exec: (number(h, 100, 8) & 0o111) !== 0 })
     else throw new ArchiveRefused(`${name}: not a regular file or a directory`)
   }
+  if (!ended) throw new ArchiveRefused('it has no end: the archive is not whole')
   return out
 }
 
