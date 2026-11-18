@@ -6,7 +6,6 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { windowOpen } from '../services/browser'
 import { Container } from '../components/Container'
 import { BillingUI } from '../components/BillingUI'
-import { TestUI } from '../components/TestUI'
 import { Logo } from '@common/brand/Logo'
 import { Icon } from '../components/Icon'
 
@@ -47,14 +46,12 @@ export const AccountPage: React.FC = () => {
         </BillingUI>
         <ListItemLocation title={t('settings.license', 'License')} to="/account/license" icon="id-badge" dense />
         <ListItemLocation title={t('settings.accessKeys', 'Access Keys')} to="/account/accessKey" icon="key" dense />
-        <TestUI>
-          <ListItemLocation
-            title={t('settings.connectedApps', 'Connected Apps')}
-            to="/account/connected"
-            icon="puzzle-piece-simple"
-            dense
-          />
-        </TestUI>
+        <ListItemLocation
+          title={t('settings.connectedApps', 'Connected Apps')}
+          to="/account/connected"
+          icon="puzzle-piece-simple"
+          dense
+        />
       </List>
     </Container>
   )
