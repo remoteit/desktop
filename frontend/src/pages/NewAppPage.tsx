@@ -51,9 +51,16 @@ export const NewAppPage: React.FC = () => {
   const [publishing, setPublishing] = useState(false)
   const history = useHistory()
 
+  // Each account its own New app: switching organizations starts again, so nothing packed or signed for the last
+  // account's publisher goes on under the new one's.
   useEffect(() => {
     let current = true
     setRead(undefined)
+    setStep('describe')
+    setInputs({})
+    setBuilt(undefined)
+    setPublished(undefined)
+    setRefusal(undefined)
     graphQLAppPublisher(account).then(answer => current && setRead(answer ?? null))
     return () => {
       current = false
