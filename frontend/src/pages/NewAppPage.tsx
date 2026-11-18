@@ -15,7 +15,15 @@ import { Inputs, NewAppFiles } from '../components/NewAppFiles'
 import { NewAppPublish } from '../components/NewAppPublish'
 import { Built, buildRelease, Given, ReleaseRefused } from '../helpers/appRelease'
 import { AppPublisher, AppPublishing, graphQLAppPublisher } from '../services/graphQLAppPublishers'
-import { AppForm, manifestOf, manifestProblems, manifestText, newAppForm } from '../helpers/appManifest'
+import {
+  AppForm,
+  duplicateMembers,
+  formProblems,
+  manifestOf,
+  manifestProblems,
+  manifestText,
+  newAppForm,
+} from '../helpers/appManifest'
 
 /* New app (/apps/new; presence-server docs/device-apps-new-app.md): a publisher's brand-new app, described with a
    guided form — or, with Edit as JSON, any contract-1 manifest — and checked as it changes with the very schema and
@@ -53,22 +61,34 @@ export const NewAppPage: React.FC = () => {
   const publisher = read?.publisher
   const standing = publisher?.keys.filter(key => !key.revoked) ?? []
 
-  // The manifest the page holds now, and everything wrong with it.
+  // The manifest the page holds now, and everything wrong with it: first what would be lost on the way to it (a name
+  // given twice, an environment line with no NAME=), then the contract's own problems.
   const { manifest, problems } = useMemo(() => {
     if (!publisher) return { manifest: undefined, problems: [] }
     if (json !== undefined) {
+      let parsed: unknown
       try {
-        const parsed = JSON.parse(json)
-        return { manifest: parsed, problems: manifestProblems(parsed) }
+        parsed = JSON.parse(json)
       } catch (error) {
         return {
           manifest: undefined,
           problems: [t('newApp.notJson', 'Not JSON: {{error}}', { error: (error as Error).message })],
         }
       }
+      const twice = duplicateMembers(json).map(path =>
+        t('newApp.memberTwice', '{{path}} is named twice: a manifest names each once', { path })
+      )
+      return { manifest: parsed as Record<string, any>, problems: twice.length ? twice : manifestProblems(parsed) }
     }
+    const lost = formProblems(form).map(({ code, value }) =>
+      code === 'settingTwice'
+        ? t('newApp.settingTwice', 'Two settings are named {{value}}: name each once', { value })
+        : code === 'envTwice'
+        ? t('newApp.envTwice', 'The environment names {{value}} twice', { value })
+        : t('newApp.envNoEquals', 'The environment line “{{value}}” is not NAME=value', { value })
+    )
     const m = manifestOf(form, publisher.id)
-    return { manifest: m, problems: manifestProblems(m) }
+    return { manifest: m, problems: lost.length ? lost : manifestProblems(m) }
   }, [form, json, publisher, t])
 
   const fileMax = read?.publishing.fileMax || 16 << 20

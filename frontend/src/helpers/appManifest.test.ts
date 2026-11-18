@@ -113,3 +113,34 @@ describe('the form', () => {
     expect(manifestProblems(m)).toEqual([])
   })
 })
+
+describe('what a manifest cannot hold', () => {
+  it('a setting or environment name given twice, an environment line with no NAME=', async () => {
+    const { formProblems } = await import('./appManifest')
+    const form = {
+      ...hello(),
+      env: 'A=1\nTOKEN\nA=2\n=x',
+      settings: [
+        { ...newSetting(), name: 'title' },
+        { ...newSetting(), name: 'title ' },
+      ],
+    }
+    expect(formProblems(form)).toEqual([
+      { code: 'settingTwice', value: 'title' },
+      { code: 'envNoEquals', value: 'TOKEN' },
+      { code: 'envNoEquals', value: '=x' },
+      { code: 'envTwice', value: 'A' },
+    ])
+    expect(formProblems(hello())).toEqual([])
+  })
+
+  it('a JSON member named twice in one object, at any depth', async () => {
+    const { duplicateMembers } = await import('./appManifest')
+    expect(
+      duplicateMembers('{"a": 1, "b": {"c": 1, "c": 2}, "a": [ {"x": "a:", "x": 1} ], "s": "\\"a\\": 1"}')
+    ).toEqual(['/b/c', '/a', '/a/*/x'])
+    expect(
+      duplicateMembers(JSON.stringify({ settings: { a: { type: 'bool' }, b: { type: 'bool' } }, run: { a: 1 } }))
+    ).toEqual([])
+  })
+})

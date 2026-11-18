@@ -5,13 +5,16 @@ import { CreateLabels, FromSigner, SignLabels, ToSigner } from './protocol'
    connection; presence-server docs/device-apps-new-app.md, "The signer"). It runs in a sandboxed frame at an opaque
    origin, so the portal's scripts cannot reach its inputs, and it answers only a parent of its own URL's origin: a
    request from any other is ignored, and every answer is addressed to that origin alone, so a page elsewhere that
-   frames it learns nothing. It builds its own small form for each request; the key file's text, the passphrase and
-   the key are dropped as soon as they are used. */
+   frames it learns nothing. Served from an origin a browser cannot name — a packaged app's own scheme
+   (capacitor://localhost) or a file —, no web page can frame it, and the parent window is the check: its answers are
+   addressed to any origin, being public (a public key, a signature). It builds its own small form for each request;
+   the key file's text, the passphrase and the key are dropped as soon as they are used. */
 
 const own = new URL(location.href).origin
+const named = own !== 'null'
 const root = document.getElementById('signer')!
 
-const send = (message: FromSigner) => window.parent.postMessage(message, own)
+const send = (message: FromSigner) => window.parent.postMessage(message, named ? own : '*')
 
 function el<T extends HTMLElement = HTMLElement>(
   tag: string,
@@ -57,7 +60,10 @@ function create(publisher: string, labels: CreateLabels) {
     } finally {
       passphrase.value = again.value = ''
     }
-    // The download is its own click: a browser lets a frame save a file only on a person's gesture.
+    // The download is its own click (a browser lets a frame save a file only on a person's gesture), as often as
+    // asked: starting a download is not saving the file — a save dialog cancelled, a download blocked. The key goes
+    // to the portal only once the person says the file is saved; until then nothing is registered, and closing the
+    // frame forgets the key.
     const { file, fileName, publicKey, keyId } = made
     made = undefined
     const download = el<HTMLButtonElement>('button', {
@@ -65,14 +71,28 @@ function create(publisher: string, labels: CreateLabels) {
       textContent: labels.download,
       className: 'primary',
     })
-    root.replaceChildren(el('p', {}, `${labels.keyId} ${keyId}`), download, note)
+    const saved = el<HTMLButtonElement>('button', { type: 'button', textContent: labels.saved, disabled: true })
+    root.replaceChildren(
+      el('p', {}, `${labels.keyId} ${keyId}`),
+      el('p', {}, labels.saveIntro),
+      download,
+      ' ',
+      saved,
+      note
+    )
     say(note, '')
     download.onclick = () => {
       const url = URL.createObjectURL(new Blob([file], { type: 'application/x-pem-file' }))
       el<HTMLAnchorElement>('a', { href: url, download: fileName }).click()
       setTimeout(() => URL.revokeObjectURL(url), 60_000)
-      download.disabled = true
-      say(note, labels.downloaded)
+      download.textContent = labels.downloadAgain
+      download.className = ''
+      saved.disabled = false
+      saved.className = 'primary'
+    }
+    saved.onclick = () => {
+      download.disabled = saved.disabled = true
+      say(note, labels.registering)
       send({ type: 'created', publicKey, keyId })
     }
   }
@@ -130,7 +150,7 @@ function problem(error: unknown, labels: SignLabels) {
 }
 
 window.addEventListener('message', event => {
-  if (event.source !== window.parent || event.origin !== own) return
+  if (event.source !== window.parent || (named && event.origin !== own)) return
   const message = event.data as ToSigner
   if (message?.type === 'create') create(String(message.publisher), message.labels)
   else if (message?.type === 'sign' && message.manifest instanceof Uint8Array)

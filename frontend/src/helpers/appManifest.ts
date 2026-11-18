@@ -183,7 +183,11 @@ export function manifestOf(form: AppForm, publisher: string): Record<string, any
   if (args.length) run.args = args
   const env = lines(form.env)
   if (env.length)
-    run.env = Object.fromEntries(env.map(line => [line.split('=')[0].trim(), line.slice(line.indexOf('=') + 1)]))
+    run.env = Object.fromEntries(
+      env.map(line =>
+        line.includes('=') ? [line.slice(0, line.indexOf('=')).trim(), line.slice(line.indexOf('=') + 1)] : [line, '']
+      )
+    )
   if (form.onChange !== 'restart') run.on_settings_change = form.onChange
   m.run = run
   if (form.listen !== 'none') {
@@ -215,6 +219,65 @@ export function manifestOf(form: AppForm, publisher: string): Record<string, any
   if (Object.keys(capabilities).length) m.capabilities = capabilities
   if (form.notes.trim()) m.notes = form.notes.replace(/\s+$/, '')
   return m
+}
+
+// What the form says that a manifest cannot hold, so it would be lost on the way: a setting or an environment name
+// given twice (an object keeps one), an environment line with no NAME=. Each a code and its values, for the page's
+// words; the manifest's own problems are manifestProblems'.
+export type FormProblem = { code: 'settingTwice' | 'envTwice' | 'envNoEquals'; value: string }
+export function formProblems(form: AppForm): FormProblem[] {
+  const out: FormProblem[] = []
+  const twice = (names: string[]) => names.filter((name, i) => names.indexOf(name) !== i)
+  for (const name of new Set(twice(form.settings.map(row => row.name.trim()))))
+    out.push({ code: 'settingTwice', value: name })
+  const env = lines(form.env)
+  for (const line of env) if (line.indexOf('=') < 1) out.push({ code: 'envNoEquals', value: line })
+  for (const name of new Set(
+    twice(env.filter(line => line.indexOf('=') > 0).map(line => line.slice(0, line.indexOf('=')).trim()))
+  ))
+    out.push({ code: 'envTwice', value: name })
+  return out
+}
+
+// The members a JSON text names twice in one object, each as its path: JSON.parse keeps the last silently, and so do
+// graphql and the daemon, so a manifest written with one is refused here rather than read other than its author meant.
+export function duplicateMembers(text: string): string[] {
+  const out: string[] = []
+  const stack: { keys: Set<string>; path: string; key?: string }[] = []
+  let at = 0
+  const str = () => {
+    const start = at
+    at++
+    while (at < text.length && text[at] !== '"') at += text[at] === '\\' ? 2 : 1
+    at++
+    return JSON.parse(text.slice(start, at)) as string
+  }
+  while (at < text.length) {
+    const c = text[at]
+    if (c === '"') {
+      const value = str()
+      const top = stack[stack.length - 1]
+      // A string followed by a colon inside an object is a member's name.
+      let next = at
+      while (/\s/.test(text[next] ?? '')) next++
+      if (top && text[next] === ':' && top.key === undefined) {
+        if (top.keys.has(value)) out.push(`${top.path}/${value}`)
+        top.keys.add(value)
+        top.key = value
+      }
+      continue
+    }
+    if (c === '{' || c === '[') {
+      const parent = stack[stack.length - 1]
+      stack.push({ keys: new Set(), path: parent ? `${parent.path}/${parent.key ?? '*'}` : '' })
+    } else if (c === '}' || c === ']') stack.pop()
+    else if (c === ',') {
+      const top = stack[stack.length - 1]
+      if (top) top.key = undefined
+    }
+    at++
+  }
+  return out
 }
 
 // The manifest's text as the build writes it (remoteit/apps tools/lib/build.mjs manifestText): what is signed.
