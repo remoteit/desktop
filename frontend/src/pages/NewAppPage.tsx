@@ -88,8 +88,8 @@ const NewAppFlow: React.FC<{ account?: string }> = ({ account }) => {
       const twice = duplicateMembers(json).map(path =>
         t('newApp.memberTwice', '{{path}} is named twice: a manifest names each once', { path })
       )
-      if (parsed && typeof parsed === 'object' && 'archives' in parsed)
-        twice.push(t('newApp.archivesGiven', 'archives is written when the files are packed: leave it out'))
+      if (parsed && typeof parsed === 'object' && ('archives' in parsed || 'icon' in parsed))
+        twice.push(t('newApp.archivesGiven', 'archives and icon are written when the files are packed: leave them out'))
       return { manifest: parsed as Record<string, any>, problems: twice.length ? twice : manifestProblems(parsed) }
     }
     const lost = formProblems(form).map(({ code, value }) =>
@@ -392,7 +392,7 @@ function refusalWords(t: (key: string, text: string, values?: any) => string, er
         v
       )
     case 'archivesGiven':
-      return t('newApp.archivesGiven', 'archives is written when the files are packed: leave it out', v)
+      return t('newApp.archivesGiven', 'archives and icon are written when the files are packed: leave them out', v)
     case 'tooMany':
       return t('newApp.refusedTooMany', 'At most {{most}} archives', v)
     default:

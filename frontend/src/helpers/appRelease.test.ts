@@ -104,6 +104,9 @@ describe('a release built in the browser', () => {
       archives: { any: { file: 'x.tar.gz', sha256: '0'.repeat(64) } },
     })
     expect(await refused(buildRelease(stock, {}, MAX))).toEqual(['archivesGiven', {}])
+    // So is an icon: the release would name a file the page never uploads.
+    const iconed = source({ run: { command: '/bin/sh' }, icon: { file: 'x.png', sha256: '0'.repeat(64) } })
+    expect(await refused(buildRelease(iconed, {}, MAX))).toEqual(['archivesGiven', {}])
   })
 
   it('a stock tool needs no files', async () => {

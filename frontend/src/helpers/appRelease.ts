@@ -115,9 +115,9 @@ export async function buildRelease(
   inputs: Record<string, Given>,
   fileMax: number
 ): Promise<Built> {
-  // The archives are the build's to write, from the files given: a source that names some is refused, as the tool
-  // refuses it, so nothing signed can name a file that is not uploaded.
-  if ('archives' in source) throw new ReleaseRefused('archivesGiven')
+  // The archives and the icon are the build's to write, from the files given: a source that names either is refused,
+  // as the tool refuses it, so nothing signed can name a file that is not uploaded.
+  if ('archives' in source || 'icon' in source) throw new ReleaseRefused('archivesGiven')
   const keys = Object.keys(inputs).sort()
   const read = keys.reduce((n, key) => n + sizeOf(inputs[key]), 0)
   if (read > READ_MOST)
