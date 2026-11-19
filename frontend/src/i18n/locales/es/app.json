@@ -1714,13 +1714,25 @@
     "admin": "",
     "anyUser": "",
     "asUser": "",
+    "cancel": "",
     "email": "",
+    "existing": "",
+    "existingAdministrator": "",
+    "existingLabel": "",
+    "existingNote": "",
     "fallback": "",
+    "handleLabel": "",
+    "handleNote": "",
     "login": "",
     "loginHelp": "",
     "loginOwn": "",
+    "name": "",
+    "nameFailed": "",
     "ownAdmin": "",
+    "ownExisting": "",
+    "renameNote": "",
     "revoke": "",
+    "save": "",
     "title": ""
   },
   "deviceSubnet": {
@@ -4417,6 +4429,15 @@
     "signUp": "Regístrate",
     "switchToProduction": "Cambiar a producción",
     "waiting": "Esperando a tu navegador… termina de iniciar sesión allí."
+  },
+  "sshHandle": {
+    "about": "",
+    "failed": "",
+    "hint": "",
+    "label": "",
+    "none": "",
+    "problem": "",
+    "title": ""
   },
   "statusChip": {
     "connected": "Conectado",
