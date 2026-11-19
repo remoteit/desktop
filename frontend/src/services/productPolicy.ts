@@ -107,6 +107,7 @@ export type ProductApp = {
   root: boolean // the release its devices are given runs as root
   capabilities: string[] // what that release asks of remote.it beyond running, where the API says
   protocol: string | null // how its service opens, where the API says
+  icon?: string | null // its own icon's URL, where the API says (components/AppIcon)
   version: string | null // the release this stage gives on its channel, or its pin; null none here yet
   state: ProductAppState | null // null unset: each device's own
   channel: string | null
@@ -434,6 +435,7 @@ const APP: Want = {
   root: true,
   capabilities: true,
   protocol: true,
+  icon: true,
   version: true,
   state: true,
   channel: true,
@@ -456,6 +458,7 @@ export const productAppOf = (app: any): ProductApp => ({
   root: !!app.root,
   capabilities: app.capabilities ?? [],
   protocol: app.protocol ?? null,
+  icon: app.icon ?? null,
   version: app.version ?? null,
   state: PRODUCT_APP_STATES.includes(app.state) ? app.state : null,
   channel: app.channel ?? null,

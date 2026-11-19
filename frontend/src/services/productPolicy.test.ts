@@ -686,7 +686,7 @@ describe('product apps', () => {
     expect(call.query).not.toContain('declaration')
     // An API from before consents named their person, releases waiting for root, removed settings, or what an app asks
     // of remote.it and how its service opens: none of them.
-    expect(call.query).not.toMatch(/capabilities|protocol/)
+    expect(call.query).not.toMatch(/capabilities|protocol|icon/)
     expect(policy.apps).toEqual([
       {
         ...consoleApp,
@@ -695,6 +695,7 @@ describe('product apps', () => {
         removedSettings: [],
         capabilities: [],
         protocol: null,
+        icon: null,
       },
     ])
   })

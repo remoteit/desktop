@@ -85,7 +85,7 @@ describe('the catalogue, where graphql serves it', () => {
     )
     // Contract 1: how its service opens and the contract it is written to; no kind or serves (run and listen are the
     // daemon's to read).
-    expect(query).toMatch(/runsAs root capabilities protocol contract platforms/)
+    expect(query).toMatch(/runsAs root capabilities protocol icon contract platforms/)
     expect(query).not.toMatch(/\bkind\b|\bserves\b/)
     expect(query).toContain('devices(first: 100, after: $after, heldBack: $heldBack, heldBackReason: $heldBackReason, version: $version)')
     expect(query).toContain('heldBackBy { reason count }')

@@ -357,9 +357,9 @@ describe('build step 5: what a device may add, and a remote.it too old', () => {
     )
     expect(await graphQLAvailableApps('D1')).toEqual([
       { id: 'remoteit.files', name: 'Files', publisher: 'remote.it', publisherVerifiedDomain: null, description: null, root: false, version: '1.0.0', refused: null, adminControl: 'cloud+local', needsNewer: true, oldInstall: false,
-        conversion: null, conversionDetail: null, protocol: null, capabilities: [], contract: null, services: [] },
+        conversion: null, conversionDetail: null, protocol: null, icon: null, capabilities: [], contract: null, services: [] },
     ])
-    expect(post.mock.calls[0][0].query).toContain('availableApps { id name publisher publisherVerifiedDomain description root version refused adminControl needsNewer oldInstall conversion conversionDetail protocol capabilities contract services { key name protocol multiPort port portSetting listeners { name type port portSetting ports } } }')
+    expect(post.mock.calls[0][0].query).toContain('availableApps { id name publisher publisherVerifiedDomain description root version refused adminControl needsNewer oldInstall conversion conversionDetail protocol icon capabilities contract services { key name protocol multiPort port portSetting listeners { name type port portSetting ports } } }')
     // How its service opens and what it asks of remote.it, of the release its stage gives.
     post.mockResolvedValue(answer({ login: { device: [{ availableApps: [{ id: 'acme.shell', name: 'Shell', publisher: 'Acme', protocol: 'ssh', capabilities: ['person-certificates'], contract: 1 }] }] } }))
     expect((await graphQLAvailableApps('D1'))[0]).toMatchObject({ protocol: 'ssh', capabilities: ['person-certificates'], contract: 1 })

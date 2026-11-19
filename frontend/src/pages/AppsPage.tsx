@@ -109,6 +109,7 @@ export const AppsPage: React.FC = () => {
                 root={app.root}
                 capabilities={app.capabilities}
                 protocol={app.protocol}
+                icon={app.icon}
                 description={app.description}
                 platforms={app.version ? platformsLine(t, app.platforms) : t('apps.noRelease', 'No release here yet')}
                 aside={

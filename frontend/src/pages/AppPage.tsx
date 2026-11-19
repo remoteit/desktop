@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { AppIcon } from '../components/AppIcon'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useSelector } from 'react-redux'
@@ -44,7 +45,6 @@ import { Icon } from '../components/Icon'
 import { AppCapabilities } from '../components/AppRootConsent'
 import {
   allowLine,
-  appIcon,
   asksConsent,
   capabilitiesLine,
   channelName,
@@ -204,7 +204,7 @@ export const AppPage: React.FC = () => {
     <Container gutterBottom bodyProps={{ verticalOverflow: true }} header={header(app.name)}>
       <Gutters top="sm" data-catalog-app-page={app.id}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-          <Icon name={appIcon(app.protocol)} size="xl" fixedWidth />
+          <AppIcon icon={app.icon} protocol={app.protocol} size="xl" />
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="body2" data-app-about>
               {[

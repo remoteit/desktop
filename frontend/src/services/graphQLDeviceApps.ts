@@ -152,6 +152,7 @@ export type DeviceApp = {
   serviceId: string | null // the service it is reached as
   contract?: number | null // the app contract its release is written to (1)
   protocol: AppProtocol | string | null // how its service opens; none for one that serves nothing
+  icon?: string | null // its icon's URL, a PNG remote.it checked; none: shown with its protocol's (components/AppIcon)
   capabilities: (AppCapability | string)[]
   hostKey: string | null // the key its service presents, as the app reports it (an OpenSSH or TLS SHA-256 fingerprint)
   sessions: DeviceAppSession[] // the open ones the app lists, for those who manage it
@@ -211,7 +212,7 @@ const SESSION_FIELDS = 'session login via since'
 const DECLARED_SERVICE_FIELDS =
   'key name protocol multiPort port portSetting listeners { name type port portSetting ports }'
 const SERVICE_FIELDS = `${DECLARED_SERVICE_FIELDS} serviceId`
-const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil adminControl state detail serviceId contract protocol capabilities hostKey sessions { ${SESSION_FIELDS} } sessionsOpen features portSetting services { ${SERVICE_FIELDS} } listeners { name listen } problems { name error detail } settings { ${SETTING_FIELDS} }`
+const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil adminControl state detail serviceId contract protocol icon capabilities hostKey sessions { ${SESSION_FIELDS} } sessionsOpen features portSetting services { ${SERVICE_FIELDS} } listeners { name listen } problems { name error detail } settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
 function parsedSetting(setting: any): DeviceAppSetting {
@@ -261,6 +262,7 @@ export const parsedDeviceApp = (app: any): DeviceApp => ({
     conversionDetail: app.conversionDetail ?? null,
     contract: app.contract ?? null,
     protocol: app.protocol ?? null,
+    icon: app.icon ?? null,
     capabilities: app.capabilities ?? [],
     hostKey: app.hostKey ?? null,
     sessions: (app.sessions ?? []).map((session: any) => ({
@@ -312,6 +314,7 @@ export type AvailableApp = {
   conversionDetail?: string | null // why it does not convert (refused)
   // Of the release its stage gives: how its service opens, what it asks of remote.it, the contract it is written to.
   protocol?: AppProtocol | string | null
+  icon?: string | null // its icon's URL; none: shown with its protocol's
   capabilities?: (AppCapability | string)[]
   contract?: number | null
   services?: DeviceAppService[] // as the release declares them, the primary first; none on the device yet
@@ -319,7 +322,7 @@ export type AvailableApp = {
 
 // [] where the API has none, or the device is not this person's to manage.
 export async function graphQLAvailableApps(deviceId: string): Promise<AvailableApp[]> {
-  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher publisherVerifiedDomain description root version refused adminControl needsNewer oldInstall conversion conversionDetail protocol capabilities contract services { ${DECLARED_SERVICE_FIELDS} } } } } }`
+  const query = `query AvailableApps($id: [String!]!) { login { device(id: $id) { id availableApps { id name publisher publisherVerifiedDomain description root version refused adminControl needsNewer oldInstall conversion conversionDetail protocol icon capabilities contract services { ${DECLARED_SERVICE_FIELDS} } } } } }`
   const variables = { id: [deviceId] }
   const response = await post({ query, variables })
   if (response === 'ERROR') return []
@@ -336,6 +339,7 @@ export async function graphQLAvailableApps(deviceId: string): Promise<AvailableA
     conversion: conversionOf(app.conversion),
     conversionDetail: app.conversionDetail ?? null,
     protocol: app.protocol ?? null,
+    icon: app.icon ?? null,
     capabilities: app.capabilities ?? [],
     contract: app.contract ?? null,
     services: (app.services ?? []).map(parsedService),

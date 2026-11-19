@@ -1,5 +1,6 @@
 import { ArchiveRefused, Entry, safePath, sha256Hex, tarGz, untarGz } from './appArchive'
 import { manifestProblems, manifestText } from './appManifest'
+import { iconProblem } from '../vendor/remoteit-apps/rules.mjs'
 
 /* New app's release, built in the browser as the publishing tool's `build` makes one (remoteit/apps
    tools/lib/build.mjs; presence-server docs/device-apps-new-app.md, "Files and packaging"): an archive a platform from
@@ -40,6 +41,7 @@ export type Given =
   | { kind: 'archive'; file: File } // a .tar.gz
 
 export type ReleaseFile = { name: string; data: Uint8Array }
+// archives: every file uploaded beside the manifest — the archives and the icon.
 export type Built = { manifest: Record<string, any>; text: string; bytes: Uint8Array; archives: ReleaseFile[] }
 
 // Why a release cannot be built, in words the page shows (each a key and its values, so the page translates it).
@@ -113,11 +115,12 @@ const sizeOf = (given: Given) =>
 export async function buildRelease(
   source: Record<string, any>,
   inputs: Record<string, Given>,
-  fileMax: number
+  fileMax: number,
+  icon?: File
 ): Promise<Built> {
-  // The archives are the build's to write, from the files given: a source that names some is refused, as the tool
-  // refuses it, so nothing signed can name a file that is not uploaded.
-  if ('archives' in source) throw new ReleaseRefused('archivesGiven')
+  // The archives and the icon are the build's to write, from the files given: a source that names some is refused, as
+  // the tool refuses it, so nothing signed can name a file that is not uploaded.
+  if ('archives' in source || 'icon' in source) throw new ReleaseRefused('archivesGiven')
   const keys = Object.keys(inputs).sort()
   const read = keys.reduce((n, key) => n + sizeOf(inputs[key]), 0)
   if (read > READ_MOST)
@@ -176,8 +179,21 @@ export async function buildRelease(
     if (!made.has(sha256)) made.set(sha256, { file: archiveName(source.app, source.version, key), sha256, data })
     archives[key] = { file: made.get(sha256)!.file, sha256 }
   }
-  if (made.size + 2 > FILES_MOST) throw new ReleaseRefused('tooMany', { most: FILES_MOST - 2 })
-  const manifest = { ...source, ...(keys.length ? { archives } : {}) }
+  // The icon, checked as remote.it checks one (remoteit/apps lib/rules.mjs iconProblem): a PNG, square, 64 to 512 pixels
+  // a side, at most 64 KB. Named as the tool names it, a file beside the manifest, its SHA-256 signed with it.
+  let iconFile: ReleaseFile | undefined
+  if (icon) {
+    const data = await bytesOf(icon)
+    const problem = iconProblem(data)
+    if (problem) throw new ReleaseRefused('badIcon', { problem })
+    iconFile = { name: `${archiveName(source.app, source.version, 'icon').replace(/\.tar\.gz$/, '')}.png`, data }
+  }
+  if (made.size + (iconFile ? 1 : 0) + 2 > FILES_MOST) throw new ReleaseRefused('tooMany', { most: FILES_MOST - 2 })
+  const manifest = {
+    ...source,
+    ...(keys.length ? { archives } : {}),
+    ...(iconFile ? { icon: { file: iconFile.name, sha256: await sha256Hex(iconFile.data) } } : {}),
+  }
   const problems = manifestProblems(manifest)
   if (problems.length) throw new ReleaseRefused('rules', { platform: '', problems: problems.join('; ') })
   const text = manifestText(manifest)
@@ -188,7 +204,12 @@ export async function buildRelease(
       mb: (bytes.length / 2 ** 20).toFixed(1),
       most: (fileMax / 2 ** 20).toFixed(0),
     })
-  return { manifest, text, bytes, archives: [...made.values()].map(({ file, data }) => ({ name: file, data })) }
+  return {
+    manifest,
+    text,
+    bytes,
+    archives: [...[...made.values()].map(({ file, data }) => ({ name: file, data })), ...(iconFile ? [iconFile] : [])],
+  }
 }
 
 // What an OS runs: its own program or a stock tool; none where the manifest offers the app nothing there.

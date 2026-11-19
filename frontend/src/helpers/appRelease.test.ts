@@ -1,5 +1,8 @@
 // @vitest-environment node
+import { createHash } from 'crypto'
+import { readFileSync } from 'fs'
 import { describe, expect, it } from 'vitest'
+import { iconProblem } from '../vendor/remoteit-apps/rules.mjs'
 import { untarGz } from './appArchive'
 import { buildRelease, Given, ReleaseRefused } from './appRelease'
 
@@ -117,5 +120,52 @@ describe('a release built in the browser', () => {
       MAX
     )
     expect([built.archives, built.manifest.archives]).toEqual([[], undefined])
+  })
+})
+
+describe('the icon', () => {
+  const icons = (name: string) =>
+    new File([readFileSync(new URL(`../vendor/remoteit-apps/fixtures/icons/${name}`, import.meta.url))], name)
+
+  it('every shared icon fixture gets the verdict remoteit/apps gives it, by the vendored rule', () => {
+    const dir = new URL('../vendor/remoteit-apps/fixtures/icons/', import.meta.url)
+    const expected = JSON.parse(readFileSync(new URL('expected.json', dir), 'utf8'))
+    for (const name of Object.keys(expected))
+      expect([name, iconProblem(new Uint8Array(readFileSync(new URL(name, dir)))) ?? null]).toEqual([
+        name,
+        expected[name],
+      ])
+  })
+
+  it('is a file beside the manifest, named as the tool names it, its SHA-256 signed with it', async () => {
+    const program: Given = { kind: 'program', file: file('panel', '#!/bin/sh\n') }
+    const built = await buildRelease(source(), { 'linux-amd64': program }, MAX, icons('valid-64.png'))
+    const png = new Uint8Array(
+      readFileSync(new URL('../vendor/remoteit-apps/fixtures/icons/valid-64.png', import.meta.url))
+    )
+    expect(built.manifest.icon).toEqual({
+      file: 'acme.panel-1.0.0-icon.png',
+      sha256: createHash('sha256').update(png).digest('hex'),
+    })
+    expect(built.archives.map(a => a.name)).toEqual([
+      'acme.panel-1.0.0-linux-amd64.tar.gz',
+      'acme.panel-1.0.0-icon.png',
+    ])
+    expect(built.archives[1].data).toEqual(png)
+  })
+
+  it('an SVG, one not square, or too big, is refused saying why; a source that names one is the build’s to write', async () => {
+    const program: Given = { kind: 'program', file: file('panel', '#!/bin/sh\n') }
+    expect(
+      await refused(buildRelease(source(), { 'linux-amd64': program }, MAX, icons('svg-with-script.svg')))
+    ).toEqual(['badIcon', { problem: 'is not a PNG: an icon is a PNG (never SVG, which can carry scripts)' }])
+    expect((await refused(buildRelease(source(), { 'linux-amd64': program }, MAX, icons('not-square.png'))))[0]).toBe(
+      'badIcon'
+    )
+    expect(
+      await refused(
+        buildRelease(source({ icon: { file: 'x.png', sha256: '0'.repeat(64) } }), { 'linux-amd64': program }, MAX)
+      )
+    ).toEqual(['archivesGiven', {}])
   })
 })

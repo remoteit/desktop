@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { AppIcon } from './AppIcon'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Box, Button, List, ListItem, ListItemIcon, ListItemText, TextField, Typography } from '@mui/material'
@@ -17,8 +18,7 @@ import { deprecatedLine } from './DeviceSettingRow'
 import { SelectSetting } from './SelectSetting'
 import { timeOptions } from './Timestamp'
 import { Notice } from './Notice'
-import { Icon } from './Icon'
-import { appIcon, asksConsent, capabilitiesLine, consentCovers, productRelease } from '../helpers/appsHelper'
+import { asksConsent, capabilitiesLine, consentCovers, productRelease } from '../helpers/appsHelper'
 import { graphQLCatalogApp } from '../services/graphQLAppCatalog'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 
@@ -143,7 +143,7 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, accountId, apps,
             <Box component="li" key={app.id} data-product-app={app.id} sx={{ listStyle: 'none' }}>
               <ListItem component="div" disableGutters sx={{ alignItems: 'flex-start' }}>
                 <ListItemIcon sx={{ marginTop: 0.5 }}>
-                  <Icon name={appIcon(app.protocol)} size="md" fixedWidth />
+                  <AppIcon icon={app.icon} protocol={app.protocol} size="md" />
                 </ListItemIcon>
                 <ListItemText
                   primary={app.name}

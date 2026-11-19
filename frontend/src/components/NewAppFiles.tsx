@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Box, Button, Checkbox, FormControlLabel, MenuItem, TextField, Typography } from '@mui/material'
 import { Gutters } from './Gutters'
 import { Given, offeredPlatforms } from '../helpers/appRelease'
+import { iconProblem } from '../vendor/remoteit-apps/rules.mjs'
+import { readFileAsArrayBuffer } from '../helpers/fileUpload'
 
 /* New app's files (presence-server docs/device-apps-new-app.md, "Files and packaging"): the platforms the app is built
    for, and for each what to pack — the program alone, a folder, or a .tar.gz of its files. Only platforms whose OS the
@@ -11,13 +13,21 @@ import { Given, offeredPlatforms } from '../helpers/appRelease'
 
 export type Inputs = Record<string, Given | null> // a platform chosen, with its files once given
 
-type Props = { manifest: Record<string, any>; inputs: Inputs; fileMax: number; onChange: (inputs: Inputs) => void }
+type Props = {
+  manifest: Record<string, any>
+  inputs: Inputs
+  fileMax: number
+  onChange: (inputs: Inputs) => void
+  icon?: File
+  onIcon: (icon?: File) => void
+}
 
-export const NewAppFiles: React.FC<Props> = ({ manifest, inputs, fileMax, onChange }) => {
+export const NewAppFiles: React.FC<Props> = ({ manifest, inputs, fileMax, onChange, icon, onIcon }) => {
   const { t } = useTranslation()
   const offered = offeredPlatforms(manifest)
   return (
     <Box data-new-app-files>
+      <IconPicker icon={icon} onIcon={onIcon} />
       <Gutters>
         <Typography variant="body2" color="textSecondary">
           {t(
@@ -42,6 +52,62 @@ export const NewAppFiles: React.FC<Props> = ({ manifest, inputs, fileMax, onChan
         />
       ))}
     </Box>
+  )
+}
+
+/* The app's icon, optional (remoteit/apps docs/contract.md, "Packaging and trust"): a PNG, square, 64 to 512 pixels a
+   side, at most 64 KB — never SVG, which can carry scripts —, checked here by the contract's own rule as soon as it is
+   chosen, and again when the release is packed. Shown wherever the app is offered; an app without one keeps the icon
+   of how its service opens. */
+const IconPicker: React.FC<{ icon?: File; onIcon: (icon?: File) => void }> = ({ icon, onIcon }) => {
+  const { t } = useTranslation()
+  const input = useRef<HTMLInputElement>(null)
+  const [problem, setProblem] = React.useState<string>()
+  const picked = async (file?: File) => {
+    if (!file) return
+    const wrong = iconProblem(new Uint8Array(await readFileAsArrayBuffer(file)))
+    setProblem(wrong && `${file.name} ${wrong}`)
+    onIcon(wrong ? undefined : file)
+  }
+  return (
+    <Gutters data-new-app-icon>
+      <Typography variant="subtitle2">{t('newApp.iconTitle', 'Icon (optional)')}</Typography>
+      <Typography variant="caption" color="textSecondary" component="p" gutterBottom>
+        {t(
+          'newApp.iconHelp',
+          'A PNG, square, 64 to 512 pixels a side, at most 64 KB. Without one, the app shows the icon of how its service opens.'
+        )}
+      </Typography>
+      <input
+        ref={input}
+        type="file"
+        hidden
+        accept="image/png"
+        onChange={e => {
+          picked(e.target.files?.[0])
+          e.target.value = ''
+        }}
+        data-icon-input
+      />
+      <Button size="small" variant="outlined" onClick={() => input.current?.click()} sx={{ marginRight: 1 }}>
+        {t('newApp.chooseIcon', 'Choose icon…')}
+      </Button>
+      {icon && (
+        <>
+          <Typography variant="caption" data-icon-chosen>
+            {icon.name}
+          </Typography>
+          <Button size="small" onClick={() => onIcon(undefined)} data-icon-clear>
+            {t('newApp.clearIcon', 'Remove')}
+          </Button>
+        </>
+      )}
+      {problem && (
+        <Typography variant="caption" color="error" component="p" data-icon-problem>
+          {problem}
+        </Typography>
+      )}
+    </Gutters>
   )
 }
 

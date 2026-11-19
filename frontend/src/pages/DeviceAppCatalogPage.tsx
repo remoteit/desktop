@@ -95,6 +95,7 @@ export const DeviceAppCatalogPage: React.FC = () => {
                 root={app.root}
                 capabilities={app.capabilities}
                 protocol={app.protocol}
+                icon={app.icon}
                 description={app.description}
                 aside={app.version}
                 onOpen={() => history.push(`/apps/${app.id}`)}

@@ -205,10 +205,47 @@ describe('New app, files to Done', () => {
     await act(async () => (page.querySelector('[data-new-app-pack]') as HTMLElement).click())
     expect(build.mock.calls[0][1]).toEqual({ 'linux-arm64': { kind: 'program', file: program } })
     expect(build.mock.calls[0][2]).toBe(16 << 20)
+    expect(build.mock.calls[0][3]).toBeUndefined()
     await act(async () => (page.querySelector('[data-new-app-review="acme.panel"]') as HTMLElement).click())
     expect(page.querySelector('[data-new-app-done]')?.textContent).toContain('acme.panel 1.0.0 is published')
     await act(async () => (page.querySelector('[data-new-app-add]') as HTMLElement).click())
     expect(page.querySelector('[data-location]')?.getAttribute('data-location')).toBe('/apps/acme.panel/add')
+  })
+
+  it('an icon chosen is checked at once by the contract’s rule, and packed with the release', async () => {
+    const { readFileSync } = await import('fs')
+    const { join } = await import('path')
+    const fixture = (name: string) => new File([readFileSync(join(__dirname, '../vendor/remoteit-apps/fixtures/icons', name))], name)
+    const page = await render()
+    await describePanel(page)
+    const input = page.querySelector('[data-icon-input]') as HTMLInputElement
+    const choose = async (file: File) => {
+      Object.defineProperty(input, 'files', { value: [file], configurable: true })
+      await act(async () => {
+        input.dispatchEvent(new Event('change', { bubbles: true }))
+        await new Promise(resolve => setTimeout(resolve, 50)) // the file is read as it is in a browser: in its own time
+      })
+    }
+    await choose(fixture('svg-with-script.svg'))
+    expect(page.querySelector('[data-icon-problem]')?.textContent).toBe(
+      'svg-with-script.svg is not a PNG: an icon is a PNG (never SVG, which can carry scripts)'
+    )
+    expect(page.querySelector('[data-icon-chosen]')).toBeNull()
+    const png = fixture('valid-64.png')
+    await choose(png)
+    expect(page.querySelector('[data-icon-chosen]')?.textContent).toBe('valid-64.png')
+    await act(async () => (page.querySelector('[data-platform-chosen="any"]') as HTMLElement).click())
+    const files = page.querySelector('[data-platform-input="any"]') as HTMLInputElement
+    Object.defineProperty(files, 'files', { value: [new File(['x'], 'panel')], configurable: true })
+    await act(async () => files.dispatchEvent(new Event('change', { bubbles: true })))
+    build.mockResolvedValue({
+      manifest: { app: 'acme.panel', version: '1.0.0' },
+      text: '',
+      bytes: new Uint8Array(),
+      archives: [],
+    })
+    await act(async () => (page.querySelector('[data-new-app-pack]') as HTMLElement).click())
+    expect(build.mock.calls[0][3]).toBe(png)
   })
 
   it('packs only the platforms the manifest still runs on', async () => {

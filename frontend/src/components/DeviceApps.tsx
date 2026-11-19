@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { AppIcon } from './AppIcon'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import {
@@ -21,7 +22,6 @@ import { AppTerminalAction } from './AppTerminal'
 import {
   adminLine,
   adminRefuses,
-  appIcon,
   heldBackLine,
   managedLine,
   offered,
@@ -137,7 +137,7 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
         const row = (
           <>
             <ListItemIcon>
-              <Icon name={appIcon(app.protocol)} size="md" fixedWidth />
+              <AppIcon icon={app.icon} protocol={app.protocol} size="md" />
             </ListItemIcon>
             <ListItemText
               primary={app.name}

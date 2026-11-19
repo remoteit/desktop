@@ -40,11 +40,13 @@ export async function graphQLSetAppRelease(app: string, version: string, manifes
 }
 
 // The headers the publishing tool stores release files with: the length exactly, immutable (a version is written
-// once; graphql signs the URL for this Cache-Control), and the type by extension.
+// once), and the type by extension — an icon as image/png. graphql signs the URL for exactly this Cache-Control and
+// type (app-publishers.ts releaseFileType), so the store keeps what was asked.
 const TYPES: [string, string][] = [
   ['.json', 'application/json'],
   ['.sig', 'text/plain'],
   ['.gz', 'application/gzip'],
+  ['.png', 'image/png'],
 ]
 export const CACHE_CONTROL = 'public, max-age=31536000, immutable'
 
