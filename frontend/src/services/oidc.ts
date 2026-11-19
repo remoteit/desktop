@@ -240,12 +240,14 @@ let discovery:
    stays the technical detail — console, support, bug reports — while `code` is what picks
    the sentence they read, so the AS rewording an error_description can never silently
    change our copy, and an untranslated server string can never reach the screen. */
-export type OidcErrorCode = 'rateLimited' | 'unreachable' | 'unavailable' | 'refused' | 'expired'
+export type OidcErrorCode = 'rateLimited' | 'unreachable' | 'unavailable' | 'refused' | 'expired' | 'clock'
 
 export class OidcError extends Error {
   code: OidcErrorCode
   /** Seconds to wait, when the server told us (429). */
   retryAfter?: number
+  /** Server time minus this computer's, in seconds, when a 'clock' refusal could measure it. */
+  clockOffset?: number
   /** The AS's own error code (`login_required`, `invalid_grant`…) when it sent one — the thing to
    *  branch on; the message is its wording, which may change. */
   oauthError?: string
@@ -256,6 +258,11 @@ export class OidcError extends Error {
     this.retryAfter = retryAfter
   }
 }
+
+// Server time minus this computer's, in ms. The AS refuses a DPoP proof dated more than 30 s ahead
+// of its clock (or 5 min behind), and token expiries are its time, so both read through serverSeconds().
+let clockOffsetMs = 0
+const serverSeconds = () => Math.floor((Date.now() + clockOffsetMs) / 1000)
 
 /* A day. Nothing that gates a sign-in retry waits longer, so a "wait" bigger than this
    is not a countdown at all — it is an epoch timestamp, which some rate limiters send in
@@ -275,7 +282,7 @@ const retryAfterSeconds = (response: Response): number | undefined => {
   const seconds = Number(header)
   if (!Number.isNaN(seconds)) return plausible(seconds)
   const date = Date.parse(header)
-  return Number.isNaN(date) ? undefined : plausible((date - Date.now()) / 1000)
+  return Number.isNaN(date) ? undefined : plausible((date - Date.now() - clockOffsetMs) / 1000)
 }
 
 /* One place that decides what a non-OK response from the AS MEANS, so the token endpoint
@@ -298,7 +305,7 @@ const decodeJwt = (jwt?: string): any => {
 // The payload's exp when the access token is a JWT, else the response's expires_in. A token
 // cached with exp 0 is never fresh, and every call would rotate the refresh family to mint again.
 const tokenExpiry = (body: { access_token: string; expires_in?: number }): number =>
-  decodeJwt(body.access_token)?.exp ?? (body.expires_in ? Math.floor(Date.now() / 1000) + Number(body.expires_in) : 0)
+  decodeJwt(body.access_token)?.exp ?? (body.expires_in ? serverSeconds() + Number(body.expires_in) : 0)
 
 const stored = (): Stored | undefined => {
   try {
@@ -310,7 +317,7 @@ const stored = (): Stored | undefined => {
 }
 
 export const oidcConfigured = () => !!OAUTH_ISSUER
-const supportLive = (s: Stored | undefined) => !!s?.support && s.support.exp - Math.floor(Date.now() / 1000) > 0
+const supportLive = (s: Stored | undefined) => !!s?.support && s.support.exp - serverSeconds() > 0
 export const oidcSignedIn = () => {
   const s = stored()
   return !!s?.refresh_token || supportLive(s)
@@ -788,7 +795,7 @@ export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE)
   }
   const fresh = () => {
     const cached = access[resource]
-    return cached && cached.exp - Math.floor(Date.now() / 1000) > 30 ? cached.token : undefined
+    return cached && cached.exp - serverSeconds() > 30 ? cached.token : undefined
   }
   const hit = fresh()
   if (hit) return hit
@@ -1230,7 +1237,7 @@ async function dpopProof(htm: string, htu: string, accessToken?: string): Promis
       JSON.stringify({
         htm,
         htu: u.origin + u.pathname,
-        iat: Math.floor(Date.now() / 1000),
+        iat: serverSeconds(),
         jti: crypto.randomUUID(),
         ...(accessToken ? { ath: toBase64url(await crypto.subtle.digest('SHA-256', utf8(accessToken))) } : {}),
       })
@@ -1285,7 +1292,25 @@ export async function oidcResourceRequest<T = any>(
   return { status: response.status, body }
 }
 
-async function tokenRequest(params: { [key: string]: string }): Promise<any> {
+// The server's clock as an offset from this one: from the refusal's own Date when the AS exposes it
+// to CORS, else through the desktop backend, which reads it without CORS. Unknown on web and mobile.
+async function serverClockOffset(response: Response): Promise<number | undefined> {
+  const exposed = Date.parse(response.headers.get('date') ?? '')
+  if (!Number.isNaN(exposed)) return exposed - Date.now()
+  try {
+    const sent = Date.now()
+    const reply = await fetch(`/serverTime?url=${encodeURIComponent(OAUTH_ISSUER)}`, { signal: timeoutSignal(6000) })
+    if (!reply.ok) return undefined
+    const { serverTime } = (await reply.json()) as { serverTime?: unknown }
+    return typeof serverTime === 'number' ? serverTime - (sent + Date.now()) / 2 : undefined
+  } catch {
+    return undefined
+  }
+}
+
+const PROOF_TIME = /\biat\b/
+
+async function tokenRequest(params: { [key: string]: string }, clockRetried = false): Promise<any> {
   // Discovery and the key load are independent; the boot refresh sits on this path.
   const [d] = await Promise.all([discover(), dpopKey()])
   const proof = await dpopProof('POST', d.token_endpoint)
@@ -1297,6 +1322,19 @@ async function tokenRequest(params: { [key: string]: string }): Promise<any> {
   const body: any = await response.json().catch(() => ({}))
   if (!response.ok || !body.access_token) {
     const detail = body.error_description || body.error || `token endpoint ${response.status}`
+    // A proof dated by a wrong clock: one retry on the server's time. Safe to repeat, because the AS
+    // checks the proof before it claims the code or rotates the refresh token.
+    if (body.error === 'invalid_dpop_proof' && PROOF_TIME.test(detail)) {
+      const offset = clockRetried ? undefined : await serverClockOffset(response)
+      if (offset !== undefined) {
+        clockOffsetMs = offset
+        return tokenRequest(params, true)
+      }
+      const error = new OidcError('clock', detail)
+      if (clockRetried) error.clockOffset = Math.round(clockOffsetMs / 1000)
+      error.oauthError = body.error
+      throw error
+    }
     const error = responseError(response, detail)
     error.oauthError = body.error
     throw error

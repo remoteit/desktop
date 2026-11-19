@@ -60,8 +60,9 @@ const SignInError: React.FC<{
   code?: SignInErrorCode
   detail?: string
   retryAfter?: number
+  clockOffset?: number
   agentOwner?: AgentOwner
-}> = ({ code, detail, retryAfter, agentOwner }) => {
+}> = ({ code, detail, retryAfter, clockOffset, agentOwner }) => {
   const { t } = useTranslation()
   /* The server's own wording, shown only where someone is equipped to read it. It names
      internal machinery — resource identifiers, endpoints, an authorization_details type —
@@ -108,6 +109,19 @@ const SignInError: React.FC<{
           '{{owner}} is still signed in on this computer. Sign in as {{owner}} and sign out first, or run this in a terminal as an administrator:',
           { owner: agentOwner?.username }
         )
+      case 'clock':
+        return clockOffset
+          ? t('signIn.errorClockOffset', {
+              count: Math.max(1, Math.round(Math.abs(clockOffset) / 60)),
+              defaultValue_one:
+                "This computer's clock is about a minute off, so the sign-in service can't accept the request. Set the date and time to update automatically, then try again.",
+              defaultValue_other:
+                "This computer's clock is about {{count}} minutes off, so the sign-in service can't accept the request. Set the date and time to update automatically, then try again.",
+            })
+          : t(
+              'signIn.errorClock',
+              "This computer's date or time is wrong, so the sign-in service can't accept the request. Set the date and time to update automatically, then try again."
+            )
       case 'expired':
         return t('signIn.errorExpired', 'That sign-in attempt expired before it finished. Please try again.')
       default:
@@ -126,9 +140,8 @@ const SignInError: React.FC<{
 
 export function SignInApp() {
   const { t } = useTranslation()
-  const { signInFailed, signInError, signInErrorCode, signInRetryAfter, signingIn, initialized } = useSelector(
-    (state: State) => state.auth
-  )
+  const { signInFailed, signInError, signInErrorCode, signInRetryAfter, signInClockOffset, signingIn, initialized } =
+    useSelector((state: State) => state.auth)
   const { auth, ui } = useDispatch<Dispatch>()
 
   /* On the WEB there is nothing to show a signed-out user — the AS login page IS the
@@ -237,6 +250,7 @@ export function SignInApp() {
               code={signInErrorCode}
               detail={signInError}
               retryAfter={signInRetryAfter}
+              clockOffset={signInClockOffset}
               agentOwner={agentOwner}
             />
           ) : (
