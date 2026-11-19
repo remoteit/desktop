@@ -198,7 +198,10 @@ export function manifestOf(form: AppForm, publisher: string): Record<string, any
     }
     if (form.identity && (form.listen === 'tcp' || form.listen === 'unix')) listen.identity = 'header'
     m.listen = listen
-    const service: Record<string, any> = { name: form.serviceName.trim() || form.name.trim(), protocol: form.protocol }
+    const service: Record<string, any> = {
+      name: form.serviceName.trim() || form.name.trim() || form.id.trim(),
+      protocol: form.protocol,
+    }
     if (form.servicePort.trim()) service.port = portRef(form.servicePort)
     m.service = service
     if (form.health !== 'none' && form.listen !== 'stdio' && form.listen !== 'udp') {
