@@ -3,6 +3,7 @@ import environment from './environment'
 import Logger from './Logger'
 import EventBus from './EventBus'
 import cli from './cliInterface'
+import windowsInterfaces from './windowsInterfaces'
 import nm from 'netmask'
 import nw from 'network'
 
@@ -46,33 +47,14 @@ class LAN {
   }
 
   async getInterfaces() {
-    return new Promise<void>((success, failure) => {
-      nw.get_interfaces_list((listErr: Error, list: any) => {
-        if (listErr) failure(listErr)
-        nw.get_active_interface((activeErr: Error, active: any) => {
-          if (activeErr) Logger.warn('INTERFACE active error', { error: activeErr })
-          else Logger.info('INTERFACE active', { active })
-          active = active || {}
-          this.interfaces = list.reduce((result: IInterface[], item: any) => {
-            if (item.ip_address) {
-              result.push({
-                active: item.name === active.name,
-                gateway: item.gateway_ip,
-                ip: item.ip_address,
-                mac: item.mac_address,
-                netmask: item.netmask,
-                name: item.name,
-                type: item.type,
-              })
-            }
-            return result
-          }, [])
-          Logger.info('GET INTERFACES:', { interfaces: this.interfaces })
-          this.setPrivateIP()
-          success()
-        })
-      })
-    })
+    try {
+      this.interfaces = environment.isWindows ? await windowsInterfaces() : await networkInterfaces()
+    } catch (error) {
+      Logger.warn('GET INTERFACES error', { error })
+      return
+    }
+    Logger.info('GET INTERFACES:', { interfaces: this.interfaces })
+    this.setPrivateIP()
   }
 
   async scan(interfaceName: string) {
@@ -122,6 +104,31 @@ class LAN {
 
     this.data[interfaceName] = { timestamp: Date.now(), data }
   }
+}
+
+function networkInterfaces() {
+  return new Promise<IInterface[]>((resolve, reject) => {
+    nw.get_interfaces_list((listErr: Error, list: any[]) => {
+      if (listErr) return reject(listErr)
+      nw.get_active_interface((activeErr: Error, active: any) => {
+        if (activeErr) Logger.warn('INTERFACE active error', { error: activeErr })
+        else Logger.info('INTERFACE active', { active })
+        resolve(
+          list
+            .filter(item => item.ip_address)
+            .map(item => ({
+              active: item.name === active?.name,
+              gateway: item.gateway_ip,
+              ip: item.ip_address,
+              mac: item.mac_address,
+              netmask: item.netmask,
+              name: item.name,
+              type: item.type,
+            }))
+        )
+      })
+    })
+  })
 }
 
 export default new LAN()
