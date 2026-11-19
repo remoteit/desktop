@@ -1,9 +1,7 @@
 import { SIGN_IN_ISSUERS } from '@common/constants'
 
-const ASKABLE = new Set<string>(Object.values(SIGN_IN_ISSUERS))
-
-/** A sign-in server's clock in epoch ms, read from its Date header; undefined for any other origin,
- *  when it can't be reached, or when it sends none. */
+/** The clock of the sign-in server `url` is on, in epoch ms, read from the Date of its token endpoint;
+ *  undefined for any other server, when it can't be reached, or when it sends none. */
 export default async function serverTime(url: string, timeoutMs = 5000): Promise<number | undefined> {
   let origin: string
   try {
@@ -11,10 +9,16 @@ export default async function serverTime(url: string, timeoutMs = 5000): Promise
   } catch {
     return undefined
   }
-  if (!ASKABLE.has(origin)) return undefined
+  const issuer = Object.values(SIGN_IN_ISSUERS).find(known => known === origin)
+  if (!issuer) return undefined
   try {
-    // Not followed: a redirect is an answer with a Date of its own, and following it could send this request anywhere.
-    const response = await fetch(url, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(timeoutMs) })
+    // A fixed path on a known server: the caller picks which issuer, never what is fetched, and no redirect is
+    // followed. The token endpoint, because the issuer root once came back cached with a Date hours old.
+    const response = await fetch(`${issuer}/token`, {
+      method: 'HEAD',
+      redirect: 'manual',
+      signal: AbortSignal.timeout(timeoutMs),
+    })
     const date = Date.parse(response.headers.get('date') ?? '')
     return Number.isNaN(date) ? undefined : date
   } catch {

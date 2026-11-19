@@ -12,13 +12,17 @@ describe('serverTime', () => {
 
   afterEach(() => fetchSpy.mockRestore())
 
-  it("reads a sign-in server's clock from its Date header, without following redirects", async () => {
+  it("reads a sign-in server's clock from its token endpoint, without following redirects", async () => {
     expect(await serverTime('https://login.remote.it/token')).toBe(Date.parse(date))
-    expect(await serverTime('https://login.dev.remote.it/token')).toBe(Date.parse(date))
-    expect(fetchSpy).toHaveBeenCalledWith(
+    expect(fetchSpy).toHaveBeenLastCalledWith(
       'https://login.remote.it/token',
       expect.objectContaining({ method: 'HEAD', redirect: 'manual' })
     )
+  })
+
+  it('fetches a fixed path on the matched issuer, whatever path the caller sent', async () => {
+    expect(await serverTime('https://login.dev.remote.it/anything?else=1')).toBe(Date.parse(date))
+    expect(fetchSpy).toHaveBeenLastCalledWith('https://login.dev.remote.it/token', expect.anything())
   })
 
   it('asks no other server', async () => {
