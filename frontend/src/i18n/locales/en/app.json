@@ -1707,13 +1707,25 @@
     "admin": "Admin",
     "anyUser": "as any user",
     "asUser": "as {{login}}",
+    "cancel": "Cancel",
     "email": "Email",
+    "existing": "Already on the device",
+    "existingAdministrator": "This is the machine's administrator: they will have all of it. Removing their access stops new logins only.",
+    "existingLabel": "Account on the device",
+    "existingNote": "remote.it will not lock this account or end what it runs when their access is removed — that stops new logins only — and it has whatever sudo the machine gives it.",
     "fallback": "its owner, the starting point",
+    "handleLabel": "Handle",
+    "handleNote": "Made by the device with the r3 prefix.",
     "login": "Local user",
     "loginHelp": "Empty: their own. Or a user there, * for any",
     "loginOwn": "their own account",
+    "name": "Name their account",
+    "nameFailed": "Could not name their account",
     "ownAdmin": "as {{account}}, admin",
+    "ownExisting": "as {{account}}, an account already on the device",
+    "renameNote": "Made by the device with the r3 prefix. Renaming {{account}} ends what it runs now.",
     "revoke": "Remove",
+    "save": "Save",
     "title": "SSH access"
   },
   "deviceSubnet": {
@@ -4346,6 +4358,15 @@
     "signUp": "Sign up",
     "switchToProduction": "Switch to production",
     "waiting": "Waiting for your browser… finish signing in there."
+  },
+  "sshHandle": {
+    "about": "Names your own account on the devices you are given SSH access to. Accounts already made keep their names; a device admin may name yours on their device.",
+    "failed": "Could not set your handle",
+    "hint": "Your own account on a device: the r3 prefix, then {{handle}}",
+    "label": "Handle",
+    "none": "Your email's name",
+    "problem": "1 to 16 lower case letters, digits, _ and -, starting with a letter or digit",
+    "title": "SSH accounts on devices"
   },
   "statusChip": {
     "connected": "Connected",
