@@ -77,6 +77,20 @@
     "guideTitle": "Añadir un servicio (aplicación)",
     "title": "Añadir servicio"
   },
+  "agentOutdated": {
+    "body": "Este equipo ejecuta el agente del sistema {{installedVersion}}, y {{appName}} {{appVersion}} necesita {{expectedVersion}}. Las conexiones siguen funcionando, pero las funciones que necesitan el agente más reciente no funcionarán hasta que se actualice.",
+    "copyDetails": "Copiar detalles",
+    "details": "Detalles",
+    "download": "Descargar instalador",
+    "notice": "El agente del sistema de {{appName}} en este equipo está desactualizado. Reinstala {{appName}} para actualizarlo.",
+    "reportIssue": "Informar del problema",
+    "stepDownload": "Descarga el instalador {{arch}} de {{appName}} {{appVersion}}.",
+    "stepReport": "Si este mensaje vuelve a aparecer, elige «Informar del problema» para enviar los detalles de abajo al soporte.",
+    "stepRun": "Ejecútalo y sigue las indicaciones. Necesita permisos de administrador y te pedirá que cierres {{appName}} primero.",
+    "stepSupport": "Si este mensaje vuelve a aparecer, envía los detalles de abajo por correo a {{email}}.",
+    "title": "Actualizar el agente del sistema de {{appName}}",
+    "why": "El agente del sistema viene con el instalador de {{appName}}, así que reinstalar {{appName}} lo actualiza y conserva tu configuración y tus dispositivos. «Reinstalar agente del sistema» en Opciones no puede actualizarlo."
+  },
   "agentReachEditor": {
     "addTagPlaceholder": "Agregar etiqueta...",
     "allDevices": "Todos los dispositivos",

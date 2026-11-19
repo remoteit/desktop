@@ -77,6 +77,20 @@
     "guideTitle": "Add a service (application)",
     "title": "Add Service"
   },
+  "agentOutdated": {
+    "body": "This computer is running system agent {{installedVersion}}, and {{appName}} {{appVersion}} needs {{expectedVersion}}. Connections keep working, but features that need the newer agent won't until it is updated.",
+    "copyDetails": "Copy details",
+    "details": "Details",
+    "download": "Download installer",
+    "notice": "The {{appName}} system agent on this computer is out of date. Reinstall {{appName}} to update it.",
+    "reportIssue": "Report issue",
+    "stepDownload": "Download the {{arch}} installer for {{appName}} {{appVersion}}.",
+    "stepReport": "If this message comes back, choose Report issue to send support the details below.",
+    "stepRun": "Run it and follow the prompts. It needs administrator permission and asks to close {{appName}} first.",
+    "stepSupport": "If this message comes back, email {{email}} with the details below.",
+    "title": "Update the {{appName}} system agent",
+    "why": "The system agent comes with the {{appName}} installer, so reinstalling {{appName}} updates it and keeps your settings and devices. Re-install system agent in Options can't update it."
+  },
   "agentReachEditor": {
     "addTagPlaceholder": "Add tag...",
     "allDevices": "All devices",

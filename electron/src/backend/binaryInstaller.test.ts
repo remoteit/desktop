@@ -8,6 +8,7 @@ import preferences from './preferences'
 import EventBus from './EventBus'
 import path from 'path'
 import cli from './cliInterface'
+import Logger from './Logger'
 import fs from 'fs'
 
 describe('Test framework is working', () => {
@@ -385,6 +386,105 @@ describe('backend/binaryInstaller', () => {
       expect(eventSpy).toBeCalledTimes(1)
       expect(eventSpy).toBeCalledWith('binary/installed', { path, version, name, installedVersion: version })
       expect(versionSpy).toBeCalledTimes(1)
+    })
+
+    describe('on Windows, where only the app installer replaces remoteit.exe', () => {
+      beforeEach(() => {
+        environment.isWindows = true
+        environment.isElevated = false
+        binaryInstaller.outdated = undefined
+        prefSpy = jest
+          .spyOn(preferences, 'get')
+          .mockImplementation(() => ({ version: desktopVersion, cliVersion: outdated }))
+        versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.resolve(outdated))
+        agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve(outdated))
+      })
+
+      afterEach(() => {
+        environment.isWindows = false
+      })
+
+      test('reports a stale binary instead of prompting to install the agent', async () => {
+        await binaryInstaller.check()
+
+        expect(installSpy).toBeCalledTimes(0)
+        expect(reloadSpy).toBeCalledTimes(0)
+        expect(eventSpy).toBeCalledTimes(1)
+        expect(eventSpy).toBeCalledWith(
+          'binary/installed',
+          expect.objectContaining({
+            installedVersion: outdated,
+            version,
+            outdated: expect.objectContaining({
+              agentVersion: outdated,
+              arch: process.arch,
+              releaseUrl: `https://github.com/remoteit/desktop/releases/tag/v${desktopVersion}`,
+            }),
+          })
+        )
+      })
+
+      test('still restarts a stale agent that is not running', async () => {
+        agentSpy = jest.spyOn(cli, 'agentRunning').mockImplementation(() => Promise.resolve(false))
+
+        await binaryInstaller.check()
+
+        expect(eventSpy).toBeCalledWith('binary/not-installed', {
+          agentMismatched: false,
+          agentStopped: true,
+          binariesOutdated: false,
+          cliUpdated: false,
+          desktopUpdated: false,
+        })
+      })
+
+      test('logs the stale agent once, not on every check', async () => {
+        const warnSpy = jest.spyOn(Logger, 'warn')
+
+        await binaryInstaller.check()
+        await binaryInstaller.check()
+
+        expect(warnSpy.mock.calls.filter(([message]) => message === 'AGENT OUTDATED')).toHaveLength(1)
+        warnSpy.mockRestore()
+      })
+
+      test('reloads an agent running an older binary onto the stale file, then only warns', async () => {
+        agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('0.20.0'))
+        reloadSpy = jest.spyOn(cli, 'agentReload').mockImplementation(() => Promise.resolve({ version: outdated }))
+
+        await binaryInstaller.check()
+
+        expect(reloadSpy).toBeCalledTimes(1)
+        expect(binaryInstaller.reloadRefusedBy).toBeUndefined()
+        expect(eventSpy).toBeCalledWith('binary/installed', expect.objectContaining({ outdated: expect.anything() }))
+      })
+
+      test('still treats an agent running an older binary than the one on disk as mismatched', async () => {
+        agentVersionSpy = jest.spyOn(cli, 'agentVersion').mockImplementation(() => Promise.resolve('0.20.0'))
+
+        await binaryInstaller.check()
+
+        expect(reloadSpy).toBeCalledTimes(1)
+        expect(eventSpy).toBeCalledWith('binary/not-installed', {
+          agentMismatched: true,
+          agentStopped: false,
+          binariesOutdated: false,
+          cliUpdated: false,
+          desktopUpdated: false,
+        })
+      })
+
+      test('still prompts when the CLI cannot report its version', async () => {
+        await binaryInstaller.check()
+        versionSpy = jest.spyOn(cli, 'version').mockImplementation(() => Promise.reject(new Error('spawn failed')))
+        eventSpy.mockClear()
+
+        await binaryInstaller.check()
+
+        expect(binaryInstaller.outdated).toBeUndefined()
+        expect(binaryInstaller.cliBinary.installedVersion).toBe(outdated)
+        expect(eventSpy).toBeCalledWith('binary/not-installed', expect.objectContaining({ binariesOutdated: true }))
+      })
     })
 
     test('should install if outdated and elevated permissions', async () => {

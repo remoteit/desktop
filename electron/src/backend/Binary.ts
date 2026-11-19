@@ -16,6 +16,7 @@ export default class Binary {
   version: string
   agentVersion?: string
   installedVersion?: string
+  versionFailed?: boolean
   inProgress?: boolean
   isCli?: boolean
 
@@ -44,9 +45,11 @@ export default class Binary {
         version = await cli.version()
         this.agentVersion = await cli.agentVersion()
         this.installedVersion = version
+        this.versionFailed = false
         current = semverCompare(version, this.version) >= 0
       } catch (error) {
         current = false
+        this.versionFailed = true
         Logger.warn('BINARY VERSION ERROR', { name: this.name, error })
       }
     }

@@ -9,6 +9,7 @@ import { MaximizeAppRegion } from '../components/MaximizeAppRegion'
 import { ConnectionNotice } from '../components/ConnectionNotice'
 import { GlobalConfirm } from '../components/GlobalConfirm'
 import { UpdateNotice } from '../components/UpdateNotice'
+import { AgentOutdatedNotice } from '../components/AgentOutdatedNotice'
 import { RemoteHeader } from '../components/RemoteHeader'
 import { Notice } from '../components/Notice'
 
@@ -71,6 +72,7 @@ export function Page({ children }: Props & React.HTMLProps<HTMLDivElement>) {
       <GlobalConfirm />
       <ConnectionNotice sx={snackbarSx} />
       <UpdateNotice sx={snackbarSx} />
+      <AgentOutdatedNotice sx={snackbarSx} />
       <Snackbar
         sx={snackbarSx}
         key="error"

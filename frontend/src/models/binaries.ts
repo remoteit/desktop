@@ -9,6 +9,7 @@ export interface BinariesState {
   path?: string
   version?: string
   installedVersion?: string
+  outdated?: AgentOutdated
   reason?: BinaryReason
 }
 
@@ -43,6 +44,7 @@ export default createModel<RootModel>()({
       state.path = info.path
       state.version = info.version
       state.installedVersion = info.installedVersion
+      state.outdated = info.outdated
       state.reason = undefined
       return state
     },
