@@ -1,8 +1,8 @@
 import { Notifier } from '@airbrake/node'
 import { ENVIRONMENT } from './constants'
-import environment from './environment'
+import packageJson from './packageJson'
 
-const { projectId, projectKey } = environment.packageJson.airbrake ?? {}
+const { projectId, projectKey } = packageJson.airbrake ?? {}
 
 // Only report from production builds. Development and test runs otherwise file
 // errors from unreleased code against the production project, where they read

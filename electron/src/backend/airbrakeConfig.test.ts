@@ -31,7 +31,7 @@ describe('AirBrake', () => {
     const Notifier = jest.fn(() => ({ notify: jest.fn(() => 'sent') }))
     jest.doMock('@airbrake/node', () => ({ Notifier }))
     jest.doMock('./constants', () => ({ ENVIRONMENT }))
-    jest.doMock('./environment', () => ({ __esModule: true, default: { packageJson } }))
+    jest.doMock('./packageJson', () => ({ __esModule: true, default: packageJson }))
     return { AirBrake: require('./AirBrake').default, Notifier }
   }
 
