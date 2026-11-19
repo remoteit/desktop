@@ -80,6 +80,7 @@ const ROUTE_PARENTS: [string, string][] = [
 
   // Apps
   ['/apps/new', '/apps'],
+  ['/apps/build', '/apps'],
   ['/apps/:appID/add', '/apps/:appID'],
   ['/apps/:appID', '/apps'],
 
