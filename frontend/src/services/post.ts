@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { getApiURL } from '../helpers/apiHelper'
-import { apiHeaders } from './remoteit'
+import { apiRequest } from './remoteit'
 import { store } from '../store'
 import network from './Network'
 import sleep from '../helpers/sleep'
@@ -15,21 +15,15 @@ export async function post(data: ILookup<any, string> = {}, path: string = '', s
   if (store.getState().ui.offline) return 'ERROR'
 
   const url = getApiURL() + path
-  const headers = await apiHeaders('POST', url)
-  if (!headers) {
-    console.warn('Unable to get token for API request.', data)
-    return 'ERROR'
-  }
-
-  const request = {
-    url,
-    method: 'post' as 'post',
-    headers,
-    data,
-  }
-
   try {
-    return await axios.request(request)
+    const response = await apiRequest('POST', url, async headers =>
+      headers ? axios.request({ url, method: 'post', headers, data }) : undefined
+    )
+    if (!response) {
+      console.warn('Unable to get token for API request.', data)
+      return 'ERROR'
+    }
+    return response
   } catch (error) {
     console.error('POST ERROR', { data, path })
     await apiError(error, silent)

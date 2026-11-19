@@ -788,7 +788,7 @@ export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE)
   const s = stored()
   if (s?.support) {
     if (resource !== OAUTH_GRAPHQL_RESOURCE || !supportLive(s)) return ''
-    // Cached with its scheme: oidcAuthHeaders reads the type from here, and a reloaded tab
+    // Cached with its scheme: authHeaders reads the type from here, and a reloaded tab
     // that served the bound token without it presented it as Bearer — which is refused.
     access[resource] = { token: s.support.access_token, exp: s.support.exp, type: s.support.type }
     return s.support.access_token
@@ -1229,11 +1229,35 @@ async function clearDpopKey(): Promise<void> {
   }
 }
 
-async function dpopProof(htm: string, htu: string, accessToken?: string): Promise<string | null> {
+// RFC 9449 §8 server nonces, by the origin of the server that sent them. A server that finds a proof's
+// iat outside its window answers with a nonce, and accepts a proof carrying it whatever this computer's
+// clock says, so the latest nonce each server sent rides every proof to it. The server decides how long
+// one lasts and asks again when it has expired. Kept in memory only: a reload costs one refusal per
+// server to learn it again.
+const dpopNonces = new Map<string, string>()
+const originOf = (url: string): string => {
+  try {
+    return new URL(url).origin
+  } catch {
+    return url
+  }
+}
+type ReadHeader = (name: string) => string | null | undefined
+const noteDpopNonce = (url: string, header: ReadHeader) => {
+  const nonce = header('dpop-nonce')
+  if (nonce) dpopNonces.set(originOf(url), nonce)
+}
+
+/** A signed proof, with the nonce it carries: whether a refusal is worth a retry depends on whether the
+ *  server has since named a different one. */
+type DpopProof = { jwt: string; nonce?: string }
+
+async function dpopProof(htm: string, htu: string, accessToken?: string): Promise<DpopProof | null> {
   const key = await dpopKey()
   if (!key) return null
   const { pair, header } = key
   const u = new URL(htu)
+  const nonce = dpopNonces.get(u.origin)
   const payload = toBase64url(
     utf8(
       JSON.stringify({
@@ -1241,6 +1265,7 @@ async function dpopProof(htm: string, htu: string, accessToken?: string): Promis
         htu: u.origin + u.pathname,
         iat: serverSeconds(),
         jti: crypto.randomUUID(),
+        ...(nonce ? { nonce } : {}),
         ...(accessToken ? { ath: toBase64url(await crypto.subtle.digest('SHA-256', utf8(accessToken))) } : {}),
       })
     )
@@ -1250,21 +1275,21 @@ async function dpopProof(htm: string, htu: string, accessToken?: string): Promis
     pair.privateKey,
     utf8(`${header}.${payload}`)
   )
-  return `${header}.${payload}.${toBase64url(sig)}`
+  return { jwt: `${header}.${payload}.${toBase64url(sig)}`, nonce }
 }
 
 /** Auth headers for an API call: the DPoP scheme + an ath proof when this audience's
- * token came back bound, plain Bearer otherwise. {} when signed out. */
-export async function oidcAuthHeaders(
+ * token came back bound, plain Bearer otherwise. {} when signed out. `proof` is the proof they carry. */
+async function authHeaders(
   method: string,
   url: string,
-  resource: string = OAUTH_GRAPHQL_RESOURCE
-): Promise<Record<string, string>> {
+  resource: string
+): Promise<{ headers: Record<string, string>; proof?: DpopProof }> {
   const token = await oidcAccessToken(resource)
-  if (!token) return {}
+  if (!token) return { headers: {} }
   if (access[resource]?.type === 'DPoP') {
     const proof = await dpopProof(method, url, token)
-    if (proof) return { authorization: `DPoP ${token}`, DPoP: proof }
+    if (proof) return { headers: { authorization: `DPoP ${token}`, DPoP: proof.jwt }, proof }
     // A bound token with no proof to present. Falling through to Bearer is deliberate — the AS
     // decides, and it will refuse (RFC 9449) — but that refusal arrives as a bare 401 with no
     // hint that the cause was a missing key rather than a dead session. Name it here, because
@@ -1274,7 +1299,54 @@ export async function oidcAuthHeaders(
       `AUTH: no DPoP proof available for ${resource} — presenting a sender-constrained token as Bearer, which the AS will refuse`
     )
   }
-  return { authorization: `Bearer ${token}` }
+  return { headers: { authorization: `Bearer ${token}` } }
+}
+
+/** What a request's outcome says, transport aside: its status and a header reader. */
+export type DpopAnswer = { status: number; header: ReadHeader }
+
+/** The answer a fetch resolved with; undefined for anything else (a rejection never reached a server). */
+export const fetchAnswer = (outcome: unknown): DpopAnswer | undefined =>
+  outcome instanceof Response ? { status: outcome.status, header: name => outcome.headers.get(name) } : undefined
+
+// A resource server asks for a nonce with a 401 whose DPoP challenge names use_dpop_nonce. The challenge
+// may share the header with a Bearer one, and a server whose WWW-Authenticate is not readable here still
+// sends DPoP-Nonce, which is exposed to CORS on every server that asks.
+const asksForNonce = (answer: DpopAnswer): boolean =>
+  answer.status === 401 &&
+  (/use_dpop_nonce/.test(answer.header('www-authenticate') ?? '') || !!answer.header('dpop-nonce'))
+
+/** Sends one request on `resource`'s token: `send` gets the auth headers ({} when signed out) and makes
+ *  the request; `answer` reads the status and headers off whatever it resolved or threw. Every answer's
+ *  DPoP-Nonce is remembered. A refusal asking for a nonce the proof didn't carry gets the request ONCE
+ *  more, with a freshly signed proof (new jti, new iat) carrying it, since a proof is single-use and
+ *  bound to its method and URL. A second refusal is handed back as it came, so the caller's own 401
+ *  handling sees only a refusal the nonce couldn't fix. */
+export async function oidcAuthorized<T>(
+  method: string,
+  url: string,
+  resource: string,
+  send: (auth: Record<string, string>) => Promise<T>,
+  answer: (outcome: unknown) => DpopAnswer | undefined
+): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    const { headers, proof } = await authHeaders(method, url, resource)
+    let outcome: unknown
+    let failed = false
+    try {
+      outcome = await send(headers)
+    } catch (error) {
+      outcome = error
+      failed = true
+    }
+    const reply = answer(outcome)
+    if (reply) noteDpopNonce(url, reply.header)
+    const retry =
+      attempt === 0 && !!proof && !!reply && asksForNonce(reply) && dpopNonces.get(originOf(url)) !== proof.nonce
+    if (retry) continue
+    if (failed) throw outcome
+    return outcome as T
+  }
 }
 
 export type OidcResourceResult<T = any> = { status: number; body?: T }
@@ -1287,9 +1359,15 @@ export async function oidcResourceRequest<T = any>(
   init: RequestInit = {}
 ): Promise<OidcResourceResult<T>> {
   const url = resource + path
-  const auth = await oidcAuthHeaders(init.method ?? 'GET', url, resource)
-  if (!auth.authorization) return { status: 401 }
-  const response = await fetch(url, { ...init, headers: { ...auth, ...(init.headers || {}) } })
+  const response = await oidcAuthorized(
+    init.method ?? 'GET',
+    url,
+    resource,
+    async auth =>
+      auth.authorization ? fetch(url, { ...init, headers: { ...auth, ...(init.headers || {}) } }) : undefined,
+    fetchAnswer
+  )
+  if (!response) return { status: 401 }
   const body = (await response.json().catch(() => undefined)) as T | undefined
   return { status: response.status, body }
 }
@@ -1315,31 +1393,63 @@ const PROOF_TIME = /\biat\b/
 // Well inside the AS's 30 s allowance: a clock this close to the server's is not why a proof was refused.
 const CLOCK_SLACK_MS = 20_000
 
-async function tokenRequest(params: { [key: string]: string }, clockRetried = false): Promise<any> {
+// A minted access token is the server's word on its own time: its iat, else its exp less expires_in.
+// A proof that got through on a nonce leaves the clock unmeasured, and token freshness is judged on the
+// server's time, so without this an hour-fast computer would take every token it is handed as already
+// expired and refresh before every call.
+function learnServerClock(body: { access_token: string; expires_in?: number }): void {
+  const claims = decodeJwt(body.access_token)
+  const issued =
+    typeof claims?.iat === 'number'
+      ? claims.iat
+      : typeof claims?.exp === 'number' && body.expires_in
+      ? claims.exp - Number(body.expires_in)
+      : undefined
+  if (issued === undefined || Number.isNaN(issued)) return
+  const offset = issued * 1000 - Date.now()
+  if (Math.abs(offset - clockOffsetMs) > CLOCK_SLACK_MS) clockOffsetMs = offset
+}
+
+/* Every retry here is safe because the AS checks the proof before it claims the code or rotates the
+   refresh token: a refused request spent nothing. Each retry signs a new proof, and each kind runs at
+   most once per request, so a server can cost one token call at most three round trips. */
+async function tokenRequest(
+  params: { [key: string]: string },
+  retried: { nonce?: boolean; clock?: boolean } = {}
+): Promise<any> {
   // Discovery and the key load are independent; the boot refresh sits on this path.
   const [d] = await Promise.all([discover(), dpopKey()])
   const proof = await dpopProof('POST', d.token_endpoint)
   const response = await fetch(d.token_endpoint, {
     method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded', ...(proof ? { DPoP: proof } : {}) },
+    headers: { 'content-type': 'application/x-www-form-urlencoded', ...(proof ? { DPoP: proof.jwt } : {}) },
     body: new URLSearchParams({ client_id: OAUTH_CLIENT_ID, ...params }),
   })
+  noteDpopNonce(d.token_endpoint, name => response.headers.get(name))
   const body: any = await response.json().catch(() => ({}))
   if (!response.ok || !body.access_token) {
     const detail = body.error_description || body.error || `token endpoint ${response.status}`
-    // A proof dated by a wrong clock: one retry on the server's time. Safe to repeat, because the AS
-    // checks the proof before it claims the code or rotates the refresh token.
-    if (body.error === 'invalid_dpop_proof' && PROOF_TIME.test(detail)) {
-      const offset = clockRetried ? undefined : await serverClockOffset(response, d.token_endpoint)
+    // The AS wants a nonce (RFC 9449 §8): it accepts a proof carrying one whatever its iat, so a wrong
+    // clock is answered without measuring it. Worth a retry only when the AS has named a nonce this
+    // proof didn't carry.
+    const nonceRefusal = body.error === 'use_dpop_nonce'
+    if (nonceRefusal && proof && !retried.nonce && dpopNonces.get(originOf(d.token_endpoint)) !== proof.nonce)
+      return tokenRequest(params, { ...retried, nonce: true })
+    // A proof dated by a wrong clock: one retry on the server's time. An AS without nonces says so with
+    // invalid_dpop_proof naming iat; one with nonces asks for a nonce only when the iat is out of its
+    // window, so a nonce it still wants after the nonce retry (or whose header can't be read) is the
+    // same clock problem.
+    if (nonceRefusal || (body.error === 'invalid_dpop_proof' && PROOF_TIME.test(detail))) {
+      const offset = retried.clock ? undefined : await serverClockOffset(response, d.token_endpoint)
       if (offset !== undefined && Math.abs(offset - clockOffsetMs) > CLOCK_SLACK_MS) {
         clockOffsetMs = offset
-        return tokenRequest(params, true)
+        return tokenRequest(params, { ...retried, clock: true })
       }
       // Unmeasurable, or still refused on the server's time: the clock. Measured close to the server's
       // and refused anyway: not the clock, so it falls through to the ordinary refusal.
-      if (clockRetried || offset === undefined) {
+      if (retried.clock || offset === undefined) {
         const error = new OidcError('clock', detail)
-        if (clockRetried) error.clockOffset = Math.round(clockOffsetMs / 1000)
+        if (retried.clock) error.clockOffset = Math.round(clockOffsetMs / 1000)
         error.oauthError = body.error
         throw error
       }
@@ -1348,6 +1458,7 @@ async function tokenRequest(params: { [key: string]: string }, clockRetried = fa
     error.oauthError = body.error
     throw error
   }
+  learnServerClock(body)
   return body
 }
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeAll, beforeEach, afterAll, afterEach } from 'vitest'
 
 vi.mock('./browser', () => ({ default: {}, leaveTo: vi.fn() }))
 vi.mock('./chatPopout', () => ({ isChatPopout: false }))
@@ -24,9 +24,11 @@ import {
   oidcCallbackReason,
   oidcActivateAccount,
   oidcTakeSwitched,
+  oidcResourceRequest,
 } from './oidc'
+import { decodeBase64url } from '../helpers/base64url'
 import browser, { leaveTo } from './browser'
-import { OAUTH_ISSUER, PROTOCOL } from '../constants'
+import { OAUTH_ISSUER, OAUTH_GRAPHQL_RESOURCE, PROTOCOL } from '../constants'
 
 const stubDiscovery = (
   doc: object,
@@ -552,5 +554,205 @@ describe('a DPoP proof refused for its time', () => {
 
     await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'clock', clockOffset: -3600 })
     expect(tokenCalls).toBe(2)
+  })
+})
+
+/* RFC 9449 §8 server nonces. Last in the file: the key these tests install is memoized for the module,
+   and the nonces they teach it are kept per server origin. */
+describe('DPoP server nonces', () => {
+  const SERVER = Date.UTC(2026, 10, 19, 2, 10, 0)
+  const TOKEN = 'https://login.test/token'
+  type Sent = { url: string; init?: RequestInit }
+  let sent: Sent[]
+  let answer: (url: string, init: RequestInit | undefined, calls: number) => Promise<Response>
+  let serverTimeCalls: number
+  const calls = (prefix: string) => sent.filter(s => s.url.startsWith(prefix))
+  const proofOf = (s: Sent) => {
+    const jwt = (s.init?.headers as Record<string, string>)?.DPoP
+    return JSON.parse(decodeBase64url(jwt.split('.')[1]))
+  }
+  const json = (body: object, status = 200, headers: Record<string, string> = {}) =>
+    new Response(JSON.stringify(body), { status, headers })
+  const wantsNonce = (nonce: string) =>
+    json({ error: 'use_dpop_nonce', error_description: 'nonce required' }, 400, { 'DPoP-Nonce': nonce })
+  const resourceWantsNonce = (nonce: string) =>
+    new Response('', {
+      status: 401,
+      headers: {
+        'WWW-Authenticate':
+          'DPoP error="use_dpop_nonce", error_description="nonce required", Bearer resource_metadata="https://x.test/m"',
+        'DPoP-Nonce': nonce,
+      },
+    })
+  const jwtWith = (claims: object) => ['e30', btoa(JSON.stringify(claims)).replace(/=+$/, ''), 'sig'].join('.')
+  const bound = (claims: object = { exp: Math.floor(Date.now() / 1000) + 300 }) =>
+    json({ refresh_token: 'r2', access_token: jwtWith(claims), token_type: 'DPoP' })
+  const signedIn = () => {
+    const tokens = { refresh_token: 'r1', id_token: idToken('a', OAUTH_ISSUER) }
+    window.localStorage.setItem('oidc.tokens', JSON.stringify(tokens))
+    window.localStorage.setItem('oidc.accounts', JSON.stringify({ a: tokens }))
+  }
+
+  beforeAll(() => {
+    // Just enough IndexedDB for the DPoP key to be made and kept (jsdom has none).
+    const data = new Map<string, unknown>()
+    const request = (result?: unknown) => {
+      const r: { result?: unknown; onsuccess?: () => void } = { result }
+      queueMicrotask(() => r.onsuccess?.())
+      return r
+    }
+    const store = {
+      get: (key: string) => request(data.get(key)),
+      put: (value: unknown, key: string) => (data.set(key, value), request(key)),
+      delete: (key: string) => (data.delete(key), request()),
+    }
+    const db = { transaction: () => ({ objectStore: () => store }), createObjectStore: () => store }
+    Object.assign(globalThis, { indexedDB: { open: () => request(db) } })
+  })
+  afterAll(() => {
+    delete (globalThis as { indexedDB?: unknown }).indexedDB
+  })
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+    sent = []
+    serverTimeCalls = 0
+    answer = () => Promise.reject(new Error('offline'))
+    stubDiscovery({ authorization_endpoint: 'https://login.test/authorize', token_endpoint: TOKEN }, (url, init) => {
+      if (String(url).startsWith('/serverTime')) {
+        serverTimeCalls++
+        return Promise.resolve(json({ serverTime: SERVER }))
+      }
+      sent.push({ url: String(url), init })
+      return answer(String(url), init, calls(String(url)).length)
+    })
+    invalidateOidcToken()
+  })
+  afterEach(() => {
+    delete (browser as { hasBackend?: boolean }).hasBackend
+    vi.restoreAllMocks()
+    vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline')))
+  })
+
+  it('sends no nonce to servers that never asked for one', async () => {
+    signedIn()
+    answer = url => Promise.resolve(url === TOKEN ? bound() : json({ ok: true }))
+
+    expect(await oidcResourceRequest('https://quiet.test', '/accounts')).toEqual({ status: 200, body: { ok: true } })
+    expect(sent.map(s => s.url)).toEqual([TOKEN, 'https://quiet.test/accounts'])
+    for (const s of sent) expect(proofOf(s).nonce).toBeUndefined()
+  })
+
+  it('retries a code exchange the AS answered with use_dpop_nonce once, on a fresh proof carrying the nonce', async () => {
+    Object.assign(browser, { hasBackend: true })
+    await oidcStart()
+    const flow = JSON.parse(window.sessionStorage.getItem('oidc.flow') || 'null')
+    window.history.replaceState({}, '', `/?code=c1&state=${flow.state}`)
+    answer = (_, __, n) =>
+      Promise.resolve(
+        n === 1
+          ? wantsNonce('n-1')
+          : json({ refresh_token: 'r1', access_token: 'at', id_token: idToken('a', OAUTH_ISSUER, flow.nonce) })
+      )
+
+    expect(await oidcCompleteFromUrl()).toMatchObject({ sub: 'a' })
+    const [first, retry] = calls(TOKEN)
+    expect(calls(TOKEN)).toHaveLength(2)
+    expect(proofOf(first).nonce).toBeUndefined()
+    expect(proofOf(retry).nonce).toBe('n-1')
+    expect(proofOf(retry).jti).not.toBe(proofOf(first).jti)
+    // The same code both times: the refused request spent nothing, and no clock was measured.
+    for (const s of [first, retry]) expect(String(s.init?.body)).toContain('code=c1')
+    expect(serverTimeCalls).toBe(0)
+  })
+
+  it('retries a refresh the same way, and judges the token by the time it was minted at', async () => {
+    // An hour fast: on this clock every token the AS mints has already expired.
+    vi.spyOn(Date, 'now').mockReturnValue(SERVER + 60 * 60 * 1000)
+    signedIn()
+    const iat = SERVER / 1000
+    answer = (url, __, n) =>
+      Promise.resolve(url !== TOKEN ? json({ ok: true }) : n === 1 ? wantsNonce('n-2') : bound({ iat, exp: iat + 300 }))
+
+    const token = await oidcAccessToken()
+    expect(token).toBeTruthy()
+    const [first, retry] = calls(TOKEN)
+    // The AS's last nonce (from the exchange above) has expired there, so it names a new one.
+    expect(proofOf(first).nonce).toBe('n-1')
+    expect(proofOf(retry).nonce).toBe('n-2')
+    for (const s of [first, retry]) expect(String(s.init?.body)).toContain('refresh_token=r1')
+    expect(JSON.parse(window.localStorage.getItem('oidc.tokens') || '{}').refresh_token).toBe('r2')
+
+    // Fresh by the server's clock, so the next call spends no refresh token…
+    expect(await oidcAccessToken()).toBe(token)
+    expect(calls(TOKEN)).toHaveLength(2)
+    // …and the proofs signed from here on are dated on the server's clock, not this one.
+    expect(proofOf(retry).iat).toBe(iat + 60 * 60)
+    await oidcResourceRequest(OAUTH_GRAPHQL_RESOURCE, '/graphql')
+    expect(proofOf(calls(OAUTH_GRAPHQL_RESOURCE)[0]).iat).toBe(iat)
+  })
+
+  it('retries a resource 401 asking for a nonce once, with a new proof over the same token', async () => {
+    signedIn()
+    const account = 'https://account.test'
+    answer = (url, __, n) =>
+      Promise.resolve(url === TOKEN ? bound() : n === 1 ? resourceWantsNonce('rn-1') : json({ ok: true }))
+
+    expect(await oidcResourceRequest(account, '/accounts')).toEqual({ status: 200, body: { ok: true } })
+    const [first, retry] = calls(account)
+    expect(calls(account)).toHaveLength(2)
+    expect(calls(TOKEN)).toHaveLength(1)
+    expect(proofOf(first).nonce).toBeUndefined()
+    expect(proofOf(retry)).toMatchObject({
+      nonce: 'rn-1',
+      htm: 'GET',
+      htu: `${account}/accounts`,
+      ath: proofOf(first).ath,
+    })
+    expect(proofOf(retry).jti).not.toBe(proofOf(first).jti)
+  })
+
+  it('carries a nonce a server sent on a success into the next proof to it', async () => {
+    signedIn()
+    const graph = 'https://graph.test'
+    answer = (url, __, n) =>
+      Promise.resolve(url === TOKEN ? bound() : json({ ok: true }, 200, n === 1 ? { 'DPoP-Nonce': 'sn-1' } : {}))
+
+    await oidcResourceRequest(graph, '/one')
+    await oidcResourceRequest(graph, '/two')
+    expect(calls(graph).map(s => proofOf(s).nonce)).toEqual([undefined, 'sn-1'])
+  })
+
+  it('does not loop on a resource that asks for a nonce again', async () => {
+    signedIn()
+    const stubborn = 'https://stubborn.test'
+    answer = (url, __, n) => Promise.resolve(url === TOKEN ? bound() : resourceWantsNonce(`again-${n}`))
+
+    expect(await oidcResourceRequest(stubborn, '/accounts')).toMatchObject({ status: 401 })
+    expect(calls(stubborn)).toHaveLength(2)
+  })
+
+  it('does not loop on a token endpoint that asks for a nonce again, and names the clock', async () => {
+    signedIn()
+    answer = (_, __, n) => Promise.resolve(wantsNonce(`again-${n}`))
+
+    await oidcStart()
+    const flow = JSON.parse(window.sessionStorage.getItem('oidc.flow') || 'null')
+    window.history.replaceState({}, '', `/?code=c2&state=${flow.state}`)
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'clock', oauthError: 'use_dpop_nonce' })
+    expect(calls(TOKEN)).toHaveLength(2)
+  })
+
+  it('tries the server’s clock once after the nonce on the desktop, and stops there', async () => {
+    Object.assign(browser, { hasBackend: true })
+    vi.spyOn(Date, 'now').mockReturnValue(SERVER + 60 * 60 * 1000)
+    answer = (_, __, n) => Promise.resolve(wantsNonce(`again-${n}`))
+
+    await oidcStart()
+    const flow = JSON.parse(window.sessionStorage.getItem('oidc.flow') || 'null')
+    window.history.replaceState({}, '', `/?code=c3&state=${flow.state}`)
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'clock', clockOffset: -3600 })
+    expect(calls(TOKEN)).toHaveLength(3)
+    expect(serverTimeCalls).toBe(1)
   })
 })
