@@ -23,6 +23,7 @@ vi.mock('@common/brand/config', () => ({
   default: { appName: 'Remote.It', package: { author: { email: 'support@remote.it' } } },
 }))
 vi.mock('../helpers/versionHelper', () => ({ version: '4.0.1' }))
+vi.mock('../selectors/ui', () => ({ selectUpdateNotice: (state: any) => state.updateReady }))
 vi.mock('../services/browser', () => ({ default: browser, windowOpen }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
 vi.mock('../buttons/IconButton', () => ({
@@ -53,10 +54,14 @@ describe('AgentOutdatedNotice', () => {
   let root: Root
   let container: HTMLDivElement
 
-  const render = (agent?: AgentOutdated, { installedVersion = '4.1.0', user = {} as any } = {}) => {
+  const render = (
+    agent?: AgentOutdated,
+    { installedVersion = '4.1.0', user = {} as any, installed = true, updateReady = undefined as any } = {}
+  ) => {
     redux.state = {
-      binaries: { outdated: agent, installedVersion, version: '4.2.0', path },
+      binaries: { outdated: agent, installed, installedVersion, version: '4.2.0', path },
       auth: { user },
+      updateReady,
     }
     act(() => root.render(<AgentOutdatedNotice />))
   }
@@ -142,6 +147,23 @@ describe('AgentOutdatedNotice', () => {
     click('Details')
     expect(button('Report issue')).toBeUndefined()
     expect(text()).toContain('email support@remote.it with the details below')
+  })
+
+  it('steps aside while an app update is ready, which replaces the agent too', () => {
+    render(outdated, { updateReady: '4.0.2' })
+    expect(text()).not.toContain('out of date')
+  })
+
+  it('stays out of the way of the install screen', () => {
+    render(outdated, { installed: false })
+    expect(text()).not.toContain('out of date')
+  })
+
+  it('closing the details dismisses it for this session', () => {
+    render(outdated)
+    click('Details')
+    click('Close')
+    expect(button('Details')).toBeUndefined()
   })
 
   it('stays dismissed until the versions change', () => {

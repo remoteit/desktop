@@ -19,18 +19,26 @@ import { Dispatch, State } from '../store'
 import { Notice } from './Notice'
 import { CopyCodeBlock } from './CopyCodeBlock'
 import { version as appVersion } from '../helpers/versionHelper'
+import { selectUpdateNotice } from '../selectors/ui'
 import browser, { windowOpen } from '../services/browser'
 
 export const AgentOutdatedNotice: React.FC<{ sx?: SxProps<Theme> }> = ({ sx }) => {
   const { t } = useTranslation()
   const history = useHistory()
   const dispatch = useDispatch<Dispatch>()
-  const { outdated, installedVersion, version: expectedVersion, path } = useSelector((state: State) => state.binaries)
+  const {
+    outdated,
+    installed,
+    installedVersion,
+    version: expectedVersion,
+    path,
+  } = useSelector((state: State) => state.binaries)
+  const updateReady = useSelector(selectUpdateNotice)
   const signedIn = useSelector((state: State) => !!state.auth.user)
   const [dismissed, setDismissed] = useState<string>()
   const [open, setOpen] = useState<boolean>(false)
 
-  if (!outdated || !browser.isElectron || browser.isRemote) return null
+  if (!outdated || !installed || updateReady || !browser.isElectron || browser.isRemote) return null
 
   const shown = `${installedVersion}:${expectedVersion}`
   const appName = brand.appName
@@ -45,8 +53,13 @@ export const AgentOutdatedNotice: React.FC<{ sx?: SxProps<Theme> }> = ({ sx }) =
     `App log: ${outdated.appLog}`,
   ].join('\n')
 
-  const report = async () => {
+  const close = () => {
     setOpen(false)
+    setDismissed(shown)
+  }
+
+  const report = async () => {
+    close()
     await dispatch.feedback.set({
       subject: `Out-of-date system agent ${installedVersion}`,
       data: { appVersion, installedVersion, expectedVersion, path, ...outdated },
@@ -79,7 +92,7 @@ export const AgentOutdatedNotice: React.FC<{ sx?: SxProps<Theme> }> = ({ sx }) =
           </Notice>
         }
       />
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={open} onClose={close} maxWidth="sm" fullWidth>
         <DialogTitle>{t('agentOutdated.title', 'Update the {{appName}} system agent', values)}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" gutterBottom>
@@ -137,7 +150,7 @@ export const AgentOutdatedNotice: React.FC<{ sx?: SxProps<Theme> }> = ({ sx }) =
           />
         </DialogContent>
         <DialogActions>
-          <Button color="primary" onClick={() => setOpen(false)}>
+          <Button color="primary" onClick={close}>
             {t('common.close', 'Close')}
           </Button>
           {signedIn && (

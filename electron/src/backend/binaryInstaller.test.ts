@@ -482,6 +482,7 @@ describe('backend/binaryInstaller', () => {
         await binaryInstaller.check()
 
         expect(binaryInstaller.outdated).toBeUndefined()
+        expect(binaryInstaller.cliBinary.installedVersion).toBe(outdated)
         expect(eventSpy).toBeCalledWith('binary/not-installed', expect.objectContaining({ binariesOutdated: true }))
       })
     })

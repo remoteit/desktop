@@ -84,8 +84,8 @@ export class BinaryInstaller {
   }
 
   agentOutdated(stale: boolean): AgentOutdated | undefined {
-    const { installedVersion, agentVersion, version } = this.cliBinary
-    if (!environment.isWindows || !stale || !installedVersion) return
+    const { installedVersion, agentVersion, version, versionFailed } = this.cliBinary
+    if (!environment.isWindows || !stale || versionFailed || !installedVersion) return
     const key = [installedVersion, version, agentVersion].join(':')
     if (this.outdated && this.outdatedKey === key) return this.outdated
     this.outdatedKey = key
