@@ -1,0 +1,17 @@
+{
+  "contract": 1,
+  "app": "fixture.meter",
+  "version": "1.0.0",
+  "name": "meter",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "type": "tcp",
+    "port": 8484
+  },
+  "service": {
+    "name": "Meter",
+    "protocol": "tcp"
+  }
+}

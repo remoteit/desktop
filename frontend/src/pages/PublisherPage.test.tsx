@@ -42,6 +42,14 @@ vi.mock('../components/Confirm', () => ({
       </div>
     ) : null,
 }))
+// The signer frame stands in for signer.html: a button that answers as the signer does, with a key's public half.
+const MADE = { publicKey: 'A'.repeat(43) + '=', keyId: 'aaaaaaaaaaaaaaaa' }
+vi.mock('../components/SignerFrame', () => ({
+  useCreateLabels: () => ({}),
+  SignerFrame: ({ request, onCreated }: any) => (
+    <button data-signer={request.type} data-signer-publisher={request.publisher} onClick={() => onCreated(MADE)} />
+  ),
+}))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? ''),
@@ -154,6 +162,31 @@ describe('the account’s app publisher', () => {
     expect(revoke).toHaveBeenCalledWith('0123456789abcdef', undefined)
     expect(page.querySelector('[data-key="0123456789abcdef"]')?.textContent).toContain('Revoked')
     expect(page.querySelector('[data-revoke]')).toBeNull()
+  })
+
+  it('creates a key in the signer, registers its public half, and says to keep the file', async () => {
+    addKey.mockResolvedValue({ publisher: acme({ keys: [KEY, { ...KEY, keyId: MADE.keyId }] }) })
+    const page = await render()
+    await click(page.querySelector('[data-create-key]'))
+    const signer = document.querySelector('[data-signer="create"]')
+    expect(signer?.getAttribute('data-signer-publisher')).toBe('acme')
+    await click(signer)
+    expect(addKey).toHaveBeenCalledWith(MADE.publicKey, undefined)
+    expect(page.querySelector(`[data-key-kept="${MADE.keyId}"]`)?.textContent).toContain('remote.it cannot recover either')
+    expect(page.querySelector(`[data-key="${MADE.keyId}"]`)).not.toBeNull()
+  })
+
+  it('a key made but not registered says so, and registers it again on Try again', async () => {
+    addKey.mockResolvedValueOnce({ reason: 'at most 8 standing keys' }).mockResolvedValueOnce({ publisher: acme() })
+    const page = await render()
+    await click(page.querySelector('[data-create-key]'))
+    await click(document.querySelector('[data-signer="create"]'))
+    expect(document.querySelector(`[data-registering="${MADE.keyId}"]`)?.textContent).toContain('not registered yet')
+    expect(document.querySelector('[data-create-key-dialog] [data-notice="error"]')?.textContent).toBe('at most 8 standing keys')
+    await click(document.querySelector('[data-register-again]'))
+    expect(addKey).toHaveBeenCalledTimes(2)
+    expect(addKey).toHaveBeenLastCalledWith(MADE.publicKey, undefined)
+    expect(page.querySelector(`[data-key-kept="${MADE.keyId}"]`)).not.toBeNull()
   })
 
   it('renamed; a stage that certifies no key says so; an API without publishers, too', async () => {

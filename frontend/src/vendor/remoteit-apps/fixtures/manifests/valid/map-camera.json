@@ -1,0 +1,65 @@
+{
+  "contract": 1,
+  "app": "fixture.camera",
+  "version": "1.0.0",
+  "name": "camera",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "--web",
+      "${remoteit.listen.web.port}",
+      "--rtsp",
+      "${remoteit.listen.rtsp.port}",
+      "--rtp",
+      "${remoteit.listen.rtp.ports}",
+      "--control",
+      "${remoteit.listen.control.port}"
+    ]
+  },
+  "listen": {
+    "web": {
+      "type": "tcp",
+      "port": "${setting.web_port}"
+    },
+    "rtsp": {
+      "type": "tcp",
+      "port": 8554
+    },
+    "rtp": {
+      "type": "udp",
+      "ports": "5004-5005"
+    },
+    "control": {
+      "type": "tcp"
+    }
+  },
+  "service": [
+    {
+      "name": "Camera",
+      "protocol": "http",
+      "listen": "web"
+    },
+    {
+      "name": "Stream",
+      "protocol": "tcp",
+      "listen": [
+        "rtsp",
+        "rtp"
+      ]
+    }
+  ],
+  "health": {
+    "type": "http",
+    "path": "/",
+    "listen": "web"
+  },
+  "settings": {
+    "web_port": {
+      "type": "int",
+      "label": "Port",
+      "default": 8080,
+      "min": 1024,
+      "max": 65535
+    }
+  }
+}

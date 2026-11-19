@@ -1,7 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { Box, Button, List, ListItem, ListItemText, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  List,
+  ListItem,
+  ListItemText,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { State } from '../store'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { Container } from '../components/Container'
@@ -9,6 +21,8 @@ import { Title } from '../components/Title'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Confirm } from '../components/Confirm'
+import { SignerFrame, useCreateLabels } from '../components/SignerFrame'
+import { CreateRequest, Created } from '../services/releaseSigner'
 import {
   AppPublisher,
   AppPublishing,
@@ -26,8 +40,11 @@ import {
 
 /* The account's app publisher (presence-server docs/device-apps-design.md, build step 7): claim a publisher id — the
    first part of every app id it publishes, first come, first served, remote.it's and well-known names reserved, and for
-   good —; its name, shown with its apps; its signing keys (the public half pasted here, the private half never leaving
-   the publisher's machine; several at once for rotation; revoking one withdraws every release it signed); and its
+   good —; its name, shown with its apps; its signing keys (made here — Create key: the key made in the browser, its
+   public half registered, the private half downloaded encrypted with the publisher's passphrase, in the portal's signer
+   frame so the page itself never holds it; presence-server docs/device-apps-new-app.md — or a public half pasted from
+   a key made elsewhere; the private half never reaches remote.it; several at once for rotation; revoking one
+   withdraws every release it signed); and its
    private apps with their releases, which reach the account's own devices only. Releases are published with the
    publishing tool (appReleaseUploads, then setAppRelease); they are listed here. The account admin's. */
 export const PublisherPage: React.FC = () => {
@@ -44,6 +61,13 @@ export const PublisherPage: React.FC = () => {
   const [newKey, setNewKey] = useState('')
   const [revoking, setRevoking] = useState<string>()
   const [newDomain, setNewDomain] = useState('')
+  // Create key: the dialog open; the key the signer made, until it is registered; the key whose file was just saved.
+  const [creating, setCreating] = useState(false)
+  const [made, setMade] = useState<Created>()
+  const [registerRefusal, setRegisterRefusal] = useState<string>()
+  const [kept, setKept] = useState<string>()
+  const createLabels = useCreateLabels()
+  const [createRequest, setCreateRequest] = useState<CreateRequest>()
 
   useEffect(() => {
     let current = true
@@ -69,6 +93,27 @@ export const PublisherPage: React.FC = () => {
 
   const publisher = read?.publisher
   const signed = publisher && revoking ? releasesSignedBy(publisher, revoking) : []
+
+  const openCreate = () => {
+    if (!publisher) return
+    setMade(undefined)
+    setRegisterRefusal(undefined)
+    setCreateRequest({ type: 'create', publisher: publisher.id, labels: createLabels })
+    setCreating(true)
+  }
+
+  // The key's public half registered: certified by graphql, and from then on a key releases may be signed with.
+  const register = async (key: Created) => {
+    setBusy(true)
+    setRegisterRefusal(undefined)
+    const result = await graphQLAddAppPublisherKey(key.publicKey, account)
+    setBusy(false)
+    if ('reason' in result) return setRegisterRefusal(result.reason || t('publisherPage.failed', 'That did not go through'))
+    setRead(read => read && { ...read, publisher: result.publisher })
+    setCreating(false)
+    setMade(undefined)
+    setKept(key.keyId)
+  }
 
   return (
     <Container
@@ -170,6 +215,17 @@ export const PublisherPage: React.FC = () => {
               {t('publisherPage.noCatalogueKey', 'This stage cannot certify keys yet, so its devices take no published app.')}
             </Notice>
           )}
+          {kept && (
+            <Notice severity="warning" gutterBottom onClose={() => setKept(undefined)}>
+              <span data-key-kept={kept}>
+                {t(
+                  'publisherPage.keepKey',
+                  'Key {{id}} is registered. Keep its file and passphrase: remote.it cannot recover either. Without them you cannot sign releases with this key — create a new key instead, and revoke this one if the file may be in someone else’s hands.',
+                  { id: kept }
+                )}
+              </span>
+            </Notice>
+          )}
           <List dense data-publisher-keys>
             {publisher.keys.map(key => (
               <ListItem
@@ -198,11 +254,20 @@ export const PublisherPage: React.FC = () => {
             ))}
           </List>
           <Gutters>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              {t(
+                'publisherPage.createKeyIntro',
+                'Create a key here: it is made in your browser and saved to a file encrypted with a passphrase you choose. Only its public half is sent to remote.it. The same file signs releases here and with the publishing tool.'
+              )}
+            </Typography>
+            <Button variant="contained" size="small" disabled={busy} onClick={openCreate} data-create-key sx={{ marginBottom: 2 }}>
+              {t('publisherPage.createKey', 'Create key')}
+            </Button>
             <TextField
               fullWidth
               size="small"
               variant="filled"
-              label={t('publisherPage.addKey', 'Add a key: its Ed25519 public half, base64')}
+              label={t('publisherPage.addOtherKey', 'Or add a key made elsewhere: its Ed25519 public half, base64')}
               helperText={t(
                 'publisherPage.addKeyHelp',
                 'Keep the private half on your machine. To rotate, add the new key, sign new releases with it, then revoke the old one.'
@@ -340,6 +405,34 @@ export const PublisherPage: React.FC = () => {
               </ListItem>
             ))}
           </List>
+          <Dialog open={creating} onClose={() => !busy && setCreating(false)} fullWidth maxWidth="sm" data-create-key-dialog>
+            <DialogTitle>{t('publisherPage.createKeyTitle', 'Create a signing key')}</DialogTitle>
+            <DialogContent>
+              {createRequest && !made && <SignerFrame request={createRequest} onCreated={key => (setMade(key), register(key))} />}
+              {made && (
+                <Typography variant="body2" data-registering={made.keyId}>
+                  {busy
+                    ? t('publisherPage.registering', 'Registering key {{id}}…', { id: made.keyId })
+                    : t('publisherPage.notRegistered', 'Key {{id}} is saved in your file but not registered yet.', { id: made.keyId })}
+                </Typography>
+              )}
+              {registerRefusal && (
+                <Notice severity="error" gutterTop>
+                  {registerRefusal}
+                </Notice>
+              )}
+            </DialogContent>
+            <DialogActions>
+              {made && registerRefusal && (
+                <Button disabled={busy} onClick={() => register(made)} data-register-again>
+                  {t('publisherPage.registerAgain', 'Try again')}
+                </Button>
+              )}
+              <Button disabled={busy} onClick={() => setCreating(false)} data-create-key-close>
+                {made ? t('publisherPage.close', 'Close') : t('publisherPage.cancel', 'Cancel')}
+              </Button>
+            </DialogActions>
+          </Dialog>
           <Confirm
             open={!!revoking}
             color="error"

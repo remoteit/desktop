@@ -1,0 +1,79 @@
+{
+  "contract": 1,
+  "app": "fixture.a",
+  "version": "1.0.0",
+  "name": "a",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "l0": {
+      "type": "tcp",
+      "port": 8000
+    },
+    "l1": {
+      "type": "tcp",
+      "port": 8001
+    },
+    "l2": {
+      "type": "tcp",
+      "port": 8002
+    },
+    "l3": {
+      "type": "tcp",
+      "port": 8003
+    },
+    "l4": {
+      "type": "tcp",
+      "port": 8004
+    },
+    "l5": {
+      "type": "tcp",
+      "port": 8005
+    },
+    "l6": {
+      "type": "tcp",
+      "port": 8006
+    },
+    "l7": {
+      "type": "tcp",
+      "port": 8007
+    },
+    "l8": {
+      "type": "tcp",
+      "port": 8008
+    },
+    "l9": {
+      "type": "tcp",
+      "port": 8009
+    },
+    "l10": {
+      "type": "tcp",
+      "port": 8010
+    },
+    "l11": {
+      "type": "tcp",
+      "port": 8011
+    },
+    "l12": {
+      "type": "tcp",
+      "port": 8012
+    },
+    "l13": {
+      "type": "tcp",
+      "port": 8013
+    },
+    "l14": {
+      "type": "tcp",
+      "port": 8014
+    },
+    "l15": {
+      "type": "tcp",
+      "port": 8015
+    },
+    "l16": {
+      "type": "tcp",
+      "port": 8016
+    }
+  }
+}

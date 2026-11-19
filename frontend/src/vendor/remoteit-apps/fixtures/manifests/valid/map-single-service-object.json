@@ -1,0 +1,41 @@
+{
+  "contract": 1,
+  "app": "fixture.two",
+  "version": "1.0.0",
+  "name": "two",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "web": {
+      "type": "tcp",
+      "port": 8080
+    },
+    "api": {
+      "type": "tcp",
+      "port": "${setting.api_port}"
+    }
+  },
+  "service": {
+    "name": "Both",
+    "protocol": "http",
+    "listen": [
+      "web",
+      "api"
+    ]
+  },
+  "health": {
+    "type": "http",
+    "path": "/",
+    "listen": "web"
+  },
+  "settings": {
+    "api_port": {
+      "type": "int",
+      "label": "Port",
+      "default": 9090,
+      "min": 1024,
+      "max": 65535
+    }
+  }
+}

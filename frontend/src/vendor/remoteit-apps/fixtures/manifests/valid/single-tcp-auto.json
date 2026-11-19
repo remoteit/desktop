@@ -1,0 +1,23 @@
+{
+  "contract": 1,
+  "app": "fixture.status",
+  "version": "1.0.0",
+  "name": "status",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "${remoteit.port}"
+    ]
+  },
+  "listen": {
+    "type": "tcp"
+  },
+  "service": {
+    "name": "Status",
+    "protocol": "http"
+  },
+  "health": {
+    "type": "http",
+    "path": "/healthz"
+  }
+}
