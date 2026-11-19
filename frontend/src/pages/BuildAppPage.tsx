@@ -17,9 +17,12 @@ import { starterArchive } from '../helpers/appStarter'
    same file, and its passphrase from the environment where nobody is there to type it), a starter app to begin from,
    and where to get the tool. Linked from New app and the Publisher page. */
 
-// The publishing tool's package, where a stage hosts it: its downloads (open: presence-server
-// docs/device-apps-new-app.md, "Open for Evan").
-export const toolUrl = (downloads: string) => `${downloads.replace(/\/+$/, '')}/tools/remoteit-app.tgz`
+// The publishing tool's package on the stage's downloads, as remoteit-device bin/solo-tool-publish publishes it: the
+// current build at tools/remoteit-app.tgz, and its manifest — its version, commit and SHA-256 — at
+// tools/remoteit-app.json, signed with the stage's release key beside it (.sig), as the device packages' manifest is.
+const tools = (downloads: string) => `${downloads.replace(/\/+$/, '')}/tools`
+export const toolUrl = (downloads: string) => `${tools(downloads)}/remoteit-app.tgz`
+export const toolManifestUrl = (downloads: string) => `${tools(downloads)}/remoteit-app.json`
 
 export const BuildAppPage: React.FC = () => {
   const { t } = useTranslation()
@@ -92,6 +95,20 @@ export const BuildAppPage: React.FC = () => {
             <Button size="small" variant="outlined" href={toolUrl(downloads)} data-build-tool-download>
               {t('buildApp.toolDownload', 'Download the tool')}
             </Button>
+            <Typography variant="caption" color="textSecondary" component="p" sx={{ marginTop: 1 }}>
+              {t(
+                'buildApp.toolCheck',
+                'Its manifest names its version and SHA-256, and is signed with the same release key remote.it signs device packages with:'
+              )}{' '}
+              <a href={toolManifestUrl(downloads)} target="_blank" rel="noreferrer" data-build-tool-manifest>
+                remoteit-app.json
+              </a>{' '}
+              (
+              <a href={`${toolManifestUrl(downloads)}.sig`} target="_blank" rel="noreferrer">
+                .sig
+              </a>
+              )
+            </Typography>
           </>
         ) : (
           <Notice severity="info">

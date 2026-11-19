@@ -65,6 +65,9 @@ describe('Build it yourself', () => {
     expect(page.querySelector('[data-build-tool]')?.textContent).toContain(
       'npm install -g https://downloads.test/tools/remoteit-app.tgz'
     )
+    expect(page.querySelector('[data-build-tool-manifest]')?.getAttribute('href')).toBe(
+      'https://downloads.test/tools/remoteit-app.json'
+    )
   })
 
   it('offers the starter only for a publisher it has read; without one, says to claim one', async () => {
