@@ -5,8 +5,11 @@ import { store } from '../store'
 
 const CLIENT_DEPRECATED = '121'
 
+// A dropped mutation may still have reached the server, so only reads are safe to resend.
+const isRead = (query: String) => !/^\s*mutation\b/.test(String(query))
+
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}, silent = false) {
-  const response = await post({ query, variables }, '', silent)
+  const response = await post({ query, variables }, '', silent, isRead(query))
   if (response === 'ERROR') return response
   const errors = graphQLGetErrors(response, silent, { query, variables })
   if (!errors && query.includes('picture')) rememberPictures(response.data?.data)
@@ -15,7 +18,7 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
 
 // For batched per-account queries: one account the token can't read must not discard the ones that resolved.
 export async function graphQLPartialRequest(query: String, variables: ILookup<any> = {}) {
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', false, isRead(query))
   if (response === 'ERROR') return response
   graphQLGetErrors(response, false, { query, variables })
   if (query.includes('picture')) rememberPictures(response.data?.data, response.data?.errors)
