@@ -1,4 +1,5 @@
 import brand from '@common/brand/config'
+import { SIGN_IN_ISSUERS } from '@common/constants'
 import { CATALOGUE } from './platforms/catalogue'
 import pkg from '../package.json'
 const env = import.meta.env
@@ -20,14 +21,14 @@ export const ADMIN_ADDONS_ROUTE = '/admin/add-ons'
 export const STAGES = {
   prod: {
     name: 'Production',
-    issuer: 'https://login.remote.it',
+    issuer: SIGN_IN_ISSUERS.prod,
     api: 'https://cloud.remote.it/api',
     agent: 'https://agent.remote.it',
     mcp: 'https://cloud.remote.it/mcp',
   },
   dev: {
     name: 'Dev',
-    issuer: 'https://login.dev.remote.it',
+    issuer: SIGN_IN_ISSUERS.dev,
     api: 'https://cloud.dev.remote.it/api',
     agent: 'https://agent.dev.remote.it',
     mcp: 'https://cloud.dev.remote.it/mcp',
