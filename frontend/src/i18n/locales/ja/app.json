@@ -4135,6 +4135,11 @@
     "switchHttp": "",
     "switchHttps": ""
   },
+  "serviceSubnetName": {
+    "help": "",
+    "label": "",
+    "name": ""
+  },
   "serviceUsersPage": {
     "addGuestAccess": "ゲストアクセスを追加",
     "addOrgMember": "組織のメンバーを追加",

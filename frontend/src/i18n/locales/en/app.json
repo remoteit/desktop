@@ -4237,6 +4237,11 @@
     "switchHttp": "Switch to HTTP",
     "switchHttps": "Switch to HTTPS"
   },
+  "serviceSubnetName": {
+    "help": "Reach this service at a name of its own on its usual port — ssh on 22, a web page on 443 — whatever port it listens on",
+    "label": "Its own DNS name",
+    "name": "Service DNS name"
+  },
   "serviceUsersPage": {
     "addGuestAccess": "Add guest access",
     "addOrgMember": "Add organization member",
