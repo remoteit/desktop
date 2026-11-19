@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const { field, checkbox, setName, info } = vi.hoisted(() => ({
   field: { props: undefined as any },
   checkbox: { props: undefined as any },
-  setName: vi.fn().mockResolvedValue(true),
+  setName: vi.fn().mockResolvedValue(undefined), // no refusal: done
   info: { value: undefined as any },
 }))
 vi.mock('../hooks/useDeviceSessions', () => ({ useDeviceSessions: () => true }))
@@ -29,6 +29,7 @@ vi.mock('./InlineTextFieldSetting', () => ({
     return <div data-field>{props.displayValue}</div>
   },
 }))
+vi.mock('./Notice', () => ({ Notice: (props: any) => <div data-notice>{props.children}</div> }))
 vi.mock('./ListItemCheckbox', () => ({
   ListItemCheckbox: (props: any) => {
     checkbox.props = props
@@ -61,7 +62,7 @@ beforeEach(() => {
   info.value = {
     subnetName: 'pi-acme.on.remote.it',
     services: { S: 'piconsole-acme.on.remote.it' },
-    serviceNames: { S: { own: true, port: 22, ports: ['22 → 2222', '2222'] } },
+    serviceNames: { S: { own: true, port: 22, ports: ['22 → 2222', '2222'], defaultLabel: 'piconsole' } },
   }
 })
 
@@ -78,6 +79,21 @@ describe('ServiceSubnetNameSetting', () => {
     expect(setName).not.toHaveBeenCalled()
     await act(async () => field.props.onSave('Shell'))
     expect(setName).toHaveBeenCalledWith('D', 'S', true, 'Shell')
+  })
+
+  // Evan, 2026-11-19: a person may name a service; a name taken is refused, and why is shown; the default given back.
+  it("a person's own name: taken is shown as refused, nothing else in its place; the default offered back", async () => {
+    const container = await render()
+    expect(field.props.resetValue).toBe('piconsole')
+    setName.mockResolvedValueOnce('Pi is already a device, LAN host or service of this account')
+    await act(async () => field.props.onSave('pi'))
+    expect(setName).toHaveBeenCalledWith('D', 'S', true, 'pi')
+    expect(container.querySelector('[data-notice]')?.textContent).toBe(
+      'Pi is already a device, LAN host or service of this account'
+    )
+    // Then one that is free: done, the refusal gone.
+    await act(async () => field.props.onSave('shell'))
+    expect(container.querySelector('[data-notice]')).toBeNull()
   })
 
   it('a web service is on 443: no port shown', async () => {

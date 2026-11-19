@@ -76,7 +76,7 @@ describe('device session info', () => {
       actsFor: 'ada@acme.test',
       agent: null,
       services: { 'B-WEB': 'web.laptop.acme.on.remote.it' },
-      serviceNames: { 'B-WEB': { own: false, port: null, ports: null } },
+      serviceNames: { 'B-WEB': { own: false, port: null, ports: null, defaultLabel: null } },
     })
     expect(deviceSessionInfo('C')).toEqual({ subnetName: null, actsFor: null, agent: null }) // asked, not answered: none, and not asked again
     requestDeviceSessionInfo('A')
@@ -114,10 +114,11 @@ describe('device session info', () => {
                 services: [
                   {
                     id: 'CONSOLE',
-                    subnetName: 'console-acme.on.remote.it',
+                    subnetName: 'piconsole-acme.on.remote.it',
                     subnetOwnName: true,
                     subnetPort: 22,
                     subnetPorts: ['22 → 2222', '2222'],
+                    subnetDefaultLabel: 'piconsole',
                   },
                 ],
               },
@@ -131,10 +132,10 @@ describe('device session info', () => {
     requestDeviceSessionInfo('A')
     await done
     expect(request.mock.calls[0][0].data.query).toContain(
-      'services { id subnetName subnetOwnName subnetPort subnetPorts }'
+      'services { id subnetName subnetOwnName subnetPort subnetPorts subnetDefaultLabel }'
     )
     expect(deviceSessionInfo('A')?.serviceNames).toEqual({
-      CONSOLE: { own: true, port: 22, ports: ['22 → 2222', '2222'] },
+      CONSOLE: { own: true, port: 22, ports: ['22 → 2222', '2222'], defaultLabel: 'piconsole' },
     })
 
     // An API with service names but not their ports: asked again without the ports alone.
@@ -155,7 +156,7 @@ describe('device session info', () => {
                 actsFor: null,
                 agent: null,
                 services: [
-                  { id: 'CONSOLE', subnetName: 'console-acme.on.remote.it', subnetOwnName: true, subnetPort: 22 },
+                  { id: 'CONSOLE', subnetName: 'piconsole-acme.on.remote.it', subnetOwnName: true, subnetPort: 22 },
                 ],
               },
             ],

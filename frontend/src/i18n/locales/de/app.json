@@ -4412,7 +4412,8 @@
     "helpPorts": "",
     "label": "",
     "name": "",
-    "ports": ""
+    "ports": "",
+    "refused": ""
   },
   "serviceUsersPage": {
     "addGuestAccess": "Gastzugriff hinzufügen",

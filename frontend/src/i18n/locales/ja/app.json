@@ -4309,7 +4309,8 @@
     "helpPorts": "",
     "label": "",
     "name": "",
-    "ports": ""
+    "ports": "",
+    "refused": ""
   },
   "serviceUsersPage": {
     "addGuestAccess": "ゲストアクセスを追加",

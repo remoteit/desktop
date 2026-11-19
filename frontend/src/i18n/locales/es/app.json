@@ -4515,7 +4515,8 @@
     "helpPorts": "",
     "label": "",
     "name": "",
-    "ports": ""
+    "ports": "",
+    "refused": ""
   },
   "serviceUsersPage": {
     "addGuestAccess": "Agregar acceso de invitado",

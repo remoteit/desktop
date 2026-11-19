@@ -26,8 +26,13 @@ export type DeviceSessionInfo = {
 }
 
 // `ports`: the ports its own name answers on, as a person reads them (Service.subnetPorts: `22 → 2222`, `5901-5910`),
-// where the API has them.
-export type ServiceNameInfo = { own: boolean; port: number | null; ports?: string[] | null }
+// and `defaultLabel` its default name part (Service.subnetDefaultLabel, <device><service>), where the API has them.
+export type ServiceNameInfo = {
+  own: boolean
+  port: number | null
+  ports?: string[] | null
+  defaultLabel?: string | null
+}
 
 type Listener = () => void
 
@@ -90,7 +95,7 @@ async function flush() {
   const query = `query DeviceSessionInfo { login { device(id: ${JSON.stringify(
     ids
   )}) { id subnetName actsFor { email } agent { running package { version format } update { version state detail }${upkeep} } services { id subnetName${
-    withServiceNames ? ` subnetOwnName subnetPort${withNamePorts ? ' subnetPorts' : ''}` : ''
+    withServiceNames ? ` subnetOwnName subnetPort${withNamePorts ? ' subnetPorts subnetDefaultLabel' : ''}` : ''
   } } } } }`
   const response = await post({ query })
   if (response !== 'ERROR') {
@@ -104,7 +109,12 @@ async function flush() {
       ids.forEach(id => wanted.add(id))
       return flush()
     }
-    if (withServiceNames && withNamePorts && withoutDeviceSessions(response.data?.errors, 'subnetPorts')) {
+    if (
+      withServiceNames &&
+      withNamePorts &&
+      (withoutDeviceSessions(response.data?.errors, 'subnetPorts') ||
+        withoutDeviceSessions(response.data?.errors, 'subnetDefaultLabel'))
+    ) {
       withNamePorts = false
       ids.forEach(id => wanted.add(id))
       return flush()
@@ -130,7 +140,7 @@ async function flush() {
                 {
                   own: !!s.subnetOwnName,
                   port: s.subnetPort ?? null,
-                  ...(withNamePorts && { ports: s.subnetPorts ?? null }),
+                  ...(withNamePorts && { ports: s.subnetPorts ?? null, defaultLabel: s.subnetDefaultLabel ?? null }),
                 },
               ])
             ),
