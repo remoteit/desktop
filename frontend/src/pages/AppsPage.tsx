@@ -55,6 +55,9 @@ export const AppsPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>{t('apps.title', 'Apps')}</Title>
+            <Button size="small" variant="contained" onClick={() => history.push('/apps/new')} data-apps-new>
+              {t('apps.newApp', 'New app')}
+            </Button>
           </Typography>
           <Gutters top={null} bottom="sm">
             <TextField
