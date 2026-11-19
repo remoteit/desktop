@@ -1,5 +1,4 @@
 // @vitest-environment node
-import { readFileSync } from 'fs'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { requests } = vi.hoisted(() => ({ requests: [] as { query: string; variables: any }[] }))
@@ -25,19 +24,16 @@ vi.mock('./graphQL', () => ({
 }))
 
 import { openKeyFile } from '../vendor/remoteit-apps/keyfile.mjs'
-import { signRelease } from '../signer/core'
+import { createKey, signRelease } from '../signer/core'
 import { buildRelease } from '../helpers/appRelease'
 import { CACHE_CONTROL, publishRelease } from './graphQLAppRelease'
 
-/* The publish end to end, the signer's own code in the loop with the shared TEST-ONLY key file: what leaves the
+/* The publish end to end, the signer's own code in the loop with a key file it made: what leaves the
    browser — every graphql request and every upload — is searched for the private key in every encoding it could
    travel in, and for the passphrase and the key file itself, and holds none of them. And the uploads carry the
    Cache-Control graphql signed for, setAppRelease names the hosted manifest, and a retry resumes. */
 
-const fixture = (name: string) =>
-  readFileSync(new URL(`../vendor/remoteit-apps/fixtures/keys/${name}`, import.meta.url))
-const expected = JSON.parse(fixture('expected.json').toString())
-const keyFile = fixture('TEST-ONLY-publisher-key.pem').toString()
+const PASSPHRASE = 'a passphrase only this test knows'
 
 const source = {
   contract: 1,
@@ -72,8 +68,11 @@ describe('publishing a release', () => {
       { 'linux-arm64': { kind: 'program', file: new File(['#!/bin/sh\n'], 'panel') } },
       16 << 20
     )
+    const made = await createKey('test', PASSPHRASE)
+    const keyFile = made.file
+    const expected = { passphrase: PASSPHRASE, keyId: made.keyId }
     const signed = await signRelease(keyFile, expected.passphrase, built.bytes, [
-      { keyId: expected.keyId, publicKey: expected.publicKey },
+      { keyId: made.keyId, publicKey: made.publicKey },
     ])
     expect(signed.keyId).toBe(expected.keyId)
     const files = [

@@ -1,0 +1,9 @@
+{
+  "valid-64.png": null,
+  "valid-512.png": null,
+  "not-square.png": "is 128×64: an icon is square",
+  "too-small.png": "is 32×32: an icon is 64 to 512 pixels a side",
+  "too-large.png": "is 1024×1024: an icon is 64 to 512 pixels a side",
+  "too-many-bytes.png": "is 74208 bytes: an icon is at most 65536",
+  "svg-with-script.svg": "is not a PNG: an icon is a PNG (never SVG, which can carry scripts)"
+}
