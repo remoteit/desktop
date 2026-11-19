@@ -95,10 +95,11 @@ signatures nobody receives.
 Which certificate signs a Windows build, and how the result is checked, is under
 [Windows code signing](#windows-code-signing).
 
-The backend's Airbrake project comes from `AIRBRAKE_PROJECT_ID` and
-`AIRBRAKE_PROJECT_KEY` in the `ENV_FILE` secret, not the repository:
-`electron/scripts/airbrake.js` writes them into the packaged `package.json`, and
-a build without them warns and reports nothing. Rotate the key there.
+The backend's Airbrake project comes from the `AIRBRAKE_PROJECT_ID` repository
+variable and the `AIRBRAKE_PROJECT_KEY` secret, not the repository (locally, from
+`.env`): `electron/scripts/airbrake.js` writes them into the packaged
+`package.json`, and a build without them warns and reports nothing. Rotate the
+key in that secret.
 
 A `prepare` job first resolves the release repository for the selected brand
 (`brands/<brand>/config.ts` — `cachengo` publishes to `cachengo/desktop`) and

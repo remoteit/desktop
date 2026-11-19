@@ -148,6 +148,9 @@ jobs:
       AZURE_SIGN_ACCOUNT: ${{ vars.AZURE_SIGN_ACCOUNT }}
       AZURE_SIGN_PROFILE: ${{ vars.AZURE_SIGN_PROFILE }}
       AZURE_SIGN_PUBLISHER: ${{ vars.AZURE_SIGN_PUBLISHER }}
+      # See RELEASE.md, "2. Desktop: build".
+      AIRBRAKE_PROJECT_ID: ${{ vars.AIRBRAKE_PROJECT_ID }}
+      AIRBRAKE_PROJECT_KEY: ${{ secrets.AIRBRAKE_PROJECT_KEY }}
 
     strategy:
       # One platform failing should not cancel the others - a Linux packaging
