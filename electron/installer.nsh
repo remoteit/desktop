@@ -101,7 +101,7 @@ Var FileHandle
     !insertmacro openLogFile "CustomUnInstallCheck"
     ; A process still running resources\remoteit.exe makes the copy skip it silently (4.0.1 kept a
     ; 4.1.0 agent). Disabling the service stops a crash-recovery restart; customInstall re-enables it.
-    !insertmacro logPowershell "$$d='$INSTDIR\resources\'; $$s=Get-CimInstance Win32_Service | Where-Object { $$_.Name -eq 'it.remote.cli' -and $$_.PathName -like ('*'+$$d+'*') }; if ($$s) { Set-Service it.remote.cli -StartupType Disabled -EA 0; Stop-Service it.remote.cli -Force -EA 0; 'service was '+$$s.State }; for ($$i=0; $$i -lt 20; $$i++) { $$p=@(Get-CimInstance Win32_Process | Where-Object { $$_.ExecutablePath -and $$_.ExecutablePath.StartsWith($$d,'OrdinalIgnoreCase') }); if (!$$p.Count) { break }; $$p | ForEach-Object { 'ending '+$$_.Name+' '+$$_.ProcessId; Stop-Process -Id $$_.ProcessId -Force -EA 0 }; Start-Sleep -m 500 }"
+    !insertmacro logPowershell "$$d='$INSTDIR\resources\'; $$s=Get-CimInstance Win32_Service | Where-Object { $$_.Name -eq 'it.remote.cli' -and $$_.PathName -and $$_.PathName.IndexOf($$d,[StringComparison]::OrdinalIgnoreCase) -ge 0 }; if ($$s) { Set-Service it.remote.cli -StartupType Disabled -EA 0; Stop-Service it.remote.cli -Force -NoWait -EA 0; 'service was '+$$s.State }; for ($$i=0; $$i -le 20; $$i++) { $$p=@(Get-CimInstance Win32_Process | Where-Object { $$_.ExecutablePath -and $$_.ExecutablePath.StartsWith($$d,'OrdinalIgnoreCase') }); if (!$$p.Count) { break }; if ($$i -eq 20) { 'still running: '+$$p.Count; break }; if ($$i -ge 6) { $$p | ForEach-Object { 'ending '+$$_.Name+' '+$$_.ProcessId; Stop-Process -Id $$_.ProcessId -Force -EA 0 } }; Start-Sleep -m 500 }"
     FileWrite $FileHandle "End CustomUnInstallCheck$\r$\n"
     FileClose $FileHandle
 !macroend
@@ -109,7 +109,7 @@ Var FileHandle
 !macro customInstall
     !insertmacro openLogFile "CustomInstall"
 
-    !insertmacro logPowershell "if (Get-Service it.remote.cli -EA 0) { Set-Service it.remote.cli -StartupType Automatic -EA 0 }"
+    !insertmacro logPowershell "$$s=Get-Service it.remote.cli -EA 0; if ($$s -and $$s.StartType -eq 'Disabled') { Set-Service it.remote.cli -StartupType Automatic -EA 0; 'service re-enabled' }"
 
     !ifndef APP_32
     ; The ia32 uninstaller deletes the 64-bit (mirrored) keys, not its own: customRemoveFiles leaves

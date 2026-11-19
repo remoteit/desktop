@@ -337,15 +337,22 @@ Every currently-ia32 machine takes this hop when it goes native.
 
 electron-builder copies the new payload over the install folder and retries a locked file five
 times. After that, its "cannot be closed" dialog's Retry, and the silent default, extract again
-with errors ignored, so a locked file keeps its old version and nothing reports it. 4.0.1 left the
-4.1.0 `remoteit.exe` on a test machine this way. The app then asked to install the agent, which
+with errors ignored, so a locked file keeps its old version and nothing reports it. The 4.0.1
+update left a test machine with every file new except `resources\remoteit.exe`, still the 4.1.0
+agent; which process held it was not caught. The app then asked to install the agent, which
 cannot help: that only reinstalls the service from the file already on disk.
 
 `customUnInstallCheck` runs after the old uninstaller and before the copy. When the `it.remote.cli`
 service runs from this folder it is disabled, so a crash-recovery restart cannot start it again
-mid-copy, and stopped; then any process still running from `resources\` is ended.
-`customInstall` sets the service back to automatic before the agent is reinstalled. Both steps
-are in the installer log (`%TEMP%\remoteit.log`).
+mid-copy, and asked to stop; after about three seconds any process still running from
+`resources\` is ended, and one that survives ten seconds is logged as still running.
+`customInstall` sets a disabled service back to automatic before the agent is reinstalled. Both
+steps are in the installer log (`%TEMP%\remoteit.log`). An install cancelled between the two
+leaves the service disabled until the next install.
+
+Defining `customUnInstallCheck` replaces electron-builder's own check of the old uninstaller's
+result (`handleUninstallResult` in `app-builder-lib/templates/nsis/include/installUtil.nsh`), so the
+macro repeats it. After an electron-builder upgrade, compare the two.
 
 To check a machine after an update, compare `resources\remoteit.exe`'s version (`remoteit version`)
 with `cli` in `electron/src/backend/binary-versions.json` for that release.
