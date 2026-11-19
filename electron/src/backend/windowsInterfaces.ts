@@ -19,26 +19,22 @@ const SCRIPT =
 
 export default async function windowsInterfaces(): Promise<IInterface[]> {
   const { adapters, routes } = await details()
-  const byMetric = (a: Route, b: Route) => metric(a) - metric(b)
-  const active = [...routes].sort(byMetric)[0]
+  routes.sort((a, b) => metric(a) - metric(b))
 
-  return Object.entries(os.networkInterfaces()).reduce((result: IInterface[], [name, addresses = []]) => {
+  return Object.entries(os.networkInterfaces()).flatMap(([name, addresses = []]) => {
     const ipv4 = addresses.find(address => address.family === 'IPv4' && !address.internal)
-    if (ipv4) {
-      const route = routes.filter(r => r.InterfaceAlias === name).sort(byMetric)[0]
-      const adapter = adapters.find(a => a.Name === name)
-      result.push({
-        active: name === active?.InterfaceAlias,
-        gateway: route?.NextHop,
-        ip: ipv4.address,
-        mac: ipv4.mac,
-        netmask: ipv4.netmask,
-        name,
-        type: adapter?.NdisPhysicalMedium === NDIS_PHYSICAL_MEDIUM_NATIVE_802_11 ? 'Wireless' : 'Wired',
-      })
+    if (!ipv4) return []
+    const adapter = adapters.find(a => a.Name === name)
+    return {
+      active: name === routes[0]?.InterfaceAlias,
+      gateway: routes.find(r => r.InterfaceAlias === name)?.NextHop,
+      ip: ipv4.address,
+      mac: ipv4.mac,
+      netmask: ipv4.netmask,
+      name,
+      type: adapter?.NdisPhysicalMedium === NDIS_PHYSICAL_MEDIUM_NATIVE_802_11 ? 'Wireless' : 'Wired',
     }
-    return result
-  }, [])
+  })
 }
 
 function metric(route: Route) {

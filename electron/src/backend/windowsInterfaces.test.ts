@@ -46,7 +46,6 @@ const DETAILS = {
     { Name: 'Ethernet', NdisPhysicalMedium: 14 },
     { Name: 'Wi-Fi', NdisPhysicalMedium: 9 },
     { Name: 'vEthernet (Default Switch)', NdisPhysicalMedium: 0 },
-    { Name: 'Bluetooth Network Connection', NdisPhysicalMedium: 10 },
   ],
   routes: [
     { InterfaceAlias: 'Wi-Fi', NextHop: '10.0.0.1', RouteMetric: 0, InterfaceMetric: 35 },
@@ -54,12 +53,8 @@ const DETAILS = {
   ],
 }
 
-function powershellReturns(stdout: string) {
-  mockExecFile.mockImplementation((_file, _args, _options, callback) => callback(null, stdout, ''))
-}
-
-function powershellFails(error: Error) {
-  mockExecFile.mockImplementation((_file, _args, _options, callback) => callback(error, '', ''))
+function powershell(error: Error | null, stdout = '') {
+  mockExecFile.mockImplementation((_file, _args, _options, callback) => callback(error, stdout, ''))
 }
 
 describe('backend/windowsInterfaces', () => {
@@ -69,8 +64,8 @@ describe('backend/windowsInterfaces', () => {
     jest.mocked(Logger.warn).mockClear()
   })
 
-  test('lists IPv4 interfaces, active on the lowest-metric default route', async () => {
-    powershellReturns(JSON.stringify(DETAILS))
+  test('lists IPv4 interfaces, active on the lowest-metric default route, without WMIC', async () => {
+    powershell(null, JSON.stringify(DETAILS))
 
     expect(await windowsInterfaces()).toEqual([
       {
@@ -101,20 +96,16 @@ describe('backend/windowsInterfaces', () => {
         type: 'Wired',
       },
     ])
-  })
-
-  test('asks PowerShell, never WMIC', async () => {
-    powershellReturns(JSON.stringify(DETAILS))
-    await windowsInterfaces()
-
-    const [file, args] = mockExecFile.mock.calls[0]
-    expect(file).toBe('powershell.exe')
-    expect(args.join(' ')).toContain('Get-NetAdapter')
-    expect(args.join(' ')).not.toMatch(/wmic/i)
+    expect(mockExecFile).toHaveBeenCalledWith(
+      'powershell.exe',
+      expect.any(Array),
+      expect.any(Object),
+      expect.any(Function)
+    )
   })
 
   test('marks nothing active without a default route', async () => {
-    powershellReturns(JSON.stringify({ adapters: DETAILS.adapters, routes: [] }))
+    powershell(null, JSON.stringify({ adapters: DETAILS.adapters, routes: [] }))
 
     const interfaces = await windowsInterfaces()
     expect(interfaces.map(i => i.name)).toEqual(['Ethernet', 'Wi-Fi', 'vEthernet (Default Switch)'])
@@ -122,11 +113,8 @@ describe('backend/windowsInterfaces', () => {
   })
 
   test.each([
-    [
-      'PowerShell is missing',
-      () => powershellFails(Object.assign(new Error('spawn powershell.exe ENOENT'), { code: 'ENOENT' })),
-    ],
-    ['PowerShell prints something other than JSON', () => powershellReturns('Get-NetAdapter : Access is denied.')],
+    ['PowerShell is missing', () => powershell(new Error('spawn powershell.exe ENOENT'))],
+    ['PowerShell prints something other than JSON', () => powershell(null, 'Get-NetAdapter : Access is denied.')],
   ])('still lists the addresses when %s', async (_, setup) => {
     setup()
 

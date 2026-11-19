@@ -4,6 +4,7 @@ import Logger from './Logger'
 import EventBus from './EventBus'
 import cli from './cliInterface'
 import windowsInterfaces from './windowsInterfaces'
+import { promisify } from 'util'
 import nm from 'netmask'
 import nw from 'network'
 
@@ -106,29 +107,26 @@ class LAN {
   }
 }
 
-function networkInterfaces() {
-  return new Promise<IInterface[]>((resolve, reject) => {
-    nw.get_interfaces_list((listErr: Error, list: any[]) => {
-      if (listErr) return reject(listErr)
-      nw.get_active_interface((activeErr: Error, active: any) => {
-        if (activeErr) Logger.warn('INTERFACE active error', { error: activeErr })
-        else Logger.info('INTERFACE active', { active })
-        resolve(
-          list
-            .filter(item => item.ip_address)
-            .map(item => ({
-              active: item.name === active?.name,
-              gateway: item.gateway_ip,
-              ip: item.ip_address,
-              mac: item.mac_address,
-              netmask: item.netmask,
-              name: item.name,
-              type: item.type,
-            }))
-        )
-      })
-    })
-  })
+async function networkInterfaces(): Promise<IInterface[]> {
+  const list: any[] = await promisify(nw.get_interfaces_list)()
+  let active: any
+  try {
+    active = await promisify(nw.get_active_interface)()
+    Logger.info('INTERFACE active', { active })
+  } catch (error) {
+    Logger.warn('INTERFACE active error', { error })
+  }
+  return list
+    .filter(item => item.ip_address)
+    .map(item => ({
+      active: item.name === active?.name,
+      gateway: item.gateway_ip,
+      ip: item.ip_address,
+      mac: item.mac_address,
+      netmask: item.netmask,
+      name: item.name,
+      type: item.type,
+    }))
 }
 
 export default new LAN()
