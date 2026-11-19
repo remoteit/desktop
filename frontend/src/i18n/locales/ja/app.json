@@ -4258,12 +4258,14 @@
   },
   "sshHandle": {
     "about": "",
+    "emailName": "",
     "failed": "",
     "hint": "",
     "label": "",
     "none": "",
     "problem": "",
-    "title": ""
+    "title": "",
+    "unread": ""
   },
   "statusChip": {
     "connected": "接続済み",

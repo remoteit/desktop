@@ -4361,12 +4361,14 @@
   },
   "sshHandle": {
     "about": "Names your own account on the devices you are given SSH access to. Accounts already made keep their names; a device admin may name yours on their device.",
+    "emailName": "your email's name",
     "failed": "Could not set your handle",
     "hint": "Your own account on a device: the r3 prefix, then {{handle}}",
     "label": "Handle",
     "none": "Your email's name",
     "problem": "1 to 16 lower case letters, digits, _ and -, starting with a letter or digit",
-    "title": "SSH accounts on devices"
+    "title": "SSH accounts on devices",
+    "unread": "Could not be read"
   },
   "statusChip": {
     "connected": "Connected",

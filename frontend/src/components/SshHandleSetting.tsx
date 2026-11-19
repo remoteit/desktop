@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { List, ListSubheader, Typography } from '@mui/material'
 import { graphQLSetSshHandle, graphQLSshHandle, validSshHandle } from '../services/graphQLDeviceSsh'
+import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Gutters } from './Gutters'
@@ -13,14 +14,15 @@ import { Gutters } from './Gutters'
 export const SshHandleSetting: React.FC = () => {
   const { t } = useTranslation()
   const enabled = useDeviceSessions()
-  const [handle, setHandle] = useState<string | null>()
+  const [handle, setHandle] = useState<string | null | 'ERROR'>()
   const [problem, setProblem] = useState<string>()
+  const emailName = t('sshHandle.emailName', "your email's name")
 
   useEffect(() => {
     if (!enabled) return
     let current = true
     graphQLSshHandle().then(result => {
-      if (current && result !== undefined) setHandle(result)
+      if (current && result !== UNSUPPORTED) setHandle(result)
     })
     return () => {
       current = false
@@ -28,6 +30,7 @@ export const SshHandleSetting: React.FC = () => {
   }, [enabled])
 
   if (!enabled || handle === undefined) return null
+  const unread = handle === 'ERROR'
 
   return (
     <List>
@@ -35,17 +38,21 @@ export const SshHandleSetting: React.FC = () => {
       <InlineTextFieldSetting
         icon="terminal"
         label={t('sshHandle.label', 'Handle')}
-        value={handle ?? ''}
-        displayValue={handle ?? t('sshHandle.none', "Your email's name")}
+        value={unread ? '' : handle ?? ''}
+        displayValue={
+          unread ? t('sshHandle.unread', 'Could not be read') : handle ?? t('sshHandle.none', "Your email's name")
+        }
+        disabled={unread}
         maxLength={16}
         validate={value => {
+          setProblem(undefined) // a refusal said is for what was saved, not what is typed now
           const wanted = value.trim().toLowerCase()
           if (wanted === '' || validSshHandle(wanted)) return undefined
           return t('sshHandle.problem', '1 to 16 lower case letters, digits, _ and -, starting with a letter or digit')
         }}
         helper={value =>
           t('sshHandle.hint', 'Your own account on a device: the r3 prefix, then {{handle}}', {
-            handle: value.trim().toLowerCase() || t('sshHandle.emailName', "your email's name"),
+            handle: value.trim().toLowerCase() || emailName,
           })
         }
         onSave={async value => {

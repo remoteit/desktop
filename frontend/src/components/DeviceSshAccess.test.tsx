@@ -60,7 +60,7 @@ const button = (container: Element, text: string) =>
 beforeEach(() => {
   document.body.innerHTML = ''
   read.mockReset().mockResolvedValue(grants('r3s-bob'))
-  name.mockReset().mockResolvedValue({ account: 'r3s-robert' })
+  name.mockReset().mockResolvedValue(undefined)
 })
 
 describe("DeviceSshAccess: naming a person's own account", () => {
@@ -91,7 +91,7 @@ describe("DeviceSshAccess: naming a person's own account", () => {
   })
 
   it("shows graphql's reason a name cannot be had", async () => {
-    name.mockResolvedValue({ reason: 'Invalid Arguments: handle: r3s-evan is taken on the device' })
+    name.mockResolvedValue('Invalid Arguments: handle: r3s-evan is taken on the device')
     const container = await render()
     await click(container.querySelector('[data-icon="pen"]'))
     const input = [...container.querySelectorAll('input')].find(i => i.type !== 'checkbox')!
@@ -104,5 +104,21 @@ describe("DeviceSshAccess: naming a person's own account", () => {
     read.mockResolvedValue(grants('jsmith', true))
     const container = await render()
     expect(container.textContent).toContain('as jsmith, an account already on the device')
+  })
+
+  it('cancelling reads nothing again, and nothing else on the panel is done while a name is saved', async () => {
+    let finish: (v: undefined) => void = () => undefined
+    name.mockReturnValue(new Promise(resolve => (finish = resolve)))
+    const container = await render()
+    await click(container.querySelector('[data-icon="pen"]'))
+    await click(button(container, 'Cancel'))
+    expect(read).toHaveBeenCalledTimes(1)
+    await click(container.querySelector('[data-icon="pen"]'))
+    const input = [...container.querySelectorAll('input')].find(i => i.type !== 'checkbox')!
+    await type(input, 'robert')
+    await click(button(container, 'Save'))
+    expect((container.querySelector('[data-icon="times"]') as HTMLButtonElement).disabled).toBe(true)
+    expect((container.querySelector('[data-icon="pen"]') as HTMLButtonElement).disabled).toBe(true)
+    await act(async () => finish(undefined))
   })
 })

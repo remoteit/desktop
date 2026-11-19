@@ -19,6 +19,7 @@ import {
   graphQLGrantDeviceSsh,
   graphQLRevokeDeviceSsh,
   graphQLSetDeviceSshAccount,
+  validExistingAccount,
   validSshHandle,
 } from '../services/graphQLDeviceSsh'
 
@@ -85,9 +86,9 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
           )}
         </Typography>
       </ListItem>
-      {read.grants
-        .map(grant => (
-          <ListItem key={`${grant.login} ${grant.user.id}`} disableGutters>
+      {read.grants.map(grant => (
+        <React.Fragment key={`${grant.login} ${grant.user.id}`}>
+          <ListItem disableGutters>
             <Box component="span" sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {grant.user.email ?? grant.user.id}{' '}
               <Box component="span" sx={{ color: 'grayDark.main' }}>
@@ -119,24 +120,21 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
               />
             )}
           </ListItem>
-        ))
-        .flatMap((item, i) => {
-          const grant = read.grants[i]
-          return grant.login === '' && naming === grant.user.id
-            ? [
-                item,
-                <OwnAccountName
-                  key={`name ${grant.user.id}`}
-                  deviceId={deviceId}
-                  grant={grant}
-                  onDone={async () => {
-                    setNaming(undefined)
-                    await load()
-                  }}
-                />,
-              ]
-            : [item]
-        })}
+          {grant.login === '' && naming === grant.user.id && (
+            <OwnAccountName
+              deviceId={deviceId}
+              grant={grant}
+              busy={busy}
+              setBusy={setBusy}
+              onCancel={() => setNaming(undefined)}
+              onSaved={async () => {
+                setNaming(undefined)
+                await load()
+              }}
+            />
+          )}
+        </React.Fragment>
+      ))}
       <ListItem disableGutters sx={{ gap: 1, alignItems: 'flex-start' }}>
         <TextField
           size="small"
@@ -181,28 +179,27 @@ const ADMINISTRATORS = ['root', 'administrator', 'admin']
    one already made renames it there and ends what it runs — or an account the device already has, by its whole name,
    which remote.it never makes, locks or admins: removing their access stops new logins and leaves what it runs, and its
    sudo is whatever the machine gives it. graphql checks the name and says why it cannot be had. */
-const OwnAccountName: React.FC<{ deviceId: string; grant: DeviceSshGrant; onDone: () => void }> = ({
-  deviceId,
-  grant,
-  onDone,
-}) => {
+const OwnAccountName: React.FC<{
+  deviceId: string
+  grant: DeviceSshGrant
+  busy: boolean // the panel's: nothing else on it is done while a name is saved
+  setBusy: (busy: boolean) => void
+  onCancel: () => void
+  onSaved: () => void
+}> = ({ deviceId, grant, busy, setBusy, onCancel, onSaved }) => {
   const { t } = useTranslation()
   const [existing, setExisting] = useState(grant.existing)
   const [name, setName] = useState(grant.existing ? grant.account ?? '' : '')
   const [reason, setReason] = useState<string>()
-  const [busy, setBusy] = useState(false)
   const wanted = existing ? name.trim() : name.trim().toLowerCase()
-  const invalid =
-    !wanted ||
-    (!existing && !validSshHandle(wanted)) ||
-    (existing && (!/^[a-z_][a-z0-9_.-]{0,31}$/i.test(wanted) || /^r3[a-z]{0,3}-/i.test(wanted)))
+  const invalid = !wanted || !(existing ? validExistingAccount(wanted) : validSshHandle(wanted))
 
   const save = async () => {
     setBusy(true)
-    const result = await graphQLSetDeviceSshAccount(deviceId, grant.user.id, wanted, existing)
+    const refused = await graphQLSetDeviceSshAccount(deviceId, grant.user.id, wanted, existing)
     setBusy(false)
-    if ('reason' in result) setReason(result.reason || t('deviceSshAccess.nameFailed', 'Could not name their account'))
-    else onDone()
+    if (refused !== undefined) setReason(refused || t('deviceSshAccess.nameFailed', 'Could not name their account'))
+    else onSaved()
   }
 
   const note = existing
@@ -259,7 +256,7 @@ const OwnAccountName: React.FC<{ deviceId: string; grant: DeviceSshGrant; onDone
       <Button variant="contained" size="small" disabled={busy || invalid} onClick={save} sx={{ height: 40 }}>
         {t('deviceSshAccess.save', 'Save')}
       </Button>
-      <Button size="small" disabled={busy} onClick={onDone} sx={{ height: 40 }}>
+      <Button size="small" disabled={busy} onClick={onCancel} sx={{ height: 40 }}>
         {t('deviceSshAccess.cancel', 'Cancel')}
       </Button>
     </ListItem>
