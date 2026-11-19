@@ -11,6 +11,7 @@ import user from './User'
 import Logger from './Logger'
 import SocketIO from 'socket.io'
 import systemInfo from './systemInfo'
+import serverTime from './serverTime'
 import socketioAuth from 'socketio-auth'
 import Preferences from './preferences'
 import environment from './environment'
@@ -90,6 +91,15 @@ class Server {
 
     router.get('/authRedirect', (request, response) => {
       response.json(app.deepLinks ? {} : { redirectUri: `http://${IP_PRIVATE}:${WEB_PORT}/authCallback` })
+    })
+
+    // The renderer can't read another origin's Date header (CORS), and the sign-in service refuses a
+    // DPoP proof dated by a wrong clock, so the sign-in code reads the server's time through here.
+    router.get('/serverTime', async (request, response) => {
+      const { host } = request.headers
+      if (!isOwnOrigin(`${request.protocol}://${host}`, host)) return response.sendStatus(403)
+      const time = await serverTime(String(request.query.url ?? ''))
+      return time === undefined ? response.sendStatus(502) : response.json({ serverTime: time })
     })
 
     router.get('/system', async (request, response) => {

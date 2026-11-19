@@ -11,6 +11,9 @@ export const IP_OPEN: ipAddress = '0.0.0.0'
 export const IP_LATCH: ipAddress = '255.255.255.255'
 export const IP_PRIVATE: ipAddress = '127.0.0.1'
 
+// The login servers each stage signs in with. The desktop backend reads the clock of these and nothing else.
+export const SIGN_IN_ISSUERS = { prod: 'https://login.remote.it', dev: 'https://login.dev.remote.it' }
+
 export const DEFAULT_CONNECTION: IConnection = {
   id: '',
   name: '',

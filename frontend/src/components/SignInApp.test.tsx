@@ -12,7 +12,15 @@ const { browser, oidcReopen, autoStart } = vi.hoisted(() => ({
 }))
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (_: string, fallback: string) => fallback }),
+  useTranslation: () => ({
+    t: (_: string, fallback: any) =>
+      typeof fallback === 'string'
+        ? fallback
+        : String(fallback.count === 1 ? fallback.defaultValue_one : fallback.defaultValue_other).replace(
+            '{{count}}',
+            fallback.count
+          ),
+  }),
   initReactI18next: { type: '3rdParty', init: () => {} },
 }))
 vi.mock('react-redux', () => ({
@@ -37,6 +45,7 @@ const screens: Record<string, any> = {
   ready: {},
   waiting: { signingIn: true },
   failed: { signInFailed: true },
+  clock: { signInFailed: true, signInErrorCode: 'clock', signInClockOffset: -3600 },
   agentOwned: {
     signInFailed: true,
     signInErrorCode: 'agentOwned',
@@ -86,6 +95,17 @@ describe('SignInApp', () => {
     expect(auth.signIn).not.toHaveBeenCalled()
     act(() => cancel.click())
     expect(auth.set).toHaveBeenCalledWith({ signingIn: false })
+  })
+
+  it('says how far off the clock is and how to fix it when the sign-in service refused its time', () => {
+    render(screens.clock)
+    expect(container.textContent).toContain("This computer's clock is about 60 minutes off")
+    expect(container.textContent).toContain('Set the date and time to update automatically')
+  })
+
+  it('still names the clock when it could not measure how far off it is', () => {
+    render({ signInFailed: true, signInErrorCode: 'clock' })
+    expect(container.textContent).toContain("This computer's date or time is wrong")
   })
 
   it('gives the agent owner and a copyable command when another account holds the agent', () => {
