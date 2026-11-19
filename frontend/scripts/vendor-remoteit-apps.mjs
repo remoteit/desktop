@@ -6,7 +6,10 @@
 //   rules.mjs             lib/rules.mjs, verbatim: the contract's rules beyond the schema
 //   manifestSchema.mjs    schema/manifest.schema.json compiled by ajv to standalone code: the portal's
 //                         Content-Security-Policy has no unsafe-eval, and ajv otherwise compiles with new Function
-//   fixtures/             fixtures/manifests and fixtures/keys: what the portal's tests check the copies against
+//   fixtures/             what the portal's tests check the copies against: fixtures/manifests and fixtures/icons
+//                         whole; of fixtures/keys, the manifest and its signature and the key's public half alone —
+//                         never its TEST-ONLY private key or passphrase: this repository is public, and a test that
+//                         needs a key makes one
 //
 // The TypeScript declarations beside them (*.d.mts) are the portal's, kept across a run: update them when an export
 // changes.
@@ -29,6 +32,7 @@ const sources = [
   'schema/manifest.schema.json',
   'fixtures/manifests',
   'fixtures/keys',
+  'fixtures/icons',
 ]
 if (git('status', '--porcelain', '--', ...sources))
   throw new Error(`${apps}: ${sources.join(', ')} has changes not committed`)
@@ -80,8 +84,24 @@ writeFileSync(
   } (standalone).\n/* eslint-disable */\n// @ts-nocheck\n${helpers.join('\n')}\n${code}\n`
 )
 
-for (const dir of ['fixtures/manifests', 'fixtures/keys']) {
+for (const dir of ['fixtures/manifests', 'fixtures/icons']) {
   cpSync(join(apps, dir), join(out, dir), { recursive: true })
   writeFileSync(join(out, dir, 'SOURCE'), `remoteit/apps@${commitOf(dir)} ${dir}\n`)
+}
+// The key fixture's public parts: what the tool signed and with which public key — enough to check the portal verifies
+// the tool's signature. The private key and its passphrase stay in remoteit/apps.
+{
+  const keys = join(apps, 'fixtures/keys')
+  const to = join(out, 'fixtures/keys')
+  mkdirSync(to, { recursive: true })
+  for (const name of ['manifest.json', 'manifest.json.sig']) cpSync(join(keys, name), join(to, name))
+  const { publicKey, keyId } = JSON.parse(readFileSync(join(keys, 'expected.json'), 'utf8'))
+  writeFileSync(join(to, 'public.json'), `${JSON.stringify({ publicKey, keyId }, null, 2)}\n`)
+  writeFileSync(
+    join(to, 'SOURCE'),
+    `remoteit/apps@${commitOf(
+      'fixtures/keys'
+    )} fixtures/keys (manifest.json, manifest.json.sig, and expected.json's publicKey and keyId)\n`
+  )
 }
 console.log(`wrote ${out} from remoteit/apps ${git('rev-parse', 'HEAD')}`)

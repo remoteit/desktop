@@ -1,4 +1,4 @@
-// Vendored from remoteit/apps@7592f7cde8d8bb5b7f14560e1f2dc687d101b793 lib/rules.mjs: not edited here (scripts/vendor-remoteit-apps.mjs).
+// Vendored from remoteit/apps@1f15f414ba0147a2e0ca1305e5f60077f3e9ad79 lib/rules.mjs: not edited here (scripts/vendor-remoteit-apps.mjs).
 // SPDX-License-Identifier: Apache-2.0
 // The contract-1 rules a schema cannot say (docs/contract.md, "Checked beyond the schema"), and the values a setting
 // takes: what the validator, the harness and the build tool share with lib/contract.mjs's schemas. Pure — no Node
@@ -174,9 +174,29 @@ function listenErrors(m, settings) {
   return errors
 }
 
+// A path climbs out of where it is read from when it has a .. part, by either separator: a Windows program path
+// climbs with ..\ as a Unix one does with ../, and the daemon refuses both (connectd device/app_manifest.go).
+export const climbs = path => typeof path === 'string' && path.split(/[\\/]/).includes('..')
+
+// The paths a manifest names in the app's files or on the device — each run.command, each run.files template —, any
+// that climbs out, or that a template path is not one inside the app's files (relative; no backslash or colon, which
+// Windows reads as a separator or a drive). The schema says the same: these hold for a caller that has not run it.
+function pathErrors(m) {
+  const errors = []
+  const command = m.run?.command
+  const commands = typeof command === 'string' ? [['run.command', command]] : Object.entries(command ?? {}).map(([os, c]) => [`run.command.${os}`, c])
+  for (const [where, c] of commands) if (climbs(c)) errors.push(`${where}: ${c} has a .. part: a program is in the app's files or an absolute path, never above them`)
+  for (const [name, path] of Object.entries(m.run?.files ?? {})) {
+    if (climbs(path) || path.startsWith('/') || /[\\:]/.test(path)) errors.push(`run.files.${name}: ${path} is not a path inside the app's files`)
+  }
+  return errors
+}
+
 // What a schema cannot check. readFile reads a file of the app's, for its rendered templates' references.
 export function semanticErrors(m, readFile) {
-  const errors = []
+  const errors = pathErrors(m)
+  // A template path that climbs out is never read: the error above says why.
+  if (errors.length) return errors
   const settings = m.settings ?? {}
   const texts = templates(m).map(t => ['the manifest', t])
   for (const [name, path] of Object.entries(m.run?.files ?? {})) {
@@ -251,6 +271,26 @@ function archiveErrors(m) {
     sums.set(file, sha256)
   }
   return errors
+}
+
+// ---- the icon: a PNG, square, 64 to 512 pixels a side, at most 64 KB
+
+export const ICON_BYTES_MOST = 65536
+export const ICON_SIDE_LEAST = 64
+export const ICON_SIDE_MOST = 512
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
+
+// Why bytes are not an app's icon, or undefined when they are one. A PNG alone: an image every browser draws as
+// pixels, which carries nothing that runs — never SVG, which can carry scripts and fetch what it names. Its size is
+// read from its IHDR, the chunk a PNG starts with.
+export function iconProblem(bytes) {
+  if (bytes.length > ICON_BYTES_MOST) return `is ${bytes.length} bytes: an icon is at most ${ICON_BYTES_MOST}`
+  const isPng = bytes.length >= 24 && PNG_SIGNATURE.every((b, i) => bytes[i] === b) && String.fromCharCode(...bytes.slice(12, 16)) === 'IHDR'
+  if (!isPng) return 'is not a PNG: an icon is a PNG (never SVG, which can carry scripts)'
+  const u32 = at => ((bytes[at] << 24) >>> 0) + (bytes[at + 1] << 16) + (bytes[at + 2] << 8) + bytes[at + 3]
+  const [width, height] = [u32(16), u32(20)]
+  if (width !== height) return `is ${width}×${height}: an icon is square`
+  if (width < ICON_SIDE_LEAST || width > ICON_SIDE_MOST) return `is ${width}×${height}: an icon is ${ICON_SIDE_LEAST} to ${ICON_SIDE_MOST} pixels a side`
 }
 
 // ---- setting values: one check for every value, wherever it comes from (a default, the owner, a forcing)
