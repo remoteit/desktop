@@ -8,10 +8,10 @@ type Details = { adapters: Adapter[]; routes: Route[] }
 
 const NDIS_PHYSICAL_MEDIUM_NATIVE_802_11 = 9
 
-// Adapter names reach us through the console code page unless stdout is switched to UTF-8,
+// Adapter names reach us through the console code page unless stdout is UTF-8 (BOM-less, or JSON.parse fails),
 // and they must match os.networkInterfaces() keys byte for byte (e.g. Japanese "イーサネット").
 const SCRIPT =
-  '[Console]::OutputEncoding = [Text.Encoding]::UTF8; ' +
+  '[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false); ' +
   'ConvertTo-Json -Compress -Depth 4 -InputObject @{ ' +
   'adapters = @(Get-NetAdapter | Select-Object Name, NdisPhysicalMedium); ' +
   'routes = @(Get-NetRoute -AddressFamily IPv4 -DestinationPrefix 0.0.0.0/0 -ErrorAction SilentlyContinue | ' +
@@ -44,7 +44,7 @@ function metric(route: Route) {
 async function details(): Promise<Details> {
   try {
     const { adapters, routes } = JSON.parse(await powershell(SCRIPT))
-    return { adapters: adapters || [], routes: routes || [] }
+    return { adapters: [adapters ?? []].flat(), routes: [routes ?? []].flat() }
   } catch (error) {
     Logger.warn('INTERFACE details unavailable', { error })
     return { adapters: [], routes: [] }
@@ -52,12 +52,14 @@ async function details(): Promise<Details> {
 }
 
 function powershell(script: string) {
-  return new Promise<string>((resolve, reject) =>
-    execFile(
+  return new Promise<string>((resolve, reject) => {
+    const child = execFile(
       'powershell.exe',
       ['-NoProfile', '-NonInteractive', '-Command', script],
       { timeout: 30000, windowsHide: true },
       (error, stdout) => (error ? reject(error) : resolve(stdout))
     )
-  )
+    // powershell.exe, like wmic, can wait for EOF on a piped stdin before it exits.
+    child.stdin?.end()
+  })
 }
