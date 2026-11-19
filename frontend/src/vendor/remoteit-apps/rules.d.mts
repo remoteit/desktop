@@ -16,3 +16,8 @@ export function defaultOf(s: Setting): unknown
 export function settingFrom(s: Setting, raw: string): unknown
 export function choicesOf(s: Setting): { value: string; label: string }[]
 export function render(template: string, settings: Record<string, unknown>, remoteit: Record<string, unknown>): string
+export const ICON_BYTES_MOST: number
+export const ICON_SIDE_LEAST: number
+export const ICON_SIDE_MOST: number
+export function iconProblem(bytes: Uint8Array): string | undefined
+export function climbs(path: unknown): boolean

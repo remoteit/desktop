@@ -73,6 +73,7 @@ export type CatalogApp = {
   root: boolean
   capabilities: (AppCapability | string)[] // of version, as root is
   protocol: AppProtocol | string | null // of version: how its service opens, none for one that serves nothing
+  icon: string | null // of version: its icon's URL, a PNG remote.it checked; none: shown with its protocol's
   contract: number | null // of version
   platforms: string[] // version's archive keys
   version: string | null // the release the account's channel gives here; none: none here yet
@@ -115,7 +116,7 @@ export function resetAppCatalog() {
 
 const PUBLISHER = 'publisher { id name verifiedDomain remoteit own }'
 const FLEET_COUNTS = 'total enabled disabled upToDate heldBack versions { version count }'
-const BASE = `id name description ${PUBLISHER} runsAs root capabilities protocol contract platforms version accountChannel`
+const BASE = `id name description ${PUBLISHER} runsAs root capabilities protocol icon contract platforms version accountChannel`
 const LIST = `${BASE} fleet { ${FLEET_COUNTS} }`
 const ONE = `${BASE} fleet { ${FLEET_COUNTS} heldBackBy { reason count } }`
 const RELEASES =
@@ -168,6 +169,7 @@ export const catalogAppOf = (app: any): CatalogApp => ({
   root: !!app.root,
   capabilities: app.capabilities ?? [],
   protocol: app.protocol ?? null,
+  icon: app.icon ?? null,
   contract: app.contract ?? null,
   platforms: app.platforms ?? [],
   version: app.version ?? null,

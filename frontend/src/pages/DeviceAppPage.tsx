@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
+import { AppIcon } from '../components/AppIcon'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useHistory, useParams } from 'react-router-dom'
@@ -24,7 +25,6 @@ import {
   addAsks,
   adminLine,
   adminRefuses,
-  appIcon,
   asksConsent,
   capabilitiesLine,
   channelName,
@@ -198,7 +198,7 @@ export const DeviceAppPage: React.FC = () => {
     <Container gutterBottom bodyProps={{ verticalOverflow: true }} header={header}>
       <Gutters top="sm" data-device-app={app.id}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-          <Icon name={appIcon(app.protocol)} size="xl" fixedWidth />
+          <AppIcon icon={app.icon} protocol={app.protocol} size="xl" />
           <Box sx={{ flexGrow: 1 }}>
             <Typography variant="body2" color="textSecondary" data-app-publisher>
               {publisherLine(t, app)}

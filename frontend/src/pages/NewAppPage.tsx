@@ -52,6 +52,7 @@ const NewAppFlow: React.FC<{ account?: string }> = ({ account }) => {
   const [json, setJson] = useState<string>()
   const [step, setStep] = useState<'describe' | 'files' | 'review' | 'done'>('describe')
   const [inputs, setInputs] = useState<Inputs>({})
+  const [icon, setIcon] = useState<File>()
   const [packing, setPacking] = useState(false)
   const [refusal, setRefusal] = useState<string>()
   const [built, setBuilt] = useState<Built>()
@@ -121,7 +122,7 @@ const NewAppFlow: React.FC<{ account?: string }> = ({ account }) => {
     setPacking(true)
     setRefusal(undefined)
     try {
-      setBuilt(await buildRelease(manifest!, chosen as Record<string, Given>, fileMax))
+      setBuilt(await buildRelease(manifest!, chosen as Record<string, Given>, fileMax, icon))
       setStep('review')
     } catch (error) {
       setRefusal(error instanceof ReleaseRefused ? refusalWords(t, error) : (error as Error).message)
@@ -284,7 +285,14 @@ const NewAppFlow: React.FC<{ account?: string }> = ({ account }) => {
           )}
           {step === 'files' && manifest && (
             <>
-              <NewAppFiles manifest={manifest} inputs={inputs} fileMax={fileMax} onChange={setInputs} />
+              <NewAppFiles
+                manifest={manifest}
+                inputs={inputs}
+                fileMax={fileMax}
+                onChange={setInputs}
+                icon={icon}
+                onIcon={setIcon}
+              />
               {refusal && (
                 <Notice severity="error" gutterBottom onClose={() => setRefusal(undefined)}>
                   <span data-pack-refusal>{refusal}</span>
@@ -391,6 +399,8 @@ function refusalWords(t: (key: string, text: string, values?: any) => string, er
         '{{platform}}: the archive is {{mb}} MB; remote.it takes at most {{most}} MB a file',
         v
       )
+    case 'badIcon':
+      return t('newApp.refusedBadIcon', 'The icon {{problem}}', v)
     case 'archivesGiven':
       return t('newApp.archivesGiven', 'archives and icon are written when the files are packed: leave them out', v)
     case 'tooMany':
