@@ -896,6 +896,8 @@ async function refreshOnce(resource: string): Promise<string> {
 
 export function invalidateOidcToken() {
   access = {}
+  // A 401 can follow a clock fixed mid-session; a still-wrong clock is measured again on its next refusal.
+  clockOffsetMs = 0
 }
 
 /** Ends the ACTIVE account's session at the AS — the one its id_token's `sid` names — over the
@@ -1294,12 +1296,13 @@ export async function oidcResourceRequest<T = any>(
 
 // The server's clock as an offset from this one: from the refusal's own Date when the AS exposes it
 // to CORS, else through the desktop backend, which reads it without CORS. Unknown on web and mobile.
-async function serverClockOffset(response: Response): Promise<number | undefined> {
+async function serverClockOffset(response: Response, url: string): Promise<number | undefined> {
   const exposed = Date.parse(response.headers.get('date') ?? '')
   if (!Number.isNaN(exposed)) return exposed - Date.now()
+  if (!browser.isElectron && !browser.isRemote) return undefined
   try {
     const sent = Date.now()
-    const reply = await fetch(`/serverTime?url=${encodeURIComponent(OAUTH_ISSUER)}`, { signal: timeoutSignal(6000) })
+    const reply = await fetch(`/serverTime?url=${encodeURIComponent(url)}`, { signal: timeoutSignal(6000) })
     if (!reply.ok) return undefined
     const { serverTime } = (await reply.json()) as { serverTime?: unknown }
     return typeof serverTime === 'number' ? serverTime - (sent + Date.now()) / 2 : undefined
@@ -1309,6 +1312,8 @@ async function serverClockOffset(response: Response): Promise<number | undefined
 }
 
 const PROOF_TIME = /\biat\b/
+// Well inside the AS's 30 s allowance: a clock this close to the server's is not why a proof was refused.
+const CLOCK_SLACK_MS = 20_000
 
 async function tokenRequest(params: { [key: string]: string }, clockRetried = false): Promise<any> {
   // Discovery and the key load are independent; the boot refresh sits on this path.
@@ -1325,15 +1330,19 @@ async function tokenRequest(params: { [key: string]: string }, clockRetried = fa
     // A proof dated by a wrong clock: one retry on the server's time. Safe to repeat, because the AS
     // checks the proof before it claims the code or rotates the refresh token.
     if (body.error === 'invalid_dpop_proof' && PROOF_TIME.test(detail)) {
-      const offset = clockRetried ? undefined : await serverClockOffset(response)
-      if (offset !== undefined) {
+      const offset = clockRetried ? undefined : await serverClockOffset(response, d.token_endpoint)
+      if (offset !== undefined && Math.abs(offset - clockOffsetMs) > CLOCK_SLACK_MS) {
         clockOffsetMs = offset
         return tokenRequest(params, true)
       }
-      const error = new OidcError('clock', detail)
-      if (clockRetried) error.clockOffset = Math.round(clockOffsetMs / 1000)
-      error.oauthError = body.error
-      throw error
+      // Unmeasurable, or still refused on the server's time: the clock. Measured close to the server's
+      // and refused anyway: not the clock, so it falls through to the ordinary refusal.
+      if (clockRetried || offset === undefined) {
+        const error = new OidcError('clock', detail)
+        if (clockRetried) error.clockOffset = Math.round(clockOffsetMs / 1000)
+        error.oauthError = body.error
+        throw error
+      }
     }
     const error = responseError(response, detail)
     error.oauthError = body.error

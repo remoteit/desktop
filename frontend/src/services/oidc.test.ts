@@ -434,7 +434,6 @@ describe('oidcStart on desktop', () => {
   })
 })
 
-// Last in the file: a learned clock offset is module state, and the tests before this one assume none.
 describe('a DPoP proof refused for its time', () => {
   const SERVER = Date.UTC(2026, 10, 19, 2, 10, 0)
   const LOCAL = SERVER + 60 * 60 * 1000
@@ -455,6 +454,7 @@ describe('a DPoP proof refused for its time', () => {
   beforeEach(() => {
     window.sessionStorage.clear()
     window.localStorage.clear()
+    Object.assign(browser, { isElectron: true })
     vi.spyOn(Date, 'now').mockReturnValue(LOCAL)
     tokenCalls = 0
     serverTimeCalls = 0
@@ -476,9 +476,15 @@ describe('a DPoP proof refused for its time', () => {
     invalidateOidcToken()
   })
   afterEach(() => {
+    delete (browser as { isElectron?: boolean }).isElectron
     vi.restoreAllMocks()
     vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline')))
   })
+  const startExchange = async () => {
+    await oidcStart()
+    const { state } = JSON.parse(window.sessionStorage.getItem('oidc.flow') || 'null')
+    window.history.replaceState({}, '', `/?code=c1&state=${state}`)
+  }
 
   it('retries once on the server’s time, and judges the new token by that time too', async () => {
     const tokens = { refresh_token: 'r1', id_token: idToken('a', OAUTH_ISSUER) }
@@ -502,19 +508,47 @@ describe('a DPoP proof refused for its time', () => {
   it('names the clock when the server’s time can’t be learned', async () => {
     serverTime = () => Promise.reject(new Error('no desktop backend'))
     token = () => Promise.resolve(refusal())
-    await oidcStart()
-    const { state } = JSON.parse(window.sessionStorage.getItem('oidc.flow') || 'null')
-    window.history.replaceState({}, '', `/?code=c1&state=${state}`)
+    await startExchange()
 
     await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'clock', oauthError: 'invalid_dpop_proof' })
     expect(tokenCalls).toBe(1)
   })
 
+  it('asks no desktop backend outside the desktop app', async () => {
+    delete (browser as { isElectron?: boolean }).isElectron
+    token = () => Promise.resolve(refusal())
+    await startExchange()
+
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'clock' })
+    expect(serverTimeCalls).toBe(0)
+  })
+
+  it('takes the server’s time from the refusal itself when the AS exposes its Date', async () => {
+    const exposed = refusal()
+    exposed.headers.set('date', new Date(SERVER).toUTCString())
+    token = () =>
+      Promise.resolve(
+        tokenCalls === 1 ? exposed : new Response(JSON.stringify({ refresh_token: 'r2', access_token: 'at' }), {})
+      )
+    await startExchange()
+
+    await oidcCompleteFromUrl().catch(() => undefined)
+    expect(serverTimeCalls).toBe(0)
+    expect(tokenCalls).toBe(2)
+  })
+
+  it('does not blame a clock that matches the server’s', async () => {
+    serverTime = () => Promise.resolve(new Response(JSON.stringify({ serverTime: LOCAL + 5000 })))
+    token = () => Promise.resolve(refusal())
+    await startExchange()
+
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'refused' })
+    expect(tokenCalls).toBe(1)
+  })
+
   it('stops after one retry and reports how far off the clock was', async () => {
     token = () => Promise.resolve(refusal())
-    await oidcStart()
-    const { state } = JSON.parse(window.sessionStorage.getItem('oidc.flow') || 'null')
-    window.history.replaceState({}, '', `/?code=c1&state=${state}`)
+    await startExchange()
 
     await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'clock', clockOffset: -3600 })
     expect(tokenCalls).toBe(2)
