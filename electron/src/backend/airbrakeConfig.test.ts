@@ -23,24 +23,33 @@ describe('withAirbrake', () => {
 })
 
 describe('AirBrake', () => {
-  const load = (pkg: object) => {
+  const PACKAGED = { version: '4.0.0', airbrake: { projectId: 123, projectKey: 'abc' } }
+
+  const load = (packageJson: object, ENVIRONMENT = 'production') => {
     jest.resetModules()
     jest.unmock('./AirBrake')
-    const Notifier = jest.fn(() => ({ addFilter: jest.fn(), notify: jest.fn(() => 'sent') }))
+    const Notifier = jest.fn(() => ({ notify: jest.fn(() => 'sent') }))
     jest.doMock('@airbrake/node', () => ({ Notifier }))
-    jest.doMock('fs', () => ({ ...jest.requireActual('fs'), readFileSync: () => JSON.stringify(pkg) }))
+    jest.doMock('./constants', () => ({ ENVIRONMENT }))
+    jest.doMock('./environment', () => ({ __esModule: true, default: { packageJson } }))
     return { AirBrake: require('./AirBrake').default, Notifier }
   }
 
+  test('reports with the packaged key', () => {
+    const { AirBrake, Notifier } = load(PACKAGED)
+    expect(Notifier).toHaveBeenCalledWith(expect.objectContaining({ projectId: 123, projectKey: 'abc' }))
+    expect(AirBrake.notify({ error: new Error('x') })).toBe('sent')
+  })
+
   test('does nothing in a build without a packaged key', () => {
-    const { AirBrake, Notifier } = load({ name: 'remoteit' })
+    const { AirBrake, Notifier } = load({ version: '4.0.0' })
     expect(Notifier).not.toHaveBeenCalled()
     expect(AirBrake.notify({ error: new Error('x') })).toBeUndefined()
   })
 
-  test('reports with the packaged key', () => {
-    const { AirBrake, Notifier } = load({ airbrake: { projectId: 123, projectKey: 'abc' } })
-    expect(Notifier).toHaveBeenCalledWith(expect.objectContaining({ projectId: 123, projectKey: 'abc' }))
-    expect(AirBrake.notify({ error: new Error('x') })).toBe('sent')
+  test('does nothing outside production', () => {
+    const { AirBrake, Notifier } = load(PACKAGED, 'development')
+    expect(Notifier).not.toHaveBeenCalled()
+    expect(AirBrake.notify({ error: new Error('x') })).toBeUndefined()
   })
 })

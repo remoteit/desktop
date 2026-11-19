@@ -46,13 +46,7 @@ jest.mock(
   './AirBrake',
   () => ({
     __esModule: true,
-    default: {
-      notify: jest.fn(),
-      close: jest.fn(),
-      addFilter: jest.fn(),
-      setHost: jest.fn(),
-      addReporter: jest.fn(),
-    },
+    default: { notify: jest.fn() },
   }),
   { virtual: true }
 )

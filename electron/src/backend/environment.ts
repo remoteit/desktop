@@ -7,6 +7,9 @@ import path from 'path'
 import os from 'os'
 import fs from 'fs'
 
+// electron-builder.config.js adds `airbrake` to the packaged package.json; source checkouts have none.
+type IPackageJson = { version: string; airbrake?: { projectId?: number; projectKey?: string } }
+
 export class Environment {
   isElevated: boolean = false
   isHeadless: boolean
@@ -33,6 +36,7 @@ export class Environment {
   deprecatedBinaries: string[]
   manufacturerDetails: ManufacturerDetails
   oobAvailable: boolean
+  packageJson: IPackageJson
   version: string
   overrides: IOverrides
 
@@ -50,7 +54,8 @@ export class Environment {
     this.isDev = process.env.NODE_ENV === 'development'
     this.simpleOS = this.getSimpleOS()
     this.osVersion = this.getOsVersion()
-    this.version = this.getAppVersion()
+    this.packageJson = this.readPackageJson()
+    this.version = this.packageJson.version
     this.isHeadless = !isElectron()
     this.symlinkPath = ''
     this.sshConfigPath = PATHS.SSH_CONFIG
@@ -147,7 +152,7 @@ export class Environment {
     return release
   }
 
-  getAppVersion() {
+  readPackageJson(): IPackageJson {
     const candidates = [
       path.resolve(__dirname, '../package.json'),
       path.resolve(__dirname, '..', '..', 'package.json'),
@@ -155,11 +160,10 @@ export class Environment {
     ]
 
     const pkgPath = candidates.find(fs.existsSync)
-    if (!pkgPath) return '0.0.0'
+    if (!pkgPath) return { version: '0.0.0' }
 
     const content = fs.readFileSync(pkgPath)
-    const json = JSON.parse(content.toString())
-    return json.version
+    return JSON.parse(content.toString())
   }
 
   getManufacturerDetails(): ManufacturerDetails {
