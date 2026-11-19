@@ -5,26 +5,31 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 const redux = vi.hoisted(() => ({ state: {} as any }))
 const browser = vi.hoisted(() => ({ isElectron: true, isRemote: false }))
 const windowOpen = vi.hoisted(() => vi.fn())
+const feedback = vi.hoisted(() => ({ set: vi.fn() }))
+const history = vi.hoisted(() => ({ push: vi.fn() }))
 
-vi.mock('react-redux', () => ({ useSelector: (select: (s: any) => any) => select(redux.state) }))
+vi.mock('react-redux', () => ({
+  useSelector: (select: (s: any) => any) => select(redux.state),
+  useDispatch: () => ({ feedback }),
+}))
+vi.mock('react-router-dom', () => ({ useHistory: () => history }))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: any) => {
-      const text = typeof options === 'string' ? options : options?.defaultValue ?? key
-      return text.replace(/{{(\w+)}}/g, (_: string, name: string) => options?.[name])
-    },
+    t: (key: string, defaultValue?: string, values: Record<string, string> = {}) =>
+      (defaultValue ?? key).replace(/{{(\w+)}}/g, (_: string, name: string) => values[name]),
   }),
 }))
 vi.mock('@common/brand/config', () => ({
   default: { appName: 'Remote.It', package: { author: { email: 'support@remote.it' } } },
 }))
+vi.mock('../helpers/versionHelper', () => ({ version: '4.0.1' }))
 vi.mock('../services/browser', () => ({ default: browser, windowOpen }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
 vi.mock('../buttons/IconButton', () => ({
   IconButton: ({ onClick, title }: any) => <button onClick={onClick}>{title}</button>,
 }))
-vi.mock('../buttons/CopyIconButton', () => ({
-  CopyIconButton: ({ value }: any) => <button data-copy={value}>copy</button>,
+vi.mock('./CopyCodeBlock', () => ({
+  CopyCodeBlock: ({ value }: any) => <button data-copy={value}>copy</button>,
 }))
 vi.mock('@mui/material', async importOriginal => ({
   ...(await importOriginal<typeof import('@mui/material')>()),
@@ -36,23 +41,23 @@ import { AgentOutdatedNotice } from './AgentOutdatedNotice'
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
 const outdated: AgentOutdated = {
-  installedVersion: '4.1.0',
-  expectedVersion: '4.2.0',
   agentVersion: '4.1.0',
-  path: 'C:\\Program Files\\Remote.It\\resources\\remoteit.exe',
-  appVersion: '4.0.1',
   arch: 'x64',
   releaseUrl: 'https://github.com/remoteit/desktop/releases/tag/v4.0.1',
   installerLog: 'C:\\Users\\User\\AppData\\Local\\Temp\\remoteit.log',
   appLog: 'C:\\Users\\User\\AppData\\Local\\remoteit\\log\\combined.log',
 }
+const path = 'C:\\Program Files\\Remote.It\\resources\\remoteit.exe'
 
 describe('AgentOutdatedNotice', () => {
   let root: Root
   let container: HTMLDivElement
 
-  const render = (agent?: AgentOutdated) => {
-    redux.state = { binaries: { outdated: agent } }
+  const render = (agent?: AgentOutdated, { installedVersion = '4.1.0', user = {} as any } = {}) => {
+    redux.state = {
+      binaries: { outdated: agent, installedVersion, version: '4.2.0', path },
+      auth: { user },
+    }
     act(() => root.render(<AgentOutdatedNotice />))
   }
   const text = () => document.body.textContent || ''
@@ -67,6 +72,8 @@ describe('AgentOutdatedNotice', () => {
     browser.isElectron = true
     browser.isRemote = false
     windowOpen.mockReset()
+    feedback.set.mockReset()
+    history.push.mockReset()
   })
 
   afterEach(() => {
@@ -98,16 +105,14 @@ describe('AgentOutdatedNotice', () => {
 
     expect(text()).toContain('This computer is running system agent 4.1.0, and Remote.It 4.0.1 needs 4.2.0.')
     expect(text()).toContain('Download the x64 installer for Remote.It 4.0.1.')
-    expect(text()).toContain('email support@remote.it with the details below')
-    const copied = document.querySelector('[data-copy]')?.getAttribute('data-copy')
-    expect(copied).toBe(
+    expect(document.querySelector('[data-copy]')?.getAttribute('data-copy')).toBe(
       [
         'Remote.It 4.0.1 (Windows x64)',
-        'Agent on disk: 4.1.0 (C:\\Program Files\\Remote.It\\resources\\remoteit.exe)',
+        `Agent on disk: 4.1.0 (${path})`,
         'Agent expected: 4.2.0',
         'Agent running: 4.1.0',
-        'Installer log: C:\\Users\\User\\AppData\\Local\\Temp\\remoteit.log',
-        'App log: C:\\Users\\User\\AppData\\Local\\remoteit\\log\\combined.log',
+        `Installer log: ${outdated.installerLog}`,
+        `App log: ${outdated.appLog}`,
       ].join('\n')
     )
   })
@@ -119,12 +124,32 @@ describe('AgentOutdatedNotice', () => {
     expect(windowOpen).toHaveBeenCalledWith(outdated.releaseUrl, '_blank', true)
   })
 
+  it('files the details through Report issue when signed in', async () => {
+    render(outdated)
+    click('Details')
+    expect(text()).toContain('choose Report issue to send support the details below')
+    await act(async () => button('Report issue')?.click())
+
+    expect(feedback.set).toHaveBeenCalledWith({
+      subject: 'Out-of-date system agent 4.1.0',
+      data: expect.objectContaining({ installedVersion: '4.1.0', expectedVersion: '4.2.0', path, appVersion: '4.0.1' }),
+    })
+    expect(history.push).toHaveBeenCalledWith('/feedback')
+  })
+
+  it('points to the support email when signed out', () => {
+    render(outdated, { user: null })
+    click('Details')
+    expect(button('Report issue')).toBeUndefined()
+    expect(text()).toContain('email support@remote.it with the details below')
+  })
+
   it('stays dismissed until the versions change', () => {
     render(outdated)
     click('Close')
     expect(button('Details')).toBeUndefined()
 
-    render({ ...outdated, installedVersion: '4.0.0' })
+    render(outdated, { installedVersion: '4.0.0' })
     expect(button('Details')).toBeDefined()
   })
 })

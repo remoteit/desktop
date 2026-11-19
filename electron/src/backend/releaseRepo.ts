@@ -8,7 +8,7 @@ export interface GitHubRepo {
   repo: string
 }
 
-// Same pattern as scripts/release-repo.js, which resolves the repository for CI.
+// Same pattern as electron/scripts/release-repo.js, which resolves the repository for CI.
 export function releaseRepo(): GitHubRepo {
   const repositoryUrl = brand?.package?.repository?.url || ''
   const match = repositoryUrl.match(/github\.com[/:]([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?$/i)

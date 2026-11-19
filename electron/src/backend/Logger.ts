@@ -41,13 +41,15 @@ const logFormat = format.combine(
   )
 )
 
+export const LOG_FILE = 'combined.log'
+
 const logger = createLogger({
   level: 'info',
   format: logFormat,
   transports: [
     new transports.Console(),
     new transports.File({
-      filename: path.join(environment.logPath, 'combined.log'),
+      filename: path.join(environment.logPath, LOG_FILE),
       maxsize: 1e6, // approx 1mb
       maxFiles: 5, // Keep up to 5 rotated log files
       tailable: true, // Rename the existing log file and create a new one when the limit is reached

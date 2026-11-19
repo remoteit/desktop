@@ -167,11 +167,7 @@ declare global {
   }
 
   interface AgentOutdated {
-    installedVersion: string
-    expectedVersion: string
     agentVersion?: string
-    path: string
-    appVersion: string
     arch: string
     releaseUrl: string
     installerLog: string
