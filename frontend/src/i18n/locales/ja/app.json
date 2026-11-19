@@ -1695,13 +1695,25 @@
     "admin": "",
     "anyUser": "",
     "asUser": "",
+    "cancel": "",
     "email": "",
+    "existing": "",
+    "existingAdministrator": "",
+    "existingLabel": "",
+    "existingNote": "",
     "fallback": "",
+    "handleLabel": "",
+    "handleNote": "",
     "login": "",
     "loginHelp": "",
     "loginOwn": "",
+    "name": "",
+    "nameFailed": "",
     "ownAdmin": "",
+    "ownExisting": "",
+    "renameNote": "",
     "revoke": "",
+    "save": "",
     "title": ""
   },
   "deviceSubnet": {
@@ -4452,6 +4464,17 @@
     "signUp": "新規登録",
     "switchToProduction": "本番環境に切り替える",
     "waiting": "ブラウザを待っています… ブラウザでサインインを完了してください。"
+  },
+  "sshHandle": {
+    "about": "",
+    "emailName": "",
+    "failed": "",
+    "hint": "",
+    "label": "",
+    "none": "",
+    "problem": "",
+    "title": "",
+    "unread": ""
   },
   "statusChip": {
     "connected": "接続済み",
