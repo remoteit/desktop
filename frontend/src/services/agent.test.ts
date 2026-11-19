@@ -5,8 +5,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 const state: { ui: { apis: { agentURL?: string; switchApi?: boolean; customTarget?: boolean } } } = {
   ui: { apis: {} },
 }
-vi.mock('../store', () => ({ store: { getState: () => state } }))
-vi.mock('./oidc', () => ({ oidcAuthHeaders: vi.fn() }))
+const { unauthorized, oidcAuthorized } = vi.hoisted(() => ({
+  unauthorized: vi.fn(),
+  // Stands in for the oidc request wrapper: hands the sender no auth and returns its outcome.
+  oidcAuthorized: vi.fn((_m: string, _u: string, _r: string, send: (auth: object) => Promise<unknown>) => send({})),
+}))
+vi.mock('../store', () => ({ store: { getState: () => state, dispatch: { chat: { unauthorized } } } }))
+vi.mock('./oidc', () => ({ oidcAuthorized, fetchAnswer: vi.fn() }))
 vi.mock('../constants', () => ({ OAUTH_AGENT_RESOURCE: 'https://agent.remote.it', AGENT_URL: '/agent' }))
 
 import {
@@ -169,5 +174,42 @@ describe('streamChat — a refused turn', () => {
     const outcome = await refuse(403, { error: 'Forbidden', code: 'mcp_access' }).catch((e: unknown) => e)
     expect(outcome).not.toBeInstanceOf(AgentNotLicensedError)
     expect((outcome as Error).message).toBe('Agent request failed (403)')
+  })
+})
+
+/* The DPoP nonce retry lives in oidcAuthorized; the agent's own 401 handling must read only the
+   outcome it hands back, so a refusal the retry fixed never marks the chat unauthorized. */
+describe('agentRequest — a DPoP nonce refusal', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    oidcAuthorized.mockClear()
+    unauthorized.mockReset()
+  })
+
+  it('signs over the canonical agent resource, and reads the 401 only after the retry', async () => {
+    const refusal = new Response('', { status: 401, headers: { 'DPoP-Nonce': 'n1' } })
+    const answered = new Response('event: done\ndata: {"stopReason":null}\n\n', { status: 200 })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(refusal).mockResolvedValueOnce(answered))
+    oidcAuthorized.mockImplementationOnce(async (_m, _u, _r, send) => {
+      const first = (await send({})) as Response
+      return first.status === 401 ? send({}) : first
+    })
+
+    await streamChat({ conversationId: 'c', text: 'hi', onEvent: () => {} })
+    expect(oidcAuthorized.mock.calls[0].slice(0, 3)).toEqual([
+      'POST',
+      'https://agent.remote.it/api/conversations/c/messages',
+      'https://agent.remote.it',
+    ])
+    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(unauthorized).not.toHaveBeenCalled()
+  })
+
+  it('still treats a 401 that survives the retry as the agent refusing the credential', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 401 })))
+    await expect(streamChat({ conversationId: 'c', text: 'hi', onEvent: () => {} })).rejects.toThrow(
+      'Agent authentication required'
+    )
+    expect(unauthorized).toHaveBeenCalledTimes(1)
   })
 })

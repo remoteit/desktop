@@ -9,7 +9,11 @@ const { state, uiSet, apiHeaders, request } = vi.hoisted(() => ({
 vi.mock('../store', () => ({
   store: { getState: () => state, dispatch: { ui: { set: uiSet } } },
 }))
-vi.mock('./remoteit', () => ({ apiHeaders }))
+// apiHeaders stands for the headers apiRequest hands its sender (undefined when signed out).
+vi.mock('./remoteit', () => ({
+  apiRequest: (method: string, url: string, send: (headers?: object) => Promise<unknown>) =>
+    apiHeaders(method, url).then(send),
+}))
 vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql' }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))

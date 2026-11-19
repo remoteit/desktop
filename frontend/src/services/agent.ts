@@ -12,7 +12,7 @@
  */
 import { store } from '../store'
 import { httpsOnly } from '../helpers/utilHelper'
-import { oidcAuthHeaders } from './oidc'
+import { oidcAuthorized, fetchAnswer } from './oidc'
 import { OAUTH_AGENT_RESOURCE, AGENT_URL } from '../constants'
 
 /* The override must be https — the app's CSP blocks plain http. Shared with
@@ -65,21 +65,28 @@ export class AgentNotLicensedError extends Error {
    (signed over the canonical resource, not the transport — a proxy or an override must not
    break the proof), and a 401 as AgentAuthError. That refusal is the one server fact the chat
    acts on, so it is recorded here (models/chat unauthorized) for every endpoint — the callers
-   add only what their own screen should say — rather than at whichever catch remembered to. */
+   add only what their own screen should say — rather than at whichever catch remembered to.
+   A 401 asking for a DPoP nonce is not that fact: oidcAuthorized resends the request with a new
+   proof first, and only a refusal that survives it lands here. The nonce is the canonical
+   resource's, the server the proof is checked by. */
 async function agentRequest(
   method: string,
   path: string,
   init: { body?: unknown; signal?: AbortSignal } = {}
 ): Promise<Response> {
-  const response = await fetch(`${agentURL()}${path}`, {
+  const response = await oidcAuthorized(
     method,
-    headers: {
-      ...(init.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...(await oidcAuthHeaders(method, `${OAUTH_AGENT_RESOURCE}${path}`, OAUTH_AGENT_RESOURCE)),
-    },
-    ...(init.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
-    signal: init.signal,
-  })
+    `${OAUTH_AGENT_RESOURCE}${path}`,
+    OAUTH_AGENT_RESOURCE,
+    auth =>
+      fetch(`${agentURL()}${path}`, {
+        method,
+        headers: { ...(init.body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...auth },
+        ...(init.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
+        signal: init.signal,
+      }),
+    fetchAnswer
+  )
   if (response.status === 401) {
     store.dispatch.chat.unauthorized()
     throw new AgentAuthError()

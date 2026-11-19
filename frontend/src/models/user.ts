@@ -5,7 +5,7 @@ import { graphQLNotificationSettings, graphQLSetAttributes, graphQLLeaveReseller
 import { graphQLUser } from '../services/graphQLRequest'
 import { RootModel } from '.'
 import i18n, { LanguageMode } from '../i18n'
-import { apiAuthHeaders } from '../services/remoteit'
+import { apiAuthorized } from '../services/remoteit'
 import { store } from '../store'
 import { inOrder } from '../helpers/inOrder'
 import { latestWins } from '../helpers/latestWins'
@@ -102,17 +102,13 @@ export default createModel<RootModel>()({
         }).catch(error => console.warn('USER REFETCH FAILED', error))
     },
     async changeLanguage(language: string) {
-      await axios.post(
-        '/user/language/',
-        { language },
-        {
-          baseURL: API_URL,
-          headers: {
-            'Content-Type': 'application/json',
-            developerKey: DEVELOPER_KEY,
-            ...(await apiAuthHeaders('POST', `${API_URL}/user/language/`)),
-          },
-        }
+      const url = `${API_URL}/user/language/`
+      await apiAuthorized('POST', url, auth =>
+        axios.post(
+          url,
+          { language },
+          { headers: { 'Content-Type': 'application/json', developerKey: DEVELOPER_KEY, ...auth } }
+        )
       )
       dispatch.ui.set({
         successMessage: i18n.t('notices:user.languageChanged', {
