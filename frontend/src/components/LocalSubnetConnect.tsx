@@ -29,11 +29,19 @@ import { Icon } from './Icon'
    they are all shown; what is copied and launched is the first, as for a connection. A web service whose device passed
    its redirect to https:// on the same host back to the browser (services/graphQLDetectedScheme redirectLoops) would
    only loop on its name: Launch says so first, and the way out is its type, HTTPS on the port it redirects to. */
-type Props = { local: LocalSubnetName; service?: IService; connection?: IConnection; byCertificate?: boolean }
+type Props = {
+  local: LocalSubnetName
+  // A service's own name's port (presence-server docs/subnet-service-names.md): its usual one, ssh's 22 — where it has
+  // none, the service's own port.
+  port?: number
+  service?: IService
+  connection?: IConnection
+  byCertificate?: boolean
+}
 
-export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection, byCertificate }) => {
+export const LocalSubnetConnect: React.FC<Props> = ({ local, port: namePort, service, connection, byCertificate }) => {
   const { t } = useTranslation()
-  const port = service?.port
+  const port = namePort || service?.port
   const ssh = service?.typeID === 28
   // The service's connection with the name in place of the proxy's address: never saved, only launched from.
   const here = useMemo<IConnection | undefined>(

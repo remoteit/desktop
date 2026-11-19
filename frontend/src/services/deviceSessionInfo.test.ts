@@ -69,12 +69,14 @@ describe('device session info', () => {
       actsFor: null,
       agent: { running: 'connectd-go 5.6.1.1', update: null },
       services: {},
+      serviceNames: {},
     })
     expect(deviceSessionInfo('B')).toEqual({
       subnetName: 'laptop.acme.on.remote.it',
       actsFor: 'ada@acme.test',
       agent: null,
       services: { 'B-WEB': 'web.laptop.acme.on.remote.it' },
+      serviceNames: { 'B-WEB': { own: false, port: null } },
     })
     expect(deviceSessionInfo('C')).toEqual({ subnetName: null, actsFor: null, agent: null }) // asked, not answered: none, and not asked again
     requestDeviceSessionInfo('A')
@@ -95,6 +97,52 @@ describe('device session info', () => {
     requestDeviceSessionInfo('B')
     await new Promise(resolve => setTimeout(resolve, 5))
     expect(request).toHaveBeenCalledTimes(1)
+  })
+
+  // presence-server docs/subnet-service-names.md: each service's own name and its port, where the API has them.
+  it("reads each service's own name and port where the API has them, and again without them where it does not", async () => {
+    request.mockResolvedValueOnce({
+      data: {
+        data: {
+          login: {
+            device: [
+              {
+                id: 'A',
+                subnetName: 'pi-acme.on.remote.it',
+                actsFor: null,
+                agent: null,
+                services: [
+                  { id: 'CONSOLE', subnetName: 'piconsole-acme.on.remote.it', subnetOwnName: true, subnetPort: 22 },
+                ],
+              },
+            ],
+          },
+        },
+      },
+      headers: {},
+    })
+    let done = settled()
+    requestDeviceSessionInfo('A')
+    await done
+    expect(request.mock.calls[0][0].data.query).toContain('services { id subnetName subnetOwnName subnetPort }')
+    expect(deviceSessionInfo('A')?.serviceNames).toEqual({ CONSOLE: { own: true, port: 22 } })
+
+    resetDeviceSessionInfo()
+    request.mockReset()
+    request.mockResolvedValueOnce({
+      data: { errors: [{ message: 'Cannot query field "subnetOwnName" on type "Service".' }] },
+      headers: {},
+    })
+    request.mockResolvedValueOnce({
+      data: { data: { login: { device: [{ id: 'A', subnetName: null, actsFor: null, agent: null, services: [] }] } } },
+      headers: {},
+    })
+    done = settled()
+    requestDeviceSessionInfo('A')
+    await done
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(request.mock.calls[1][0].data.query).not.toContain('subnetOwnName')
+    expect(deviceSessionInfo('A')?.serviceNames).toBeUndefined()
   })
 
   it('asks who upgrades each agent where the API has it, and again without it where it does not', async () => {

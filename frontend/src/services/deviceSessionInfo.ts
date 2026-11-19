@@ -19,8 +19,13 @@ export type DeviceSessionInfo = {
   subnetName: string | null
   actsFor: string | null
   agent: DeviceAgent | null
-  services?: ILookup<string | null> // each service's name: the device's, or its LAN host's (Service.subnetName)
+  services?: ILookup<string | null> // each service's name: its own, the device's, or its LAN host's (Service.subnetName)
+  // Each service's own name, where the API has them (presence-server docs/subnet-service-names.md): whether it has one
+  // (Service.subnetOwnName), and the port to use with its name (Service.subnetPort: its usual one with its own name).
+  serviceNames?: ILookup<ServiceNameInfo>
 }
+
+export type ServiceNameInfo = { own: boolean; port: number | null }
 
 type Listener = () => void
 
@@ -34,6 +39,8 @@ let unsupported = false
 let withUpkeep = true
 // Whether it is at or above its kind's minimum build (supported) only where the API has it, the same way.
 let withSupport = true
+// A service's own name and its port only where the API has them, the same way.
+let withServiceNames = true
 
 export const deviceSessionInfo = (deviceId: string): DeviceSessionInfo | undefined => info.get(deviceId)
 
@@ -79,7 +86,9 @@ async function flush() {
   }`
   const query = `query DeviceSessionInfo { login { device(id: ${JSON.stringify(
     ids
-  )}) { id subnetName actsFor { email } agent { running package { version format } update { version state detail }${upkeep} } services { id subnetName } } } }`
+  )}) { id subnetName actsFor { email } agent { running package { version format } update { version state detail }${upkeep} } services { id subnetName${
+    withServiceNames ? ' subnetOwnName subnetPort' : ''
+  } } } } }`
   const response = await post({ query })
   if (response !== 'ERROR') {
     if (withUpkeep && withoutDeviceSessions(response.data?.errors, 'howToUpdate')) {
@@ -92,6 +101,11 @@ async function flush() {
       ids.forEach(id => wanted.add(id))
       return flush()
     }
+    if (withServiceNames && withoutDeviceSessions(response.data?.errors, 'subnetOwnName')) {
+      withServiceNames = false
+      ids.forEach(id => wanted.add(id))
+      return flush()
+    }
     const errors = graphQLGetErrors(response, true, { query, variables: {} })
     if (withoutDeviceSessions(errors, 'subnetName')) unsupported = true
     else if (!errors)
@@ -101,6 +115,11 @@ async function flush() {
           actsFor: device.actsFor?.email ?? null,
           agent: device.agent ?? null,
           services: Object.fromEntries((device.services || []).map((s: any) => [s.id, s.subnetName ?? null])),
+          ...(withServiceNames && {
+            serviceNames: Object.fromEntries(
+              (device.services || []).map((s: any) => [s.id, { own: !!s.subnetOwnName, port: s.subnetPort ?? null }])
+            ),
+          }),
         })
   }
   // Asked and not answered (unsupported, an error, not visible): none, so the row stops asking.
@@ -131,6 +150,7 @@ export function resetDeviceSessionInfo() {
   unsupported = false
   withUpkeep = true
   withSupport = true
+  withServiceNames = true
   if (timer) clearTimeout(timer)
   timer = undefined
 }

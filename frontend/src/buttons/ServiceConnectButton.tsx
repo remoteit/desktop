@@ -132,6 +132,7 @@ export const ServiceConnectButton: React.FC = () => {
                 {local ? (
                   <LocalSubnetConnect
                     local={local}
+                    port={reach.port}
                     service={service}
                     connection={connection}
                     byCertificate={byCertificate}
@@ -142,7 +143,7 @@ export const ServiceConnectButton: React.FC = () => {
                     terminal={
                       ssh && service
                         ? {
-                            port: service.port || 22,
+                            port: reach.port || service.port || 22,
                             title: service.name,
                             service: service.id,
                             byCertificate,

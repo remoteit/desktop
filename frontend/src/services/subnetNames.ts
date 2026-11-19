@@ -70,3 +70,16 @@ export async function setAccountSlug(slug: string, accountId?: string): Promise<
   refreshDeviceSessionInfo()
   return result.data?.data?.setAccountSlug
 }
+
+/* A service's own name (presence-server docs/subnet-service-names.md): one name in the account's namespace beside its
+   devices and LAN hosts, reached on the service's usual port — ssh on 22, a web service on 443. On keeps the name it
+   has, else gives its default (the device's name and the service's run together); a label renames it; off takes it
+   away at once. The device's names are read anew. Refused (taken, held, not this person's to change), the app says why. */
+export async function setServiceSubnetName(deviceId: string, serviceId: string, enabled: boolean, label?: string) {
+  const result = await graphQLBasicRequest(
+    `mutation SetServiceSubnetName($serviceId: String!, $enabled: Boolean!, $label: String) { setServiceSubnetName(serviceId: $serviceId, enabled: $enabled, label: $label) }`,
+    { serviceId, enabled, label: label?.trim().toLowerCase() || undefined }
+  )
+  requestDeviceSessionInfo(deviceId, true)
+  return result !== 'ERROR'
+}

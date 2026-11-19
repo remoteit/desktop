@@ -13,6 +13,7 @@ import { requestServiceSessionInfo } from '../services/deviceSessionInfo'
 
 export type SubnetReach = {
   name?: string // the service's name in device subnets, when it has one
+  port?: number // the port to use with that name: its usual one where the service has a name of its own
   local?: LocalSubnetName // the name works on this machine (services/localSubnet)
   checked: boolean // asked, and answered: no local means no daemon here reaches it
 }
@@ -29,6 +30,15 @@ export const useSubnetName = (deviceId?: string, serviceId?: string): string | u
   return enabled ? (serviceId ? info?.services?.[serviceId] : info?.subnetName) ?? undefined : undefined
 }
 
+// The port to use with a service's name: its usual one — ssh 22, a web service 443 — where the service has a name of
+// its own (presence-server docs/subnet-service-names.md); undefined otherwise, the service's own port.
+export const useSubnetPort = (deviceId?: string, serviceId?: string): number | undefined => {
+  const enabled = useDeviceSessions()
+  const info = useDeviceSessionInfo(enabled ? deviceId : undefined)
+  const named = serviceId ? info?.serviceNames?.[serviceId] : undefined
+  return (named?.own && named.port) || undefined
+}
+
 // A "no" from a daemon that is here may not last — a request that failed answers no too — and nothing else asks again
 // while the page is open (a reload did): asked again, anew, after each of these. Not where no daemon is here: that
 // waits out its own backoff (services/localSubnet ABSENT_MS).
@@ -38,6 +48,7 @@ export const REACH_RETRY_MS = [2_000, 5_000, 10_000, 20_000, 40_000]
 // it, or else — once asked and answered — through the browser client (services/browserGateway).
 export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetReach => {
   const name = useSubnetName(deviceId, serviceId)
+  const port = useSubnetPort(deviceId, serviceId)
   const id = serviceId || deviceId
   const [reach, setReach] = useState<{ local?: LocalSubnetName; checked: boolean }>({ checked: false })
 
@@ -68,7 +79,7 @@ export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetRea
     }
   }, [id, name])
 
-  return { name, ...reach }
+  return { name, ...(port && { port }), ...reach }
 }
 
 // A service's name in device subnets when it works on this machine: undefined otherwise — the device-sessions flag off,

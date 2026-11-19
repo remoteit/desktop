@@ -1,0 +1,75 @@
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
+import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
+import { NAME_MAX, setServiceSubnetName, splitSubnetName, validLabel } from '../services/subnetNames'
+import { ListItemCheckbox } from './ListItemCheckbox'
+import { InlineTextFieldSetting } from './InlineTextFieldSetting'
+
+/* A service's own name in device subnets (presence-server docs/subnet-service-names.md): on, the service is reached at
+   a name of its own — <name>-<owner slug>.<domain>, one of the account's names beside its devices and LAN hosts — on
+   its usual port: ssh on 22 with no -p, a web service on 443, whatever port it really listens on. Its name part is
+   edited in place, as a device's is. Applied at once, not with the form: graphql decides who may, and whether a name
+   is free. Absent where the API does not serve device sessions, or does not have service names yet. */
+type Props = { device?: IDevice; service?: IService; disabled?: boolean }
+
+export const ServiceSubnetNameSetting: React.FC<Props> = ({ device, service, disabled }) => {
+  const { t } = useTranslation()
+  const enabled = useDeviceSessions()
+  const info = useDeviceSessionInfo(enabled ? device?.id : undefined)
+  const [busy, setBusy] = useState(false)
+  const named = service ? info?.serviceNames?.[service.id] : undefined
+  const name = service ? info?.services?.[service.id] : undefined
+
+  if (!enabled || !device || !service || !named) return null
+
+  const locked = disabled || busy || !device.permissions.includes('MANAGE')
+  const set = async (on: boolean, label?: string) => {
+    setBusy(true)
+    await setServiceSubnetName(device.id, service.id, on, label)
+    setBusy(false)
+  }
+  const shown = named.own && name ? name + (named.port && named.port !== 443 ? `:${named.port}` : '') : undefined
+
+  return (
+    <>
+      <ListItemCheckbox
+        checked={named.own}
+        disabled={locked}
+        label={t('serviceSubnetName.label', 'Its own DNS name')}
+        subLabel={
+          shown ??
+          t(
+            'serviceSubnetName.help',
+            'Reach this service at a name of its own on its usual port — ssh on 22, a web page on 443 — whatever port it listens on'
+          )
+        }
+        onClick={checked => set(checked)}
+      />
+      {named.own && name && (
+        <InlineTextFieldSetting
+          required
+          icon="globe"
+          label={t('serviceSubnetName.name', 'Service DNS name')}
+          value={splitSubnetName(name).label}
+          displayValue={name}
+          maxLength={NAME_MAX}
+          disabled={locked}
+          validate={value =>
+            !validLabel(value)
+              ? t('deviceSubnetLabel.problem', 'Lower case letters and digits, at most 29, no dashes')
+              : undefined
+          }
+          helper={value =>
+            t('deviceSubnetLabel.hint', '{{name}} — the old name keeps working for 30 days', {
+              name: value.trim().toLowerCase() + splitSubnetName(name).rest,
+            })
+          }
+          onSave={value => {
+            if (value.toString().trim().toLowerCase() !== splitSubnetName(name).label) set(true, value.toString())
+          }}
+        />
+      )}
+    </>
+  )
+}

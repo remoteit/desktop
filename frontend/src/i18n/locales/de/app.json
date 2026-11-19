@@ -4237,6 +4237,11 @@
     "switchHttp": "",
     "switchHttps": ""
   },
+  "serviceSubnetName": {
+    "help": "",
+    "label": "",
+    "name": ""
+  },
   "serviceUsersPage": {
     "addGuestAccess": "Gastzugriff hinzufügen",
     "addOrgMember": "Organisationsmitglied hinzufügen",
