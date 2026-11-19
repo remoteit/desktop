@@ -47,6 +47,7 @@ export default class Binary {
         current = semverCompare(version, this.version) >= 0
       } catch (error) {
         current = false
+        this.installedVersion = undefined
         Logger.warn('BINARY VERSION ERROR', { name: this.name, error })
       }
     }

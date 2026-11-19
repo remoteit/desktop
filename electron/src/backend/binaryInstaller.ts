@@ -9,7 +9,10 @@ import ConnectionPool from './ConnectionPool'
 import semverCompare from 'semver/functions/compare'
 import Binary, { binaries, cliBinary } from './Binary'
 import { existsSync, lstatSync } from 'fs'
+import { releasePageUrl } from './releaseRepo'
 import Logger from './Logger'
+import path from 'path'
+import os from 'os'
 
 // Refusals the running agent will give again: unsupported platform, a daemon that came back on
 // another install, a signature it will not accept, a service definition that predates staging, and
@@ -26,6 +29,7 @@ export class BinaryInstaller {
   inProgress = false
   uninstallInitiated = false
   reloadRefusedBy?: string
+  outdated?: AgentOutdated
   binaries: Binary[]
   cliBinary: Binary
 
@@ -54,20 +58,52 @@ export class BinaryInstaller {
       this.ready = true
     }
 
-    EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
+    EventBus.emit(Binary.EVENTS.installed, this.installationInfo())
   }
 
   async status(): Promise<BinaryReason> {
     const binariesOutdated = !(await this.cliBinary.isCurrent())
     const agentStopped = !(await cli.agentRunning())
-    const agentMismatched = this.cliBinary.agentVersion !== this.cliBinary.version
-    const cliUpdated = await this.cliUpdated()
+    this.outdated = this.agentOutdated(binariesOutdated)
+    // Installing the agent reuses remoteit.exe as it is on disk, and on Windows only the app's
+    // installer replaces that file: a stale one is reported, not answered with an install prompt.
+    const expectedAgent = this.outdated ? this.cliBinary.installedVersion : this.cliBinary.version
+    const agentMismatched = this.cliBinary.agentVersion !== expectedAgent
+    const cliUpdated = !this.outdated && (await this.cliUpdated())
     const desktopUpdated = await this.desktopUpdated()
 
-    const status = { binariesOutdated, agentStopped, agentMismatched, cliUpdated, desktopUpdated }
+    const status = {
+      binariesOutdated: binariesOutdated && !this.outdated,
+      agentStopped,
+      agentMismatched,
+      cliUpdated,
+      desktopUpdated,
+    }
     Logger.info('SHOULD INSTALL?', status)
 
     return status
+  }
+
+  agentOutdated(binariesOutdated: boolean): AgentOutdated | undefined {
+    const { installedVersion, agentVersion, version, path: binaryPath } = this.cliBinary
+    if (!environment.isWindows || !binariesOutdated || !installedVersion) return
+    const outdated: AgentOutdated = {
+      installedVersion,
+      expectedVersion: version,
+      agentVersion,
+      path: binaryPath,
+      appVersion: environment.version,
+      arch: process.arch,
+      releaseUrl: releasePageUrl(environment.version),
+      installerLog: path.join(os.tmpdir(), 'remoteit.log'),
+      appLog: path.join(environment.logPath, 'combined.log'),
+    }
+    Logger.warn('AGENT OUTDATED', outdated)
+    return outdated
+  }
+
+  installationInfo(): InstallationInfo {
+    return { ...this.cliBinary.toJSON(), outdated: this.outdated }
   }
 
   // The running agent decides whether it can adopt the installed binaries itself.
@@ -117,7 +153,7 @@ export class BinaryInstaller {
 
   private async completeInstall() {
     this.reloadRefusedBy = undefined
-    EventBus.emit(Binary.EVENTS.installed, this.cliBinary.toJSON())
+    EventBus.emit(Binary.EVENTS.installed, this.installationInfo())
     EventBus.emit(ConnectionPool.EVENTS.clearErrors)
     await this.updateVersions()
     this.ready = true

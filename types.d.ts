@@ -163,6 +163,19 @@ declare global {
     path: string
     version: string
     installedVersion?: string
+    outdated?: AgentOutdated
+  }
+
+  interface AgentOutdated {
+    installedVersion: string
+    expectedVersion: string
+    agentVersion?: string
+    path: string
+    appVersion: string
+    arch: string
+    releaseUrl: string
+    installerLog: string
+    appLog: string
   }
 
   interface UserCredentials {
