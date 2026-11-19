@@ -61,7 +61,7 @@ beforeEach(() => {
   info.value = {
     subnetName: 'pi-acme.on.remote.it',
     services: { S: 'piconsole-acme.on.remote.it' },
-    serviceNames: { S: { own: true, port: 22 } },
+    serviceNames: { S: { own: true, port: 22, ports: ['22 → 2222', '2222'] } },
   }
 })
 
@@ -70,6 +70,7 @@ describe('ServiceSubnetNameSetting', () => {
     const container = await render()
     expect(checkbox.props.checked).toBe(true)
     expect(container.textContent).toContain('piconsole-acme.on.remote.it:22')
+    expect(container.textContent).toContain('Ports: 22 → 2222, 2222')
     expect(field.props.value).toBe('piconsole')
     expect(field.props.validate('pi-console')).toMatch('no dashes')
     expect(field.props.helper('shell')).toBe('shell-acme.on.remote.it — the old name keeps working for 30 days')

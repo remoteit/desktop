@@ -30,6 +30,9 @@ export const ServiceSubnetNameSetting: React.FC<Props> = ({ device, service, dis
     setBusy(false)
   }
   const shown = named.own && name ? name + (named.port && named.port !== 443 ? `:${named.port}` : '') : undefined
+  // Every port its name answers on (presence-server docs/subnet-service-names.md): each it lists, at its own number, and
+  // its usual ones to its first port.
+  const ports = named.own && named.ports?.length ? named.ports.join(', ') : undefined
 
   return (
     <>
@@ -38,10 +41,21 @@ export const ServiceSubnetNameSetting: React.FC<Props> = ({ device, service, dis
         disabled={locked}
         label={t('serviceSubnetName.label', 'Its own DNS name')}
         subLabel={
-          shown ??
-          t(
-            'serviceSubnetName.help',
-            'Reach this service at a name of its own on its usual port — ssh on 22, a web page on 443 — whatever port it listens on'
+          shown ? (
+            <>
+              {shown}
+              {ports && (
+                <>
+                  <br />
+                  {t('serviceSubnetName.ports', 'Ports: {{ports}}', { ports })}
+                </>
+              )}
+            </>
+          ) : (
+            t(
+              'serviceSubnetName.helpPorts',
+              'Reach this service at a name of its own on every port it lists, and on its usual port — ssh on 22, a web page on 443'
+            )
           )
         }
         onClick={checked => set(checked)}
