@@ -558,6 +558,7 @@
     "starter": "A web page with a title its owner sets: its manifest, its program and its release notes.",
     "starterDownload": "Download the starter",
     "title": "Build it yourself",
+    "toolCheck": "Its manifest names its version and SHA-256, and is signed with the same release key remote.it signs device packages with:",
     "toolDownload": "Download the tool",
     "toolNeeds": "It needs Node.js 20.11 or later.",
     "toolNotHere": "This stage does not host the publishing tool. Ask remote.it for it.",
