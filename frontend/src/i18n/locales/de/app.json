@@ -77,6 +77,18 @@
     "guideTitle": "Dienst (Anwendung) hinzufügen",
     "title": "Dienst hinzufügen"
   },
+  "agentOutdated": {
+    "body": "Auf diesem Computer läuft Systemagent {{installedVersion}}, {{appName}} {{appVersion}} benötigt jedoch {{expectedVersion}}. Verbindungen funktionieren weiter, aber Funktionen, die den neueren Agenten benötigen, erst nach dem Update.",
+    "copyDetails": "Details kopieren",
+    "details": "Details",
+    "download": "Installationsprogramm herunterladen",
+    "notice": "Der {{appName}}-Systemagent auf diesem Computer ist veraltet. Installieren Sie {{appName}} neu, um ihn zu aktualisieren.",
+    "stepDownload": "Laden Sie das {{arch}}-Installationsprogramm für {{appName}} {{appVersion}} herunter.",
+    "stepRun": "Führen Sie es aus und folgen Sie den Anweisungen. Es benötigt Administratorrechte und fordert Sie auf, {{appName}} zuerst zu schließen.",
+    "stepSupport": "Wenn diese Meldung erneut erscheint, senden Sie die Details unten per E-Mail an {{email}}.",
+    "title": "{{appName}}-Systemagent aktualisieren",
+    "why": "Der Systemagent ist Teil des {{appName}}-Installationsprogramms. Eine Neuinstallation von {{appName}} aktualisiert ihn, Ihre Einstellungen und Geräte bleiben erhalten. „Systemagent neu installieren“ in den Optionen kann ihn nicht aktualisieren."
+  },
   "agentReachEditor": {
     "addTagPlaceholder": "Tag hinzufügen...",
     "allDevices": "Alle Geräte",
