@@ -557,10 +557,19 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             '& .MuiInputBase-sizeSmall': {
               marginTop: spacing.xxs,
               marginBottom: spacing.xxs,
-              height: 20,
               borderRadius: radius.sm * 1.25,
-              '& .MuiSelect-select': { fontSize: fontSizes.xxs },
               '& .MuiSelect-icon': { marginRight: 2 },
+            },
+            // Compact (20px, small type) only without a label: the toolbars' and rows' small selects and fields. A
+            // labelled small field keeps room for its label above its value, and a multiline one grows with its text.
+            '& .MuiInputBase-sizeSmall:not(.MuiInputLabel-root + *):not(.MuiInputBase-multiline)': {
+              height: 20,
+              '& .MuiInputBase-input': { paddingTop: 0, paddingBottom: 0 },
+              '& .MuiSelect-select': { fontSize: fontSizes.xxs },
+            },
+            '& .MuiInputLabel-root + .MuiFilledInput-root.MuiInputBase-sizeSmall .MuiFilledInput-input': {
+              paddingTop: 21,
+              paddingBottom: 4,
             },
             '& .MuiInputBase-hiddenLabel': { paddingTop: spacing.xxs, paddingBottom: spacing.xxs },
             '& .MuiSelect-filled.MuiInputBase-inputHiddenLabel.MuiFilledInput-input': {
