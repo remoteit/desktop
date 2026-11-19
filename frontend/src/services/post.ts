@@ -37,7 +37,7 @@ export async function post(
     return await axios.request(request)
   } catch (error) {
     if (retry && droppedInFlight(error)) {
-      console.warn('POST DROPPED, RETRYING', { path })
+      console.warn('POST DROPPED, RETRYING', { data, path })
       await sleep(1000)
       return await post(data, path, silent)
     }

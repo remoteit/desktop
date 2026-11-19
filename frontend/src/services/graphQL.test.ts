@@ -125,6 +125,30 @@ describe('a request the network dropped in flight', () => {
     expect(request).toHaveBeenCalledOnce()
     expect(uiSet).toHaveBeenCalledWith({ errorMessage: 'Network Error' })
   })
+
+  it('never resends a document it cannot tell is a read', async () => {
+    request.mockRejectedValue(dropped())
+    const query = '# remove it\n mutation { deleteDevice(id: "d1") }'
+    expect(await graphQLBasicRequest(query)).toBe('ERROR')
+    expect(request).toHaveBeenCalledOnce()
+  })
+
+  it('never resends a read the server answered', async () => {
+    const answered = Object.assign(new Error('Request failed with status code 500'), {
+      isAxiosError: true,
+      code: 'ERR_BAD_RESPONSE',
+      response: { status: 500 },
+    })
+    request.mockRejectedValue(answered)
+    expect(await graphQLBasicRequest('{ login { id } }')).toBe('ERROR')
+    expect(request).toHaveBeenCalledOnce()
+  })
+
+  it('never resends a plain post', async () => {
+    request.mockRejectedValue(dropped())
+    expect(await post({ type: 'event' }, '/event')).toBe('ERROR')
+    expect(request).toHaveBeenCalledOnce()
+  })
 })
 
 describe('graphQLPartialRequest', () => {

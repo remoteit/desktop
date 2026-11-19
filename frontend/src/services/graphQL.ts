@@ -6,7 +6,7 @@ import { store } from '../store'
 const CLIENT_DEPRECATED = '121'
 
 // A dropped mutation may still have reached the server, so only reads are safe to resend.
-const isRead = (query: String) => !/^\s*mutation\b/.test(String(query))
+const isRead = (query: String) => /^\s*(query\b|\{)/.test(String(query))
 
 export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}, silent = false) {
   const response = await post({ query, variables }, '', silent, isRead(query))
