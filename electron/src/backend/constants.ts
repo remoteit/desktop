@@ -13,10 +13,6 @@ export const REDIRECT_URL = env.REDIRECT_URL || PROTOCOL + 'authCallback'
 export const SIGNOUT_REDIRECT_URL = PROTOCOL + 'signoutCallback'
 export const API_URL = env.API_URL || 'https://api.remote.it/apv/v27'
 
-// Airbrake error reporting
-export const AIRBRAKE_PROJECT_ID = 223457
-export const AIRBRAKE_PROJECT_KEY = 'e1376551dbe5b1326f98edd78b6247ba'
-
 // CLI
 export const CLI_DOWNLOAD: 'DEV' | 'PROD' = 'PROD' // development or production download url
 

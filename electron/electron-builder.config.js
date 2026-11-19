@@ -4,5 +4,6 @@ require('dotenv').config()
 // electron-builder reads either a config file or package.json's `build`, never both, so this
 // spreads the branded package.json config and adds only what depends on the environment.
 const { withSigning } = require('./scripts/win-signing')
+const { withAirbrake } = require('./scripts/airbrake')
 
-module.exports = withSigning(require('./package.json').build, process.env)
+module.exports = withAirbrake(withSigning(require('./package.json').build, process.env), process.env)
