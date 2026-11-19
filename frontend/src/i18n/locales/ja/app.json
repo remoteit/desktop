@@ -4306,8 +4306,11 @@
   },
   "serviceSubnetName": {
     "help": "",
+    "helpPorts": "",
     "label": "",
-    "name": ""
+    "name": "",
+    "ports": "",
+    "refused": ""
   },
   "serviceUsersPage": {
     "addGuestAccess": "ゲストアクセスを追加",

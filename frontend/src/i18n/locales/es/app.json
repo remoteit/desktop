@@ -4512,8 +4512,11 @@
   },
   "serviceSubnetName": {
     "help": "",
+    "helpPorts": "",
     "label": "",
-    "name": ""
+    "name": "",
+    "ports": "",
+    "refused": ""
   },
   "serviceUsersPage": {
     "addGuestAccess": "Agregar acceso de invitado",

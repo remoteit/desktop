@@ -4409,8 +4409,11 @@
   },
   "serviceSubnetName": {
     "help": "",
+    "helpPorts": "",
     "label": "",
-    "name": ""
+    "name": "",
+    "ports": "",
+    "refused": ""
   },
   "serviceUsersPage": {
     "addGuestAccess": "Gastzugriff hinzufügen",

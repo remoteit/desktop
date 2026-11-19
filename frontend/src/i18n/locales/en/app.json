@@ -4409,8 +4409,11 @@
   },
   "serviceSubnetName": {
     "help": "Reach this service at a name of its own on its usual port — ssh on 22, a web page on 443 — whatever port it listens on",
+    "helpPorts": "Reach this service at a name of its own on every port it lists, and on its usual port — ssh on 22, a web page on 443",
     "label": "Its own DNS name",
-    "name": "Service DNS name"
+    "name": "Service DNS name",
+    "ports": "Ports: {{ports}}",
+    "refused": "This name could not be set"
   },
   "serviceUsersPage": {
     "addGuestAccess": "Add guest access",

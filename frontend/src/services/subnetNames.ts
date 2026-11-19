@@ -1,5 +1,5 @@
 import { post } from './post'
-import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
+import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason, refusalOf } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { refreshDeviceSessionInfo, requestDeviceSessionInfo } from './deviceSessionInfo'
 
@@ -72,14 +72,15 @@ export async function setAccountSlug(slug: string, accountId?: string): Promise<
 }
 
 /* A service's own name (presence-server docs/subnet-service-names.md): one name in the account's namespace beside its
-   devices and LAN hosts, reached on the service's usual port — ssh on 22, a web service on 443. On keeps the name it
-   has, else gives its default (the device's name and the service's run together); a label renames it; off takes it
-   away at once. The device's names are read anew. Refused (taken, held, not this person's to change), the app says why. */
+   devices and LAN hosts, reached on every port the service lists and its usual one — ssh on 22, a web service on 443.
+   On keeps the name it has, else gives its default (<device><service>); a label is the person's own name for it, which
+   graphql takes only when it is free in the account — refused, never replaced by another; off takes it away at once.
+   The device's names are read anew. Its refusal in graphql's words ('' where none was said), or undefined: done. */
 export async function setServiceSubnetName(deviceId: string, serviceId: string, enabled: boolean, label?: string) {
-  const result = await graphQLBasicRequest(
+  const result = await graphQLRequestWithReason(
     `mutation SetServiceSubnetName($serviceId: String!, $enabled: Boolean!, $label: String) { setServiceSubnetName(serviceId: $serviceId, enabled: $enabled, label: $label) }`,
     { serviceId, enabled, label: label?.trim().toLowerCase() || undefined }
   )
   requestDeviceSessionInfo(deviceId, true)
-  return result !== 'ERROR'
+  return refusalOf(result)
 }

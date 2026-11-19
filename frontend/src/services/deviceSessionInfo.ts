@@ -25,7 +25,14 @@ export type DeviceSessionInfo = {
   serviceNames?: ILookup<ServiceNameInfo>
 }
 
-export type ServiceNameInfo = { own: boolean; port: number | null }
+// `ports`: the ports its own name answers on, as a person reads them (Service.subnetPorts: `22 → 2222`, `5901-5910`),
+// and `defaultLabel` its default name part (Service.subnetDefaultLabel, <device><service>), where the API has them.
+export type ServiceNameInfo = {
+  own: boolean
+  port: number | null
+  ports?: string[] | null
+  defaultLabel?: string | null
+}
 
 type Listener = () => void
 
@@ -39,8 +46,9 @@ let unsupported = false
 let withUpkeep = true
 // Whether it is at or above its kind's minimum build (supported) only where the API has it, the same way.
 let withSupport = true
-// A service's own name and its port only where the API has them, the same way.
+// A service's own name and its port only where the API has them, the same way; and its name's ports.
 let withServiceNames = true
+let withNamePorts = true
 
 export const deviceSessionInfo = (deviceId: string): DeviceSessionInfo | undefined => info.get(deviceId)
 
@@ -87,7 +95,7 @@ async function flush() {
   const query = `query DeviceSessionInfo { login { device(id: ${JSON.stringify(
     ids
   )}) { id subnetName actsFor { email } agent { running package { version format } update { version state detail }${upkeep} } services { id subnetName${
-    withServiceNames ? ' subnetOwnName subnetPort' : ''
+    withServiceNames ? ` subnetOwnName subnetPort${withNamePorts ? ' subnetPorts subnetDefaultLabel' : ''}` : ''
   } } } } }`
   const response = await post({ query })
   if (response !== 'ERROR') {
@@ -98,6 +106,16 @@ async function flush() {
     }
     if (withSupport && withoutDeviceSessions(response.data?.errors, 'supported')) {
       withSupport = false
+      ids.forEach(id => wanted.add(id))
+      return flush()
+    }
+    if (
+      withServiceNames &&
+      withNamePorts &&
+      (withoutDeviceSessions(response.data?.errors, 'subnetPorts') ||
+        withoutDeviceSessions(response.data?.errors, 'subnetDefaultLabel'))
+    ) {
+      withNamePorts = false
       ids.forEach(id => wanted.add(id))
       return flush()
     }
@@ -117,7 +135,14 @@ async function flush() {
           services: Object.fromEntries((device.services || []).map((s: any) => [s.id, s.subnetName ?? null])),
           ...(withServiceNames && {
             serviceNames: Object.fromEntries(
-              (device.services || []).map((s: any) => [s.id, { own: !!s.subnetOwnName, port: s.subnetPort ?? null }])
+              (device.services || []).map((s: any) => [
+                s.id,
+                {
+                  own: !!s.subnetOwnName,
+                  port: s.subnetPort ?? null,
+                  ...(withNamePorts && { ports: s.subnetPorts ?? null, defaultLabel: s.subnetDefaultLabel ?? null }),
+                },
+              ])
             ),
           }),
         })
@@ -151,6 +176,7 @@ export function resetDeviceSessionInfo() {
   withUpkeep = true
   withSupport = true
   withServiceNames = true
+  withNamePorts = true
   if (timer) clearTimeout(timer)
   timer = undefined
 }
