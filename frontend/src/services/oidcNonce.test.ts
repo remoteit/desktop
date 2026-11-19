@@ -172,6 +172,24 @@ describe('DPoP server nonces', () => {
     expect(proofOf(calls(GRAPHQL)[0]).iat).toBe(iat)
   })
 
+  it('drops the nonces once the clock is learned, so a later proof is fresh by its iat alone', async () => {
+    // An hour fast. The refresh gets through on a nonce, and the token it mints sets the clock.
+    vi.spyOn(Date, 'now').mockReturnValue(SERVER + 60 * 60 * 1000)
+    signedIn()
+    const iat = SERVER / 1000
+    const account = 'https://login.test/account/api'
+    answer = (url, __, n) =>
+      Promise.resolve(url !== TOKEN ? json({ ok: true }) : n === 1 ? wantsNonce('n-3') : bound({ iat, exp: iat + 300 }))
+
+    await oidc.oidcResourceRequest(account, '/me')
+    expect(urls()).toEqual([TOKEN, TOKEN, `${account}/me`])
+    // The same server that handed out the nonce: a stale one carried here would be refused, though
+    // the proof is dated right.
+    const [proof] = calls(account).map(proofOf)
+    expect(proof.nonce).toBeUndefined()
+    expect(proof.iat).toBe(iat)
+  })
+
   it('retries a resource 401 asking for a nonce once, with a new proof over the same token', async () => {
     signedIn()
     const account = 'https://account.test'

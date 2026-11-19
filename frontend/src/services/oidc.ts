@@ -1407,7 +1407,15 @@ function learnServerClock(body: { access_token: string; expires_in?: number }): 
       : undefined
   if (issued === undefined || Number.isNaN(issued)) return
   const offset = issued * 1000 - Date.now()
-  if (Math.abs(offset - clockOffsetMs) > CLOCK_SLACK_MS) clockOffsetMs = offset
+  if (Math.abs(offset - clockOffsetMs) > CLOCK_SLACK_MS) correctClock(offset)
+}
+
+// Proofs dated by the corrected clock are fresh by their iat, so the nonces kept to stand in for it
+// go: a server judges a proof carrying a nonce by that nonce alone, and once one has expired it would
+// refuse a proof whose iat is fine, costing a round trip per server after every idle spell.
+function correctClock(offset: number): void {
+  clockOffsetMs = offset
+  dpopNonces.clear()
 }
 
 /* Every retry here is safe because the AS checks the proof before it claims the code or rotates the
@@ -1442,7 +1450,7 @@ async function tokenRequest(
     if (nonceRefusal || (body.error === 'invalid_dpop_proof' && PROOF_TIME.test(detail))) {
       const offset = retried.clock ? undefined : await serverClockOffset(response, d.token_endpoint)
       if (offset !== undefined && Math.abs(offset - clockOffsetMs) > CLOCK_SLACK_MS) {
-        clockOffsetMs = offset
+        correctClock(offset)
         return tokenRequest(params, { ...retried, clock: true })
       }
       // Unmeasurable, or still refused on the server's time: the clock. Measured close to the server's
