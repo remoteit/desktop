@@ -53,19 +53,13 @@ const DETAILS = {
   ],
 }
 
-const mockStdinEnd = jest.fn()
-
 function powershell(error: Error | null, stdout = '') {
-  mockExecFile.mockImplementation((_file, _args, _options, callback) => {
-    setImmediate(() => callback(error, stdout, ''))
-    return { stdin: { end: mockStdinEnd } }
-  })
+  mockExecFile.mockImplementation((_file, _args, _options, callback) => callback(error, stdout, ''))
 }
 
 describe('backend/windowsInterfaces', () => {
   beforeEach(() => {
     mockExecFile.mockReset()
-    mockStdinEnd.mockClear()
     mockNetworkInterfaces.mockReturnValue(NICS)
     jest.mocked(Logger.warn).mockClear()
   })
@@ -108,14 +102,6 @@ describe('backend/windowsInterfaces', () => {
       expect.any(Object),
       expect.any(Function)
     )
-    expect(mockStdinEnd).toHaveBeenCalled()
-  })
-
-  test('accepts a lone route serialized as an object rather than an array', async () => {
-    powershell(null, JSON.stringify({ adapters: DETAILS.adapters, routes: DETAILS.routes[0] }))
-
-    const active = (await windowsInterfaces()).filter(i => i.active)
-    expect(active.map(i => [i.name, i.gateway])).toEqual([['Wi-Fi', '10.0.0.1']])
   })
 
   test('marks nothing active without a default route', async () => {
