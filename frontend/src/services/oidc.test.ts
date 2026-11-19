@@ -454,7 +454,7 @@ describe('a DPoP proof refused for its time', () => {
   beforeEach(() => {
     window.sessionStorage.clear()
     window.localStorage.clear()
-    Object.assign(browser, { isElectron: true })
+    Object.assign(browser, { hasBackend: true })
     vi.spyOn(Date, 'now').mockReturnValue(LOCAL)
     tokenCalls = 0
     serverTimeCalls = 0
@@ -476,7 +476,7 @@ describe('a DPoP proof refused for its time', () => {
     invalidateOidcToken()
   })
   afterEach(() => {
-    delete (browser as { isElectron?: boolean }).isElectron
+    delete (browser as { hasBackend?: boolean }).hasBackend
     vi.restoreAllMocks()
     vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline')))
   })
@@ -514,8 +514,8 @@ describe('a DPoP proof refused for its time', () => {
     expect(tokenCalls).toBe(1)
   })
 
-  it('asks no desktop backend outside the desktop app', async () => {
-    delete (browser as { isElectron?: boolean }).isElectron
+  it('asks no desktop backend where the page has none (web, mobile)', async () => {
+    delete (browser as { hasBackend?: boolean }).hasBackend
     token = () => Promise.resolve(refusal())
     await startExchange()
 

@@ -1299,7 +1299,7 @@ export async function oidcResourceRequest<T = any>(
 async function serverClockOffset(response: Response, url: string): Promise<number | undefined> {
   const exposed = Date.parse(response.headers.get('date') ?? '')
   if (!Number.isNaN(exposed)) return exposed - Date.now()
-  if (!browser.isElectron && !browser.isRemote) return undefined
+  if (!browser.hasBackend) return undefined
   try {
     const sent = Date.now()
     const reply = await fetch(`/serverTime?url=${encodeURIComponent(url)}`, { signal: timeoutSignal(6000) })
