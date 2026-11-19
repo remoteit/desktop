@@ -169,6 +169,10 @@ describe('New app', () => {
     expect(page.querySelector('[data-manifest-problems]')?.textContent).toBe(
       '/run/command is named twice: a manifest names each once'
     )
+    await type(editor, JSON.stringify({ ...named, icon: { file: 'x.png', sha256: '0'.repeat(64) } }))
+    expect(page.querySelector('[data-manifest-problems]')?.textContent).toBe(
+      'archives and icon are written when the files are packed: leave them out'
+    )
     await type(editor, JSON.stringify({ ...named, app: 'other.cam' }))
     expect(page.querySelector('[data-new-app-check]')?.textContent).toContain('starts with your publisher id')
   })
