@@ -8,6 +8,8 @@ import { ListItemBack } from '../../components/ListItemBack'
 import { ServiceForm } from '../../components/ServiceForm'
 import { Gutters } from '../../components/Gutters'
 import { ServiceSchemeSuggestion } from '../../components/ServiceSchemeSuggestion'
+import { ServiceSubnetNameSetting } from '../../components/ServiceSubnetNameSetting'
+import { List } from '@mui/material'
 
 type Props = { device?: IDevice }
 
@@ -36,6 +38,14 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
     <Gutters size="md" bottom={null}>
       <ListItemBack title={t('serviceEditPage.title', 'Service configuration')} to="connect" />
       <ServiceSchemeSuggestion device={device} service={service} />
+      {/* Applied at once, beside the form, not in it: its inline field's own save is no save of the form. */}
+      <List>
+        <ServiceSubnetNameSetting
+          device={device}
+          service={service}
+          disabled={!device?.permissions.includes('MANAGE')}
+        />
+      </List>
       <ServiceForm
         device={device}
         service={service}

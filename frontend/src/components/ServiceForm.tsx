@@ -10,7 +10,6 @@ import { AddFromNetwork } from './AddFromNetwork'
 import { useApplication } from '../hooks/useApplication'
 import { State, Dispatch } from '../store'
 import { ListItemCheckbox } from './ListItemCheckbox'
-import { ServiceSubnetNameSetting } from './ServiceSubnetNameSetting'
 import { useDispatch, useSelector } from 'react-redux'
 import { ServiceFormApplications } from './ServiceFormApplications'
 import { serviceNameValidation } from '@common/nameHelper'
@@ -382,7 +381,6 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
               </Typography>
             </ListItem>
           )}
-          {service?.id && <ServiceSubnetNameSetting device={device} service={service} disabled={disabled} />}
           {editable ? (
             <ListItemCheckbox
               checked={form.enabled}

@@ -124,6 +124,19 @@ describe('localSubnetName', () => {
     expect(mod.localAbsent()).toBe(false)
   })
 
+  // presence-server docs/subnet-service-names.md: a service's own name turned on or off changes the name asked about,
+  // and the answer for the old name is not the new one's.
+  it("a service's name changed is asked anew, not answered with the old name's", async () => {
+    answer({ name: NAME })
+    const mod = await load()
+    expect(await mod.localSubnetName('S1', NAME)).toEqual({ name: NAME })
+    answer({ name: 'piconsole-ada.on.solo.remote.it' })
+    expect(await mod.localSubnetName('S1', 'piconsole-ada.on.solo.remote.it')).toEqual({
+      name: 'piconsole-ada.on.solo.remote.it',
+    })
+    expect(asked()).toBe(2)
+  })
+
   it('no daemon here: no, without asking, even asked again, until its backoff is past', async () => {
     vi.useFakeTimers()
     try {

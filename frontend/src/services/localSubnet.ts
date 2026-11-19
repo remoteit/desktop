@@ -37,10 +37,13 @@ let absentUntil = 0
 export function localSubnetName(id: string, name: string, again?: boolean): Promise<LocalSubnetName | null> {
   const now = Date.now()
   if (now < absentUntil) return Promise.resolve(null)
-  const held = kept.get(id)
+  // Kept by the name asked as well: a service's name changes (its own turned on or off, a rename) and the answer for
+  // the name it had is not the new one's.
+  const key = `${id} ${name}`
+  const held = kept.get(key)
   if (held && now - held.at < KEPT_MS && !again) return held.answer
   const answer = browser.isElectron ? askDaemon(name) : askBeacon(id)
-  kept.set(id, { at: now, answer })
+  kept.set(key, { at: now, answer })
   return answer
 }
 

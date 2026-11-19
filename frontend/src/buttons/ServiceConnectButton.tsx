@@ -31,6 +31,9 @@ export const ServiceConnectButton: React.FC = () => {
   // A name that works on this machine needs no connection: it is shown in place of Connect, the proxy one step away.
   const reach = useSubnetReach(device?.id, service?.id)
   const local = reach.local
+  // A service's own name's port goes with that name alone: the one this machine answered may be its device's (a daemon
+  // without service names, through the portal's probe), reached at the service's own port.
+  const namePort = local && local.name !== reach.name ? undefined : reach.port
   const [proxy, setProxy] = useState(false)
   // No agent here reaches it, but it has a name and serves the web: this browser's client can open it in its own tab
   // (services/browserGateway), the proxy one step away as for a local name.
@@ -132,7 +135,7 @@ export const ServiceConnectButton: React.FC = () => {
                 {local ? (
                   <LocalSubnetConnect
                     local={local}
-                    port={reach.port}
+                    port={namePort}
                     service={service}
                     connection={connection}
                     byCertificate={byCertificate}
