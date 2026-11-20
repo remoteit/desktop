@@ -40,15 +40,32 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
   const [saveError, setSaveError] = useState('')
   const [confirmation, setConfirmation] = useState<Confirmation>()
   const [approval, setApproval] = useState<{ id: string; code: string }>()
-  const pending = data?.portalUserMode.some(binding => binding.state === 'pending')
+  const [refreshDue, setRefreshDue] = useState(false)
+  const pending = refreshDue || !!data?.portalUserMode.some(binding => binding.state === 'pending')
+  const refresh = () => setRevision(value => value + 1)
 
   useEffect(() => {
     let current = true
+    let reading = false
     const read = async () => {
+      if (reading) return
+      reading = true
       const result = await readPortalUserMode(deviceId).catch(() => 'ERROR' as const)
+      reading = false
       if (!current) return
       setFailed(result === 'ERROR')
-      if (result !== 'ERROR') setData(result)
+      if (result !== 'ERROR') {
+        setData(result)
+        setRefreshDue(false)
+        setApproval(code =>
+          code &&
+          result?.portalUserMode.some(
+            binding => binding.id === code.id && binding.state === 'pending' && binding.requiresOsAdmin
+          )
+            ? code
+            : undefined
+        )
+      }
     }
     void read()
     const timer = pending ? setInterval(read, 3000) : undefined
@@ -58,14 +75,20 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
     }
   }, [deviceId, revision, pending])
 
+  const readError = failed && (
+    <Alert
+      severity="error"
+      action={
+        <Button color="inherit" size="small" onClick={refresh}>
+          {t('portalUserMode.retry', 'Retry')}
+        </Button>
+      }
+    >
+      {t('portalUserMode.loadFailed', 'Could not load user mode.')}
+    </Alert>
+  )
   if (data === null && !failed) return <>{legacy}</>
-  if (failed && !data)
-    return (
-      <ListItem>
-        <Alert severity="error">{t('portalUserMode.loadFailed', 'Could not load user mode.')}</Alert>
-      </ListItem>
-    )
-  if (!data) return null
+  if (!data) return readError ? <ListItem>{readError}</ListItem> : null
 
   const { portalUserMode: bindings, userModeEligibility: eligibility } = data
   const whole = bindings.find(binding => binding.name === null && binding.state === 'active')
@@ -78,9 +101,6 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
   const key = (scope: UserModeScope) => (scope.name === null ? '*' : `${scope.name}/${scope.account ?? ''}`)
   const label = (scope: UserModeScope) => scope.name ?? t('portalUserMode.wholeDevice', 'Whole device')
   const selected = scopes.find(scope => key(scope) === choice)
-  const approvalPending =
-    approval &&
-    bindings.some(binding => binding.id === approval.id && binding.state === 'pending' && binding.requiresOsAdmin)
 
   const submit = async () => {
     if (!confirmation || busy) return
@@ -105,7 +125,8 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
         if (approval?.id === confirmation.revoke.id) setApproval(undefined)
       }
       setConfirmation(undefined)
-      setRevision(value => value + 1)
+      setRefreshDue(true)
+      refresh()
     } catch {
       setSaveError(t('portalUserMode.saveFailed', 'Could not update user mode.'))
     } finally {
@@ -117,6 +138,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
     <ListItem disableGutters>
       <Stack spacing={1.5} sx={{ py: 1.5, width: '100%' }}>
         <Typography variant="subtitle1">{t('deviceUserMode.label', 'User mode')}</Typography>
+        {readError}
         {eligibility.blockedByLocalPolicy && (
           <Alert severity="info">
             {t('portalUserMode.policyOff', 'The OS administrator turned off user mode on this device.')}
@@ -153,7 +175,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
             </Button>
           </Box>
         ))}
-        {approvalPending && (
+        {approval && (
           <Alert severity="info">
             {t(
               'portalUserMode.approve',
@@ -168,7 +190,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
             </Box>
           </Alert>
         )}
-        {!approvalPending && bindings.some(binding => binding.state === 'pending' && binding.requiresOsAdmin) && (
+        {!approval && bindings.some(binding => binding.state === 'pending' && binding.requiresOsAdmin) && (
           <Typography variant="body2" color="textSecondary">
             {t(
               'portalUserMode.missingCode',

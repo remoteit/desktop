@@ -27,9 +27,9 @@ export type DeviceSignIn = {
 
 export type PersonRef = { id: string; email: string | null }
 
-type Served = { signIns: boolean; portalUserMode: boolean; exit: string; setting: string; exitError: string }
+type Served = { signIns: boolean; portalUserMode: boolean | 'ERROR'; exit: string; setting: string; exitError: string }
 
-const NONE: Served = { signIns: false, portalUserMode: false, exit: '', setting: '', exitError: '' }
+const UNAVAILABLE: Served = { signIns: false, portalUserMode: 'ERROR', exit: '', setting: '', exitError: '' }
 
 const PROBE = `query DeviceSignInFields {
   device: __type(name: "Device") { fields { name } }
@@ -64,9 +64,9 @@ export function parseDeviceSignIns(data: any): Served {
 function served(): Promise<Served> {
   if (!schema)
     schema = post({ query: PROBE }).then(response => {
-      if (response === 'ERROR') {
+      if (response === 'ERROR' || !response.data?.data?.device) {
         schema = undefined
-        return NONE
+        return UNAVAILABLE
       }
       return parseDeviceSignIns(response.data?.data)
     })

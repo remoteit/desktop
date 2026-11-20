@@ -3389,6 +3389,7 @@
     "missingCode": "Use the approval code from the request. If you no longer have the code, cancel the request and submit it again.",
     "pending": "Waiting for the device",
     "policyOff": "The OS administrator turned off user mode on this device.",
+    "retry": "Retry",
     "revoke": "Revoke sign-in",
     "saveFailed": "Could not update user mode.",
     "scope": "Enable user mode for",

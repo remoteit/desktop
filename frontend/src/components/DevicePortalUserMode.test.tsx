@@ -122,6 +122,26 @@ describe('portal user mode', () => {
     expect(revokePortalUserMode).toHaveBeenCalledWith('DEVICE', 'ACCOUNT')
   })
 
+  it('keeps the approval code visible after a failed refresh and retries the read', async () => {
+    vi.mocked(requestPortalUserMode).mockImplementation(async () => {
+      vi.mocked(readPortalUserMode).mockResolvedValueOnce('ERROR')
+      state.portalUserMode = [
+        { id: 'WHOLE', person, name: null, account: null, state: 'pending', requiresOsAdmin: true },
+      ]
+      return { id: 'WHOLE', approvalCode: 'test-approval-code' }
+    })
+    await render()
+    await pick('*')
+    await click('Enable')
+    await click('Enable', true)
+    expect(container.textContent).toContain('Could not load user mode.')
+    expect(container.textContent).toContain('test-approval-code')
+    await click('Retry')
+    expect(container.textContent).toContain('Waiting for OS admin approval')
+    expect(container.textContent).not.toContain('Could not load user mode.')
+    expect(container.textContent).toContain('test-approval-code')
+  })
+
   it('falls back to the legacy control on an older device', async () => {
     vi.mocked(readPortalUserMode).mockResolvedValueOnce(null)
     await render()

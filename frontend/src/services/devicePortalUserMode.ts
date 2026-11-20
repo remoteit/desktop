@@ -14,7 +14,9 @@ export type PortalUserMode = {
 }
 
 export async function readPortalUserMode(deviceId: string): Promise<PortalUserMode | null | 'ERROR'> {
-  if (!(await portalUserModeServed())) return null
+  const supported = await portalUserModeServed()
+  if (supported === 'ERROR') return supported
+  if (!supported) return null
   const data = await graphQLBasicRequest(
     `query PortalUserMode($id: [String!]!) {
       login { device(id: $id) {
