@@ -15,7 +15,7 @@ vi.mock('@capacitor/app-launcher', () => ({ AppLauncher: { openUrl } }))
 vi.mock('../store', () => ({ store: { getState: () => ({}), dispatch: { ui: { set } } } }))
 vi.mock('../helpers/versionHelper', () => ({ fullVersion: () => 'test' }))
 
-import { getLocalStorage, setLocalStorage, windowOpen } from './browser'
+import { getLocalStorage, openServiceURL, setLocalStorage, windowOpen } from './browser'
 
 const URL = 'https://homeassistant-evan.on.solo.remote.it'
 
@@ -28,12 +28,28 @@ describe('windowOpen on a phone', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
-  it('opens a web link in the in-app browser', async () => {
+  it('opens a web service in the in-app browser in the legacy mobile app', async () => {
     open.mockResolvedValue(undefined)
-    await windowOpen(URL, '_blank')
+    await openServiceURL(URL)
     expect(open).toHaveBeenCalledWith({ url: URL, windowName: '_blank' })
     expect(openUrl).not.toHaveBeenCalled()
     expect(set).not.toHaveBeenCalled()
+  })
+
+  it.each([URL, 'http://127.0.0.1:33000'])('opens the service %s directly in the system browser on Solo iOS', async url => {
+    isPluginAvailable.mockImplementation(name => name === 'ThisDevice')
+    openUrl.mockResolvedValue({ completed: true })
+    await openServiceURL(url)
+    expect(openUrl).toHaveBeenCalledExactlyOnceWith({ url })
+    expect(open).not.toHaveBeenCalled()
+    expect(set).not.toHaveBeenCalled()
+  })
+
+  it('reports a refused external service launch', async () => {
+    isPluginAvailable.mockImplementation(name => name === 'ThisDevice')
+    openUrl.mockResolvedValue({ completed: false })
+    await openServiceURL(URL)
+    expect(set).toHaveBeenCalledWith({ errorMessage: `We couldn't open ${URL}` })
   })
 
   it('presents the in-app browser from the active scene on the first launch in the iOS shell', async () => {

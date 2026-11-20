@@ -4,10 +4,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '@common/constants'
 import { getApplication } from '@common/applications'
 
-const windowOpen = vi.fn()
+const openServiceURL = vi.fn()
 const names = vi.hoisted(() => ({ answer: true as boolean | undefined, set: vi.fn() }))
 
-vi.mock('../services/browser', () => ({ default: {}, windowOpen: (...args: unknown[]) => windowOpen(...args) }))
+vi.mock('../services/browser', () => ({ default: {}, openServiceURL: (...args: unknown[]) => openServiceURL(...args) }))
 vi.mock('../services/Controller', () => ({ emit: vi.fn() }))
 vi.mock('../helpers/connectionHelper', () => ({ saveLaunchTokens: vi.fn() }))
 vi.mock('../services/localPorts', async importOriginal => ({
@@ -69,7 +69,7 @@ describe('LocalPortConnect', () => {
     container = document.createElement('div')
     document.body.appendChild(container)
     root = createRoot(container)
-    windowOpen.mockClear()
+    openServiceURL.mockClear()
     names.answer = true
     names.set.mockClear()
     state = { offered: true, local: LOCAL, others: [], busy: false, open: vi.fn(), close: vi.fn() }
@@ -90,7 +90,7 @@ describe('LocalPortConnect', () => {
     expect(copied()).toBe('http://ui-pi.at.remote.it:33000')
     expect(container.textContent).toContain('http://ui-pi.at.remote.it:33000')
     act(() => container.querySelector<HTMLButtonElement>('[data-testid="launch"]')!.click())
-    expect(windowOpen).toHaveBeenCalledExactlyOnceWith('http://ui-pi.at.remote.it:33000', '_blank')
+    expect(openServiceURL).toHaveBeenCalledExactlyOnceWith('http://ui-pi.at.remote.it:33000')
   })
 
   it('where the name does not resolve: localhost, and the person can switch back', async () => {
@@ -141,7 +141,7 @@ describe('LocalPortConnect', () => {
     await render()
     expect(copied()).toBe('https://ui-pi.at.remote.it:33000')
     act(() => container.querySelector<HTMLButtonElement>('[data-testid="launch"]')!.click())
-    expect(windowOpen).toHaveBeenCalledExactlyOnceWith('https://ui-pi.at.remote.it:33000', '_blank')
+    expect(openServiceURL).toHaveBeenCalledExactlyOnceWith('https://ui-pi.at.remote.it:33000')
     expect(link('Use https')).toBeUndefined()
     act(() => link('Does not open? Use http instead')!.click())
     expect(state.open).toHaveBeenCalledWith(undefined, false)

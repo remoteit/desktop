@@ -1,5 +1,6 @@
 import { graphQLBasicRequest } from './graphQL'
 import { BROWSER_PLATFORM } from './browserClients'
+import browser, { openInSystem } from './browser'
 
 /* A device's web service opened in its own tab with nothing installed here (presence-server
    docs/browser-client-plan.md §5): the browser's one shared client — connectd built for the browser — carries the
@@ -35,16 +36,18 @@ export async function handoff(): Promise<Handoff | null> {
 
 const fragment = (h: Handoff) => btoa(JSON.stringify(h)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 
-// Opens the service in a new tab through the browser client. The tab opens on the click — a tab opened after the
-// code is fetched would be a pop-up the browser refuses — and goes to the device once it has the code.
+// A web tab needs to be reserved on the click to pass the popup blocker. The iOS shell can hand the complete URL
+// to the system browser once the code arrives.
 export async function openThroughGateway(name: string): Promise<boolean> {
-  const tab = window.open('', '_blank')
+  const external = browser.isIOSDeviceApp
+  const tab = external ? null : window.open('', '_blank')
   const h = await handoff()
   if (!h) {
     tab?.close()
     return false
   }
   const url = `${gatewayURL(name)}#rit=${fragment(h)}`
+  if (external) return openInSystem(url)
   if (tab) {
     tab.opener = null
     tab.location.href = url

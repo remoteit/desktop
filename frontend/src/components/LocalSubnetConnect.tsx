@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Box, Typography } from '@mui/material'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
-import { windowOpen } from '../services/browser'
+import { openServiceURL } from '../services/browser'
 import { emit } from '../services/Controller'
 import { LocalSubnetName, subnetWebURL } from '../services/localSubnet'
 import { useApplication } from '../hooks/useApplication'
@@ -79,10 +79,10 @@ export const LocalSubnetConnect: React.FC<Props> = ({ local, service, connection
   const launch = (tokens: ILookup<string> = {}) => {
     setPrompt(false)
     setLoopWarning(false)
-    if (web) return windowOpen(endpoint, '_blank')
+    if (web) return openServiceURL(endpoint)
     saveLaunchTokens(service?.id, tokens)
     const command = app.preview(tokens)
-    if (app.launchType === 'URL') windowOpen(command, '_blank', !command.startsWith('http'))
+    if (app.launchType === 'URL') openServiceURL(command)
     else emit('launch/app', Object.keys(tokens).length ? command : app.sshConfigString, app.launchType)
   }
 

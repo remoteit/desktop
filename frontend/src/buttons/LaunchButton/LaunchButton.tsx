@@ -8,7 +8,7 @@ import { IconButton, ButtonProps } from '../../buttons/IconButton'
 import { Sizes } from '../../styling'
 import { Application } from '@common/applications'
 import { PromptModal } from '../../components/PromptModal'
-import { windowOpen } from '../../services/browser'
+import { openServiceURL } from '../../services/browser'
 import { Icon } from '../../components/Icon'
 import { emit } from '../../services/Controller'
 
@@ -77,7 +77,7 @@ export const LaunchButton: React.FC<Props> = ({
   const launch = () => {
     if (!app.connection) return
     updateConnection(app, { ...app.connection, launched: true })
-    if (app.launchType === 'URL') windowOpen(app.string, '_blank', !app.string.startsWith('http'))
+    if (app.launchType === 'URL') openServiceURL(app.string)
     else emit('launch/app', app.sshConfigString, app.launchType)
     heartbeat.connect()
   }

@@ -4,10 +4,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '@common/constants'
 import { getApplication } from '@common/applications'
 
-const windowOpen = vi.fn()
+const openServiceURL = vi.fn()
 const { detect, sessions } = vi.hoisted(() => ({ detect: vi.fn(), sessions: { on: true } }))
 
-vi.mock('../services/browser', () => ({ default: {}, windowOpen: (...args: unknown[]) => windowOpen(...args) }))
+vi.mock('../services/browser', () => ({ default: {}, openServiceURL: (...args: unknown[]) => openServiceURL(...args) }))
 vi.mock('../services/Controller', () => ({ emit: vi.fn() }))
 vi.mock('../helpers/connectionHelper', () => ({ saveLaunchTokens: vi.fn() }))
 vi.mock('../hooks/useApplication', () => ({
@@ -71,7 +71,7 @@ describe('LocalSubnetConnect', () => {
     container = document.createElement('div')
     document.body.appendChild(container)
     root = createRoot(container)
-    windowOpen.mockClear()
+    openServiceURL.mockClear()
     detect.mockReset().mockResolvedValue({})
     sessions.on = true
   })
@@ -102,27 +102,27 @@ describe('LocalSubnetConnect', () => {
     await render({ service: dmPro })
     expect(detect).toHaveBeenCalledWith(dmPro.deviceID)
     await click('launch')
-    expect(windowOpen).not.toHaveBeenCalled()
+    expect(openServiceURL).not.toHaveBeenCalled()
     expect(container.querySelector('[data-testid="confirm"]')!.textContent).toContain(
       'This service redirects to HTTPS, so its page would keep sending the browser back to itself. Switch it to port 443 (HTTPS)'
     )
     await click('cancel')
     expect(container.querySelector('[data-testid="confirm"]')).toBeNull()
-    expect(windowOpen).not.toHaveBeenCalled()
+    expect(openServiceURL).not.toHaveBeenCalled()
     await click('launch')
     await click('anyway')
-    expect(windowOpen).toHaveBeenCalledExactlyOnceWith(`https://${NAME}`, '_blank')
+    expect(openServiceURL).toHaveBeenCalledExactlyOnceWith(`https://${NAME}`)
   })
 
   it('launches at once when the device follows the redirect, or the service is already HTTPS on its port', async () => {
     detect.mockResolvedValue({ [dmPro.id]: { ...passed, redirect: 'followed' } })
     await render({ service: dmPro })
     await click('launch')
-    expect(windowOpen).toHaveBeenCalledTimes(1)
+    expect(openServiceURL).toHaveBeenCalledTimes(1)
     detect.mockResolvedValue({ [dmPro.id]: passed })
     await render({ service: { ...dmPro, typeID: 8, port: 443 } })
     await click('launch')
-    expect(windowOpen).toHaveBeenCalledTimes(2)
+    expect(openServiceURL).toHaveBeenCalledTimes(2)
     expect(container.querySelector('[data-testid="confirm"]')).toBeNull()
   })
 
@@ -137,7 +137,7 @@ describe('LocalSubnetConnect', () => {
   it('launches a web service as https on the name, never its own port', async () => {
     await render()
     await click('launch')
-    expect(windowOpen).toHaveBeenCalledExactlyOnceWith(`https://${NAME}`, '_blank')
+    expect(openServiceURL).toHaveBeenCalledExactlyOnceWith(`https://${NAME}`)
   })
 
   it('shows and copies the URL it launches, scheme included', async () => {
