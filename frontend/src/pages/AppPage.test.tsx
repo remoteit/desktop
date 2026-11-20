@@ -29,7 +29,6 @@ vi.mock('../components/Notice', () => ({ Notice: ({ children }: any) => <div dat
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
 vi.mock('../components/Link', () => ({ Link: ({ to, children, ...rest }: any) => <a data-to={to} {...rest}>{children}</a> }))
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
-vi.mock('../components/firstPartyApps', () => ({ firstPartyApp: () => undefined }))
 vi.mock('../components/Confirm', () => ({
   Confirm: ({ open, title, action, disabled, children, onConfirm, onDeny }: any) =>
     open ? (
@@ -106,6 +105,7 @@ describe('the app in the catalogue', () => {
     expect(page.querySelector('[data-title]')?.textContent).toBe('Backup')
     expect(page.querySelector('[data-app-about]')?.textContent).toBe('1.4.0 · Acme · Verified: acme.com · Yours')
     expect(page.querySelector('[data-app-runs]')?.textContent).toBe('Restricted')
+    expect(page.querySelector('[data-app-asks]')).toBeNull()
     expect(page.querySelector('[data-app-platforms]')?.textContent).toBe('linux-amd64 · linux-arm64 · linux-arm64-musl')
     await click(page.querySelector('[data-app-add]'))
     expect(push).toHaveBeenCalledWith('/apps/acme.backup/add')
@@ -120,6 +120,19 @@ describe('the app in the catalogue', () => {
     const page = await render()
     expect(page.querySelector('[data-app-manage]')).toBeNull()
     expect(page.querySelector('[data-app-runs]')?.textContent).toBe('Runs as root: full control of the device')
+  })
+
+  it('what it asks of remote.it beside how it runs — the app’s, and each release’s with its root', async () => {
+    params.appID = 'remoteit.console'
+    catalog.mockResolvedValue(mockCatalogApp('remoteit.console'))
+    const page = await render()
+    const asks =
+      'Keeps accounts for the people you share with · Signs in people by remote.it certificate · AI commands go through this app'
+    expect(page.querySelector('[data-app-asks]')?.textContent).toBe(asks)
+    await click(page.querySelector('[data-app-release="1.4.0"]'))
+    expect(page.querySelector('[data-app-release-notes="1.4.0"]')?.textContent).toContain(
+      `Runs as root: full control of the device · ${asks}`
+    )
   })
 
   it('channels on this stage, a candidate’s share; the account’s channel set by setAccountAppChannel', async () => {
@@ -251,6 +264,9 @@ describe('your devices', () => {
   it('a device held for root consent: Update asks first, in words, and passes consentRoot', async () => {
     catalog.mockImplementation(async () => {
       const app = backup()
+      // Its channel's release (1.4.0, latest) runs as root.
+      app.releases = [...app.releases]
+      app.releases[1] = { ...app.releases[1], root: true }
       app.devices.items[1] = { ...app.devices.items[1], heldBack: { reason: 'consent', detail: '' } }
       return app
     })
@@ -266,6 +282,7 @@ describe('your devices', () => {
   it('Pin selected… picks a standing release; a root one only with the yes ticked', async () => {
     catalog.mockImplementation(async () => {
       const app = backup()
+      app.releases = [...app.releases]
       app.releases[0] = { ...app.releases[0], root: true }
       return app
     })
@@ -284,6 +301,56 @@ describe('your devices', () => {
     expect(page.querySelector('[data-fleet-pin-consent]')).toBeNull()
     await click(page.querySelector('[data-confirm-ok]'))
     expect(setMany).toHaveBeenLastCalledWith('acme.backup', ['80:00:00:00:01:00:00:01'], { version: '1.4.0' })
+  })
+
+  it('a release that declares capabilities: Update and Pin ask the yes to what it asks, in its words', async () => {
+    catalog.mockImplementation(async () => {
+      const app = backup()
+      app.releases = [...app.releases]
+      app.releases[0] = { ...app.releases[0], root: false, capabilities: ['ssh-exec'] }
+      app.devices.items[1] = {
+        ...app.devices.items[1],
+        pinned: null,
+        latest: app.releases[0].version,
+        heldBack: { reason: 'consent', detail: 'A new version asks for ssh-exec' },
+      }
+      return app
+    })
+    const page = await render()
+    await check(page, 'nas')
+    await click(page.querySelector('[data-fleet-update]'))
+    expect(setMany).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Update Backup to a version that asks more?')
+    expect(page.querySelector('[data-fleet-consent]')?.getAttribute('data-fleet-consent')).toBe('capabilities')
+    expect(page.querySelector('[data-confirm] [data-app-capability]')?.getAttribute('data-app-capability')).toBe('ssh-exec')
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(setMany).toHaveBeenCalledWith('acme.backup', ['80:00:00:00:01:00:00:02'], { version: '', consentRoot: true })
+    await check(page, 'pi-kitchen')
+    await click(page.querySelector('[data-fleet-pin]'))
+    expect((page.querySelector('[data-confirm-ok]') as HTMLButtonElement).disabled).toBe(true)
+    expect(page.querySelector('[data-confirm]')?.textContent).toContain('I allow Acme’s Backup what it asks on these devices')
+    await click(page.querySelector('[data-fleet-pin-consent]'))
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(setMany).toHaveBeenLastCalledWith('acme.backup', ['80:00:00:00:01:00:00:01'], { version: '1.5.0-beta.2', consentRoot: true })
+  })
+
+  it('Update off a pin names what the channel’s release asks, not the pinned one’s; one asking nothing updates at once', async () => {
+    catalog.mockImplementation(async () => {
+      const app = backup()
+      // kiosk-4 is pinned to 1.4.0, which asks person-accounts; its channel gives 1.5.0-beta.2, which asks ssh-exec.
+      app.releases = [...app.releases]
+      app.releases[0] = { ...app.releases[0], capabilities: ['ssh-exec'] }
+      app.releases[1] = { ...app.releases[1], capabilities: ['person-accounts'] }
+      return app
+    })
+    const page = await render()
+    await check(page, 'kiosk-4')
+    await click(page.querySelector('[data-fleet-update]'))
+    expect(setMany).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-fleet-consent]')?.getAttribute('data-fleet-consent')).toBe('capabilities')
+    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual(['ssh-exec'])
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(setMany).toHaveBeenCalledWith('acme.backup', ['80:00:00:00:01:00:00:03'], { version: '', consentRoot: true })
   })
 
   it('a call refused whole: its words', async () => {

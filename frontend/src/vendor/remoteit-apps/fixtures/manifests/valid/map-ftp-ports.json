@@ -1,0 +1,35 @@
+{
+  "contract": 1,
+  "app": "fixture.ftp",
+  "version": "1.0.0",
+  "name": "ftp",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "${remoteit.listen.control.port}",
+      "${remoteit.listen.data.ports}"
+    ]
+  },
+  "listen": {
+    "control": {
+      "type": "tcp",
+      "port": 2121
+    },
+    "data": {
+      "type": "tcp",
+      "ports": "30000-30009"
+    }
+  },
+  "service": {
+    "name": "FTP",
+    "protocol": "tcp",
+    "listen": [
+      "control",
+      "data"
+    ]
+  },
+  "health": {
+    "type": "tcp",
+    "listen": "control"
+  }
+}

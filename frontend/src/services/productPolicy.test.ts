@@ -684,15 +684,49 @@ describe('product apps', () => {
       'apps { id name publisher description root version state channel pinned rootConsent { by at version } needsConsent locked at by settings { name type label help default value at by forcible locked deprecated choices { value label } } }'
     )
     expect(call.query).not.toContain('declaration')
-    // An API from before consents named their person, releases waiting for root, or removed settings: none of them.
+    // An API from before consents named their person, releases waiting for root, removed settings, or what an app asks
+    // of remote.it and how its service opens: none of them.
+    expect(call.query).not.toMatch(/capabilities|protocol|icon/)
     expect(policy.apps).toEqual([
       {
         ...consoleApp,
         rootConsent: { ...consoleApp.rootConsent, email: null },
         awaitingRoot: null,
         removedSettings: [],
+        capabilities: [],
+        protocol: null,
+        icon: null,
       },
     ])
+  })
+
+  it('where the API has them: what an app asks of remote.it and how its service opens', async () => {
+    const schema = {
+      ...APPS,
+      DeviceProductApp: {
+        ...APPS.DeviceProductApp,
+        capabilities: { type: nonNull(list(nonNull(scalar()))) },
+        protocol: { type: scalar() },
+      },
+    }
+    serve(schema, () => ({
+      login: {
+        account: {
+          deviceProducts: {
+            items: [
+              {
+                id: 'P1',
+                sync: 'synced',
+                apps: [{ ...consoleApp, capabilities: ['person-certificates'], protocol: 'ssh' }],
+              },
+            ],
+          },
+        },
+      },
+    }))
+    const [app] = ((await graphQLProductPolicy('P1')) as any).apps
+    expect(asked(request.mock.calls.length - 1).query).toContain('root capabilities protocol version')
+    expect(app).toMatchObject({ capabilities: ['person-certificates'], protocol: 'ssh' })
   })
 
   it('where the API has them: the consent’s person, a release waiting for root, and removed settings with the release that removed them', async () => {

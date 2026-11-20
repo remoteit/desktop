@@ -1,0 +1,21 @@
+{
+  "contract": 1,
+  "app": "fixture.echo",
+  "version": "1.0.0",
+  "name": "echo",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "${remoteit.port}",
+      "${remoteit.listen}"
+    ]
+  },
+  "listen": {
+    "type": "udp"
+  },
+  "service": {
+    "name": "Echo",
+    "protocol": "udp",
+    "port": 7777
+  }
+}

@@ -1,6 +1,7 @@
 import { post } from './post'
 import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import type { AppHeldBack, AppChange } from './deviceAppsShared'
+import type { AppCapability, AppProtocol } from './graphQLDeviceApps'
 
 /* The account's app catalogue (presence-server docs/device-apps-design.md, "Lifecycle: add, disable, remove", API, and
    "The Apps pages"): every app the account may take — remote.it's, its own publisher's —, each with its publisher, how
@@ -26,6 +27,9 @@ export type CatalogAppRelease = {
   created: string
   notes: string | null // its manifest's notes, as its publisher signed them
   root: boolean
+  capabilities: (AppCapability | string)[] // what it asks of the platform beyond an ordinary app's
+  protocol: AppProtocol | string | null // how its service opens; none for one that serves nothing
+  contract: number | null // the app contract its manifest is written to (1); none for one from before contracts
   platforms: string[]
   withdrawn: string | null
   channels: string[] // where this stage points at it: "stable", "beta", "beta candidate"
@@ -67,8 +71,10 @@ export type CatalogApp = {
   publisher: CatalogAppPublisher
   runsAs: string // restricted | root, of version
   root: boolean
-  kind: string // binary | script | bundle
-  serves: string // inetd | socket | none
+  capabilities: (AppCapability | string)[] // of version, as root is
+  protocol: AppProtocol | string | null // of version: how its service opens, none for one that serves nothing
+  icon: string | null // of version: its icon's URL, a PNG remote.it checked; none: shown with its protocol's
+  contract: number | null // of version
   platforms: string[] // version's archive keys
   version: string | null // the release the account's channel gives here; none: none here yet
   accountChannel: string | null // none: stable
@@ -110,10 +116,11 @@ export function resetAppCatalog() {
 
 const PUBLISHER = 'publisher { id name verifiedDomain remoteit own }'
 const FLEET_COUNTS = 'total enabled disabled upToDate heldBack versions { version count }'
-const BASE = `id name description ${PUBLISHER} runsAs root kind serves platforms version accountChannel`
+const BASE = `id name description ${PUBLISHER} runsAs root capabilities protocol icon contract platforms version accountChannel`
 const LIST = `${BASE} fleet { ${FLEET_COUNTS} }`
 const ONE = `${BASE} fleet { ${FLEET_COUNTS} heldBackBy { reason count } }`
-const RELEASES = 'releases(first: $releases) { version created notes root platforms withdrawn channels }'
+const RELEASES =
+  'releases(first: $releases) { version created notes root capabilities protocol contract platforms withdrawn channels }'
 const CHANNELS = 'channels { channel current candidate share }'
 const DEVICE = 'deviceId name enabled state detail version release latest channel pinned upToDate heldBack { reason detail }'
 const DEVICES = `devices(first: 100, after: $after, heldBack: $heldBack, heldBackReason: $heldBackReason, version: $version) { items { ${DEVICE} } total next }`
@@ -160,8 +167,10 @@ export const catalogAppOf = (app: any): CatalogApp => ({
   publisher: publisherOf(app.publisher),
   runsAs: app.runsAs ?? (app.root ? 'root' : 'restricted'),
   root: !!app.root,
-  kind: app.kind ?? 'binary',
-  serves: app.serves ?? 'none',
+  capabilities: app.capabilities ?? [],
+  protocol: app.protocol ?? null,
+  icon: app.icon ?? null,
+  contract: app.contract ?? null,
   platforms: app.platforms ?? [],
   version: app.version ?? null,
   accountChannel: app.accountChannel ?? null,
@@ -176,6 +185,9 @@ export const catalogAppOf = (app: any): CatalogApp => ({
     created: r.created,
     notes: r.notes ?? null,
     root: !!r.root,
+    capabilities: r.capabilities ?? [],
+    protocol: r.protocol ?? null,
+    contract: r.contract ?? null,
     platforms: r.platforms ?? [],
     withdrawn: r.withdrawn ?? null,
     channels: r.channels ?? [],

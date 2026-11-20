@@ -1,7 +1,14 @@
 import type { TFunction } from 'i18next'
-import type { AppHeldBack, AvailableApp, DeviceApp, DeviceAppRootConsent } from '../services/graphQLDeviceApps'
+import type {
+  AppHeldBack,
+  AvailableApp,
+  DeviceApp,
+  DeviceAppRootConsent,
+  DeviceAppService,
+} from '../services/graphQLDeviceApps'
 import { needsNewer } from '../services/deviceAppsShared'
 import type { SettingLock } from '../services/productPolicy'
+import type { CatalogApp, CatalogAppRelease } from '../services/graphQLAppCatalog'
 import { timeOptions } from '../components/Timestamp'
 
 /* The words the Apps pages share (presence-server docs/device-apps-design.md, "The Apps pages"): who publishes an app,
@@ -26,6 +33,83 @@ export const runsAsLine = (t: TFunction, root: boolean) =>
 // The same, for a row: Runs as root, or Restricted.
 export const runsAsWord = (t: TFunction, root: boolean) =>
   root ? t('apps.runsAsRoot', 'Runs as root') : t('apps.restricted', 'Restricted')
+
+/* What an app asks of the platform beyond an ordinary app's (its capabilities), each in words: shown beside Runs as
+   root wherever it is offered, and part of the consent to it (presence-contract docs/self-contained-apps.md,
+   "Manifest"). One this portal does not know is said by its name. */
+export function capabilityWords(t: TFunction, capability: string): string {
+  switch (capability) {
+    case 'person-accounts':
+      return t('apps.capabilityPersonAccounts', 'Keeps accounts for the people you share with')
+    case 'person-certificates':
+      return t('apps.capabilityPersonCertificates', 'Signs in people by remote.it certificate')
+    case 'ssh-exec':
+      return t('apps.capabilitySshExec', 'AI commands go through this app')
+    default:
+      return capability
+  }
+}
+
+export const capabilitiesLine = (t: TFunction, capabilities: string[] = []) =>
+  capabilities.map(capability => capabilityWords(t, capability)).join(' · ')
+
+// An app's icon, from how its service opens: a terminal, a page, a screen, else a box. No app has one of its own.
+export const appIcon = (protocol?: string | null) =>
+  protocol === 'ssh'
+    ? 'terminal'
+    : protocol === 'http' || protocol === 'https'
+    ? 'globe'
+    : protocol === 'vnc' || protocol === 'rdp'
+    ? 'desktop'
+    : 'cube'
+
+// Open, in the words of how its service opens (its protocol): a page, a screen, a UDP service's connection (nothing to
+// launch: the person's own UDP client uses its port), else its service's connection.
+export function openWord(t: TFunction, protocol?: string | null): string {
+  switch (protocol) {
+    case 'udp':
+      return t('deviceApps.connect', 'Connect')
+    case 'http':
+    case 'https':
+      return t('deviceApps.openPage', 'Open page')
+    case 'vnc':
+    case 'rdp':
+      return t('deviceApps.openScreen', 'Open screen')
+    default:
+      return t('deviceApps.open', 'Open')
+  }
+}
+
+/* An app's service's host (graphql src/lib/service-host.ts appHost): remoteit-app-<publisher>-<app>, the id's dot a
+   dash — the device itself, which its daemon serves. Every app's service is at its app's host, so only such a
+   service is looked for among its device's apps. */
+const APP_HOST_PREFIX = 'remoteit-app-'
+export const appHost = (id: string) => `${APP_HOST_PREFIX}${id.toLowerCase().replace('.', '-')}`
+const hostOf = (service?: Pick<IService, 'host'>) => (service?.host ?? '').trim().toLowerCase()
+export const isAppService = (service?: Pick<IService, 'host'>) => hostOf(service).startsWith(APP_HOST_PREFIX)
+
+/* The app a service belongs to: the one that names it among its services (DeviceApp.services' serviceId — an app may
+   have several); while an app is disabled graphql names no service (it is kept, stopped), so the one whose host it is.
+   An app that names another service is not this one's. */
+export function serviceApp(apps: DeviceApp[] | null | undefined, service?: Pick<IService, 'id' | 'host'>) {
+  if (!apps || !service || !isAppService(service)) return undefined
+  return (
+    apps.find(app => app.services.some(served => served.serviceId === service.id)) ??
+    apps.find(app => !app.serviceId && appHost(app.id) === hostOf(service))
+  )
+}
+
+// Which of its app's services a device's service is: the one naming it, or — the app disabled, found by its host —
+// its primary.
+export function appServiceOf(
+  app: DeviceApp | undefined,
+  service?: Pick<IService, 'id' | 'host'>
+): DeviceAppService | undefined {
+  if (!app || !service) return undefined
+  const named = app.services.find(served => served.serviceId === service.id)
+  if (named) return named
+  return !app.serviceId && appHost(app.id) === hostOf(service) ? app.services[0] : undefined
+}
 
 // A channel by name: stable or beta, or the account's where none is set.
 export const channelName = (t: TFunction, channel: string | null | undefined) =>
@@ -52,6 +136,81 @@ export function releaseChannelName(
         share,
       })
     : t('apps.channelCandidate', '{{channel}} candidate', { channel: channelName(t, channel) })
+}
+
+/* What a release asks a consent for, as graphql decides it (app-catalog.ts consentAsked): to run as root, and each
+   capability it declares. A release that asks anything is turned on, pinned or moved to only with the person's yes
+   (consentRoot), in words saying what it asks — root's full control where it runs as root, the capabilities where it
+   declares them —, unless a consent already given covers it. One rule, wherever the portal decides. */
+export type ConsentAsking = { root: boolean; capabilities?: string[] | null }
+export const consentAsked = (release: ConsentAsking): string[] => [
+  ...(release.root ? ['root'] : []),
+  ...(release.capabilities ?? []),
+]
+export const asksConsent = (release: ConsentAsking | null | undefined): boolean =>
+  !!release && consentAsked(release).length > 0
+
+/* Whether a consent covers a release (graphql's coversRootAmong): one given to no release (from before consents were
+   kept) covers as it always did; one given to a release covers `named` where that release asked everything `named`
+   asks, and `named` is that release or an earlier one, or a later one with no release between lacking any of it.
+   releases: the app's, newest first (by version), as the catalogue lists them, withdrawn ones too. Where either is not
+   among them (only the newest are read), it covers only the release it was given to: asking again is safe — graphql
+   keeps the newer yes —, while a yes not asked is refused. */
+export function consentCovers(
+  consent: { version?: string | null } | null | undefined,
+  named: ConsentAsking & { version: string },
+  releases: (ConsentAsking & { version: string })[]
+): boolean {
+  if (!consent) return false
+  if (!consent.version) return true
+  const asked = consentAsked(named)
+  const has = (release: ConsentAsking) => asked.every(ask => consentAsked(release).includes(ask))
+  const given = releases.findIndex(release => release.version === consent.version)
+  const at = releases.findIndex(release => release.version === named.version)
+  if (given < 0 || at < 0) return consent.version === named.version
+  if (!has(releases[given])) return false
+  return at >= given || releases.slice(at + 1, given).every(has)
+}
+
+/* The release a product names for an app (graphql's productRelease): its pin, else its channel's current — the
+   account's channel where it names none, else stable —, else stable's current. None where that is withdrawn, or not
+   among the releases read. */
+export function productRelease(
+  app: CatalogApp,
+  channel: string | null | undefined,
+  pin: string | null | undefined
+): CatalogAppRelease | undefined {
+  const current = (name: string) => app.channels.find(c => c.channel === name)?.current
+  const version = pin || current(channel || app.accountChannel || 'stable') || current('stable')
+  const release = app.releases.find(r => r.version === version)
+  return release?.withdrawn ? undefined : release
+}
+
+/* What adding an app gives the devices, and so what it asks (graphql's releaseFor and channelVersion): the release
+   pinned; else what the channel chosen gives — the account's where none is, else stable —: its candidate to the
+   devices in its share, its current to the rest, and a channel naming none stable's. A withdrawn release is given to
+   none. versions: those releases; root and capabilities: all they ask together, each release's as the catalogue lists
+   it. known: false where one is not among the releases read (the newest only): what it asks is not known, and no yes
+   is taken for it. */
+export type AddAsks = { versions: string[]; root: boolean; capabilities: string[]; known: boolean }
+export function addAsks(app: CatalogApp, channel: string | null | undefined, pin?: string | null): AddAsks {
+  const gives = (name: string): string[] => {
+    const row = app.channels.find(c => c.channel === name)
+    const candidate = row?.candidate && row.share > 0 ? [row.candidate] : []
+    if (row?.current) return [...candidate, row.current]
+    return name === 'stable' ? candidate : [...candidate, ...gives('stable')]
+  }
+  const versions = pin ? [pin] : [...new Set(gives(channel || app.accountChannel || 'stable'))]
+  const given = versions
+    .map(version => ({ version, release: app.releases.find(release => release.version === version) }))
+    .filter(({ release }) => !release?.withdrawn)
+  const listed = given.flatMap(({ release }) => (release ? [release] : []))
+  return {
+    versions: given.map(({ version }) => version),
+    root: listed.some(release => release.root),
+    capabilities: [...new Set(listed.flatMap(release => release.capabilities))],
+    known: listed.length === given.length,
+  }
 }
 
 /* What the machine's administrator refuses of an app here (DeviceApp.adminControl), as graphql refuses it: under
@@ -130,6 +289,32 @@ export function consentLine(t: TFunction, consent: DeviceAppRootConsent): string
       return t('deviceApps.consented', 'Consented to run as root by {{by}}, {{when}}', words)
   }
 }
+
+// The yes, in words: to full control where a release runs as root, else to what it asks of remote.it.
+export function allowLine(t: TFunction, root: boolean, product: boolean, publisher: string, app: string): string {
+  const words = { publisher, app }
+  if (root)
+    return product
+      ? t(
+          'apps.allowRootProduct',
+          'I allow {{publisher}}’s {{app}} full control of every device in this product',
+          words
+        )
+      : t('apps.allowRootDevices', 'I allow {{publisher}}’s {{app}} full control of these devices', words)
+  return product
+    ? t('apps.allowAsksProduct', 'I allow {{publisher}}’s {{app}} what it asks on every device in this product', words)
+    : t('apps.allowAsksDevices', 'I allow {{publisher}}’s {{app}} what it asks on these devices', words)
+}
+
+// A release waiting for a consent, by what it asks: to run as root, or more of remote.it (its capabilities).
+export const heldConsentWords = (t: TFunction, root: boolean) =>
+  root
+    ? t('apps.heldConsent', 'A new version needs to run as root')
+    : t('apps.heldConsentAsks', 'A new version asks more of remote.it')
+// Whether the release a consent is waited for runs as root, as graphql's words for it say (device-apps.ts
+// needsConsentOf: "… needs to run as root", else "… asks for <capabilities>"); none said: as before capabilities did.
+export const heldConsentRoot = (heldBack: Pick<AppHeldBack, 'detail'>) =>
+  !heldBack.detail || /run as root/.test(heldBack.detail)
 
 // The machine's administrator refusing root apps (apps_root_control off), as graphql or the device says it.
 const ROOT_REFUSED = /apps_root_control off|no apps that run as root/
@@ -231,7 +416,8 @@ export function heldBackReason(t: TFunction, heldBack: AppHeldBack, pinned?: str
     case 'pinned':
       return pinned ? t('apps.heldPinnedTo', 'Pinned to {{version}}', { version: pinned }) : t('apps.heldPinned', 'Pinned')
     case 'consent':
-      return t('apps.heldConsent', 'A new version needs to run as root')
+      // graphql says what the release waiting asks (device-apps.ts needsConsentOf): running as root, or capabilities.
+      return heldConsentWords(t, heldConsentRoot(heldBack))
     case 'daemon':
       return t('deviceApps.needsNewer', 'Needs a newer remote.it on this device')
     default:
@@ -268,6 +454,12 @@ export const offered = (app: AvailableApp): DeviceApp => ({
   state: 'disabled',
   detail: null,
   serviceId: null,
+  protocol: app.protocol ?? null,
+  capabilities: app.capabilities ?? [],
+  hostKey: null,
+  sessions: [],
+  sessionsOpen: 0,
+  services: app.services ?? [],
   settings: [],
 })
 

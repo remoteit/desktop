@@ -187,9 +187,16 @@ describe('Add, to devices', () => {
   })
 })
 
+// The release the account's channel gives (stable's current, 1.4.0) asking what is given, as the catalogue lists it and
+// the app's own fields say it.
+const accountRelease = (asks: { root?: boolean; capabilities?: string[] }) => {
+  const app = mockCatalogApp('acme.backup')!
+  return { ...app, ...asks, releases: app.releases.map(r => (r.version === '1.4.0' ? { ...r, ...asks } : r)) }
+}
+
 describe('the root consent', () => {
   it('a root app: Add only once the yes is ticked, in words, and consentRoot passed', async () => {
-    catalog.mockResolvedValue({ ...mockCatalogApp('acme.backup'), root: true })
+    catalog.mockResolvedValue(accountRelease({ root: true }))
     await render()
     await tick('D1')
     expect($('[data-app-add-root]').textContent).toContain('Backup runs as root: full control of each device.')
@@ -209,6 +216,118 @@ describe('the root consent', () => {
     await click($('[data-app-add-pin]'))
     await select($('[data-app-add-version]'), '1.5.0-beta.2')
     expect($('[data-app-add-root]')).not.toBeNull()
+  })
+
+  it('what it asks of remote.it is part of the consent — the release pinned’s, where one is', async () => {
+    const app = accountRelease({ root: true, capabilities: ['person-accounts', 'person-certificates'] })
+    catalog.mockResolvedValue({
+      ...app,
+      releases: [{ ...app.releases[0], root: true, capabilities: ['ssh-exec'] }, ...app.releases.slice(1)],
+    })
+    await render()
+    const said = () =>
+      [...document.querySelectorAll('[data-app-add-root] [data-app-capability]')].map(c => c.textContent)
+    expect(said()).toEqual([
+      '· Keeps accounts for the people you share with',
+      '· Signs in people by remote.it certificate',
+    ])
+    await click($('[data-app-add-pin]'))
+    await select($('[data-app-add-version]'), '1.5.0-beta.2')
+    expect(said()).toEqual(['· AI commands go through this app'])
+  })
+
+  it('a restricted app that declares capabilities asks the yes to them, as graphql does: Add only once it is given', async () => {
+    catalog.mockResolvedValue(accountRelease({ capabilities: ['person-certificates'] }))
+    await render()
+    await tick('D1')
+    expect($('[data-app-add-root]')).toBeNull()
+    expect($('[data-app-add-capabilities]').textContent).toBe(
+      'It asks of remote.it:· Signs in people by remote.it certificateI allow Acme’s Backup what it asks on these devices'
+    )
+    expect(submit().disabled).toBe(true)
+    await click($('[data-app-add-consent]'))
+    await click(submit())
+    expect(addMany).toHaveBeenCalledWith('acme.backup', { deviceIds: ['D1'], accountId: undefined, consentRoot: true })
+    // For a product: every device in it.
+    await act(async () => root.unmount())
+    container.remove()
+    await render()
+    await click($('[data-app-add-to="product"] input'))
+    expect($('[data-app-add-capabilities]').textContent).toContain('I allow Acme’s Backup what it asks on every device in this product')
+  })
+
+  it('a release that asks for nothing: no yes asked', async () => {
+    await render()
+    await tick('D1')
+    expect($('[data-app-add-root]')).toBeNull()
+    expect($('[data-app-add-capabilities]')).toBeNull()
+    await click(submit())
+    expect(addMany).toHaveBeenCalledWith('acme.backup', { deviceIds: ['D1'], accountId: undefined })
+  })
+
+  it('a channel chosen: what the releases it gives ask — its current’s, and its candidate’s for the devices in its share', async () => {
+    const app = mockCatalogApp('acme.backup')!
+    const beta = { ...app.releases[0], capabilities: ['ssh-exec'] }
+    catalog.mockResolvedValue({ ...app, releases: [beta, ...app.releases.slice(1)] })
+    await render()
+    await tick('D1')
+    expect($('[data-app-add-capabilities]')).toBeNull()
+    await select($('[data-app-add-channel]'), 'beta')
+    expect($('[data-app-add-capabilities]').textContent).toBe(
+      'It asks of remote.it:· AI commands go through this appI allow Acme’s Backup what it asks on these devices'
+    )
+    expect($('[data-app-add-root]')).toBeNull()
+    expect(submit().disabled).toBe(true)
+    // Its candidate (1.5.0-rc.1) is not among the releases read: what it asks is not known, and Add waits.
+    expect($('[data-app-add-unknown]').textContent).toBe(
+      'What this version asks could not be read, so it cannot be consented to here. Try again later.'
+    )
+    await click($('[data-app-add-consent]'))
+    expect(submit().disabled).toBe(true)
+    // Its candidate (1.5.0-rc.1, to 10% of its devices) runs as root: the yes is asked, for beta's releases.
+    act(() => root.unmount())
+    container.remove()
+    const candidate = { ...beta, version: '1.5.0-rc.1', root: true, capabilities: ['person-accounts'], channels: ['beta candidate'] }
+    catalog.mockResolvedValue({ ...app, releases: [candidate, beta, ...app.releases.slice(1)] })
+    await render()
+    await tick('D1')
+    expect($('[data-app-add-root]')).toBeNull()
+    await select($('[data-app-add-channel]'), 'beta')
+    expect([...document.querySelectorAll('[data-app-add-root] [data-app-capability]')].map(c => c.textContent)).toEqual([
+      '· Keeps accounts for the people you share with',
+      '· AI commands go through this app',
+    ])
+    expect(submit().disabled).toBe(true)
+    await click($('[data-app-add-consent]'))
+    await click(submit())
+    expect(addMany).toHaveBeenCalledWith('acme.backup', { deviceIds: ['D1'], accountId: undefined, channel: 'beta', consentRoot: true })
+  })
+
+  it('a yes is to the releases and the target it was given for: another channel, pin or target asks it again', async () => {
+    const app = accountRelease({ root: true })
+    catalog.mockResolvedValue({ ...app, releases: [{ ...app.releases[0], root: true }, ...app.releases.slice(1)] })
+    await render()
+    await tick('D1')
+    const consent = () => $('[data-app-add-consent]') as HTMLInputElement
+    await click(consent())
+    expect(submit().disabled).toBe(false)
+    // Beta gives another release: the yes was not to it.
+    await select($('[data-app-add-channel]'), 'beta')
+    expect(consent().checked).toBe(false)
+    expect(submit().disabled).toBe(true)
+    await click(consent())
+    // Stable named: the same release as the account's, asked again all the same — the yes was to beta's.
+    await select($('[data-app-add-channel]'), 'stable')
+    expect(consent().checked).toBe(false)
+    await click(consent())
+    await click($('[data-app-add-pin]'))
+    await select($('[data-app-add-version]'), '1.5.0-beta.2')
+    expect(consent().checked).toBe(false)
+    await click(consent())
+    // A product: the yes is for every device in it, now and later — not the one given for these devices.
+    await click($('[data-app-add-to="product"] input'))
+    await select($('[data-app-add-product-select]'), 'P1')
+    expect(consent().checked).toBe(false)
   })
 })
 
@@ -250,7 +369,7 @@ describe('Add, to a tag or a product', () => {
   })
 
   it('a product: set Enabled on it (state enabled), its consent worded for every device in it, now and later', async () => {
-    catalog.mockResolvedValue({ ...mockCatalogApp('acme.backup'), root: true })
+    catalog.mockResolvedValue(accountRelease({ root: true }))
     await render()
     await click($('[data-app-add-to="product"] input'))
     await select($('[data-app-add-product-select]'), 'P1')

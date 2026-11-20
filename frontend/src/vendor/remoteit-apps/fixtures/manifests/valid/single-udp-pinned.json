@@ -1,0 +1,17 @@
+{
+  "contract": 1,
+  "app": "fixture.dns",
+  "version": "1.0.0",
+  "name": "dns",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "type": "udp",
+    "port": 5353
+  },
+  "service": {
+    "name": "DNS",
+    "protocol": "udp"
+  }
+}

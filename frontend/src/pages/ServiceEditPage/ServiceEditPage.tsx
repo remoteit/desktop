@@ -8,6 +8,9 @@ import { ListItemBack } from '../../components/ListItemBack'
 import { ServiceForm } from '../../components/ServiceForm'
 import { Gutters } from '../../components/Gutters'
 import { ServiceSchemeSuggestion } from '../../components/ServiceSchemeSuggestion'
+import { ListItem, ListItemText } from '@mui/material'
+import { useServiceApp } from '../../hooks/useDeviceApps'
+import { isAppService } from '../../helpers/appsHelper'
 
 type Props = { device?: IDevice }
 
@@ -17,6 +20,8 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
   const { serviceID } = useParams<{ serviceID?: string }>()
   const dispatch = useDispatch<Dispatch>()
   const service = device?.services.find(s => s.id === serviceID)
+  const hostedByApp = isAppService(service)
+  const { app, appService } = useServiceApp(device, service)
   const thisDevice = service?.deviceID === thisId
   const location = useLocation()
   const history = useHistory()
@@ -31,16 +36,53 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
   }
 
   const exit = () => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))
+  const listeners = (
+    appService?.listeners.length ? appService.listeners : app?.serviceId === service.id ? [{ name: null }] : []
+  ).flatMap(({ name }) => {
+    const listen = name ? app?.listeners?.find(listener => listener.name === name)?.listen : app?.listen
+    return listen ? [{ name, listen }] : []
+  })
+  const listenerDetails = hostedByApp && (
+    <>
+      <ListItem>
+        <ListItemText primary={t('serviceEditPage.hostedOn', 'Hosted on')} secondary={device?.name} />
+      </ListItem>
+      {listeners?.length ? (
+        listeners.map(({ name, listen }) => {
+          const [type, port] = listen.split(':')
+          const location =
+            type === 'unix'
+              ? t('serviceEditPage.unixSocket', 'Local socket')
+              : type === 'stdio'
+              ? t('serviceEditPage.standardIO', 'Standard input and output')
+              : `127.0.0.1:${port} (${type.toUpperCase()})`
+          return (
+            <ListItem key={name ?? listen}>
+              <ListItemText primary={name || t('serviceEditPage.listener', 'Listener')} secondary={location} />
+            </ListItem>
+          )
+        })
+      ) : (
+        <ListItem>
+          <ListItemText
+            primary={t('serviceEditPage.listener', 'Listener')}
+            secondary={t('serviceEditPage.listenerUnavailable', 'No listener reported')}
+          />
+        </ListItem>
+      )}
+    </>
+  )
 
   return (
     <Gutters size="md" bottom={null}>
       <ListItemBack title={t('serviceEditPage.title', 'Service configuration')} to="connect" />
-      <ServiceSchemeSuggestion device={device} service={service} />
+      {!hostedByApp && <ServiceSchemeSuggestion device={device} service={service} />}
       <ServiceForm
         device={device}
         service={service}
         thisDevice={thisDevice}
         editable={!!device?.configurable || thisDevice}
+        listenerDetails={listenerDetails}
         disabled={!device?.permissions.includes('MANAGE')}
         onCancel={exit}
         onSubmit={async form => {
@@ -49,7 +91,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
             const updatedService = structuredClone(service)
             updatedService.attributes = { ...service.attributes, ...form.attributes }
             await dispatch.devices.setServiceAttributes(updatedService)
-            if (device.configurable) {
+            if (device.configurable && !hostedByApp) {
               await dispatch.devices.cloudUpdateService({ form, deviceId: device.id, ports: form.ports })
             } else {
               await dispatch.devices.rename({ id: service.id, name: form.name })

@@ -1,0 +1,98 @@
+{
+  "map-first-tcp-udp-protocol": [
+    "service.protocol: a tcp listener carries a stream; its service is ssh, http, https, vnc, rdp or tcp (its first listener, rtsp, is tcp)"
+  ],
+  "map-first-udp-tcp-protocol": [
+    "service.protocol: a udp listener's service is udp, not tcp (its first listener, rtp, is udp)"
+  ],
+  "map-health-ports": [
+    "health.listen: a binds a range; health probes a listener with one port or socket"
+  ],
+  "map-health-udp": [
+    "health.listen: b is a udp listener, with no connection to probe"
+  ],
+  "map-health-unknown": [
+    "health.listen: b is not a listener"
+  ],
+  "map-health-unnamed": [
+    "health.listen: with several listeners, health names the one it probes"
+  ],
+  "map-listener-in-two-services": [
+    "service[1].listen: web is service[0]'s already"
+  ],
+  "map-port-setting-without-range": [
+    "listen.web.port: ${setting.port} names a port: its min and max are within 1-65535"
+  ],
+  "map-ports-past-65535": [
+    "listen.rtp.ports: 65530-70000 is not a range low-high, 1 <= low < high <= 65535"
+  ],
+  "map-ports-reversed": [
+    "listen.rtp.ports: 5005-5004 is not a range low-high, 1 <= low < high <= 65535"
+  ],
+  "map-ports-with-service-port": [
+    "service.port: a service of a ports listener is reached on its listeners' ports; it names none"
+  ],
+  "map-remoteit-listen": [
+    "the manifest: ${remoteit.listen} is given only with one listen object; with named listeners, ${remoteit.listen.<name>.port|path}"
+  ],
+  "map-remoteit-port": [
+    "the manifest: ${remoteit.port} is given only with one listen object; with named listeners, ${remoteit.listen.<name>.port}"
+  ],
+  "map-same-port-setting": [
+    "listen.b.port: a names ${setting.port} already"
+  ],
+  "map-service-unknown-listener": [
+    "service.listen: api is not a listener"
+  ],
+  "map-several-with-auto-port": [
+    "service.listen: a has no known port (a number, ${setting.X} or ports); a service of several ports is reached on its listeners' own"
+  ],
+  "map-several-with-service-port": [
+    "service.port: a service of several listeners is reached on its listeners' ports; it names none"
+  ],
+  "map-stdio-not-alone": [
+    "listen.shell: a stdio listener runs the app per connection; it is the app's only listener"
+  ],
+  "map-tcp-port-in-range": [
+    "listen.b: its tcp ports overlap a's"
+  ],
+  "map-tcp-service-no-port": [
+    "service.port: a tcp service whose app listens on no fixed port names the port people connect to"
+  ],
+  "map-udp-ranges-overlap": [
+    "listen.b: its udp ports overlap a's"
+  ],
+  "map-unix-with-another": [
+    "service.listen: sock is a unix listener, reached only as its service's one listener"
+  ],
+  "map-value-path-of-tcp": [
+    "the manifest: ${remoteit.listen.web.path} is given only for a unix listener"
+  ],
+  "map-value-ports-of-one-port": [
+    "the manifest: ${remoteit.listen.web.ports} is given only for a listener with ports"
+  ],
+  "map-value-unknown-listener": [
+    "the manifest: ${remoteit.listen.api.port} names no listener (api is not one)"
+  ],
+  "single-listener-value": [
+    "the manifest: ${remoteit.listen.web.port} is given only with named listeners (with one listen object: ${remoteit.port}, ${remoteit.listen})"
+  ],
+  "single-port-setting-without-range": [
+    "listen.port: ${setting.port} names a port: its min and max are within 1-65535"
+  ],
+  "single-stdio-health": [
+    "health: a stdio app runs per connection; there is nothing to probe"
+  ],
+  "single-tcp-service-no-port": [
+    "service.port: a tcp service whose app listens on no fixed port names the port people connect to"
+  ],
+  "single-tcp-udp-protocol": [
+    "service.protocol: a tcp listener carries a stream; its service is ssh, http, https, vnc, rdp or tcp"
+  ],
+  "single-udp-health": [
+    "health: a udp app has no connection to probe; a running process is running"
+  ],
+  "single-udp-http": [
+    "service.protocol: a udp listener's service is udp, not http"
+  ]
+}

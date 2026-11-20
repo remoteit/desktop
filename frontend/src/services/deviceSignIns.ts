@@ -27,9 +27,9 @@ export type DeviceSignIn = {
 
 export type PersonRef = { id: string; email: string | null }
 
-type Served = { signIns: boolean; exit: string; setting: string; exitError: string }
+type Served = { signIns: boolean; portalUserMode: boolean | 'ERROR'; exit: string; setting: string; exitError: string }
 
-const NONE: Served = { signIns: false, exit: '', setting: '', exitError: '' }
+const UNAVAILABLE: Served = { signIns: false, portalUserMode: 'ERROR', exit: '', setting: '', exitError: '' }
 
 const PROBE = `query DeviceSignInFields {
   device: __type(name: "Device") { fields { name } }
@@ -46,6 +46,7 @@ export function parseDeviceSignIns(data: any): Served {
   const setting = names(data?.setting)
   return {
     signIns: device.has('signIns'),
+    portalUserMode: device.has('portalUserMode') && device.has('userModeEligibility'),
     exit: [
       device.has('exitSetOnDeviceSignedIn') && 'exitSetOnDeviceSignedIn { id email }',
       device.has('exitSetOnDeviceAdmin') && 'exitSetOnDeviceAdmin',
@@ -63,9 +64,9 @@ export function parseDeviceSignIns(data: any): Served {
 function served(): Promise<Served> {
   if (!schema)
     schema = post({ query: PROBE }).then(response => {
-      if (response === 'ERROR') {
+      if (response === 'ERROR' || !response.data?.data?.device) {
         schema = undefined
-        return NONE
+        return UNAVAILABLE
       }
       return parseDeviceSignIns(response.data?.data)
     })
@@ -74,6 +75,7 @@ function served(): Promise<Served> {
 
 // Whether this API has sign-ins per account. Read once; asked again after a failed request.
 export const deviceSignInsServed = async () => (await served()).signIns
+export const portalUserModeServed = async () => (await served()).portalUserMode
 
 // The fields a device's exit query adds (who chose it on the machine), and a device setting's: none where not served.
 export const exitSignInFields = async () => (await served()).exit

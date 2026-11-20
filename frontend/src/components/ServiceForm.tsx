@@ -32,6 +32,7 @@ export type ServiceFormProps = {
   service?: IService
   thisDevice: boolean
   editable: boolean
+  listenerDetails?: React.ReactNode
   disabled?: boolean
   adding?: boolean
   compact?: boolean
@@ -46,6 +47,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   service,
   thisDevice,
   editable,
+  listenerDetails,
   disabled,
   adding,
   compact,
@@ -117,8 +119,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   }, [multiPort, service?.id, !!form])
 
   useEffect(() => {
-    if (form && thisDevice) portScan({ port: form.port, host: form.host })
-  }, [form])
+    if (form && thisDevice && !listenerDetails) portScan({ port: form.port, host: form.host })
+  }, [form, thisDevice, !!listenerDetails])
 
   const changePorts = (text: string) => {
     if (!form) return
@@ -150,7 +152,8 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
     >
       <AccordionMenuItem gutters subtitle={t('serviceForm.serviceSetup', 'Service Setup')} defaultExpanded>
         <List>
-          {editable && (
+          {listenerDetails}
+          {editable && !listenerDetails && (
             <>
               <ServiceFormApplications
                 device={device}
@@ -381,7 +384,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
               </Typography>
             </ListItem>
           )}
-          {editable ? (
+          {listenerDetails ? null : editable ? (
             <ListItemCheckbox
               checked={form.enabled}
               label={t('serviceForm.enableService', 'Enable service')}

@@ -2,6 +2,7 @@ import { defineConfig, loadEnv, Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import fs from 'fs'
+import { signerPlugin } from './signerPlugin'
 
 // CloudFront compresses only files of 1,000 to 10,000,000 bytes: anything bigger goes out uncompressed — the 12 MB
 // vendor chunk was 4.8x its brotli size on the wire, and a transfer that long sometimes stalls at the edge, leaving the
@@ -65,7 +66,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    plugins: [react(), compressibleChunks()],
+    plugins: [react(), compressibleChunks(), signerPlugin()],
     define: {
       // Gradle applies Firebase only when this file has content, and without Firebase the push
       // plugin's register() crashes the Android app (Capacitor rethrows the native exception)

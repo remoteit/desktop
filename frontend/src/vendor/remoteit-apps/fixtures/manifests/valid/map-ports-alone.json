@@ -1,0 +1,23 @@
+{
+  "contract": 1,
+  "app": "fixture.rtp",
+  "version": "1.0.0",
+  "name": "rtp",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "${remoteit.listen.rtp.ports}"
+    ]
+  },
+  "listen": {
+    "rtp": {
+      "type": "udp",
+      "ports": "5004-5007"
+    }
+  },
+  "service": {
+    "name": "RTP",
+    "protocol": "udp",
+    "listen": "rtp"
+  }
+}

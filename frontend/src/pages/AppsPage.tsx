@@ -55,6 +55,9 @@ export const AppsPage: React.FC = () => {
         <>
           <Typography variant="h1">
             <Title>{t('apps.title', 'Apps')}</Title>
+            <Button size="small" variant="contained" onClick={() => history.push('/apps/new')} data-apps-new>
+              {t('apps.newApp', 'New app')}
+            </Button>
           </Typography>
           <Gutters top={null} bottom="sm">
             <TextField
@@ -104,6 +107,9 @@ export const AppsPage: React.FC = () => {
                 verifiedDomain={app.publisher.verifiedDomain}
                 own={app.publisher.own}
                 root={app.root}
+                capabilities={app.capabilities}
+                protocol={app.protocol}
+                icon={app.icon}
                 description={app.description}
                 platforms={app.version ? platformsLine(t, app.platforms) : t('apps.noRelease', 'No release here yet')}
                 aside={

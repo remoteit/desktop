@@ -1,66 +1,131 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import type { DeviceApp } from '../services/graphQLDeviceApps'
 import { AppChange, refused } from '../services/deviceAppsShared'
 import type { DeviceApps } from '../hooks/useDeviceApps'
+import { asksConsent, capabilityWords, ConsentAsking } from '../helpers/appsHelper'
+import { graphQLCatalogApp } from '../services/graphQLAppCatalog'
 import { Confirm } from './Confirm'
 
-/* Asking for the person's yes to a root app's full control, in words naming the app, its publisher and that it gets
-   full control of the device (presence-server docs/device-apps-design.md, "Root, shown and consented to"). For a
-   product it says the yes covers every device in the product, now and later, as graphql keeps it on the product. */
+/* Asking for the person's yes to what a release asks (helpers/appsHelper asksConsent, graphql's rule): to run as root —
+   full control of the device (presence-server docs/device-apps-design.md, "Root, shown and consented to") — and the
+   capabilities it declares (presence-contract docs/self-contained-apps.md, "Manifest"), in words naming the app and its
+   publisher. A root release is asked as root, its capabilities beside; a restricted one that declares capabilities is
+   asked for those. For a product it says the yes covers every device in the product, now and later, as graphql keeps
+   it on the product.
+
+   What is asked is the release's the yes is given to (release), not the version the device runs: a release may ask
+   more than the one before it, and graphql takes the yes as covering what that release asks. Where the change may give
+   one of several (a channel's candidate or current, by the device's bucket), all they ask together. It is read from its
+   catalogue entry, under the account the device or product was read for (useReleaseAsks); until it is, the yes waits.
+   action: the confirm button's words, where they are not turning it on, for a release that runs as root or not. */
 export const RootConsent: React.FC<{
-  app?: { name: string; publisher: string } // open while there is one
+  // open while there is one; root and capabilities: the app's own, where the catalogue does not name the release
+  app?: { id?: string; name: string; publisher: string; root: boolean; capabilities?: string[] }
   product?: boolean // a product's consent, for every device in it
-  action?: string // the confirm button's words, where they are not turning it on
-  // A release of an app already on that newly runs as root: the consent moves it there (a re-consent).
+  action?: (root: boolean) => string
+  // A release of an app already on that newly asks for consent: the consent moves it there (a re-consent).
   version?: string | null
+  // The release the yes is given to, where it is not version: a pin, the release enabling gives — or the releases a
+  // change may give. None: the app's own.
+  release?: string | string[] | null
+  accountId: string | undefined // whose catalogue names the release: the device's or the product's account
   onConfirm: () => void
   onDeny: () => void
-}> = ({ app, product, action, version, onConfirm, onDeny }) => {
+}> = ({ app, product, action, version, release, accountId, onConfirm, onDeny }) => {
   const { t } = useTranslation()
   const words = { app: app?.name, publisher: app?.publisher, version }
+  const asks = useReleaseAsks(app, release ?? version, accountId)
+  // Not known (null): asked as the most it could be, and not given until it is.
+  const root = asks ? asks.root : true
   return (
     <Confirm
       open={!!app}
+      disabled={!asks}
       color="error"
       title={
-        product
-          ? t('productApps.rootTitle', 'Run {{app}} as root on this product’s devices?', words)
-          : t('deviceApps.rootTitle', 'Run {{app}} as root?', words)
+        root
+          ? product
+            ? t('productApps.rootTitle', 'Run {{app}} as root on this product’s devices?', words)
+            : t('deviceApps.rootTitle', 'Run {{app}} as root?', words)
+          : product
+          ? t('productApps.asksTitle', 'Allow {{app}} what it asks on this product’s devices?', words)
+          : t('deviceApps.asksTitle', 'Allow {{app}} what it asks?', words)
       }
-      action={action ?? t('deviceApps.rootAction', 'Turn on with full control')}
+      action={
+        action?.(root) ??
+        (root
+          ? t('deviceApps.rootAction', 'Turn on with full control')
+          : t('deviceApps.asksAction', 'Allow and turn on'))
+      }
       onConfirm={onConfirm}
       onDeny={onDeny}
     >
       {version && (
         <Typography variant="body2" gutterBottom data-root-consent-update>
-          {product
+          {root
+            ? product
+              ? t(
+                  'productApps.rootUpdate',
+                  '{{app}} {{version}} needs to run as root. Its devices stay on the version they run until you consent.',
+                  words
+                )
+              : t(
+                  'deviceApps.rootUpdate',
+                  '{{app}} {{version}} needs to run as root. This device stays on the version it runs until you consent.',
+                  words
+                )
+            : product
             ? t(
-                'productApps.rootUpdate',
-                '{{app}} {{version}} needs to run as root. Its devices stay on the version they run until you consent.',
+                'productApps.asksUpdate',
+                '{{app}} {{version}} asks more of remote.it. Its devices stay on the version they run until you consent.',
                 words
               )
             : t(
-                'deviceApps.rootUpdate',
-                '{{app}} {{version}} needs to run as root. This device stays on the version it runs until you consent.',
+                'deviceApps.asksUpdate',
+                '{{app}} {{version}} asks more of remote.it. This device stays on the version it runs until you consent.',
                 words
               )}
         </Typography>
       )}
-      <Typography variant="body2" gutterBottom data-root-consent>
-        {product
+      <Typography variant="body2" gutterBottom data-root-consent={root ? 'root' : 'capabilities'}>
+        {root
+          ? product
+            ? t(
+                'productApps.rootBody',
+                '{{app}}, published by {{publisher}}, runs as root: it gets full control of this device — every file, account and program on it — on every device in this product, now and later.',
+                words
+              )
+            : t(
+                'deviceApps.rootBody',
+                '{{app}}, published by {{publisher}}, runs as root: it gets full control of this device — every file, account and program on it.',
+                words
+              )
+          : product
           ? t(
-              'productApps.rootBody',
-              '{{app}}, published by {{publisher}}, runs as root: it gets full control of this device — every file, account and program on it — on every device in this product, now and later.',
+              'productApps.asksBody',
+              '{{app}}, published by {{publisher}}, runs restricted, with an account of its own on every device in this product, now and later.',
               words
             )
           : t(
-              'deviceApps.rootBody',
-              '{{app}}, published by {{publisher}}, runs as root: it gets full control of this device — every file, account and program on it.',
+              'deviceApps.asksBody',
+              '{{app}}, published by {{publisher}}, runs restricted, with an account of its own on this device.',
               words
             )}
       </Typography>
+      {asks === null && (
+        <Typography variant="body2" color="error" gutterBottom data-root-consent-unknown>
+          {t(
+            'apps.asksUnknown',
+            'What this version asks could not be read, so it cannot be consented to here. Try again later.'
+          )}
+        </Typography>
+      )}
+      <AppCapabilities
+        capabilities={asks?.capabilities ?? undefined}
+        title={root ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+      />
       <Typography variant="body2">
         {product
           ? t(
@@ -74,16 +139,80 @@ export const RootConsent: React.FC<{
   )
 }
 
+/* What the releases a consent is for ask (whether one runs as root, and their capabilities, together): each its
+   catalogue entry's, read under the account the device or product was read for. The app's own where no release is
+   named (an app offered to the device: its fields are the release the device would be given). null where a release
+   named is not one the catalogue answers for (an API without one, an error, one it does not list): what it asks is
+   not known, and a yes to it is not taken. undefined while they are read. */
+export function useReleaseAsks(
+  app: { id?: string; root: boolean; capabilities?: string[] } | undefined,
+  release: string | string[] | null | undefined,
+  accountId: string | undefined
+): ConsentAsking | null | undefined {
+  const [read, setRead] = useState<{ key: string; asks: ConsentAsking | null }>()
+  const releases = (Array.isArray(release) ? release : [release]).filter((r): r is string => !!r)
+  const key = app?.id && releases.length ? `${accountId ?? ''}/${app.id}/${releases.join(',')}` : ''
+  useEffect(() => {
+    if (!key || !app?.id) return
+    let current = true
+    graphQLCatalogApp(app.id, { accountId, releases: 100 }).then(answer => {
+      if (!current) return
+      const listed = typeof answer === 'object' && answer ? answer.releases : []
+      const entries = releases.map(version => listed.find(r => r.version === version))
+      const known = entries.every(entry => !!entry)
+      setRead({
+        key,
+        asks: known
+          ? {
+              root: entries.some(entry => entry!.root),
+              capabilities: [...new Set(entries.flatMap(entry => entry!.capabilities))],
+            }
+          : null,
+      })
+    })
+    return () => {
+      current = false
+    }
+  }, [key])
+  if (!app) return undefined
+  if (!key) return { root: app.root, capabilities: app.capabilities ?? [] }
+  if (read?.key !== key) return undefined
+  return read.asks
+}
+
+// What an app asks of remote.it beyond running, a line each: in its consent, and where it is offered.
+export const AppCapabilities: React.FC<{ capabilities?: string[]; title?: string }> = ({ capabilities, title }) => {
+  const { t } = useTranslation()
+  if (!capabilities?.length) return null
+  return (
+    <Box sx={{ marginBottom: 1 }} data-app-capabilities>
+      <Typography variant="body2">{title ?? t('apps.capabilitiesAlso', 'It also asks of remote.it:')}</Typography>
+      {capabilities.map(capability => (
+        <Typography
+          key={capability}
+          variant="body2"
+          component="div"
+          sx={{ paddingLeft: 2 }}
+          data-app-capability={capability}
+        >
+          · {capabilityWords(t, capability)}
+        </Typography>
+      ))}
+    </Box>
+  )
+}
+
 /* Enabling or disabling an app, from wherever it is offered (the device's Apps section, the app's page on the device,
-   the console's connect panel). A root app is enabled only once the person says yes (RootConsent); that yes is
-   consentRoot, which graphql refuses a root app without. Disabling, or a restricted app, at once. A release that newly
-   runs as root while the app is enabled (awaitingRoot) is asked for the same way (reconsent): the yes is
-   setDeviceAppRelease's consentRoot alone — Update now —, which moves the device to that release. graphql's refusal,
-   in its words, goes to onRefused; a change made, to onChanged. */
+   an app's service's connect panel, the device's catalogue). An app is enabled only once the person says yes
+   (RootConsent) where graphql asks for one (needsConsent); that yes is consentRoot. Disabling, or an app that asks for
+   nothing a consent does not already cover, at once. A release that newly asks while the app is enabled (awaitingRoot)
+   is asked for the same way (reconsent): the yes is setDeviceAppRelease's consentRoot alone — Update now —, which moves
+   the device to that release. graphql's refusal, in its words, goes to onRefused; a change made, to onChanged. */
 export function useAppSwitch(
   { turn, setRelease }: Pick<DeviceApps, 'turn'> & Partial<Pick<DeviceApps, 'setRelease'>>,
-  onRefused?: (reason: string) => void,
-  onChanged?: (app: DeviceApp) => void
+  onRefused: ((reason: string) => void) | undefined,
+  onChanged: ((app: DeviceApp) => void) | undefined,
+  accountId: string | undefined // the device's account, whose catalogue names the release consented to
 ) {
   const { t } = useTranslation()
   const [asking, setAsking] = useState<DeviceApp>()
@@ -94,7 +223,7 @@ export function useAppSwitch(
   }
 
   const flip = (app: DeviceApp, enabled: boolean) => {
-    if (enabled && app.root) setAsking(app)
+    if (enabled && needsConsent(app)) setAsking(app)
     else turn(app, enabled).then(done(app))
   }
 
@@ -102,12 +231,17 @@ export function useAppSwitch(
   // An enabled app held back for a release that runs as root: the yes moves it there.
   const waiting = (app?: DeviceApp) => !!app?.enabled && (!!app.awaitingRoot || app.heldBack?.reason === 'consent')
   const updating = waiting(asking) ? asking?.awaitingRoot || asking?.latest || '' : null
+  // The release the yes goes to: the one waiting for it (graphql's awaitingRoot, enabled or not). None for an app
+  // offered to the device: its own fields are what its release asks there.
+  const target = updating || asking?.awaitingRoot || null
 
   const consent = (
     <RootConsent
       app={asking}
       version={updating}
-      action={updating !== null ? t('deviceApps.rootUpdateAction', 'Consent and update') : undefined}
+      release={target}
+      accountId={accountId}
+      action={updating !== null ? () => t('deviceApps.rootUpdateAction', 'Consent and update') : undefined}
       onConfirm={() => {
         const app = asking
         setAsking(undefined)
@@ -121,3 +255,9 @@ export function useAppSwitch(
 
   return { flip, reconsent, consent }
 }
+
+/* Whether turning an app on asks the person's yes, as graphql decides it: a release waiting for one (awaitingRoot —
+   graphql names it, enabled or not, where what its release asks is not covered by the consent kept with it), or, for
+   one the device does not have yet (offered: no consent kept), a release that asks for one (asksConsent). */
+export const needsConsent = (app: Pick<DeviceApp, 'root' | 'capabilities' | 'awaitingRoot' | 'rootConsent'>) =>
+  !!app.awaitingRoot || (asksConsent(app) && !app.rootConsent)

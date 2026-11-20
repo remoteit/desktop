@@ -1,0 +1,27 @@
+{
+  "contract": 1,
+  "app": "fixture.dns2",
+  "version": "1.0.0",
+  "name": "dns2",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "dns_udp": {
+      "type": "udp",
+      "port": 53
+    },
+    "dns_tcp": {
+      "type": "tcp",
+      "port": 53
+    }
+  },
+  "service": {
+    "name": "DNS",
+    "protocol": "udp",
+    "listen": [
+      "dns_udp",
+      "dns_tcp"
+    ]
+  }
+}

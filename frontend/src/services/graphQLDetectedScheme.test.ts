@@ -78,19 +78,24 @@ describe('redirectLoops', () => {
   const passed = { set: 'http', serves: 'https', port: 443, detected: null, redirect: 'passed' as const }
 
   it('loops when the device passed the redirect back to the browser, while the type is still plain HTTP', () => {
-    expect(redirectLoops(passed, http)).toBe(true)
+    expect(redirectLoops(passed, http, 443)).toBe(true)
+  })
+
+  it('does not loop when the browser redirects to a different port', () => {
+    expect(redirectLoops(passed, http, 80)).toBe(false)
+    expect(redirectLoops({ ...passed, port: 8443 }, http, 8443)).toBe(true)
   })
 
   it('does not once the service is HTTPS on the port it redirects to', () => {
-    expect(redirectLoops(passed, { typeID: 8, port: 443 })).toBe(false)
-    expect(redirectLoops(passed, { typeID: 8, port: 8443 })).toBe(true)
+    expect(redirectLoops(passed, { typeID: 8, port: 443 }, 443)).toBe(false)
+    expect(redirectLoops(passed, { typeID: 8, port: 8443 }, 443)).toBe(true)
   })
 
   it('does not when the device follows the redirect, found it otherwise, or found nothing', () => {
-    expect(redirectLoops({ ...passed, redirect: 'followed' }, http)).toBe(false)
-    expect(redirectLoops({ ...passed, redirect: null }, http)).toBe(false)
-    expect(redirectLoops({ ...passed, redirect: undefined }, http)).toBe(false)
-    expect(redirectLoops(null, http)).toBe(false)
-    expect(redirectLoops(passed, undefined)).toBe(false)
+    expect(redirectLoops({ ...passed, redirect: 'followed' }, http, 443)).toBe(false)
+    expect(redirectLoops({ ...passed, redirect: null }, http, 443)).toBe(false)
+    expect(redirectLoops({ ...passed, redirect: undefined }, http, 443)).toBe(false)
+    expect(redirectLoops(null, http, 443)).toBe(false)
+    expect(redirectLoops(passed, undefined, 443)).toBe(false)
   })
 })

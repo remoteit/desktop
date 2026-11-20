@@ -98,7 +98,8 @@ export function useProductPolicy(productId?: string) {
     () => (enabled ? products.read(key, productId!, accountId) : Promise.resolve()),
     [enabled, key]
   )
-  return { served, policy, reload }
+  // accountId: the account it was read under, whose catalogue names its apps' releases.
+  return { served, policy, reload, accountId }
 }
 
 // A device's product: for a device of the account in view (its accountId), a virtual one has none of its own.

@@ -56,7 +56,8 @@ export type AppPublisher = {
   domains?: AppPublisherDomain[]
 }
 
-export type AppPublishing = { certifies: boolean; downloads: string | null }
+// fileMax: the most a release file may be, in bytes (graphql appReleaseUploads).
+export type AppPublishing = { certifies: boolean; downloads: string | null; fileMax?: number }
 
 const FIELDS = `id name verifiedDomain created
   keys { keyId publicKey notAfter added revoked }
@@ -65,7 +66,7 @@ const FIELDS = `id name verifiedDomain created
 
 // undefined: the API has no publishers (or the read failed); null: the account has not claimed one.
 export async function graphQLAppPublisher(accountId?: string): Promise<{ publisher: AppPublisher | null; publishing: AppPublishing } | undefined> {
-  const query = `query AppPublisher($accountId: String) { appPublisher(accountId: $accountId) { ${FIELDS} } appPublishing { certifies downloads } }`
+  const query = `query AppPublisher($accountId: String) { appPublisher(accountId: $accountId) { ${FIELDS} } appPublishing { certifies downloads fileMax } }`
   const variables = { accountId }
   const response = await post({ query, variables })
   if (response === 'ERROR') return undefined
