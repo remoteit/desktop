@@ -1,0 +1,22 @@
+{
+  "contract": 1,
+  "app": "fixture.shell",
+  "version": "1.0.0",
+  "name": "shell",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "${remoteit.session}"
+    ]
+  },
+  "listen": {
+    "shell": {
+      "type": "stdio"
+    }
+  },
+  "service": {
+    "name": "Shell",
+    "protocol": "ssh",
+    "listen": "shell"
+  }
+}

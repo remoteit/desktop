@@ -12,7 +12,11 @@ vi.mock('react-i18next', () => ({
 vi.mock('../components/Container', () => ({ Container: ({ children }: any) => <div>{children}</div> }))
 vi.mock('../hooks/useThisDevice', () => ({ useThisDevice: () => null }))
 vi.mock('../components/ThisDeviceSignIn', () => ({ ThisDeviceSignIn: () => null }))
-const { usage } = vi.hoisted(() => ({ usage: vi.fn() }))
+const { usage, deviceApps } = vi.hoisted(() => ({ usage: vi.fn(), deviceApps: vi.fn() }))
+// The device's apps as the API says them, the device read by its UID: their words and whether each serves a service.
+vi.mock('../hooks/useDeviceApps', () => ({
+  useDeviceApps: (uid?: string) => ({ apps: uid ? deviceApps(uid) : undefined }),
+}))
 vi.mock('../services/transferUsage', () => ({ fetchTransferUsage: usage, UNSUPPORTED: 'UNSUPPORTED' }))
 vi.mock('../helpers/dateHelper', async importOriginal => ({
   ...(await importOriginal<object>()),
@@ -592,8 +596,18 @@ describe('This device has what Settings has', () => {
     expect(container.querySelector('[data-section="settings"] [data-setting="printers"]')).toBeNull()
   })
 
+  // The console as the API gives it: named, its setting labelled by its release, its service ssh.
+  const consoleApp = {
+    id: 'remoteit.console',
+    name: 'Console',
+    protocol: 'ssh',
+    settings: [{ name: 'ai_commands', label: 'Allow AI commands' }],
+  }
+
   it('what the device offers: reasons, a change replaced, the relay in use, and what is not served', async () => {
+    deviceApps.mockReturnValue([consoleApp])
     const { container } = await render({ capabilities: caps, status, settings }, { part: 'advanced' })
+    expect(deviceApps).toHaveBeenCalledWith('80:00:00:00:01:0A:BC:DE')
     const row = (name: string) => container.querySelector(`[data-section="settings"] [data-setting="${name}"]`)!
     expect(row('exit_node').textContent).toContain('Turned off by this machine’s administrator')
     expect((row('exit_node').querySelector('input') as HTMLInputElement).disabled).toBe(true)
@@ -642,7 +656,8 @@ describe('This device has what Settings has', () => {
     expect(row('acme.files').textContent).toContain('Running — Kept by this device’s administrator, though its release was withdrawn 1.2.0')
   })
 
-  it('the console’s AI commands: an option of the console’s row, set by the console’s key', async () => {
+  it('an app’s settings — the console’s AI commands — options of its row, in the API’s words, set by their keys', async () => {
+    deviceApps.mockReturnValue([consoleApp])
     const { container, bridge } = await render({ capabilities: caps, status, settings }, { part: 'advanced' })
     const rows = [...container.querySelectorAll('[data-section="settings"] [data-setting]')]
     const at = rows.findIndex(r => r.getAttribute('data-setting') === 'remoteit.console')
@@ -655,6 +670,22 @@ describe('This device has what Settings has', () => {
     expect(bridge.calls.filter(c => c.method === 'settings.set').map(c => c.args)).toEqual([
       { name: 'remoteit.console.ai_commands', value: true },
     ])
+  })
+
+  it('an app the API does not name: said by its names, its options still under it, and not said to need the services', async () => {
+    deviceApps.mockReturnValue(null)
+    const apps = [
+      ...settings.filter(s => !s.name.startsWith('remoteit.console')),
+      { name: 'acme.shell', value: true, source: 'cloud' as const, app: { state: 'running', version: '1.0.0' } },
+      { name: 'acme.shell.colour', value: true, source: 'default' as const },
+    ]
+    const { container } = await render({ capabilities: caps, status, settings: apps }, { part: 'advanced' })
+    const rows = [...container.querySelectorAll('[data-section="settings"] [data-setting]')]
+    const at = rows.findIndex(r => r.getAttribute('data-setting') === 'acme.shell')
+    expect(rows[at].textContent).toContain('acme.shell')
+    expect(rows[at].textContent).not.toContain('Not served')
+    expect(rows[at + 1].getAttribute('data-setting')).toBe('acme.shell.colour')
+    expect(getComputedStyle(rows[at + 1] as HTMLElement).paddingLeft).toBe('32px')
   })
 
   it('the detailed connection logging, and the app’s own Open at login', async () => {

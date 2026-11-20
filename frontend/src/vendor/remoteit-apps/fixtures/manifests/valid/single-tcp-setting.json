@@ -1,0 +1,34 @@
+{
+  "contract": 1,
+  "app": "fixture.vnc",
+  "version": "1.0.0",
+  "name": "vnc",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "-rfbport",
+      "${setting.port}"
+    ]
+  },
+  "listen": {
+    "type": "tcp",
+    "port": "${setting.port}"
+  },
+  "service": {
+    "name": "Desktop",
+    "protocol": "vnc",
+    "port": "${setting.port}"
+  },
+  "health": {
+    "type": "tcp"
+  },
+  "settings": {
+    "port": {
+      "type": "int",
+      "label": "Port",
+      "default": 5900,
+      "min": 1024,
+      "max": 65535
+    }
+  }
+}

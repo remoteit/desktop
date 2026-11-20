@@ -1,0 +1,15 @@
+{
+  "contract": 1,
+  "app": "fixture.a",
+  "version": "1.0.0",
+  "name": "a",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "sock": {
+      "type": "unix",
+      "ports": "5004-5005"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "contract": 1,
+  "app": "fixture.panel",
+  "version": "1.0.0",
+  "name": "panel",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "${remoteit.listen.sock.path}",
+      "${remoteit.listen.admin.port}"
+    ]
+  },
+  "listen": {
+    "sock": {
+      "type": "unix",
+      "identity": "header"
+    },
+    "admin": {
+      "type": "tcp"
+    }
+  },
+  "service": {
+    "name": "Panel",
+    "protocol": "https",
+    "listen": "sock"
+  },
+  "health": {
+    "type": "http",
+    "path": "/healthz",
+    "listen": "sock"
+  }
+}

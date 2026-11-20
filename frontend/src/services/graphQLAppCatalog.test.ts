@@ -80,14 +80,22 @@ describe('the catalogue, where graphql serves it', () => {
     )
     const app = await graphQLCatalogApp('acme.backup', { heldBack: true, heldBackReason: 'daemon' })
     const { query, variables } = post.mock.calls[1][0]
-    expect(query).toContain('releases(first: $releases) { version created notes root platforms withdrawn channels }')
+    expect(query).toContain(
+      'releases(first: $releases) { version created notes root capabilities protocol contract platforms withdrawn channels }'
+    )
+    // Contract 1: how its service opens and the contract it is written to; no kind or serves (run and listen are the
+    // daemon's to read).
+    expect(query).toMatch(/runsAs root capabilities protocol icon contract platforms/)
+    expect(query).not.toMatch(/\bkind\b|\bserves\b/)
     expect(query).toContain('devices(first: 100, after: $after, heldBack: $heldBack, heldBackReason: $heldBackReason, version: $version)')
     expect(query).toContain('heldBackBy { reason count }')
     expect(query).toContain('heldBack { reason detail }')
     expect(variables).toMatchObject({ id: 'acme.backup', heldBack: true, heldBackReason: 'daemon', releases: 20 })
     expect(app).toMatchObject({
       channels: [{ channel: 'beta', current: '1.5.0', candidate: '1.5.1', share: 10 }],
-      releases: [{ version: '1.5.0', notes: 'Adds S3' }],
+      releases: [{ version: '1.5.0', notes: 'Adds S3', capabilities: [], protocol: null }],
+      capabilities: [],
+      protocol: null,
       fleet: { total: 1, heldBack: 1, heldBackBy: [{ reason: 'daemon', count: 1 }] },
       devices: { total: 1, items: [{ deviceId: 'D1', heldBack: { reason: 'daemon', detail: 'x' }, pinned: null }] },
     })

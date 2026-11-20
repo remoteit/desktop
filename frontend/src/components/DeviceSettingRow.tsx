@@ -88,14 +88,17 @@ export const DeviceSettingChoice: React.FC<{
   value: string // the value standing, as the setting's control fixes it
   choices: ISelect[]
   note?: React.ReactNode // the setting's state, below who set it
+  why?: string // who set it, or why it is fixed, in the caller's words (an app's setting); else a device setting's
   disabled?: boolean
   onChange: (value: string) => void
-}> = ({ setting, icon, hideIcon, label, value, choices, note, disabled, onChange }) => {
+}> = ({ setting, icon, hideIcon, label, value, choices, note, why: said, disabled, onChange }) => {
   const { t } = useTranslation()
   const fixed = choices.find(choice => choice.key === setting.control)
-  const why = fixed
-    ? t('deviceSetting.controlFixedTo', "Set to {{value}} by the device's administrator", { value: fixed.name })
-    : settingNote(t, setting)
+  const why =
+    said ??
+    (fixed
+      ? t('deviceSetting.controlFixedTo', "Set to {{value}} by the device's administrator", { value: fixed.name })
+      : settingNote(t, setting))
   return (
     <SelectSetting
       icon={icon}

@@ -8,6 +8,12 @@ export type AppChange<T> = T | Refused
 export const refused = (result: unknown): result is Refused =>
   !!result && typeof result === 'object' && 'reason' in result && typeof (result as Refused).reason === 'string'
 
+// A choice as its owner sees it (label) and as the app gets it (value). The manifest's string shorthand is both, so a
+// choice graphql gives as a string, or without a label, is labelled by its value.
+export type AppSettingChoice = { value: string; label: string }
+export const choiceOf = (choice: any): AppSettingChoice =>
+  typeof choice === 'string' ? { value: choice, label: choice } : { value: choice.value, label: choice.label || choice.value }
+
 // What graphql says of a release a device's remote.it is too old to run — restricted, a script or bundle, one served on
 // a socket — where it is enabled: its state unavailable, this its detail.
 export const NEEDS_NEWER = 'Needs a newer remote.it on this device'

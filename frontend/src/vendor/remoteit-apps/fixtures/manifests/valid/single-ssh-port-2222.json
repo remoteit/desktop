@@ -1,0 +1,21 @@
+{
+  "contract": 1,
+  "app": "fixture.console",
+  "version": "1.0.0",
+  "name": "console",
+  "run": {
+    "command": "bin/app",
+    "args": [
+      "${remoteit.listen}"
+    ]
+  },
+  "listen": {
+    "type": "unix",
+    "identity": "header"
+  },
+  "service": {
+    "name": "SSH",
+    "protocol": "ssh",
+    "port": 2222
+  }
+}

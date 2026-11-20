@@ -3,6 +3,8 @@ import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const { apps, push } = vi.hoisted(() => ({ apps: { value: {} as any }, push: vi.fn() }))
+// The release a consent names is read from its catalogue entry; none here: the app's own capabilities.
+vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: () => Promise.resolve('UNSERVED') }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }) }))
 vi.mock('../services/Context', async () => ({ DeviceContext: (await import('react')).createContext({}) }))
 vi.mock('../hooks/useDeviceApps', () => ({ useDeviceApps: () => apps.value }))
@@ -17,7 +19,6 @@ vi.mock('../components/Notice', () => ({ Notice: ({ children }: any) => <div dat
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
 vi.mock('../components/Link', () => ({ Link: ({ to, children }: any) => <a data-to={to}>{children}</a> }))
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
-vi.mock('../components/firstPartyApps', () => ({ firstPartyApp: () => undefined }))
 vi.mock('../components/Confirm', () => ({
   Confirm: ({ open, title, children, onConfirm }: any) =>
     open ? (
@@ -58,7 +59,7 @@ async function render(permissions = ['VIEW', 'CONNECT', 'MANAGE', 'SCRIPTING']) 
   container = document.createElement('div')
   document.body.appendChild(container)
   root = createRoot(container)
-  const device = { id: 'D1', name: 'pi-kitchen', permissions } as unknown as IDevice
+  const device = { id: 'D1', name: 'pi-kitchen', accountId: 'A1', permissions } as unknown as IDevice
   await act(async () =>
     root.render(
       <DeviceContext.Provider value={{ device } as any}>
@@ -154,5 +155,35 @@ describe('the catalogue for this device', () => {
     apps.value.available = []
     page = await render()
     expect(page.querySelector('[data-catalog-empty]')?.textContent).toBe('There is no app this device does not have already.')
+  })
+
+  it('what each asks of remote.it, as graphql gives it for the release offered, beside Runs as root — and named in the consent', async () => {
+    apps.value.available = [
+      available({ capabilities: [], protocol: 'https' }),
+      available({
+        id: 'acme.shell',
+        name: 'Shell',
+        publisher: 'Acme',
+        root: true,
+        capabilities: ['person-accounts', 'person-certificates'],
+        protocol: 'ssh',
+      }),
+    ]
+    const page = await render()
+    expect(offer(page, 'acme.shell').querySelector('[data-catalog-capabilities]')?.textContent).toBe(
+      'Keeps accounts for the people you share with · Signs in people by remote.it certificate'
+    )
+    expect(offer(page, 'remoteit.files').querySelector('[data-catalog-capabilities]')).toBeNull()
+    await click(offer(page, 'acme.shell').querySelector('[data-available-add]'))
+    expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.textContent)).toEqual([
+      '· Keeps accounts for the people you share with',
+      '· Signs in people by remote.it certificate',
+    ])
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(turn).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'acme.shell', capabilities: ['person-accounts', 'person-certificates'] }),
+      true,
+      true
+    )
   })
 })

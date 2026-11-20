@@ -29,7 +29,7 @@ export const ProductPolicyPage: React.FC = () => {
   const product = products.find(p => p.id === productId)
   const accountId = useSelector(selectActiveAccountId)
   const manage = useSelector(selectPermissions).includes('ADMIN')
-  const { served, policy, reload } = useProductPolicy(productId)
+  const { served, policy, reload, accountId: readUnder } = useProductPolicy(productId)
 
   if (!product) return <LoadingMessage />
 
@@ -76,6 +76,7 @@ export const ProductPolicyPage: React.FC = () => {
             {policy.apps && (
               <ProductPolicyApps
                 productId={product.id}
+                accountId={readUnder}
                 apps={policy.apps}
                 sync={policy.sync}
                 manage={manage}

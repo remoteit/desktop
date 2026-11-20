@@ -1,0 +1,16 @@
+{
+  "contract": 1,
+  "app": "fixture.a",
+  "version": "1.0.0",
+  "name": "a",
+  "run": {
+    "command": "bin/app"
+  },
+  "listen": {
+    "rtp": {
+      "type": "udp",
+      "port": 5004,
+      "ports": "5004-5005"
+    }
+  }
+}

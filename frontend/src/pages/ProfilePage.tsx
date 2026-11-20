@@ -18,6 +18,7 @@ import { Icon } from '../components/Icon'
 import { spacing } from '../styling'
 import { DaemonSettingsList } from '../components/DaemonSettingsList'
 import { AccountSlugSetting } from '../components/AccountSlugSetting'
+import { SshHandleSetting } from '../components/SshHandleSetting'
 import { TaggedIntoList } from '../components/TaggedIntoList'
 
 export const ProfilePage: React.FC = () => {
@@ -55,7 +56,12 @@ export const ProfilePage: React.FC = () => {
         <ProfilePicture email={user.email} />
       </Gutters>
       <List>
-        <FormDisplay icon={<Icon name="at" />} label={t('settings.email', 'Email')} displayValue={user.email} displayOnly />
+        <FormDisplay
+          icon={<Icon name="at" />}
+          label={t('settings.email', 'Email')}
+          displayValue={user.email}
+          displayOnly
+        />
         <FormDisplay
           icon={<Icon name="calendar-star" />}
           label={t('settings.memberSince', 'Member since')}
@@ -84,6 +90,7 @@ export const ProfilePage: React.FC = () => {
         />
       </List>
       <AccountSlugSetting />
+      <SshHandleSetting />
       <DaemonSettingsList />
       <TaggedIntoList />
       <Typography variant="subtitle1">{t('settings.accountDeletion', 'Account deletion')}</Typography>
@@ -91,4 +98,3 @@ export const ProfilePage: React.FC = () => {
     </Container>
   )
 }
-

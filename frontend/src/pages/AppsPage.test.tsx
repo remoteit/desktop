@@ -17,7 +17,6 @@ vi.mock('../components/Gutters', () => ({ Gutters: ({ children }: any) => <div>{
 vi.mock('../components/Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
-vi.mock('../components/firstPartyApps', () => ({ firstPartyApp: () => undefined }))
 vi.mock('react-i18next', () => {
   const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
   return {
@@ -69,6 +68,11 @@ describe('Apps, the account’s catalogue', () => {
     expect(backup.querySelector('[data-catalog-aside]')?.textContent).toBe('4 devices')
     const console = row(page, 'remoteit.console')
     expect(console.querySelector('[data-catalog-runs]')?.textContent).toBe('Runs as root: full control of the device')
+    // What it asks of remote.it, beside Runs as root; an ordinary app asks nothing.
+    expect(console.querySelector('[data-catalog-capabilities]')?.textContent).toBe(
+      'Keeps accounts for the people you share with · Signs in people by remote.it certificate · AI commands go through this app'
+    )
+    expect(backup.querySelector('[data-catalog-capabilities]')).toBeNull()
     expect(console.querySelector('[data-catalog-platforms]')?.textContent).toBe('linux · darwin · windows')
     expect(row(page, 'remoteit.files').querySelector('[data-catalog-aside]')?.textContent).toBe('—')
   })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isConsoleService, sshCommand } from './sshHelper'
+import { opensTerminal, sshCommand } from './sshHelper'
 
 describe('sshHelper', () => {
   it('is the plain ssh command, the port named only when it is not 22', () => {
@@ -8,10 +8,15 @@ describe('sshHelper', () => {
     expect(sshCommand('pi-evan.on.remote.it')).toBe('ssh pi-evan.on.remote.it')
   })
 
-  it('knows the console by its host, an SSH service', () => {
-    expect(isConsoleService({ typeID: 28, host: 'remoteit-console' })).toBe(true)
-    expect(isConsoleService({ typeID: 28, host: 'localhost' })).toBe(false)
-    expect(isConsoleService({ typeID: 8, host: 'remoteit-console' })).toBe(false)
-    expect(isConsoleService(undefined)).toBe(false)
+  it('opens a terminal for an app’s service that is ssh, where the app declares person-certificates — none by its id', () => {
+    expect(opensTerminal({ capabilities: ['person-certificates'] }, { protocol: 'ssh' })).toBe(true)
+    expect(
+      opensTerminal({ capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'] }, { protocol: 'ssh' })
+    ).toBe(true)
+    expect(opensTerminal({ capabilities: ['ssh-exec'] }, { protocol: 'ssh' })).toBe(false)
+    expect(opensTerminal({ capabilities: ['person-certificates'] }, { protocol: 'https' })).toBe(false)
+    expect(opensTerminal({ capabilities: ['person-certificates'] }, { protocol: 'udp' })).toBe(false)
+    expect(opensTerminal({ capabilities: [] }, { protocol: null })).toBe(false)
+    expect(opensTerminal(undefined)).toBe(false)
   })
 })

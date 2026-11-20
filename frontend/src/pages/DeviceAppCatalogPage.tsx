@@ -19,22 +19,24 @@ import { adminControlLine, offered } from '../helpers/appsHelper'
 
 /* The catalogue for this device (presence-server docs/device-apps-design.md, "The Apps pages",
    /devices/:deviceID/apps/add): the apps it may take and does not have (graphql's Device.availableApps) — remote.it's
-   and its own account's —, each with its publisher, Runs as root or Restricted, its description, and why it cannot be
-   added here where it cannot: its administrator refuses it, or its stage has no release of it yet; and where its
-   remote.it is too old to run it yet. A row opens the app in the catalogue; Add adds it here and enabled — a root app
-   only with the person's yes (components/AppRootConsent) —, then opens it on this device. Adding runs code on the
-   device: Scripting as well as Manage. */
+   and its own account's —, each with its publisher, Runs as root or Restricted and what else it asks of remote.it (its
+   capabilities, as graphql gives them for the release its stage gives), its description, and why it
+   cannot be added here where it cannot: its administrator refuses it, or its stage has no release of it yet; and where
+   its remote.it is too old to run it yet. A row opens the app in the catalogue; Add adds it here and enabled — a root
+   app only with the person's yes (components/AppRootConsent), which names its capabilities too —, then opens it on
+   this device. Adding runs code on the device: Scripting as well as Manage. */
 export const DeviceAppCatalogPage: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
   const { device } = useContext(DeviceContext)
-  const deviceApps = useDeviceApps(device?.id)
+  const deviceApps = useDeviceApps(device?.id, { accountId: device?.accountId })
   const { apps, available, switching } = deviceApps
   const [refusal, setRefusal] = useState<string>()
   const { flip, consent } = useAppSwitch(
     deviceApps,
     reason => setRefusal(reason || t('apps.notAdded', 'The app was not added.')),
-    app => device && history.push(`/devices/${device.id}/apps/${app.id}`)
+    app => device && history.push(`/devices/${device.id}/apps/${app.id}`),
+    device?.accountId
   )
 
   if (!device) return <LoadingMessage />
@@ -91,6 +93,9 @@ export const DeviceAppCatalogPage: React.FC = () => {
                 publisher={app.publisher}
                 verifiedDomain={app.publisherVerifiedDomain}
                 root={app.root}
+                capabilities={app.capabilities}
+                protocol={app.protocol}
+                icon={app.icon}
                 description={app.description}
                 aside={app.version}
                 onOpen={() => history.push(`/apps/${app.id}`)}

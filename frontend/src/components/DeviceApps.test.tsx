@@ -2,24 +2,22 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { apps, hostKey, name, openTerminal, push } = vi.hoisted(() => ({
+const { apps, name, openTerminal, push } = vi.hoisted(() => ({
   push: vi.fn(),
   apps: { value: {} as any },
-  hostKey: vi.fn(),
   name: { value: 'pi-evan.on.remote.it' as string | undefined },
   openTerminal: vi.fn(),
 }))
+// The release a consent names is read from its catalogue entry; none here: the app's own capabilities.
+vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: () => Promise.resolve('UNSERVED') }))
 vi.mock('../services/post', () => ({ post: vi.fn() }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }) }))
 vi.mock('../services/graphQL', () => ({ graphQLBasicRequest: vi.fn(), graphQLGetErrors: vi.fn() }))
-vi.mock('../services/graphQLDeviceApps', async importOriginal => ({
-  ...(await importOriginal<any>()),
-  graphQLSshHostKey: hostKey,
-}))
 vi.mock('../hooks/useDeviceApps', () => ({ useDeviceApps: () => apps.value }))
 vi.mock('../hooks/useDeviceSettings', () => ({ useDeviceSettings: () => ({ setting: () => undefined }) }))
 vi.mock('../hooks/useLocalSubnetName', () => ({ useSubnetName: () => name.value }))
 vi.mock('../helpers/terminalHelper', () => ({ openTerminal }))
+vi.mock('../services/browser', () => ({ default: { isNative: false }, windowOpen: vi.fn() }))
 vi.mock('./Icon', () => ({ Icon: ({ name }: any) => (name ? <i data-icon={name} /> : null) }))
 vi.mock('./Confirm', () => ({
   Confirm: ({ open, title, action, children, onConfirm, onDeny }: any) =>
@@ -42,6 +40,7 @@ vi.mock('react-i18next', () => ({
 
 import { DeviceApps } from './DeviceApps'
 import type { DeviceApp, DeviceAppSetting } from '../services/graphQLDeviceApps'
+import { withServices } from '../test/deviceApps'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const setting = (more: Partial<DeviceAppSetting> = {}): DeviceAppSetting => ({
@@ -61,7 +60,8 @@ const setting = (more: Partial<DeviceAppSetting> = {}): DeviceAppSetting => ({
   ...more,
 })
 
-const consoleApp = (more: Partial<DeviceApp> = {}): DeviceApp => ({
+const consoleApp = (more: Partial<DeviceApp> = {}): DeviceApp =>
+  withServices({
   id: 'remoteit.console',
   name: 'Console',
   publisher: 'remote.it',
@@ -72,11 +72,17 @@ const consoleApp = (more: Partial<DeviceApp> = {}): DeviceApp => ({
   state: 'running',
   detail: null,
   serviceId: 'S1',
+  protocol: 'ssh',
+  capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'],
+  hostKey: 'SHA256:abc',
+  sessions: [],
+  sessionsOpen: 0,
   settings: [setting()],
   ...more,
-})
+  })
 
-const backup = (more: Partial<DeviceApp> = {}): DeviceApp => ({
+const backup = (more: Partial<DeviceApp> = {}): DeviceApp =>
+  withServices({
   id: 'acme.backup',
   name: 'Backup',
   publisher: 'Acme',
@@ -87,6 +93,11 @@ const backup = (more: Partial<DeviceApp> = {}): DeviceApp => ({
   state: 'disabled',
   detail: null,
   serviceId: null,
+  protocol: null,
+  capabilities: [],
+  hostKey: null,
+  sessions: [],
+  sessionsOpen: 0,
   settings: [
     setting({
       name: 'mode',
@@ -103,10 +114,18 @@ const backup = (more: Partial<DeviceApp> = {}): DeviceApp => ({
     setting({ name: 'keep', type: 'int', label: 'Keep this many', help: null, default: 7, value: 7 }),
   ],
   ...more,
-})
+  })
 
 const device = (permissions = ['VIEW', 'CONNECT', 'MANAGE', 'SCRIPTING']) =>
-  ({ id: 'D1', name: 'Pi', permissions, services: [{ id: 'S1', port: 2222 }] } as unknown as IDevice)
+  ({
+    id: 'D1',
+    name: 'Pi',
+    permissions,
+    services: [
+      { id: 'S1', port: 2222 },
+      { id: 'S3', port: 30022 },
+    ],
+  } as unknown as IDevice)
 
 const turn = vi.fn()
 const setRelease = vi.fn()
@@ -129,7 +148,6 @@ afterEach(() => {
 beforeEach(() => {
   turn.mockReset().mockResolvedValue(true)
   setSetting.mockReset().mockResolvedValue(true)
-  hostKey.mockReset().mockResolvedValue('SHA256:abc')
   openTerminal.mockReset()
   push.mockReset()
   name.value = 'pi-evan.on.remote.it'
@@ -270,6 +288,38 @@ describe('the switch enables and disables', () => {
     expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.console' }), true, true)
   })
 
+  it('a restricted app that declares capabilities asks the yes to them first, in their words', async () => {
+    apps.value = { ...apps.value, apps: [backup({ capabilities: ['ssh-exec'] })] }
+    const page = await render(<DeviceApps device={device()} />)
+    await click(switchOf(appRow(page, 'acme.backup')))
+    expect(turn).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Allow Backup what it asks?')
+    expect(page.querySelector('[data-root-consent]')?.getAttribute('data-root-consent')).toBe('capabilities')
+    expect(page.querySelector('[data-confirm] [data-app-capability]')?.getAttribute('data-app-capability')).toBe('ssh-exec')
+    expect(page.querySelector('[data-confirm-ok]')?.textContent).toBe('Allow and turn on')
+    await click(page.querySelector('[data-confirm-ok]'))
+    expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), true, true)
+  })
+
+  it('a consent kept that covers its release (none awaited): turned on at once; one awaited asks again', async () => {
+    const consent = { by: 'U1', email: null, at: '2026-11-10T00:00:00Z', version: '1.4.0', via: 'person' }
+    apps.value = { ...apps.value, apps: [consoleApp({ enabled: false, state: 'disabled', rootConsent: consent })] }
+    let page = await render(<DeviceApps device={device()} />)
+    await click(switchOf(appRow(page, 'remoteit.console')))
+    expect(page.querySelector('[data-confirm]')).toBeNull()
+    expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.console' }), true)
+    act(() => root.unmount())
+    turn.mockClear()
+    apps.value = {
+      ...apps.value,
+      apps: [consoleApp({ enabled: false, state: 'disabled', rootConsent: consent, awaitingRoot: '1.5.0' })],
+    }
+    page = await render(<DeviceApps device={device()} />)
+    await click(switchOf(appRow(page, 'remoteit.console')))
+    expect(turn).not.toHaveBeenCalled()
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Console as root?')
+  })
+
   it('a restricted app at once; any app disabled at once', async () => {
     const page = await render(<DeviceApps device={device()} />)
     await click(switchOf(appRow(page, 'acme.backup')))
@@ -292,13 +342,64 @@ describe('the switch enables and disables', () => {
   })
 })
 
-describe('the console’s Open terminal stays in its row', () => {
-  it('while it runs, through its service’s port; no other app has it', async () => {
+describe('drawn from what the API says, none by its id', () => {
+  // Anyone's app whose service is ssh and that signs people in by certificate.
+  const shell = consoleApp({
+    id: 'acme.shell',
+    name: 'Shell',
+    publisher: 'Acme',
+    root: false,
+    serviceId: 'S3',
+    capabilities: ['person-certificates'],
+  })
+
+  it('Open terminal in the row of any app whose service is ssh and that declares person-certificates, while it runs', async () => {
+    apps.value.apps = [
+      shell,
+      backup(),
+      consoleApp({ id: 'acme.web', serviceId: 'S1', protocol: 'https', capabilities: [] }),
+    ]
     const page = await render(<DeviceApps device={device()} />)
-    const button = [...appRow(page, 'remoteit.console').querySelectorAll('button')].find(b => b.textContent === 'Open terminal')
-    await click(button!)
-    expect(openTerminal).toHaveBeenCalledWith(expect.objectContaining({ name: 'pi-evan.on.remote.it', port: 2222, service: 'S1' }))
-    expect(appRow(page, 'acme.backup').textContent).not.toContain('Open terminal')
+    await click(appRow(page, 'acme.shell').querySelector('[data-app-terminal]'))
+    expect(openTerminal).toHaveBeenCalledWith({
+      name: 'pi-evan.on.remote.it',
+      port: 30022,
+      title: 'Shell',
+      service: 'S3',
+    })
+    expect(appRow(page, 'acme.backup').querySelector('[data-app-terminal]')).toBeNull()
+    expect(appRow(page, 'acme.web').querySelector('[data-app-terminal]')).toBeNull()
+  })
+
+  it('the console as any such app: Open terminal through its service’s port', async () => {
+    const page = await render(<DeviceApps device={device()} />)
+    await click(appRow(page, 'remoteit.console').querySelector('[data-app-terminal]'))
+    expect(openTerminal).toHaveBeenCalledWith({
+      name: 'pi-evan.on.remote.it',
+      port: 2222,
+      title: 'Console',
+      service: 'S1',
+    })
+  })
+
+  it('no Open terminal while it does not run, or without a name in device subnets', async () => {
+    apps.value.apps = [{ ...shell, state: 'starting' }]
+    let page = await render(<DeviceApps device={device()} />)
+    expect(page.querySelector('[data-app-terminal]')).toBeNull()
+    act(() => root.unmount())
+    container.remove()
+    apps.value.apps = [shell]
+    name.value = undefined
+    page = await render(<DeviceApps device={device()} />)
+    expect(page.querySelector('[data-app-terminal]')).toBeNull()
+  })
+
+  it('its icon from how its service opens', async () => {
+    apps.value.apps = [shell, backup(), consoleApp({ id: 'acme.web', protocol: 'https' })]
+    const page = await render(<DeviceApps device={device()} />)
+    expect(appRow(page, 'acme.shell').querySelector('[data-icon="terminal"]')).not.toBeNull()
+    expect(appRow(page, 'acme.web').querySelector('[data-icon="globe"]')).not.toBeNull()
+    expect(appRow(page, 'acme.backup').querySelector('[data-icon="cube"]')).not.toBeNull()
   })
 })
 

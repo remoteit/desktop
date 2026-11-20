@@ -1,0 +1,9 @@
+{
+  "contract": 1,
+  "app": "test.hello",
+  "version": "1.0.0",
+  "name": "Hello",
+  "run": {
+    "command": "hello.sh"
+  }
+}
