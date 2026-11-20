@@ -4346,7 +4346,12 @@
     "title": "Default Connection settings"
   },
   "serviceEditPage": {
-    "title": "Service configuration"
+    "hostedOn": "Hosted on",
+    "listener": "Listener",
+    "listenerUnavailable": "Waiting for the device to report its listener",
+    "standardIO": "Standard input and output",
+    "title": "Service configuration",
+    "unixSocket": "Local socket"
   },
   "serviceForm": {
     "awsExample": "AWS example:",

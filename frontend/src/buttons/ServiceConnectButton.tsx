@@ -59,7 +59,7 @@ export const ServiceConnectButton: React.FC = () => {
   useEffect(() => {
     if (localPort.local && !localPort.local.open && !localPort.busy) setPortAsked(false)
   }, [localPort.local?.open, localPort.busy])
-  const named = !onPort && ((!!local && !proxy) || gateway)
+  const named = !connection.enabled && !onPort && ((!!local && !proxy) || gateway)
   // remote.it is on this machine but does not act for this person (services/localSubnet localSignIn): Connect goes
   // through this browser meanwhile, and signing in there is offered.
   const signIn = useLocalSignIn(!local && reach.checked && !!reach.name && !onPort)

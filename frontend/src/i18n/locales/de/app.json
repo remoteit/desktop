@@ -4346,7 +4346,12 @@
     "title": "Standardverbindungseinstellungen"
   },
   "serviceEditPage": {
-    "title": "Dienstkonfiguration"
+    "hostedOn": "Gehostet auf",
+    "listener": "Listener",
+    "listenerUnavailable": "Kein Listener gemeldet",
+    "standardIO": "Standardeingabe und -ausgabe",
+    "title": "Dienstkonfiguration",
+    "unixSocket": "Lokaler Socket"
   },
   "serviceForm": {
     "awsExample": "AWS-Beispiel:",
