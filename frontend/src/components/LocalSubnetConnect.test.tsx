@@ -143,10 +143,12 @@ describe('LocalSubnetConnect', () => {
     expect(windowOpen).toHaveBeenLastCalledWith(`https://${NAME}`, '_blank')
   })
 
-  it('keeps port 80 explicit when the shared HTTPS port is in use', async () => {
-    await render({ service: { ...service, port: 80 }, defaultHttp: false })
+  it('launches on explicit port 80 without warning about a redirect to a separate HTTPS port', async () => {
+    detect.mockResolvedValue({ [dmPro.id]: passed })
+    await render({ service: dmPro, defaultHttp: false })
     await click('launch')
     expect(windowOpen).toHaveBeenCalledExactlyOnceWith(`https://${NAME}:80`, '_blank')
+    expect(container.querySelector('[data-testid="confirm"]')).toBeNull()
   })
 
   it('uses the usual HTTPS port when the service has its own name', async () => {

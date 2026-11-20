@@ -24,9 +24,8 @@ const PROBE_KEPT_MS = 60_000
 
 export type LocalSubnetName = { name: string; address?: string }
 
-// The shared name's default HTTPS entry can reach the HTTP listener on 80. Other services use their own port.
-export const subnetWebURL = (name: string, port?: number, defaultHttp = false) =>
-  port && port !== 443 && !(port === 80 && defaultHttp) ? `https://${name}:${port}` : `https://${name}`
+export const subnetWebURL = (name: string, port: number) =>
+  port === 443 ? `https://${name}` : `https://${name}:${port}`
 
 const kept = new Map<string, { at: number; answer: Promise<LocalSubnetName | null> }>()
 let absentUntil = 0

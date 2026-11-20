@@ -70,6 +70,7 @@ export const LocalSubnetConnect: React.FC<Props> = ({
   const [loopPort, setLoopPort] = useState<number>()
   const deviceSessions = useDeviceSessions()
   const web = app.urlForm
+  const webPort = port === 80 && defaultHttp ? 443 : port || 443
 
   useEffect(() => {
     setLoopPort(undefined)
@@ -77,15 +78,15 @@ export const LocalSubnetConnect: React.FC<Props> = ({
     let current = true
     graphQLDetectedSchemes(service.deviceID).then(result => {
       const detected = typeof result === 'object' ? result[service.id] : null
-      if (current && detected && redirectLoops(detected, service)) setLoopPort(detected.port)
+      if (current && detected && redirectLoops(detected, service, webPort)) setLoopPort(detected.port)
     })
     return () => {
       current = false
     }
-  }, [web, deviceSessions, service?.deviceID, service?.id, service?.typeID, service?.port])
+  }, [web, webPort, deviceSessions, service?.deviceID, service?.id, service?.typeID, service?.port])
   const launchable = web || app.canLaunch
   const endpoint = web
-    ? subnetWebURL(local.name, port, defaultHttp)
+    ? subnetWebURL(local.name, webPort)
     : ssh
     ? sshCommand(local.name, port)
     : port

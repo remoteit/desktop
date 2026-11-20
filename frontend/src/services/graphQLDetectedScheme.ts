@@ -54,16 +54,17 @@ export async function graphQLDetectedSchemes(
   return Object.fromEntries((device?.services || []).map((s: any) => [s.id, s.detectedScheme ?? null]))
 }
 
-/* Whether launching the service by its web name would loop: its device passed a redirect to https:// on the same host
-   back to the browser, and the service is not yet the HTTPS type on the port it redirects to. */
+/* A passed redirect to the same HTTPS endpoint loops while the service still has the wrong scheme or port. */
 export const redirectLoops = (
   detected: DetectedScheme | null | undefined,
-  service: Pick<IService, 'typeID' | 'port'> | undefined
+  service: Pick<IService, 'typeID' | 'port'> | undefined,
+  launchPort: number
 ): boolean =>
   !!detected &&
   !!service &&
   detected.redirect === 'passed' &&
   detected.serves?.toLowerCase() === 'https' &&
+  detected.port === launchPort &&
   !(service.typeID === HTTPS_TYPE && service.port === detected.port)
 
 export const HTTP_TYPE = 7
