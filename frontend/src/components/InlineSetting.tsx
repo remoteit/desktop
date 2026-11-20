@@ -43,10 +43,11 @@ type Props = {
   modified?: boolean
   disableGutters?: boolean
   invalid?: boolean // the value being edited cannot be saved: Save is greyed, and Enter does nothing
+  waitForSave?: boolean // wait for the save result, which can be false to keep the draft open
   DisplayComponent?: React.ReactElement<FormDisplayProps>
   children?: React.ReactNode
-  onSubmit: () => void
-  onResetClick: () => void
+  onSubmit: () => unknown
+  onResetClick: () => unknown
   onCancel: () => void
   onShowEdit: () => void
   onDelete?: () => void
@@ -65,12 +66,14 @@ export const InlineSetting: React.FC<Props> = ({
   modified,
   disableGutters,
   invalid,
+  waitForSave,
   DisplayComponent,
   children,
   ...props
 }) => {
   const [edit, setEdit] = useState<boolean>(false)
   const canceled = useRef<boolean>(false)
+  const submitting = useRef(false)
   const { t } = useTranslation()
 
   function triggerEdit() {
@@ -82,12 +85,30 @@ export const InlineSetting: React.FC<Props> = ({
     canceled.current = true
   }
 
+  async function commit(action: () => unknown) {
+    if (props.disabled || submitting.current) return
+    submitting.current = true
+    try {
+      const result = action()
+      if (waitForSave && (await result) === false) fieldRef?.current?.focus()
+      else setEdit(false)
+    } finally {
+      submitting.current = false
+    }
+  }
+
   useEffect(() => {
     if (!fieldRef?.current) return
     if (edit) {
       fieldRef.current.focus()
-      fieldRef.current.onblur = () => {
-        if (!canceled.current && !debug) setTimeout(() => setEdit(false), 200)
+      fieldRef.current.onblur = event => {
+        const next = event.relatedTarget
+        const inside = next instanceof Node && fieldRef.current?.form?.contains(next)
+        if (!inside && !canceled.current && !submitting.current && !debug) {
+          setTimeout(() => {
+            if (!submitting.current) setEdit(false)
+          }, 200)
+        }
         canceled.current = false
       }
     }
@@ -131,9 +152,7 @@ export const InlineSetting: React.FC<Props> = ({
           }}
           onSubmit={e => {
             e.preventDefault()
-            if (invalid) return
-            onSubmit()
-            setEdit(false)
+            if (!invalid) void commit(onSubmit)
           }}
         >
           {children}
@@ -145,11 +164,9 @@ export const InlineSetting: React.FC<Props> = ({
                 type="solid"
                 size="md"
                 buttonBaseSize="small"
+                disabled={props.disabled}
                 onMouseDown={cancelBlur}
-                onClick={() => {
-                  onResetClick()
-                  setEdit(false)
-                }}
+                onClick={() => void commit(onResetClick)}
               />
             )}
             <IconButton
@@ -158,7 +175,9 @@ export const InlineSetting: React.FC<Props> = ({
               type="solid"
               size="md"
               buttonBaseSize="small"
+              disabled={props.disabled}
               onClick={() => {
+                if (submitting.current) return
                 setEdit(false)
                 onCancel()
               }}
@@ -170,7 +189,7 @@ export const InlineSetting: React.FC<Props> = ({
               type="solid"
               size="md"
               buttonBaseSize="small"
-              disabled={invalid}
+              disabled={invalid || props.disabled}
               onMouseDown={cancelBlur}
               submit
             />
