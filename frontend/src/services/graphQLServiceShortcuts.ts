@@ -10,7 +10,6 @@ export type ServiceShortcut = {
   enabled: boolean
   application: number
   subnetName?: string | null
-  subnetOwnName?: boolean
   subnetPort?: number | null
   device: { id: string; name: string }
 }
@@ -40,7 +39,7 @@ export function serviceShortcutsSupport() {
     return {
       available:
         has('user', 'serviceShortcuts') && has('service', 'showInServices') && has('mutation', 'setShowInServices'),
-      namedAddress: ['subnetName', 'subnetOwnName', 'subnetPort'].every(field => has('service', field)),
+      namedAddress: ['subnetName', 'subnetPort'].every(field => has('service', field)),
     }
   })
   probe = { url, result }
@@ -56,7 +55,7 @@ export async function graphQLServiceShortcuts(
       login { account(id: $accountId) {
         serviceShortcuts {
           id name state enabled application
-          ${namedAddress ? 'subnetName subnetOwnName subnetPort' : ''}
+          ${namedAddress ? 'subnetName subnetPort' : ''}
           device { id name }
         }
       } }

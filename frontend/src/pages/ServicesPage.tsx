@@ -5,10 +5,14 @@ import { Link } from 'react-router-dom'
 import { Box, Button, List, ListItem, ListItemText, Typography } from '@mui/material'
 import { getApplicationType } from '@common/applications'
 import { selectActiveAccountId } from '../selectors/accounts'
+import type { State } from '../store'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
+import { useLocalSubnetName } from '../hooks/useLocalSubnetName'
 import { useServiceShortcutsSupport } from '../hooks/useServiceShortcutsSupport'
 import { graphQLServiceShortcuts, ServiceShortcut } from '../services/graphQLServiceShortcuts'
 import { openThroughGateway } from '../services/browserGateway'
+import { openServiceURL } from '../services/browser'
+import { subnetWebURL } from '../services/localSubnet'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -96,10 +100,18 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   const [failed, setFailed] = useState(false)
   const to = `/devices/${service.device.id}/${service.id}/connect`
   const online = service.enabled && service.state === 'active'
-  const name =
-    service.subnetOwnName && service.subnetPort === 443 && getApplicationType(service.application).urlForm
-      ? service.subnetName
-      : undefined
+  const type = useSelector((state: State) => state.applicationTypes.all.find(type => type.id === service.application))
+  const web =
+    getApplicationType(service.application).urlForm ||
+    type?.scheme === 'http' ||
+    type?.scheme === 'https' ||
+    (type?.proxy && !type.scheme)
+  const name = web ? service.subnetName : undefined
+  const port = service.subnetPort
+  // Only the default HTTPS port can be opened through the browser gateway.
+  const needsLocal = online && !!name && !!port && port !== 443
+  const local = useLocalSubnetName(needsLocal ? service.device.id : undefined, needsLocal ? service.id : undefined)
+  const destination = port === 443 ? name : needsLocal ? local?.name : undefined
   const status = !service.enabled
     ? t('serviceShortcuts.disabled', 'Disabled')
     : service.state === 'unlicensed'
@@ -107,10 +119,11 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
     : t('statusChip.offline', 'Offline')
 
   const open = async () => {
-    if (!name) return
+    if (!destination || !port) return
     setOpening(true)
     try {
-      setFailed(!(await openThroughGateway(name)))
+      if (port === 443) setFailed(!(await openThroughGateway(destination)))
+      else await openServiceURL(subnetWebURL(destination, port))
     } catch {
       setFailed(true)
     } finally {
@@ -138,7 +151,7 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
           </>
         }
       />
-      {online && name && !failed ? (
+      {online && destination && !failed ? (
         <Button size="small" variant="contained" disabled={opening} onClick={open}>
           {t('serviceShortcuts.open', 'Open')}
         </Button>
