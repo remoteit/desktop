@@ -1,8 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { open, openUrl, set } = vi.hoisted(() => ({ open: vi.fn(), openUrl: vi.fn(), set: vi.fn() }))
+const { open, openUrl, set, isPluginAvailable } = vi.hoisted(() => ({
+  open: vi.fn(),
+  openUrl: vi.fn(),
+  set: vi.fn(),
+  isPluginAvailable: vi.fn(),
+}))
 
-vi.mock('@capacitor/core', () => ({ Capacitor: { isNativePlatform: () => true, getPlatform: () => 'ios' } }))
+vi.mock('@capacitor/core', () => ({
+  Capacitor: { isNativePlatform: () => true, getPlatform: () => 'ios', isPluginAvailable },
+}))
 vi.mock('@capacitor/browser', () => ({ Browser: { open, close: vi.fn() } }))
 vi.mock('@capacitor/app-launcher', () => ({ AppLauncher: { openUrl } }))
 vi.mock('../store', () => ({ store: { getState: () => ({}), dispatch: { ui: { set } } } }))
@@ -17,6 +24,7 @@ describe('windowOpen on a phone', () => {
     open.mockReset()
     openUrl.mockReset()
     set.mockReset()
+    isPluginAvailable.mockReset().mockReturnValue(false)
     vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
@@ -26,6 +34,14 @@ describe('windowOpen on a phone', () => {
     expect(open).toHaveBeenCalledWith({ url: URL, windowName: '_blank' })
     expect(openUrl).not.toHaveBeenCalled()
     expect(set).not.toHaveBeenCalled()
+  })
+
+  it('presents the in-app browser from the active scene on the first launch in the iOS shell', async () => {
+    isPluginAvailable.mockImplementation(name => name === 'ThisDevice')
+    open.mockResolvedValue(undefined)
+    await windowOpen(URL, '_blank')
+    expect(open).toHaveBeenCalledExactlyOnceWith({ url: URL, windowName: '_blank', presentationStyle: 'popover' })
+    expect(openUrl).not.toHaveBeenCalled()
   })
 
   it('hands a web link the in-app browser refuses to the system browser', async () => {
