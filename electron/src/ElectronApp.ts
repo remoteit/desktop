@@ -4,7 +4,20 @@ import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
 import { t, setLanguage } from './i18n'
-import { EVENTS, PROTOCOL, START_URL, START_ORIGIN, brand, environment, preferences, EventBus, Logger } from './backend'
+import {
+  EVENTS,
+  PROTOCOL,
+  START_URL,
+  START_ORIGIN,
+  brand,
+  environment,
+  preferences,
+  EventBus,
+  Logger,
+  loadWindow,
+  serverListening,
+} from './backend'
+import type { WindowLoader } from './backend/loadWindow'
 
 const URL_REGEX = new RegExp('^https?://')
 // An auth deep link carries the OAuth code and state in its query, so logs keep only the part before it.
@@ -15,6 +28,7 @@ export default class ElectronApp {
   public tray?: electron.Tray
   public readonly deepLinks: boolean
   private window?: electron.BrowserWindow
+  private loader?: WindowLoader
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
   private isMaximized: boolean
@@ -238,7 +252,7 @@ export default class ElectronApp {
       autoHideMenuBar: true,
     })
 
-    this.window.loadURL(START_URL)
+    this.loader = loadWindow(this.window, START_URL, url => this.isAppOrigin(url), { ready: serverListening })
 
     this.window.on('close', event => {
       this.saveWindowState()
@@ -454,7 +468,7 @@ export default class ElectronApp {
       return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
     const fullUrl = START_URL + parameters
     Logger.info('OPENING AUTH URL', { url: withoutQuery(fullUrl) })
-    this.window?.loadURL(fullUrl)
+    this.loader?.navigate(fullUrl)
   }
 
   async takeAuthCallback(parameters: string): Promise<string | undefined> {
