@@ -2677,6 +2677,7 @@
     "quit": "終了",
     "quitConfirm": "終了しても接続は閉じられません。",
     "scripting": "スクリプト",
+    "services": "サービス",
     "settings": "設定",
     "signedInOnBrowser": "このブラウザでサインイン済み",
     "signOut": "サインアウト",
@@ -4320,6 +4321,19 @@
     "redirectsHttps": "",
     "switchHttp": "",
     "switchHttps": ""
+  },
+  "serviceShortcuts": {
+    "connect": "接続",
+    "disabled": "無効",
+    "empty": "表示するサービスはありません。サービスの設定で「サービスに表示」をオンにすると、ここに追加されます。",
+    "help": "このサービスに接続できるユーザーにショートカットを表示します。",
+    "loadFailed": "サービスを読み込めませんでした。",
+    "open": "開く",
+    "openFailed": "サービスを開けませんでした。「接続」ボタンをお試しください。",
+    "refresh": "サービスを更新",
+    "settingFailed": "サービスの表示設定を更新できませんでした。",
+    "show": "サービスに表示",
+    "unsupported": "このサーバーではサービスページを利用できません。"
   },
   "serviceSubnetName": {
     "help": "",

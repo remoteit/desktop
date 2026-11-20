@@ -2779,6 +2779,7 @@
     "quit": "Salir",
     "quitConfirm": "Salir no cerrará tus conexiones.",
     "scripting": "Scripts",
+    "services": "Servicios",
     "settings": "Configuración",
     "signedInOnBrowser": "Con sesión iniciada en este navegador",
     "signOut": "Cerrar sesión",
@@ -4526,6 +4527,19 @@
     "redirectsHttps": "",
     "switchHttp": "",
     "switchHttps": ""
+  },
+  "serviceShortcuts": {
+    "connect": "Conectar",
+    "disabled": "Deshabilitado",
+    "empty": "No hay servicios que mostrar. Activa «Mostrar en Servicios» en la configuración de un servicio para añadirlo aquí.",
+    "help": "Añade un acceso directo para quienes pueden conectarse a este servicio.",
+    "loadFailed": "No se pudieron cargar los servicios.",
+    "open": "Abrir",
+    "openFailed": "No se pudo abrir el servicio. Prueba con el botón Conectar.",
+    "refresh": "Actualizar servicios",
+    "settingFailed": "No se pudo actualizar la configuración de Servicios.",
+    "show": "Mostrar en Servicios",
+    "unsupported": "Este servidor no dispone de una página de Servicios."
   },
   "serviceSubnetName": {
     "help": "",

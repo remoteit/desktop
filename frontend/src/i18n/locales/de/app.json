@@ -2728,6 +2728,7 @@
     "quit": "Beenden",
     "quitConfirm": "Das Beenden schließt Ihre Verbindungen nicht.",
     "scripting": "Skripte",
+    "services": "Dienste",
     "settings": "Einstellungen",
     "signedInOnBrowser": "In diesem Browser angemeldet",
     "signOut": "Abmelden",
@@ -4423,6 +4424,19 @@
     "redirectsHttps": "",
     "switchHttp": "",
     "switchHttps": ""
+  },
+  "serviceShortcuts": {
+    "connect": "Verbinden",
+    "disabled": "Deaktiviert",
+    "empty": "Hier werden noch keine Dienste angezeigt. Aktiviere „In Diensten anzeigen“ in den Einstellungen eines Dienstes, um ihn hinzuzufügen.",
+    "help": "Fügt eine Verknüpfung für Personen hinzu, die sich mit diesem Dienst verbinden können.",
+    "loadFailed": "Die Dienste konnten nicht geladen werden.",
+    "open": "Öffnen",
+    "openFailed": "Der Dienst konnte nicht geöffnet werden. Versuche es über „Verbinden“.",
+    "refresh": "Dienste aktualisieren",
+    "settingFailed": "Die Einstellung für Dienste konnte nicht aktualisiert werden.",
+    "show": "In Diensten anzeigen",
+    "unsupported": "Dieser Server bietet keine Diensteseite."
   },
   "serviceSubnetName": {
     "help": "",

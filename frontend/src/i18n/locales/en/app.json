@@ -2728,6 +2728,7 @@
     "quit": "Quit",
     "quitConfirm": "Quitting will not close your connections.",
     "scripting": "Scripting",
+    "services": "Services",
     "settings": "Settings",
     "signedInOnBrowser": "Signed in on this browser",
     "signOut": "Sign out",
@@ -4423,6 +4424,19 @@
     "redirectsHttps": "This service redirects to HTTPS. Switch to port {{port}} (HTTPS)?",
     "switchHttp": "Switch to HTTP",
     "switchHttps": "Switch to HTTPS"
+  },
+  "serviceShortcuts": {
+    "connect": "Connect",
+    "disabled": "Disabled",
+    "empty": "No services to show. Turn on Show in Services in a service’s settings to add it here.",
+    "help": "Add a shortcut for people who can connect to this service.",
+    "loadFailed": "Could not load services.",
+    "open": "Open",
+    "openFailed": "Could not open the service. Try the Connect button.",
+    "refresh": "Refresh services",
+    "settingFailed": "Could not update the Services setting.",
+    "show": "Show in Services",
+    "unsupported": "This server does not have a Services page."
   },
   "serviceSubnetName": {
     "help": "Reach this service at a name of its own on its usual port — ssh on 22, a web page on 443 — whatever port it listens on",

@@ -18,6 +18,7 @@ import { spacing } from '../styling'
 import { getHasPartner } from '../models/partnerStats'
 import { useThisDevice, useThisDevicePage } from '../hooks/useThisDevice'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
+import { useServiceShortcutsSupport } from '../hooks/useServiceShortcutsSupport'
 
 const listSx = (theme: Theme) => ({
   position: 'static',
@@ -53,6 +54,7 @@ export const SidebarNav: React.FC = () => {
   const thisDevice = useThisDevice()
   // Exits and proxies are the device-session API's.
   const deviceSessions = useDeviceSessions()
+  const serviceShortcuts = useServiceShortcutsSupport(!remoteUI)
 
   if (remoteUI)
     return (
@@ -142,6 +144,15 @@ export const SidebarNav: React.FC = () => {
             )}
           </ListItemLocation>
         </>
+      )}
+      {serviceShortcuts && serviceShortcuts !== 'ERROR' && serviceShortcuts.available && (
+        <ListItemLocation
+          title={t('nav.services', 'Services')}
+          icon="network-wired"
+          to="/services"
+          match="/services"
+          dense
+        />
       )}
       {/* In both layouts: a phone's bottom menu has Connections, Devices and Networks, and nothing else of these. */}
       {deviceSessions && (
