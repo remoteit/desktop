@@ -415,6 +415,8 @@ export default class ElectronApp {
     }
   }
 
+  // The .ico must stay out of app.asar (win.asarUnpack): Electron loads a packed .ico by writing a new temp file,
+  // and Defender holds a process's first open of a file it just wrote for ~6 s, blocking the main thread.
   private getIconPath() {
     const iconFile = environment.isMac
       ? 'iconTemplate.png'
