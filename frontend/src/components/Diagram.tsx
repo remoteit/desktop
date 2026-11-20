@@ -3,7 +3,8 @@ import { Box } from '@mui/material'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
 import { useLocation } from 'react-router-dom'
-import { isRelay, connectionState } from '../helpers/connectionHelper'
+import { connectionState } from '../helpers/connectionHelper'
+import { jumpHost } from '../helpers/virtualDeviceHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
 import { IP_LATCH, CLI_REACHABLE_ERROR_CODE } from '@common/constants'
 import { DiagramIndicator, IndicatorProps } from './DiagramIndicator'
@@ -18,7 +19,7 @@ type Props = {
 }
 
 export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = [] }) => {
-  const { service, connection } = useContext(DeviceContext)
+  const { service, connection, device } = useContext(DeviceContext)
   const location = useLocation()
   const state = connectionState(service, connection)
   const lan = lanShared(connection)
@@ -28,7 +29,7 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
   const protekted = connection.connectLink ? !!connection.password : connection.publicRestriction === IP_LATCH
   const page = location.pathname.match(REGEX_LAST_PATH)?.[0]
 
-  relay = relay || isRelay(service)
+  relay = relay || !!jumpHost(service, device)
   let activeTypes: DiagramGroupType[] = []
   let errorTypes: DiagramGroupType[] = []
   let indicator: IndicatorProps = { color: 'grayDarkest' }
@@ -160,4 +161,3 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
     </DiagramContext.Provider>
   )
 }
-

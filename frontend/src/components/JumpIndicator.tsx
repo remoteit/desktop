@@ -1,6 +1,6 @@
 import React from 'react'
-import { IP_PRIVATE } from '@common/constants'
 import { Tooltip } from '@mui/material'
+import { jumpHost } from '../helpers/virtualDeviceHelper'
 import { Icon } from './Icon'
 
 type Props = {
@@ -9,12 +9,11 @@ type Props = {
 }
 
 export function JumpIndicator({ service, device }: Props) {
-  if (!service.host || service.host === IP_PRIVATE || service.host.includes('localhost')) return null
-  // A virtual device's own address is where its services are, not a jump.
-  if (device?.virtual && service.host === device.host) return null
+  const host = jumpHost(service, device)
+  if (!host) return null
 
   return (
-    <Tooltip arrow placement="top" title={`Jump to ${service.host}`}>
+    <Tooltip arrow placement="top" title={`Jump to ${host}`}>
       <Icon color="grayDark" name="arrow-turn-down" rotate={270} type="solid" size="xxs" inlineLeft />
     </Tooltip>
   )

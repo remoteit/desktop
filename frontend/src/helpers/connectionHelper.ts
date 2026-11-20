@@ -1,6 +1,6 @@
 import { emit } from '../services/Controller'
 import { ANONYMOUS_MANUFACTURER_CODE, REGEX_CONNECTION_NAME, REGEX_CONNECTION_TRIM } from '../constants'
-import { IP_PRIVATE, DEFAULT_CONNECTION } from '@common/constants'
+import { DEFAULT_CONNECTION } from '@common/constants'
 import { Application, getApplicationType } from '@common/applications'
 import { State, store } from '../store'
 import { selectEnabledConnections } from '../selectors/connections'
@@ -41,10 +41,6 @@ export function isSecureReverseProxy(template?: string) {
   if (template.startsWith('https:')) return true
   if (template.startsWith('http:')) return false
   return null
-}
-
-export function isRelay(service?: IService) {
-  return !!(service && service.host && service.host !== IP_PRIVATE && service.host !== 'localhost')
 }
 
 export function isFileToken(token: string) {
