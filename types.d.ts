@@ -646,6 +646,7 @@ declare global {
     license: ILicenseTypes
     account: IUserRef
     name?: string
+    standalone?: boolean
   }
 
   type IOrganizationRoleIdType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' | string

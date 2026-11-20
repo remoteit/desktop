@@ -566,6 +566,9 @@
     "why": "",
     "whyTitle": ""
   },
+  "buttons": {
+    "cancel": ""
+  },
   "changeEmailDialog": {
     "cancel": "Abbrechen",
     "currentEmail": "Aktuelle E-Mail:",
@@ -649,6 +652,18 @@
     "claimingForOrg": "Wird für {{name}} beansprucht",
     "claimingWarning": "Sie beanspruchen dieses Gerät für eine Organisation anstatt für sich selbst.",
     "title": "Gerät beanspruchen"
+  },
+  "closeOrganization": {
+    "code": "",
+    "confirm_one": "",
+    "confirm_other": "",
+    "error": "",
+    "resend": "",
+    "resume": "",
+    "sendCode": "",
+    "submit": "",
+    "title": "",
+    "warning": ""
   },
   "columns": {
     "access": "Gäste",
@@ -977,12 +992,19 @@
     "use": "Übergeben Sie ihn der Maschine als {{env}}, oder speichern Sie ihn in einer Datei, die nur der Daemon lesen kann, und geben Sie die Datei in {{file}} an.",
     "wholeNumber": "Eine ganze Zahl ab 1"
   },
+  "createOrganization": {
+    "error": "",
+    "name": "",
+    "submit": "",
+    "title": ""
+  },
   "creditCard": {
     "cardEndingIn": "{{brand}} endend auf {{last}}",
     "expiredDate": "Abgelaufen {{month}}/{{year}}",
     "expiredNotice": "Kreditkarte abgelaufen.",
     "expiredNoticeDetail": "Bitte aktualisieren Sie Ihre Karte, um den Dienst fortzusetzen.",
     "expiringDate": "Läuft ab {{month}}/{{year}}",
+    "noCard": "",
     "processing": "Wird verarbeitet...",
     "title": "Kreditkarte",
     "update": "Aktualisieren"
@@ -3065,6 +3087,11 @@
   "organizationColor": {
     "theme": "Design"
   },
+  "organizationContacts": {
+    "billing": "",
+    "notifications": "",
+    "title": ""
+  },
   "organizationEmptyPage": {
     "create": "Erstellen",
     "createOrgLine1": "Erstellen Sie eine Organisation, um",
@@ -3094,6 +3121,7 @@
   },
   "organizationMembershipPage": {
     "cannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
+    "contactAdminHint": "",
     "contactOwnerHint": "Sie müssten sich an den Organisationsinhaber wenden, um erneut hinzugefügt zu werden.",
     "editOrganization": "Organisation bearbeiten",
     "joined": "Beigetreten",

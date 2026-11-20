@@ -566,6 +566,9 @@
     "why": "In the portal your key is used in a separate, sealed frame that cannot send anything anywhere, but a web page runs the code its site serves at that moment. The tool is code you install once and run on your machine: choose it if you would rather not trust a web page with your key.",
     "whyTitle": "Why sign on your own machine"
   },
+  "buttons": {
+    "cancel": "Cancel"
+  },
   "changeEmailDialog": {
     "cancel": "Cancel",
     "currentEmail": "Current email:",
@@ -649,6 +652,18 @@
     "claimingForOrg": "Claiming for {{name}}",
     "claimingWarning": "You are claiming this device for an organization instead of yourself.",
     "title": "Claim a device"
+  },
+  "closeOrganization": {
+    "code": "Confirmation code",
+    "confirm_one": "{{count}} device will move to the holding account. Enter the code sent to your email.",
+    "confirm_other": "{{count}} devices will move to the holding account. Enter the code sent to your email.",
+    "error": "Could not close the organization. Try again.",
+    "resend": "Send a new code",
+    "resume": "Resume closing {{name}}",
+    "sendCode": "Send confirmation code",
+    "submit": "Close organization",
+    "title": "Close {{name}}",
+    "warning": "Closing the organization permanently removes its data and revokes access. Its devices move to the holding account."
   },
   "columns": {
     "access": "Guests",
@@ -977,12 +992,19 @@
     "use": "Give it to the machine as {{env}}, or save it in a file only the daemon can read and name the file in {{file}}.",
     "wholeNumber": "A whole number of 1 or more"
   },
+  "createOrganization": {
+    "error": "Could not create the organization. Try again.",
+    "name": "Organization name",
+    "submit": "Create organization",
+    "title": "Create organization"
+  },
   "creditCard": {
     "cardEndingIn": "{{brand}} ending in {{last}}",
     "expiredDate": "Expired {{month}}/{{year}}",
     "expiredNotice": "Credit Card Expired.",
     "expiredNoticeDetail": "Please update your card to continue service.",
     "expiringDate": "Expiring {{month}}/{{year}}",
+    "noCard": "No card on file",
     "processing": "Processing...",
     "title": "Credit Card",
     "update": "Update"
@@ -3065,6 +3087,11 @@
   "organizationColor": {
     "theme": "Theme"
   },
+  "organizationContacts": {
+    "billing": "Billing email",
+    "notifications": "Device notification email",
+    "title": "Contact email"
+  },
   "organizationEmptyPage": {
     "create": "Create",
     "createOrgLine1": "Create an organization to",
@@ -3094,6 +3121,7 @@
   },
   "organizationMembershipPage": {
     "cannotBeUndone": "This action cannot be undone.",
+    "contactAdminHint": "Contact an organization Admin to rejoin.",
     "contactOwnerHint": "You would need to contact the Organization owner to be re-added.",
     "editOrganization": "Edit Organization",
     "joined": "Joined",

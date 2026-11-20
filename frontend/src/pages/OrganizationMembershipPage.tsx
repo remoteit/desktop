@@ -82,8 +82,13 @@ export const OrganizationMembershipPage: React.FC = () => {
                 primary={m.name}
                 secondary={
                   <>
-                    {t('organizationMembershipPage.owner', 'Owner')} <b>{m.account.email}</b>
-                    &nbsp; - {t('organizationMembershipPage.joined', 'Joined')}{' '}
+                    {m.account.email && (
+                      <>
+                        {t('organizationMembershipPage.owner', 'Owner')} <b>{m.account.email}</b>
+                        &nbsp; -{' '}
+                      </>
+                    )}
+                    {t('organizationMembershipPage.joined', 'Joined')}{' '}
                     <Duration startTime={m.created.getTime()} ago />
                   </>
                 }
@@ -105,10 +110,12 @@ export const OrganizationMembershipPage: React.FC = () => {
                       <Notice severity="error" gutterBottom fullWidth>
                         {t('organizationMembershipPage.cannotBeUndone', 'This action cannot be undone.')}
                         <em>
-                          {t(
-                            'organizationMembershipPage.contactOwnerHint',
-                            'You would need to contact the Organization owner to be re-added.'
-                          )}
+                          {m.standalone
+                            ? t('organizationMembershipPage.contactAdminHint', 'Contact an organization Admin to rejoin.')
+                            : t(
+                                'organizationMembershipPage.contactOwnerHint',
+                                'You would need to contact the Organization owner to be re-added.'
+                              )}
                         </em>
                       </Notice>
                     ),

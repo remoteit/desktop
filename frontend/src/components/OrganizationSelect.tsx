@@ -13,6 +13,9 @@ import { GuideBubble } from './GuideBubble'
 import { fontSizes } from '../styling'
 import { Avatar } from './Avatar'
 import { Icon } from './Icon'
+import { CreateOrganizationDialog } from './CreateOrganizationDialog'
+import { CloseOrganizationDialog } from './CloseOrganizationDialog'
+import { PendingOrganizationClosure } from '../models/accounts'
 
 // The organization selector's guide shipped later than the rest — its own cohort cutoff
 const ORG_GUIDE_DATE = new Date('2023-01-01')
@@ -110,6 +113,10 @@ export const OrganizationSelect: React.FC = () => {
   const ownOrg = useSelector(getOwnOrganization)
   const sessions = useSelector(selectAllConnectionSessions)
   const userId = useSelector((state: State) => state.user.id)
+  const canCreate = useSelector((state: State) => state.accounts.standaloneOrganizations)
+  const pending = useSelector((state: State) => state.accounts.pendingOrganizationClosures)
+  const [creating, setCreating] = React.useState(false)
+  const [closing, setClosing] = React.useState<PendingOrganizationClosure>()
 
   const ownOrgId = ownOrg?.id
   let menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
@@ -131,12 +138,14 @@ export const OrganizationSelect: React.FC = () => {
     }
   }
 
-  if (!options.length) return null
+  if (!options.length && !canCreate) return null
 
   const mySessions = sessions.filter(s => s.target.accountId === ownOrg?.id).length
 
   return (
     <>
+      {creating && <CreateOrganizationDialog onClose={() => setCreating(false)} />}
+      {closing && <CloseOrganizationDialog {...closing} onClose={() => setClosing(undefined)} />}
       <Box sx={nameSx}>
         <Typography variant="h4">{activeOrg.name || t('organizationSelect.organizations', 'Organizations')}</Typography>
       </Box>
@@ -234,6 +243,37 @@ export const OrganizationSelect: React.FC = () => {
               </Badge>
             )
           })}
+          {canCreate && (
+            <Tooltip title={t('createOrganization.title', 'Create organization')} placement="right" arrow>
+              <ListItem disableGutters sx={buttonContainerSx}>
+                <ButtonBase
+                  sx={buttonSx}
+                  aria-label={t('createOrganization.title', 'Create organization')}
+                  onClick={() => setCreating(true)}
+                >
+                  <Icon size="md" name="plus" color="grayDarkest" />
+                </ButtonBase>
+              </ListItem>
+            </Tooltip>
+          )}
+          {pending?.map(closure => (
+            <Tooltip
+              key={closure.organizationId}
+              title={t('closeOrganization.resume', { name: closure.name, defaultValue: 'Resume closing {{name}}' })}
+              placement="right"
+              arrow
+            >
+              <ListItem disableGutters sx={buttonContainerSx}>
+                <ButtonBase
+                  sx={buttonSx}
+                  aria-label={t('closeOrganization.resume', { name: closure.name, defaultValue: 'Resume closing {{name}}' })}
+                  onClick={() => setClosing(closure)}
+                >
+                  <Icon size="md" name="trash" color="grayDarkest" />
+                </ButtonBase>
+              </ListItem>
+            </Tooltip>
+          ))}
           {/* <ListItem disableGutters sx={buttonContainerSx}>
             <IconButton
               sx={buttonSx}

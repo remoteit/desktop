@@ -3,8 +3,8 @@ import { State } from '../store'
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { graphQLLeaveMembership } from '../services/graphQLMutation'
-import { graphQLBasicRequest } from '../services/graphQL'
+import { graphQLCreateOrganization, graphQLLeaveMembership } from '../services/graphQLMutation'
+import { graphQLBasicRequest, refusalOf } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { mergeDevice } from './devices'
 import { RootModel } from '.'
@@ -12,6 +12,24 @@ import { RootModel } from '.'
 export type IAccountsState = {
   membership: IMembership[]
   activeId?: string // user.id
+  standaloneOrganizations?: boolean
+  pendingOrganizationClosures?: PendingOrganizationClosure[]
+}
+
+export type PendingOrganizationClosure = { organizationId: string; name: string }
+
+function membershipFrom(data): IMembership {
+  const { account, name, standalone } = data.organization
+  return {
+    created: new Date(data.created),
+    roleId: data.customRole.id,
+    roleName: data.customRole.name,
+    license: data.license || 'UNKNOWN',
+    account: { ...account, email: account.email || '' },
+    name,
+    // Older servers use the same query, and every login-backed organization has an account email.
+    standalone: standalone ?? account.email == null,
+  }
 }
 
 const accountsState: IAccountsState = {
@@ -23,6 +41,7 @@ export default createModel<RootModel>()({
   state: { ...accountsState },
   effects: dispatch => ({
     async fetch() {
+      void dispatch.accounts.fetchOrganizationClosures()
       const result = await graphQLBasicRequest(
         ` query Accounts {
               login {
@@ -53,14 +72,7 @@ export default createModel<RootModel>()({
       console.log('MEMBERSHIPS', gqlData)
       if (!gqlData) return
       const membership = gqlData.membership || []
-      const memberships: IMembership[] = membership.map(m => ({
-        created: new Date(m.created),
-        roleId: m.customRole.id,
-        roleName: m.customRole.name,
-        license: m.license || [],
-        account: m.organization.account,
-        name: m.organization.name,
-      }))
+      const memberships: IMembership[] = membership.map(membershipFrom)
       // Only an organization the user has left is stale - their own id means they
       // deliberately selected their personal account, which selectDefaultAccountId reads.
       const activeId = state.accounts.activeId
@@ -68,6 +80,38 @@ export default createModel<RootModel>()({
       const stale = !!activeId && activeId !== userId && !memberships.some(m => m.account.id === activeId)
       if (stale) dispatch.ui.set({ selected: [], selectionAnchor: undefined })
       dispatch.accounts.set({ membership: memberships, ...(stale ? { activeId: undefined } : {}) })
+    },
+    async fetchOrganizationClosures() {
+      const result = await graphQLBasicRequest(
+        '{ pendingOrganizationClosures { organizationId name } }',
+        {},
+        true
+      )
+      if (result === 'ERROR') return
+      const pending = result.data?.data?.pendingOrganizationClosures
+      if (!Array.isArray(pending)) return
+      dispatch.accounts.set({
+        standaloneOrganizations: true,
+        pendingOrganizationClosures: pending,
+      })
+    },
+    async createOrganization({ name, submissionId }: { name: string; submissionId: string }): Promise<string | undefined> {
+      const result = await graphQLCreateOrganization(name, submissionId)
+      if (result === 'ERROR' || 'reason' in result) return refusalOf(result) ?? ''
+      const data = result.data?.data?.createOrganization
+      if (!data) return ''
+      const member = membershipFrom(data)
+      await dispatch.organization.setActive({ id: member.account.id, name: member.name })
+      dispatch.accounts.addMembership(member)
+      void dispatch.organization.fetch()
+    },
+    async organizationClosed(id: string, state) {
+      const active = selectActiveAccountId(state) === id
+      dispatch.accounts.removeMembership(id)
+      if (active) await dispatch.accounts.select(state.user.id)
+      void dispatch.accounts.fetchOrganizationClosures()
+      void dispatch.organization.fetch()
+      return active
     },
     /*
       The one way to switch accounts - every account scoped list has to be re-fetched
@@ -204,6 +248,15 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
+    addMembership(state: IAccountsState, member: IMembership) {
+      state.membership = [...state.membership.filter(existing => existing.account.id !== member.account.id), member]
+      return state
+    },
+    removeMembership(state: IAccountsState, id: string) {
+      state.membership = state.membership.filter(member => member.account.id !== id)
+      state.pendingOrganizationClosures = state.pendingOrganizationClosures?.filter(closure => closure.organizationId !== id)
+      return state
+    },
     reset(state: IAccountsState) {
       state = { ...accountsState }
       return state

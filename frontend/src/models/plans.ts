@@ -237,14 +237,18 @@ export default createModel<RootModel>()({
       console.log('UNSUBSCRIBE')
     },
 
-    async updateCreditCard(last: string | undefined) {
-      dispatch.plans.set({ updating: last })
-      const result = await graphQLCreditCard()
+    async updateCreditCard({ last, accountId }: { last?: string; accountId?: string }) {
+      dispatch.plans.set({ updating: last || accountId })
+      const result = await graphQLCreditCard(accountId)
       if (result !== 'ERROR') {
         const card = result?.data?.data?.updateCreditCard
         console.log('UPDATE CREDIT CARD', card)
-        if (card?.url) window.location.href = card.url
+        if (card?.url) {
+          window.location.href = card.url
+          return
+        }
       }
+      dispatch.plans.set({ updating: undefined })
     },
 
     async updated(event: { owner?: IUserRef; planName?: string; quantity?: number }, state) {
