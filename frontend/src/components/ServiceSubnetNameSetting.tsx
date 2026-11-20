@@ -31,9 +31,14 @@ export const ServiceSubnetNameSetting: React.FC<Props> = ({ device, service, dis
   const set = async (on: boolean, label?: string) => {
     setBusy(true)
     setRefused(undefined)
-    const refusal = await setServiceSubnetName(device.id, service.id, on, label)
-    if (refusal !== undefined) setRefused(refusal || t('serviceSubnetName.refused', 'This name could not be set'))
-    setBusy(false)
+    try {
+      const refusal = await setServiceSubnetName(device.id, service.id, on, label)
+      if (refusal === undefined) return true
+      setRefused(refusal || t('serviceSubnetName.refused', 'This name could not be set'))
+      return false
+    } finally {
+      setBusy(false)
+    }
   }
   const shown = named.own && name ? name + (named.port && named.port !== 443 ? `:${named.port}` : '') : undefined
   // Every port its name answers on (presence-server docs/subnet-service-names.md): each it lists, at its own number, and
@@ -69,6 +74,7 @@ export const ServiceSubnetNameSetting: React.FC<Props> = ({ device, service, dis
       {named.own && name && (
         <InlineTextFieldSetting
           required
+          waitForSave
           icon="globe"
           label={t('serviceSubnetName.name', 'Service DNS name')}
           value={splitSubnetName(name).label}
@@ -76,6 +82,7 @@ export const ServiceSubnetNameSetting: React.FC<Props> = ({ device, service, dis
           resetValue={named.defaultLabel || undefined}
           maxLength={NAME_MAX}
           disabled={locked}
+          fieldProps={{ InputProps: { readOnly: busy } }}
           validate={value =>
             !validLabel(value)
               ? t('deviceSubnetLabel.problem', 'Lower case letters and digits, at most 29, no dashes')
@@ -86,9 +93,9 @@ export const ServiceSubnetNameSetting: React.FC<Props> = ({ device, service, dis
               name: value.trim().toLowerCase() + splitSubnetName(name).rest,
             })
           }
-          onSave={value => {
-            if (value.toString().trim().toLowerCase() !== splitSubnetName(name).label) set(true, value.toString())
-          }}
+          onSave={value =>
+            value.toString().trim().toLowerCase() === splitSubnetName(name).label || set(true, value.toString())
+          }
         />
       )}
       {refused && (

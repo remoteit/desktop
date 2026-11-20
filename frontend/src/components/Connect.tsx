@@ -131,7 +131,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
                 <ServiceKeySetting connection={connection} service={service} permissions={instance.permissions} />
               )}
               {device?.permissions.includes('MANAGE') && <ShowInServicesSetting key={service.id} serviceId={service.id} />}
-              <ServiceSubnetNameSetting device={device} service={service} />
+              <ServiceSubnetNameSetting key={service.id} device={device} service={service} />
               <PortalUI>
                 {showDesktopNotice && (
                   <Notice

@@ -1,11 +1,14 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { createTheme, ThemeProvider } from '@mui/material/styles'
+import { MemoryRouter } from 'react-router-dom'
+import { lightColors } from '../styling'
 
 // A service's own name (presence-server docs/subnet-service-names.md): switched on and off, and its name part edited,
 // through setServiceSubnetName; nothing where the API has no service names.
 const { field, checkbox, setName, info } = vi.hoisted(() => ({
-  field: { props: undefined as any },
+  field: { props: undefined as any, real: false },
   checkbox: { props: undefined as any },
   setName: vi.fn().mockResolvedValue(undefined), // no refusal: done
   info: { value: undefined as any },
@@ -23,12 +26,15 @@ vi.mock('../services/subnetNames', async importOriginal => ({
   ...(await importOriginal<typeof import('../services/subnetNames')>()),
   setServiceSubnetName: setName,
 }))
-vi.mock('./InlineTextFieldSetting', () => ({
-  InlineTextFieldSetting: (props: any) => {
-    field.props = props
-    return <div data-field>{props.displayValue}</div>
-  },
-}))
+vi.mock('./InlineTextFieldSetting', async importOriginal => {
+  const { InlineTextFieldSetting } = await importOriginal<typeof import('./InlineTextFieldSetting')>()
+  return {
+    InlineTextFieldSetting: (props: any) => {
+      field.props = props
+      return field.real ? <InlineTextFieldSetting {...props} /> : <div data-field>{props.displayValue}</div>
+    },
+  }
+})
 vi.mock('./Notice', () => ({ Notice: (props: any) => <div data-notice>{props.children}</div> }))
 vi.mock('./ListItemCheckbox', () => ({
   ListItemCheckbox: (props: any) => {
@@ -36,7 +42,8 @@ vi.mock('./ListItemCheckbox', () => ({
     return <div data-checkbox>{props.subLabel}</div>
   },
 }))
-vi.mock('react-i18next', () => ({
+vi.mock('react-i18next', async importOriginal => ({
+  ...(await importOriginal<typeof import('react-i18next')>()),
   useTranslation: () => ({
     t: (_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? ''),
   }),
@@ -59,6 +66,7 @@ async function render(permissions?: string[]) {
 
 beforeEach(() => {
   setName.mockClear()
+  field.real = false
   info.value = {
     subnetName: 'pi-acme.on.remote.it',
     services: { S: 'piconsole-acme.on.remote.it' },
@@ -67,6 +75,56 @@ beforeEach(() => {
 })
 
 describe('ServiceSubnetNameSetting', () => {
+  it('keeps a refused submission editable and closes after the corrected name is saved', async () => {
+    field.real = true
+    const container = document.body.appendChild(document.createElement('div'))
+    const root = createRoot(container)
+    const theme = createTheme({
+      palette: Object.fromEntries(Object.entries(lightColors).map(([name, main]) => [name, { main }])) as any,
+    })
+    let respond: (refusal: string) => void = () => {}
+    setName.mockImplementationOnce(() => new Promise<string>(resolve => (respond = resolve)))
+
+    try {
+      await act(async () =>
+        root.render(
+          <MemoryRouter>
+            <ThemeProvider theme={theme}>
+              <ServiceSubnetNameSetting device={device()} service={service} />
+            </ThemeProvider>
+          </MemoryRouter>
+        )
+      )
+      await act(async () => container.querySelector<HTMLElement>('.MuiListItemButton-root')!.click())
+      const input = container.querySelector('input')!
+      const type = (label: string) =>
+        act(async () => {
+          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, label)
+          input.dispatchEvent(new Event('input', { bubbles: true }))
+        })
+      const submit = () => act(async () => input.form!.requestSubmit())
+      await type('taken')
+      await submit()
+      await submit()
+      expect(setName).toHaveBeenCalledExactlyOnceWith('D', 'S', true, 'taken')
+
+      await act(async () => respond('This DNS name is already taken'))
+      expect(container.querySelector('input')).toBe(input)
+      expect(input.value).toBe('taken')
+      expect(document.activeElement).toBe(input)
+      expect(container.querySelector('[data-notice]')?.textContent).toBe('This DNS name is already taken')
+
+      await type('shell')
+      await submit()
+      expect(setName).toHaveBeenLastCalledWith('D', 'S', true, 'shell')
+      expect(container.querySelector('input')).toBeNull()
+      expect(container.querySelector('[data-notice]')).toBeNull()
+    } finally {
+      await act(async () => root.unmount())
+      container.remove()
+    }
+  })
+
   it('on: the name and its port shown, its name part edited', async () => {
     const container = await render()
     expect(checkbox.props.checked).toBe(true)

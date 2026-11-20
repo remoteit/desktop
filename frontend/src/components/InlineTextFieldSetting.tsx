@@ -25,6 +25,7 @@ export type InlineTextFieldSettingProps = {
   multiline?: boolean
   type?: InputProps['type']
   debug?: boolean
+  waitForSave?: boolean
   fieldProps?: TextFieldProps
   // Why the value being typed cannot be had, or undefined — sync, or once an answer comes; while it has a reason it
   // is not saved.
@@ -33,7 +34,7 @@ export type InlineTextFieldSettingProps = {
   helper?: (value: string) => React.ReactNode
   DisplayComponent?: React.ReactElement<FormDisplayProps>
   onError?: (value: string | undefined) => void
-  onSave?: (value: string | number) => void
+  onSave?: (value: string | number) => unknown
   onDelete?: () => void
 }
 
