@@ -5,6 +5,7 @@ import { fullVersion } from '../helpers/versionHelper'
 import { AppLauncher } from '@capacitor/app-launcher'
 import { Capacitor } from '@capacitor/core'
 import { Browser } from '@capacitor/browser'
+import { PLUGIN_NAME as THIS_DEVICE_PLUGIN } from './thisDeviceCapacitor'
 
 function startLog() {
   console.log(
@@ -164,7 +165,14 @@ export async function windowOpen(url?: string, windowName?: string, external?: b
 
   if (browser.isMobile) {
     try {
-      external ? await AppLauncher.openUrl({ url }) : await Browser.open({ url, windowName })
+      if (external) {
+        await AppLauncher.openUrl({ url })
+      } else if (browser.isIOS && Capacitor.isPluginAvailable(THIS_DEVICE_PLUGIN)) {
+        // The full-screen path in Capacitor 7 creates a window without a scene. Present from the shell's window.
+        await Browser.open({ url, windowName, presentationStyle: 'popover' })
+      } else {
+        await Browser.open({ url, windowName })
+      }
     } catch (error) {
       console.error('URL error:', error, { url, windowName, external })
       // The in-app browser refuses a well-formed web link too — "Unable to display URL" while it still holds a page
