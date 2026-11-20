@@ -24,7 +24,6 @@ import { IconButton } from '../buttons/IconButton'
 import { DesktopUI } from './DesktopUI'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
-import { ServiceSubnetNameSetting } from './ServiceSubnetNameSetting'
 import { ServiceConnectButton } from '../buttons/ServiceConnectButton'
 
 export const ConnectAdvanced: React.FC = () => {
@@ -49,7 +48,7 @@ export const ConnectAdvanced: React.FC = () => {
           onClick={() => dispatch.connections.forget(connection.id)}
         />
       </Box>
-      {headerHidesEndpoint && !connection.enabled && !connection.connectLink && <ServiceConnectButton />}
+      {headerHidesEndpoint && <ServiceConnectButton />}
       <AccordionMenuItem
         gutters
         subtitle={t('connectAdvanced.advanced', 'Advanced')}
@@ -73,7 +72,6 @@ export const ConnectAdvanced: React.FC = () => {
         }
       >
         <List disablePadding>
-          <ServiceSubnetNameSetting device={device} service={service} />
           {!connection.public && (
             <DesktopUI>
               <SubdomainSetting connection={connection} service={service} instance={instance} />
