@@ -48,12 +48,6 @@ export default class ElectronApp {
     this.protocol = PROTOCOL.substring(0, PROTOCOL.length - 3)
     setLanguage(preferences.get().language)
 
-    if (!this.app.requestSingleInstanceLock()) {
-      Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
-      this.quitSelected = true
-      this.app.quit()
-    }
-
     Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
 
     // The server reports this rather than the live preference: the scheme is only (un)registered here, at launch.

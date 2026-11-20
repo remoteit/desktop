@@ -1,9 +1,6 @@
-// ElectronApp imports @common but loads before ./backend registers the alias: 3.49.0 crashed at
-// launch with "Cannot find module '@common/constants'". tsc keeps statement order, so this runs first.
-const moduleAlias = require('module-alias')
-moduleAlias.addAlias('@common', __dirname + '/backend/common')
+import { app } from 'electron'
 
-import ElectronApp from './ElectronApp'
-import headless from './backend'
-
-headless.recapitate(new ElectronApp())
+// The backend starts when it is imported, so the lock comes before any other module: a second launch only
+// hands its argv to the running instance (its second-instance event), instead of starting a backend, tray and window.
+if (app.requestSingleInstanceLock()) require('./start')
+else app.quit()
