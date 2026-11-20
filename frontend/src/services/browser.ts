@@ -65,6 +65,10 @@ class Environment {
   environment() {
     return MODE
   }
+
+  get isIOSDeviceApp() {
+    return this.isIOS && Capacitor.isPluginAvailable(THIS_DEVICE_PLUGIN)
+  }
 }
 
 const browser = new Environment()
@@ -159,6 +163,12 @@ export function removeLocalStorage(state: State | null, key: string) {
   currentSession && window.localStorage.removeItem(currentSession + ':' + key)
 }
 
+export async function openServiceURL(url: string) {
+  const web = REGEX_WEB_URL.test(url)
+  if (!browser.isIOSDeviceApp || !web) return windowOpen(url, '_blank', !web)
+  if (!(await openInSystem(url))) store.dispatch.ui.set({ errorMessage: `We couldn't open ${url}` })
+}
+
 export async function windowOpen(url?: string, windowName?: string, external?: boolean) {
   console.log('WINDOW OPEN', { url, windowName, external })
   if (!url) return
@@ -167,7 +177,7 @@ export async function windowOpen(url?: string, windowName?: string, external?: b
     try {
       if (external) {
         await AppLauncher.openUrl({ url })
-      } else if (browser.isIOS && Capacitor.isPluginAvailable(THIS_DEVICE_PLUGIN)) {
+      } else if (browser.isIOSDeviceApp) {
         // The full-screen path in Capacitor 7 creates a window without a scene. Present from the shell's window.
         await Browser.open({ url, windowName, presentationStyle: 'popover' })
       } else {
@@ -194,11 +204,10 @@ export async function windowOpen(url?: string, windowName?: string, external?: b
 
 const REGEX_WEB_URL = /^https?:\/\//i
 
-async function openInSystem(url: string) {
+export async function openInSystem(url: string) {
   try {
     return (await AppLauncher.openUrl({ url })).completed
-  } catch (error) {
-    console.error('URL error:', error, { url, system: true })
+  } catch {
     return false
   }
 }

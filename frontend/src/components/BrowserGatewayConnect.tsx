@@ -5,6 +5,7 @@ import { IconButton } from '../buttons/IconButton'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { sshCommand } from '../helpers/sshHelper'
 import { gatewayURL, openThroughGateway } from '../services/browserGateway'
+import browser from '../services/browser'
 import { openTerminal } from '../helpers/terminalHelper'
 import { Icon } from './Icon'
 
@@ -20,6 +21,7 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
   const { t } = useTranslation()
   const [opening, setOpening] = useState(false)
   const [failed, setFailed] = useState(false)
+  const external = !terminal && browser.isIOSDeviceApp
   const address = gatewayURL(name)
     .replace(/^https:\/\//, '')
     .replace(/\/$/, '')
@@ -47,7 +49,9 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
       <Icon name="globe" color="primary" />
       <Box sx={{ minWidth: 0, flex: 1 }}>
         <Typography variant="caption" color="textSecondary" component="div">
-          {t('browserGatewayConnect.title', 'In this browser — nothing to install')}
+          {external
+            ? t('localSubnetConnect.launch', 'Open in the browser')
+            : t('browserGatewayConnect.title', 'In this browser — nothing to install')}
         </Typography>
         <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap title={address}>
           {address}
