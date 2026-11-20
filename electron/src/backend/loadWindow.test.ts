@@ -1,16 +1,20 @@
 import { EventEmitter } from 'events'
+import type { BrowserWindow } from 'electron'
 import Logger from './Logger'
 import loadWindow from './loadWindow'
 
 jest.mock('./Logger', () => ({ __esModule: true, default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() } }))
 
-const APP = 'http://127.0.0.1:29999'
-const isAppUrl = (url: string) => url.startsWith(APP)
+const APP = 'http://127.0.0.1:29999/'
 
-class FakeWindow extends EventEmitter {
+class FakeWindow {
   destroyed = false
   webContents = Object.assign(new EventEmitter(), {
     loadURL: jest.fn((_: string) => new Promise<void>(() => undefined)),
+    getURL: () => 'about:blank',
+    isLoading: () => true,
+    isWaitingForResponse: () => false,
+    getOSProcessId: () => 4242,
   })
   isDestroyed() {
     return this.destroyed
@@ -27,8 +31,8 @@ const loads = (window: FakeWindow) => window.webContents.loadURL.mock.calls.map(
 
 describe('loadWindow', () => {
   let window: FakeWindow
-  const start = (options = {}) =>
-    loadWindow(window, APP, isAppUrl, { stallTimeoutMs: 10_000, retryDelayMs: 1_000, maxAttempts: 3, ...options })
+  const start = (ready: Promise<void> = Promise.resolve()) =>
+    loadWindow(window as unknown as BrowserWindow, APP, ready)
 
   beforeEach(() => {
     jest.useFakeTimers()
@@ -40,7 +44,7 @@ describe('loadWindow', () => {
 
   it('loads once the server is listening, and only once when the page commits', async () => {
     let listen!: () => void
-    start({ ready: new Promise<void>(resolve => (listen = resolve)) })
+    start(new Promise<void>(resolve => (listen = resolve)))
     await jest.advanceTimersByTimeAsync(5_000)
     expect(loads(window)).toEqual([])
 
@@ -48,20 +52,31 @@ describe('loadWindow', () => {
     await jest.advanceTimersByTimeAsync(0)
     expect(loads(window)).toEqual([APP])
 
-    window.commit()
+    window.commit(`${APP}#/devices`)
     await jest.advanceTimersByTimeAsync(60_000)
     expect(loads(window)).toEqual([APP])
     expect(Logger.warn).not.toHaveBeenCalled()
   })
 
-  it('loads again when a load neither commits nor fails in time', async () => {
+  it('loads again when a load neither commits nor fails in time, saying how far it got', async () => {
     start()
+    await jest.advanceTimersByTimeAsync(0)
+    window.webContents.emit('did-start-loading')
     await jest.advanceTimersByTimeAsync(9_999)
     expect(loads(window)).toHaveLength(1)
 
     await jest.advanceTimersByTimeAsync(1)
     expect(loads(window)).toEqual([APP, APP])
-    expect(Logger.warn).toHaveBeenCalledWith('WINDOW LOAD RETRY', expect.objectContaining({ reason: 'stalled' }))
+    expect(Logger.warn).toHaveBeenCalledWith('WINDOW LOAD RETRY', {
+      attempt: 2,
+      reason: 'stalled',
+      elapsedMs: 10_000,
+      startedLoading: true,
+      page: 'about:blank',
+      loading: true,
+      waitingForResponse: false,
+      rendererPid: 4242,
+    })
 
     window.commit()
     expect(Logger.info).toHaveBeenCalledWith('WINDOW LOADED', { attempts: 2 })
@@ -88,27 +103,35 @@ describe('loadWindow', () => {
     expect(loads(window)).toHaveLength(1)
   })
 
+  it('takes a page of another origin for no load of the app', async () => {
+    start()
+    await jest.advanceTimersByTimeAsync(0)
+    window.commit('http://127.0.0.1:2999/')
+    await jest.advanceTimersByTimeAsync(10_000)
+    expect(loads(window)).toHaveLength(2)
+  })
+
   it('gives up after the last attempt', async () => {
     start()
-    await jest.advanceTimersByTimeAsync(30_000)
-    expect(loads(window)).toHaveLength(3)
-    expect(Logger.error).toHaveBeenCalledWith('WINDOW LOAD GAVE UP', expect.objectContaining({ attempts: 3 }))
+    await jest.advanceTimersByTimeAsync(50_000)
+    expect(loads(window)).toHaveLength(5)
+    expect(Logger.error).toHaveBeenCalledWith('WINDOW LOAD GAVE UP', expect.objectContaining({ attempts: 5 }))
     await jest.advanceTimersByTimeAsync(60_000)
-    expect(loads(window)).toHaveLength(3)
+    expect(loads(window)).toHaveLength(5)
   })
 
   it('loads anyway, and says so, when the server never reports listening', async () => {
-    start({ ready: new Promise<void>(() => undefined), readyTimeoutMs: 15_000 })
+    start(new Promise<void>(() => undefined))
     await jest.advanceTimersByTimeAsync(15_000)
     expect(loads(window)).toEqual([APP])
     expect(Logger.warn).toHaveBeenCalledWith('WINDOW LOAD WITHOUT SERVER', { waitedMs: 15_000 })
   })
 
-  it('stops when the window closes', async () => {
+  it('stops once the window is gone', async () => {
     start()
     await jest.advanceTimersByTimeAsync(0)
+    window.fail()
     window.destroyed = true
-    window.emit('closed')
     await jest.advanceTimersByTimeAsync(60_000)
     expect(loads(window)).toHaveLength(1)
   })
@@ -118,7 +141,7 @@ describe('loadWindow', () => {
 
     it('before the first load, makes it load the new url', async () => {
       let listen!: () => void
-      const loader = start({ ready: new Promise<void>(resolve => (listen = resolve)) })
+      const loader = start(new Promise<void>(resolve => (listen = resolve)))
       loader.navigate(callback)
       listen()
       await jest.advanceTimersByTimeAsync(0)

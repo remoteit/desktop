@@ -16,12 +16,11 @@ import {
   Logger,
   loadWindow,
   serverListening,
+  withoutQuery,
 } from './backend'
 import type { WindowLoader } from './backend/loadWindow'
 
 const URL_REGEX = new RegExp('^https?://')
-// An auth deep link carries the OAuth code and state in its query, so logs keep only the part before it.
-const withoutQuery = (url = '') => url.split('?')[0]
 
 export default class ElectronApp {
   public app: electron.App
@@ -252,7 +251,7 @@ export default class ElectronApp {
       autoHideMenuBar: true,
     })
 
-    this.loader = loadWindow(this.window, START_URL, url => this.isAppOrigin(url), { ready: serverListening })
+    this.loader = loadWindow(this.window, START_URL, serverListening)
 
     this.window.on('close', event => {
       this.saveWindowState()
