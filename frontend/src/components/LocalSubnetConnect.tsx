@@ -19,9 +19,8 @@ import { Icon } from './Icon'
 /* A service reached by its name on this machine: the device daemon here resolves it (services/localSubnet), so there
    is nothing to start — the name and port are the connection. Copy it into ssh, a browser, a database client, or
    launch it as its type would a connection — the same templates and launch methods, the name as the host and the
-   service's own port. A web service launches as https://<name>: port 443 on a name is the host's web service, under
-   the stage's certificate, whatever port it is on (presence-server docs/subnet-https.md) — and that URL is what is
-   shown and copied, since <name>:<port> is the service's own port, plain http. An SSH service is shown and copied as
+   service's own port. A web service uses HTTPS at the port for its name. The shared name's HTTPS entry can forward
+   to HTTP on port 80 when port 443 has no service of its own. An SSH service is shown and copied as
    the command that reaches it, plain `ssh`: that of an app signing people in by certificate (byCertificate) works as it
    is from a machine signed in on its remote.it device app, which gets a certificate for its own ssh (connectd
    remoteit-device ssh-config), and says so. A multi-port
@@ -34,12 +33,20 @@ type Props = {
   // A service's own name's port (presence-server docs/subnet-service-names.md): its usual one, ssh's 22 — where it has
   // none, the service's own port.
   port?: number
+  defaultHttp?: boolean
   service?: IService
   connection?: IConnection
   byCertificate?: boolean
 }
 
-export const LocalSubnetConnect: React.FC<Props> = ({ local, port: namePort, service, connection, byCertificate }) => {
+export const LocalSubnetConnect: React.FC<Props> = ({
+  local,
+  port: namePort,
+  defaultHttp,
+  service,
+  connection,
+  byCertificate,
+}) => {
   const { t } = useTranslation()
   const port = namePort || service?.port
   const ssh = service?.typeID === 28
@@ -78,7 +85,7 @@ export const LocalSubnetConnect: React.FC<Props> = ({ local, port: namePort, ser
   }, [web, deviceSessions, service?.deviceID, service?.id, service?.typeID, service?.port])
   const launchable = web || app.canLaunch
   const endpoint = web
-    ? subnetWebURL(local.name)
+    ? subnetWebURL(local.name, port, defaultHttp)
     : ssh
     ? sshCommand(local.name, port)
     : port
