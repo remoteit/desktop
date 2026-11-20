@@ -163,6 +163,38 @@ export async function graphQLSetOrganization(params: IOrganizationSettings & { a
   )
 }
 
+export function graphQLCreateOrganization(name: string, submissionId: string) {
+  return graphQLRequestWithReason(
+    `mutation CreateOrganization($name: String!, $submissionId: ID!) {
+      createOrganization(name: $name, submissionId: $submissionId) {
+        created
+        license
+        customRole { id name }
+        organization { name standalone account { id email } }
+      }
+    }`,
+    { name, submissionId }
+  )
+}
+
+export function graphQLRequestOrganizationClosure(accountId: string) {
+  return graphQLRequestWithReason(
+    `mutation RequestOrganizationClosure($accountId: ID!) {
+      requestOrganizationClosure(accountId: $accountId) { organizationId name devices }
+    }`,
+    { accountId }
+  )
+}
+
+export function graphQLCloseOrganization(accountId: string, code: string) {
+  return graphQLRequestWithReason(
+    `mutation CloseOrganization($accountId: ID!, $code: String!) {
+      closeOrganization(accountId: $accountId, code: $code)
+    }`,
+    { accountId, code }
+  )
+}
+
 export async function graphQLSetIdentityProvider(params: IIdentityProviderSettings & { accountId: string }) {
   return await graphQLBasicRequest(
     ` mutation SetIdentityProvider($accountId: String, $enabled: Boolean, $type: String, $metadata: String, $clientId: String, $clientSecret: String, $issuer: String) {
@@ -232,16 +264,17 @@ export async function graphQLClaimDevice(code: string, accountId?: string) {
   )
 }
 
-export async function graphQLCreditCard() {
+export async function graphQLCreditCard(accountId?: string) {
   return await graphQLBasicRequest(
-    ` mutation UpdateCreditCard($successUrl: String!, $cancelUrl: String!) {
-        updateCreditCard(successUrl: $successUrl, cancelUrl: $cancelUrl) {
+    ` mutation UpdateCreditCard($successUrl: String!, $cancelUrl: String!${accountId ? ', $accountId: String!' : ''}) {
+        updateCreditCard(successUrl: $successUrl, cancelUrl: $cancelUrl${accountId ? ', accountId: $accountId' : ''}) {
           url
         }
       }`,
     {
       successUrl: window.location.href + '/success',
       cancelUrl: window.location.href,
+      ...(accountId ? { accountId } : {}),
     }
   )
 }

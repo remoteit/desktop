@@ -48,7 +48,7 @@ export const App: React.FC = () => {
   const user = useSelector((state: State) => state.auth.user)
   const installed = useSelector((state: State) => state.binaries.installed)
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
-  const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
+  const showOrgs = useSelector((state: State) => !!state.accounts.membership.length || !!state.accounts.standaloneOrganizations)
   const chatEnabled = useChatEnabled()
   const chatDocked = useChatDocked()
   // In an app, the machine the page runs on (services/thisDevice); null in a plain browser.

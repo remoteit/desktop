@@ -178,8 +178,9 @@ export const selectCanRegister = createSelector([selectPermissions], (permission
 )
 
 export const selectOwner = createSelector(
-  [selectActiveUser, selectRemoteitLicense],
-  (user, license): IOrganizationMember | undefined => {
+  [selectActiveUser, selectRemoteitLicense, selectMembership],
+  (user, license, membership): IOrganizationMember | undefined => {
+    if (membership.standalone) return undefined
     return {
       created: user.created || new Date(),
       roleId: 'OWNER',

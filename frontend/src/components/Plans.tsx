@@ -21,7 +21,9 @@ type Props = {
   plans: IPlan[]
 }
 
-export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans }) => {
+export const Plans: React.FC<Props> = props => <PlanSelection key={props.license?.id} {...props} />
+
+const PlanSelection: React.FC<Props> = ({ license, includeLicenseId, plan, plans }) => {
   const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
@@ -40,7 +42,7 @@ export const Plans: React.FC<Props> = ({ license, includeLicenseId, plan, plans 
       licenseId: includeLicenseId ? license?.id : undefined,
     }
   }
-  const [form, setForm] = React.useState<IPurchase>(getDefaults())
+  const [form, setForm] = React.useState<IPurchase>(getDefaults)
   const personal = !license || license.plan.id === PERSONAL_PLAN_ID
 
   const success = async (push?: boolean) => {

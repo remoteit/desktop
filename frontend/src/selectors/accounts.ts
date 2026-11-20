@@ -8,7 +8,9 @@ import { getUserId, getUser, getActiveId, optionalAccountId, getMemberships } fr
   Undefined once they have chosen, which includes selecting their own account.
 */
 export const selectDefaultAccountId = createSelector([getActiveId, getMemberships], (activeId, memberships) =>
-  activeId ? undefined : [...memberships].sort((a, b) => dateSort(b.created, a.created))[0]?.account.id
+  activeId
+    ? undefined
+    : memberships.filter(member => !member.standalone).sort((a, b) => dateSort(b.created, a.created))[0]?.account.id
 )
 
 export const selectActiveAccountId = createSelector(
@@ -26,7 +28,7 @@ export const selectActiveUser = createSelector(
   (accountId, memberships, user): IUserRef => {
     const membershipOrganizations = memberships.map(m => ({
       id: m.account.id || '',
-      email: m.account.email || 'unknown',
+      email: m.standalone ? '' : m.account.email || 'unknown',
       created: m.created,
     }))
     return membershipOrganizations.find(m => m.id === accountId) || user
