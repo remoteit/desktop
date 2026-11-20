@@ -9,6 +9,7 @@ const { state, list, open, openServiceURL } = vi.hoisted(() => ({
   state: {
     account: 'my-account',
     applicationTypes: { all: [{ id: 48, proxy: true, scheme: '' }] },
+    localNames: {} as Record<string, string>,
   },
   list: vi.fn(),
   open: vi.fn(),
@@ -19,6 +20,12 @@ vi.mock('react-redux', () => ({ useSelector: (select: (value: typeof state) => u
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: (value: typeof state) => value.account }))
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (_key: string, text: string) => text }) }))
 vi.mock('../hooks/useDeviceSessions', () => ({ useDeviceSessions: () => true }))
+vi.mock('../hooks/useLocalSubnetName', () => ({
+  useLocalSubnetName: (_deviceId?: string, serviceId?: string) => {
+    const name = serviceId && state.localNames[serviceId]
+    return name ? { name } : undefined
+  },
+}))
 vi.mock('../hooks/useServiceShortcutsSupport', () => ({
   useServiceShortcutsSupport: () => ({ available: true, namedAddress: true }),
 }))
@@ -68,6 +75,7 @@ afterEach(async () => {
   if (root) await act(async () => root?.unmount())
   root = undefined
   state.account = 'my-account'
+  state.localNames = {}
   vi.resetAllMocks()
 })
 
@@ -94,12 +102,14 @@ describe('Services page', () => {
     expect(open).toHaveBeenCalledWith('home-acme.on.remote.it')
   })
 
-  it('opens web services on their respective ports when they share a device name', async () => {
+  it('opens reachable web services at their respective ports on a shared device name', async () => {
     const subnetName = 'server-acme.on.remote.it'
+    state.localNames = { home: subnetName, screen: subnetName }
     list.mockResolvedValue([
       { ...home, id: 'screen', name: 'ScreenView', application: 48, subnetName, subnetPort: 8959 },
       { ...home, subnetName, subnetPort: 8123 },
       { ...shell, state: 'active', subnetName, subnetPort: 22 },
+      { ...home, id: 'unreachable', name: 'Unreachable web service', subnetName, subnetPort: 3000 },
     ])
     const container = document.createElement('div')
     root = createRoot(container)
@@ -110,8 +120,9 @@ describe('Services page', () => {
         </MemoryRouter>
       )
     )
-    const [shellRow, homeRow, screenRow] = [...container.querySelectorAll('li')]
+    const [shellRow, homeRow, screenRow, unreachableRow] = [...container.querySelectorAll('li')]
     expect(shellRow.querySelector(':scope > a')?.textContent).toBe('Connect')
+    expect(unreachableRow.querySelector(':scope > a')?.textContent).toBe('Connect')
     expect(homeRow.querySelector('button')?.textContent).toBe('Open')
     expect(screenRow.querySelector('button')?.textContent).toBe('Open')
     await act(async () => homeRow.querySelector('button')?.click())

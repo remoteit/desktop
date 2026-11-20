@@ -7,6 +7,7 @@ import { getApplicationType } from '@common/applications'
 import { selectActiveAccountId } from '../selectors/accounts'
 import type { State } from '../store'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
+import { useLocalSubnetName } from '../hooks/useLocalSubnetName'
 import { useServiceShortcutsSupport } from '../hooks/useServiceShortcutsSupport'
 import { graphQLServiceShortcuts, ServiceShortcut } from '../services/graphQLServiceShortcuts'
 import { openThroughGateway } from '../services/browserGateway'
@@ -107,6 +108,10 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
     (type?.proxy && !type.scheme)
   const name = web ? service.subnetName : undefined
   const port = service.subnetPort
+  // Only the default HTTPS port can be opened through the browser gateway.
+  const needsLocal = online && !!name && !!port && port !== 443
+  const local = useLocalSubnetName(needsLocal ? service.device.id : undefined, needsLocal ? service.id : undefined)
+  const destination = port === 443 ? name : needsLocal ? local?.name : undefined
   const status = !service.enabled
     ? t('serviceShortcuts.disabled', 'Disabled')
     : service.state === 'unlicensed'
@@ -114,12 +119,11 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
     : t('statusChip.offline', 'Offline')
 
   const open = async () => {
-    if (!name || !port) return
+    if (!destination || !port) return
     setOpening(true)
     try {
-      // The browser gateway listens on HTTPS's default port. Other ports are reached through the device subnet.
-      if (port === 443) setFailed(!(await openThroughGateway(name)))
-      else await openServiceURL(subnetWebURL(name, port))
+      if (port === 443) setFailed(!(await openThroughGateway(destination)))
+      else await openServiceURL(subnetWebURL(destination, port))
     } catch {
       setFailed(true)
     } finally {
@@ -147,7 +151,7 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
           </>
         }
       />
-      {online && name && port && !failed ? (
+      {online && destination && !failed ? (
         <Button size="small" variant="contained" disabled={opening} onClick={open}>
           {t('serviceShortcuts.open', 'Open')}
         </Button>
