@@ -264,16 +264,17 @@ export async function graphQLClaimDevice(code: string, accountId?: string) {
   )
 }
 
-export async function graphQLCreditCard() {
+export async function graphQLCreditCard(accountId?: string) {
   return await graphQLBasicRequest(
-    ` mutation UpdateCreditCard($successUrl: String!, $cancelUrl: String!) {
-        updateCreditCard(successUrl: $successUrl, cancelUrl: $cancelUrl) {
+    ` mutation UpdateCreditCard($successUrl: String!, $cancelUrl: String!${accountId ? ', $accountId: String!' : ''}) {
+        updateCreditCard(successUrl: $successUrl, cancelUrl: $cancelUrl${accountId ? ', accountId: $accountId' : ''}) {
           url
         }
       }`,
     {
       successUrl: window.location.href + '/success',
       cancelUrl: window.location.href,
+      ...(accountId ? { accountId } : {}),
     }
   )
 }

@@ -948,6 +948,7 @@
     "expiredNotice": "クレジットカードの有効期限が切れています。",
     "expiredNoticeDetail": "サービスを継続するには、カード情報を更新してください。",
     "expiringDate": "有効期限 {{month}}/{{year}}",
+    "noCard": "",
     "processing": "処理中...",
     "title": "クレジットカード",
     "update": "更新"

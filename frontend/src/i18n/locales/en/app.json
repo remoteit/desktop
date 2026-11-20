@@ -958,6 +958,7 @@
     "expiredNotice": "Credit Card Expired.",
     "expiredNoticeDetail": "Please update your card to continue service.",
     "expiringDate": "Expiring {{month}}/{{year}}",
+    "noCard": "No card on file",
     "processing": "Processing...",
     "title": "Credit Card",
     "update": "Update"

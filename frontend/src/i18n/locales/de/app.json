@@ -958,6 +958,7 @@
     "expiredNotice": "Kreditkarte abgelaufen.",
     "expiredNoticeDetail": "Bitte aktualisieren Sie Ihre Karte, um den Dienst fortzusetzen.",
     "expiringDate": "Läuft ab {{month}}/{{year}}",
+    "noCard": "",
     "processing": "Wird verarbeitet...",
     "title": "Kreditkarte",
     "update": "Aktualisieren"

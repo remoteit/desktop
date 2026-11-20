@@ -11,6 +11,7 @@ import { TransferUsage } from '../components/TransferUsage'
 import { selectActiveAccountId, selectMembership } from '../selectors/accounts'
 import { Plans } from '../components/Plans'
 import { BillingUI } from '../components/BillingUI'
+import { CreditCard } from '../components/CreditCard'
 
 export const OrganizationLicensingPage: React.FC = () => {
   const { t } = useTranslation()
@@ -30,6 +31,7 @@ export const OrganizationLicensingPage: React.FC = () => {
       <TransferUsage accountId={accountId} />
       {standalone && license && (
         <BillingUI>
+          <CreditCard accountId={accountId} />
           <Plans license={license} plan={plan} plans={plans} includeLicenseId />
         </BillingUI>
       )}

@@ -968,6 +968,7 @@
     "expiredNotice": "La tarjeta de crédito ha vencido.",
     "expiredNoticeDetail": "Actualiza tu tarjeta para continuar con el servicio.",
     "expiringDate": "Vence {{month}}/{{year}}",
+    "noCard": "",
     "processing": "Procesando...",
     "title": "Tarjeta de crédito",
     "update": "Actualizar"
