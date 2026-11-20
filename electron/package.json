@@ -94,6 +94,9 @@
     "afterSign": "scripts/notarize.js",
     "generateUpdatesFilesForAllChannels": true,
     "win": {
+      "asarUnpack": [
+        "build/images/*.ico"
+      ],
       "signtoolOptions": {
         "sign": "./scripts/sign.js",
         "signingHashAlgorithms": [
