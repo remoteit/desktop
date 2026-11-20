@@ -16,7 +16,11 @@ vi.mock('./remoteit', () => ({
 }))
 vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql' }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
-vi.mock('axios', () => ({ default: { request } }))
+vi.mock('axios', () => ({ default: { request, isAxiosError: (error: any) => !!error?.isAxiosError } }))
+vi.mock('../helpers/sleep', async importOriginal => ({
+  ...(await importOriginal<object>()),
+  default: () => Promise.resolve(),
+}))
 
 import { post } from './post'
 import { get } from './get'
@@ -91,6 +95,63 @@ describe('graphQLBasicRequest', () => {
     })
     expect(await graphQLBasicRequest(query)).toBe('ERROR')
     expect(userPicture('joy@x.test')).toBe('https://login.test/avatar/u4')
+  })
+})
+
+describe('a request the network dropped in flight', () => {
+  const dropped = () => Object.assign(new Error('Network Error'), { isAxiosError: true, code: 'ERR_NETWORK' })
+
+  beforeEach(() => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'trace').mockImplementation(() => {})
+  })
+
+  it('sends a read again with fresh headers and shows nothing', async () => {
+    const response = { data: { data: { login: { id: 'u1' } } }, headers: {} }
+    request.mockRejectedValueOnce(dropped()).mockResolvedValueOnce(response)
+    expect(await graphQLBasicRequest('{ login { id } }')).toBe(response)
+    expect(apiHeaders).toHaveBeenCalledTimes(2)
+    expect(uiSet).not.toHaveBeenCalled()
+  })
+
+  it('shows the error when the read is dropped again', async () => {
+    request.mockRejectedValue(dropped())
+    expect(await graphQLPartialRequest('{ login { _0: account { id } } }')).toBe('ERROR')
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(uiSet).toHaveBeenCalledOnce()
+    expect(uiSet).toHaveBeenCalledWith({ errorMessage: 'Network Error' })
+  })
+
+  it('never sends a mutation twice', async () => {
+    request.mockRejectedValue(dropped())
+    expect(await graphQLBasicRequest(' mutation { deleteDevice(id: "d1") }')).toBe('ERROR')
+    expect(request).toHaveBeenCalledOnce()
+    expect(uiSet).toHaveBeenCalledWith({ errorMessage: 'Network Error' })
+  })
+
+  it('never resends a document it cannot tell is a read', async () => {
+    request.mockRejectedValue(dropped())
+    const query = '# remove it\n mutation { deleteDevice(id: "d1") }'
+    expect(await graphQLBasicRequest(query)).toBe('ERROR')
+    expect(request).toHaveBeenCalledOnce()
+  })
+
+  it('never resends a read the server answered', async () => {
+    const answered = Object.assign(new Error('Request failed with status code 500'), {
+      isAxiosError: true,
+      code: 'ERR_BAD_RESPONSE',
+      response: { status: 500 },
+    })
+    request.mockRejectedValue(answered)
+    expect(await graphQLBasicRequest('{ login { id } }')).toBe('ERROR')
+    expect(request).toHaveBeenCalledOnce()
+  })
+
+  it('never resends a plain post', async () => {
+    request.mockRejectedValue(dropped())
+    expect(await post({ type: 'event' }, '/event')).toBe('ERROR')
+    expect(request).toHaveBeenCalledOnce()
   })
 })
 

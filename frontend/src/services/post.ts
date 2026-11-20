@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import { getApiURL } from '../helpers/apiHelper'
 import { apiRequest } from './remoteit'
 import { store } from '../store'
@@ -11,7 +11,12 @@ export function resetErrorCount() {
   errorCount = 0
 }
 
-export async function post(data: ILookup<any, string> = {}, path: string = '', silent = false) {
+export async function post(
+  data: ILookup<any, string> = {},
+  path: string = '',
+  silent = false,
+  retry = false
+): Promise<AxiosResponse | 'ERROR'> {
   if (store.getState().ui.offline) return 'ERROR'
 
   const url = getApiURL() + path
@@ -25,10 +30,21 @@ export async function post(data: ILookup<any, string> = {}, path: string = '', s
     }
     return response
   } catch (error) {
+    if (retry && droppedInFlight(error)) {
+      console.warn('POST DROPPED, RETRYING', { data, path })
+      await sleep(1000)
+      return await post(data, path, silent)
+    }
     console.error('POST ERROR', { data, path })
     await apiError(error, silent)
     return 'ERROR'
   }
+}
+
+// Chromium drops in-flight requests with ERR_NETWORK_CHANGED when the OS network shifts (as on the
+// relaunch after an update); axios sees only a Network Error with no response.
+function droppedInFlight(error: unknown) {
+  return axios.isAxiosError(error) && !error.response && error.code === 'ERR_NETWORK'
 }
 
 export async function postFile(file: File, data: ILookup<any, string> = {}, path: string = '') {
