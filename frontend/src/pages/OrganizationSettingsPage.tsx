@@ -18,6 +18,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { CloseOrganizationDialog } from '../components/CloseOrganizationDialog'
 import { OrganizationContactSettings } from '../components/OrganizationContactSettings'
+import type { PendingOrganizationClosure } from '../models/accounts'
 
 export const OrganizationSettingsPage: React.FC = () => {
   const { t } = useTranslation()
@@ -26,7 +27,7 @@ export const OrganizationSettingsPage: React.FC = () => {
   const standalone = useSelector((state: State) => selectMembership(state).standalone)
   const isOrgOwner = useSelector((state: State) => organization.id === state.user.id)
   const dispatch = useDispatch<Dispatch>()
-  const [closing, setClosing] = React.useState(false)
+  const [closing, setClosing] = React.useState<PendingOrganizationClosure>()
 
   if (!permissions.includes('ADMIN'))
     return <Redirect to={{ pathname: '/organization', state: { isRedirect: true } }} />
@@ -76,13 +77,11 @@ export const OrganizationSettingsPage: React.FC = () => {
       <TaggedIntoList accountId={organization.id} />
       {standalone && <OrganizationContactSettings key={organization.id} accountId={organization.id} />}
       {standalone && (
-        <Button color="error" onClick={() => setClosing(true)}>
+        <Button color="error" onClick={() => setClosing({ organizationId: organization.id, name: organization.name })}>
           {t('closeOrganization.submit', 'Close organization')}
         </Button>
       )}
-      {closing && (
-        <CloseOrganizationDialog organizationId={organization.id} name={organization.name} onClose={() => setClosing(false)} />
-      )}
+      {closing && <CloseOrganizationDialog {...closing} onClose={() => setClosing(undefined)} />}
     </Container>
   )
 }
