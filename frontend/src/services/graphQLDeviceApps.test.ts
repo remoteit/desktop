@@ -87,11 +87,10 @@ describe('Device.apps', () => {
     // A session as the app reports it: never a person.
     expect(query).toContain('sessions { session login via since }')
     expect(query).not.toMatch(/\bperson\b/)
-    // Its services, the primary first, each with its listeners and its service on the device; where its named listeners
-    // listen. An app's own port is never asked: a service's is.
+    // Its registered services and the actual location of its single or named listeners.
     const services =
       'services { key name protocol multiPort port portSetting listeners { name type port portSetting ports } serviceId }'
-    expect(query).toContain(`${services} listeners { name listen }`)
+    expect(query).toContain(`${services} listen listeners { name listen }`)
     expect(query.replace(services, '')).not.toMatch(/\bport\b|\bon\b/)
     expect(query).toContain('heldBack { reason detail }')
     expect(apps?.[0].settings[0].value).toBe(true)
@@ -209,7 +208,7 @@ describe('Device.apps', () => {
     )
     const apps = (await graphQLDeviceApps('D1'))!
     expect(post.mock.calls[0][0].query).toMatch(
-      /sessionsOpen features portSetting services \{[^}]*\{[^}]*}[^}]*} listeners \{ name listen } problems \{ name error detail } settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} declaration } locked \{ product level }/
+      /sessionsOpen features portSetting services \{[^}]*\{[^}]*}[^}]*} listen listeners \{ name listen } problems \{ name error detail } settings \{[^}]*\{[^}]*}[^}]*\{[^}]*} declaration } locked \{ product level }/
     )
     expect(apps[0].locked).toEqual({ product: 'Acme', level: 'enforced' })
     expect(apps[1].locked).toBeNull()

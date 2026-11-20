@@ -4244,7 +4244,12 @@
     "title": "デフォルトの接続設定"
   },
   "serviceEditPage": {
-    "title": "サービス構成"
+    "hostedOn": "ホスト先",
+    "listener": "リスナー",
+    "listenerUnavailable": "リスナーは報告されていません",
+    "standardIO": "標準入力と標準出力",
+    "title": "サービス構成",
+    "unixSocket": "ローカルソケット"
   },
   "serviceForm": {
     "awsExample": "AWSの例:",

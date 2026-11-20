@@ -4448,7 +4448,12 @@
     "title": "Configuración de conexión predeterminada"
   },
   "serviceEditPage": {
-    "title": "Configuración del servicio"
+    "hostedOn": "Alojado en",
+    "listener": "Punto de escucha",
+    "listenerUnavailable": "No se ha informado de ningún punto de escucha",
+    "standardIO": "Entrada y salida estándar",
+    "title": "Configuración del servicio",
+    "unixSocket": "Socket local"
   },
   "serviceForm": {
     "awsExample": "Ejemplo de AWS:",

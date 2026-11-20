@@ -24,15 +24,18 @@ import { IconButton } from '../buttons/IconButton'
 import { DesktopUI } from './DesktopUI'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
+import { ServiceSubnetNameSetting } from './ServiceSubnetNameSetting'
+import { ServiceConnectButton } from '../buttons/ServiceConnectButton'
 
 export const ConnectAdvanced: React.FC = () => {
   const { t } = useTranslation()
-  const { connection, service, instance } = React.useContext(DeviceContext)
-  const accordion = useSelector((state: State) => state.ui.accordion)
+  const { connection, device, service, instance, user } = React.useContext(DeviceContext)
+  const { accordion, connectThisDevice } = useSelector((state: State) => state.ui)
   const dispatch = useDispatch<Dispatch>()
   const app = useApplication(service, connection)
 
   if (!service) return <NoConnectionPage />
+  const headerHidesEndpoint = device?.thisDevice && instance?.owner.id === user.id && !connectThisDevice
 
   return (
     <Gutters size="md" top={null} bottom={null}>
@@ -46,6 +49,7 @@ export const ConnectAdvanced: React.FC = () => {
           onClick={() => dispatch.connections.forget(connection.id)}
         />
       </Box>
+      {headerHidesEndpoint && !connection.enabled && !connection.connectLink && <ServiceConnectButton />}
       <AccordionMenuItem
         gutters
         subtitle={t('connectAdvanced.advanced', 'Advanced')}
@@ -69,6 +73,7 @@ export const ConnectAdvanced: React.FC = () => {
         }
       >
         <List disablePadding>
+          <ServiceSubnetNameSetting device={device} service={service} />
           {!connection.public && (
             <DesktopUI>
               <SubdomainSetting connection={connection} service={service} instance={instance} />

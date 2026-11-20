@@ -162,6 +162,7 @@ export type DeviceApp = {
   // graphql keeps the service in step — edited in one place, the setting.
   portSetting?: string | null
   services: DeviceAppService[] // its services, the primary first; none for an app that serves nothing
+  listen?: string | null // where the single listener is bound, as the device reports it
   listeners?: DeviceAppListener[] // where its named listeners listen, as the device reports it while it runs
   locked?: SettingLock | null // enabled or disabled as its product holds it: a synced or enforced product that sets it
   rootConsent?: DeviceAppRootConsent | null // the consent to root it runs under, where the API says
@@ -212,7 +213,7 @@ const SESSION_FIELDS = 'session login via since'
 const DECLARED_SERVICE_FIELDS =
   'key name protocol multiPort port portSetting listeners { name type port portSetting ports }'
 const SERVICE_FIELDS = `${DECLARED_SERVICE_FIELDS} serviceId`
-const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil adminControl state detail serviceId contract protocol icon capabilities hostKey sessions { ${SESSION_FIELDS} } sessionsOpen features portSetting services { ${SERVICE_FIELDS} } listeners { name listen } problems { name error detail } settings { ${SETTING_FIELDS} }`
+const FIELDS = `id name publisher publisherVerifiedDomain oldInstall conversion conversionDetail root enabled added channel pinned version release latest upToDate heldBack { reason detail } grantUntil adminControl state detail serviceId contract protocol icon capabilities hostKey sessions { ${SESSION_FIELDS} } sessionsOpen features portSetting services { ${SERVICE_FIELDS} } listen listeners { name listen } problems { name error detail } settings { ${SETTING_FIELDS} }`
 
 // A setting as read: its value the declared default where none was set, and its lock only where it names a product.
 function parsedSetting(setting: any): DeviceAppSetting {
@@ -275,6 +276,7 @@ export const parsedDeviceApp = (app: any): DeviceApp => ({
     features: app.features ?? [],
     portSetting: app.portSetting ?? null,
     services: (app.services ?? []).map(parsedService),
+    listen: app.listen ?? null,
     listeners: app.listeners ?? [],
     settings: (app.settings ?? []).map(parsedSetting),
   })
