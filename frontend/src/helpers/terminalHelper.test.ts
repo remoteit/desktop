@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const { env, windowOpen } = vi.hoisted(() => ({ env: { isNative: false }, windowOpen: vi.fn() }))
 vi.mock('../services/browser', () => ({ default: env, windowOpen }))
-vi.mock('../constants', () => ({ PORTAL_URL: 'https://app.remote.it' }))
+vi.mock('../constants', () => ({ PORTAL_URL: 'https://app.remote.it', TERMINAL_PATH: '/terminal' }))
 
 import { openTerminal, portalOrigin, terminalURL } from './terminalHelper'
 

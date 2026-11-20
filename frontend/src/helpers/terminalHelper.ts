@@ -1,5 +1,5 @@
 import browser, { windowOpen } from '../services/browser'
-import { PORTAL_URL } from '../constants'
+import { PORTAL_URL, TERMINAL_PATH } from '../constants'
 
 /* Our web SSH (pages/TerminalPage): a terminal on a device's SSH service, its session through the browser's remote.it
    client (services/browserClient), in its own tab — #/terminal?name=<subnet name>&port=…&title=…&service=<id>.
@@ -27,7 +27,7 @@ export function terminalURL({ name, port, title, service }: TerminalTarget): str
   const query = new URLSearchParams({ name, port: String(port), title: title || name })
   if (service) query.set('service', service)
   const base = browser.isNative ? `${portalOrigin(name)}/` : `${location.origin}${location.pathname}`
-  return `${base}#/terminal?${query}`
+  return `${base}#${TERMINAL_PATH}?${query}`
 }
 
 /** Opens the terminal in its own tab — on the desktop and mobile apps, in the system browser. */

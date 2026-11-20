@@ -4708,6 +4708,10 @@
     "mergeTagsConfirmTitle": "Tags zusammenführen?",
     "title": "Tags"
   },
+  "terminal": {
+    "paste": "",
+    "pasteFailed": ""
+  },
   "testPage": {
     "addQueryHeader": "Abfrage-Header hinzufügen",
     "addQueryHeaderPlaceholder": "Beispiel: \"key:value\"",

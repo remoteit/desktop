@@ -4,11 +4,11 @@ import browser from '../services/browser'
 import useSafeArea from '../hooks/useSafeArea'
 import useCapacitor from '../hooks/useCapacitor'
 import { persistor } from '../store'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useRouteMatch } from 'react-router-dom'
 import { PersistGate } from 'redux-persist/integration/react'
 import { selectResellerRef } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
-import { REGEX_FIRST_PATH } from '../constants'
+import { REGEX_FIRST_PATH, TERMINAL_PATH } from '../constants'
 import { State, Dispatch } from '../store'
 import { Box } from '@mui/material'
 import { InstallationNotice } from './InstallationNotice'
@@ -42,6 +42,7 @@ export const App: React.FC = () => {
   const { t } = useTranslation()
   const { insets } = useSafeArea()
   const location = useLocation()
+  const terminalRoute = useRouteMatch(TERMINAL_PATH)
   const hideSplashScreen = useCapacitor()
   const authInitialized = useSelector((state: State) => state.auth.initialized)
   const authenticated = useSelector((state: State) => state.auth.authenticated)
@@ -64,7 +65,7 @@ export const App: React.FC = () => {
   // two panels → one) exactly the way shrinking the window does
   const { hideSidebar, singlePanel, triplePanel, mobile } = useLayoutBreakpoints()
   const isRootMenu = location.pathname.match(REGEX_FIRST_PATH)?.[0] === location.pathname
-  const showBottomMenu = (mobile || browser.isMobile) && isRootMenu && hideSidebar
+  const showBottomMenu = !terminalRoute && (mobile || browser.isMobile) && isRootMenu && hideSidebar
   const needsUserHydration = authenticated && !user
   const signedOut = !authInitialized || !authenticated
 
@@ -134,6 +135,13 @@ export const App: React.FC = () => {
       <Page>
         <InstallationNotice />
       </Page>
+    )
+
+  if (terminalRoute && !isChatPopout)
+    return (
+      <PersistGate persistor={persistor} loading={<LoadingMessage message="Restoring state..." />}>
+        <Router layout={layout} />
+      </PersistGate>
     )
 
   return (
