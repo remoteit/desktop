@@ -3314,6 +3314,29 @@
     "oneTimeUse": "一回限りの使用",
     "screenViewCodeHint": "または、この登録コードを使用してScreenViewアプリを手動で登録できます。"
   },
+  "portalUserMode": {
+    "active": "",
+    "activeDefault": "",
+    "adminRequired": "",
+    "approve": "",
+    "cancelRequest": "",
+    "confirmAccount": "",
+    "confirmFallback": "",
+    "confirmRevoke": "",
+    "confirmWhole": "",
+    "enable": "",
+    "loadFailed": "",
+    "localSignIn": "",
+    "missingCode": "",
+    "pending": "",
+    "policyOff": "",
+    "retry": "",
+    "revoke": "",
+    "saveFailed": "",
+    "scope": "",
+    "waitingAdmin": "",
+    "wholeDevice": ""
+  },
   "portSetting": {
     "localPort": "ローカルポート"
   },

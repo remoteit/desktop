@@ -9,13 +9,32 @@ import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { ListItemSetting } from './ListItemSetting'
 import { settingNote } from './DeviceSettingRow'
+import { DevicePortalUserMode } from './DevicePortalUserMode'
+import { CLOUD_TREE_RE, OAUTH_GRAPHQL_RESOURCE } from '../constants'
+import { DeviceSignIns } from './DeviceSignIns'
+
+export const DeviceUserModeSetting: React.FC = () => {
+  const { device } = useContext(DeviceContext)
+  const enabled = useDeviceSessions()
+  if (!enabled || !device) return null
+  const legacy = device.permissions.includes('MANAGE') ? (
+    <>
+      <LegacyDeviceUserModeSetting />
+      <DeviceSignIns deviceId={device.id} />
+    </>
+  ) : null
+  const stage = CLOUD_TREE_RE.exec(OAUTH_GRAPHQL_RESOURCE)?.[1]
+  const command =
+    stage && (stage === 'solo' || stage.startsWith('local')) ? `remoteit-device-${stage}` : 'remoteit-device'
+  return <DevicePortalUserMode key={device.id} deviceId={device.id} legacy={legacy} command={command} />
+}
 
 /* User mode (presence-server docs/device-principals.md §1): the device reaches everything the person who switched it
    on can, as well as what its networks grant it — a laptop's or a phone's usual mode. Not a privilege: it gives that
    person nothing they could not reach already. Only for a device you manage; switched on, it acts for you — unless the
    machine's administrator allows it none (the user_mode policy), said here and the switch greyed. Behind the
    device-sessions flag, and absent where the API does not serve device sessions. */
-export const DeviceUserModeSetting: React.FC = () => {
+const LegacyDeviceUserModeSetting: React.FC = () => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
   const enabled = useDeviceSessions()

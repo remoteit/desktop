@@ -3434,6 +3434,29 @@
     "oneTimeUse": "USO ÚNICO",
     "screenViewCodeHint": "O usa este código de registro para reclamar manualmente la aplicación ScreenView."
   },
+  "portalUserMode": {
+    "active": "",
+    "activeDefault": "",
+    "adminRequired": "",
+    "approve": "",
+    "cancelRequest": "",
+    "confirmAccount": "",
+    "confirmFallback": "",
+    "confirmRevoke": "",
+    "confirmWhole": "",
+    "enable": "",
+    "loadFailed": "",
+    "localSignIn": "",
+    "missingCode": "",
+    "pending": "",
+    "policyOff": "",
+    "retry": "",
+    "revoke": "",
+    "saveFailed": "",
+    "scope": "",
+    "waitingAdmin": "",
+    "wholeDevice": ""
+  },
   "portSetting": {
     "localPort": "Puerto local"
   },

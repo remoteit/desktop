@@ -3374,6 +3374,29 @@
     "oneTimeUse": "ONE-TIME USE",
     "screenViewCodeHint": "Or use this registration code to manually claim the ScreenView app."
   },
+  "portalUserMode": {
+    "active": "Active",
+    "activeDefault": "Default for accounts without their own sign-in",
+    "adminRequired": "An OS administrator must approve this request on the device.",
+    "approve": "On the device, open a terminal as an OS administrator, run the command below, and enter this approval code.",
+    "cancelRequest": "Cancel request",
+    "confirmAccount": "Anyone and any process using {{name}} can reach what you can in Remote.It.",
+    "confirmFallback": "New connections from {{name}} will use the whole-device identity {{person}}.",
+    "confirmRevoke": "Revoking this binding ends the sessions using it.",
+    "confirmWhole": "People and processes on this device can use your Remote.It access wherever an account has no sign-in of its own. This also applies to accounts added later.",
+    "enable": "Enable",
+    "loadFailed": "Could not load user mode.",
+    "localSignIn": "You can also open Remote.It on the device and sign in from your OS account.",
+    "missingCode": "Use the approval code from the request. If you no longer have the code, cancel the request and submit it again.",
+    "pending": "Waiting for the device",
+    "policyOff": "The OS administrator turned off user mode on this device.",
+    "retry": "Retry",
+    "revoke": "Revoke sign-in",
+    "saveFailed": "Could not update user mode.",
+    "scope": "Enable user mode for",
+    "waitingAdmin": "Waiting for OS admin approval",
+    "wholeDevice": "Whole device"
+  },
   "portSetting": {
     "localPort": "Local Port"
   },
