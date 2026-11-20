@@ -505,6 +505,9 @@
     "terminal": "",
     "title": ""
   },
+  "buttons": {
+    "cancel": ""
+  },
   "changeEmailDialog": {
     "cancel": "キャンセル",
     "currentEmail": "現在のメールアドレス:",
@@ -587,6 +590,17 @@
     "claimingForOrg": "{{name}} のために登録中",
     "claimingWarning": "このデバイスは、自分自身ではなく組織のために登録しようとしています。",
     "title": "デバイスを登録"
+  },
+  "closeOrganization": {
+    "code": "",
+    "confirm_other": "",
+    "error": "",
+    "resend": "",
+    "resume": "",
+    "sendCode": "",
+    "submit": "",
+    "title": "",
+    "warning": ""
   },
   "columns": {
     "access": "ゲスト",
@@ -921,6 +935,12 @@
     "title": "参加キーを作成",
     "use": "マシンに {{env}} として渡すか、デーモンだけが読み取れるファイルに保存して、そのファイルを {{file}} で指定してください。",
     "wholeNumber": "1以上の整数を入力してください"
+  },
+  "createOrganization": {
+    "error": "",
+    "name": "",
+    "submit": "",
+    "title": ""
   },
   "creditCard": {
     "cardEndingIn": "{{last}} で終わる{{brand}}",
@@ -2815,6 +2835,11 @@
   "organizationColor": {
     "theme": "テーマ"
   },
+  "organizationContacts": {
+    "billing": "",
+    "notifications": "",
+    "title": ""
+  },
   "organizationEmptyPage": {
     "create": "作成",
     "createOrgLine1": "組織を作成して",
@@ -2844,6 +2869,7 @@
   },
   "organizationMembershipPage": {
     "cannotBeUndone": "この操作は元に戻せません。",
+    "contactAdminHint": "",
     "contactOwnerHint": "再度追加してもらうには、組織のオーナーにお問い合わせいただく必要があります。",
     "editOrganization": "組織を編集",
     "joined": "参加日",

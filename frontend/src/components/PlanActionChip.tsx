@@ -12,9 +12,11 @@ import { State } from '../store'
 import { ColorChip, Props as ChipProps } from './ColorChip'
 import { useHistory } from 'react-router-dom'
 import { BillingUI } from './BillingUI'
+import { selectMembership } from '../selectors/accounts'
 
 export const PlanActionChip: React.FC<ChipProps> = ({ ...props }) => {
   const license = useSelector((state: State) => selectRemoteitLicense(state))
+  const standalone = useSelector(selectMembership).standalone
   const history = useHistory()
 
   props.label ||= ''
@@ -39,7 +41,7 @@ export const PlanActionChip: React.FC<ChipProps> = ({ ...props }) => {
 
   return (
     <BillingUI>
-      <ColorChip {...props} size="small" onClick={() => history.push('/account/plans')} />
+      <ColorChip {...props} size="small" onClick={() => history.push(standalone ? '/organization/licensing' : '/account/plans')} />
     </BillingUI>
   )
 }

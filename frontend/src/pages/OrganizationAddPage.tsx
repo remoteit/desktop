@@ -15,10 +15,12 @@ import { BillingUI } from '../components/BillingUI'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { selectMembership } from '../selectors/accounts'
 
 export const OrganizationAddPage = () => {
   const { t } = useTranslation()
   const organization = useSelector(selectOrganization)
+  const standalone = useSelector(selectMembership).standalone
   const allContacts = useSelector((state: State) => state.contacts.all)
   const freeUsers = useSelector(selectAvailableUsers)
   const enterprise = organization.licenses.find(l => l.plan.id === ENTERPRISE_PLAN_ID)
@@ -78,7 +80,7 @@ export const OrganizationAddPage = () => {
               severity="warning"
               button={
                 <BillingUI>
-                  <Link to="/account/plans">
+                  <Link to={standalone ? '/organization/licensing' : '/account/plans'}>
                     <ColorChip
                       sx={{ marginTop: 1.4 }}
                       size="small"

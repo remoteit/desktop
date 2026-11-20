@@ -51,15 +51,18 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   // (never redirect to /add) and could not tell one chosen account from the next. activeAccountId
   // is always set and changes on every switch, so each account decides exactly once.
   const activeAccountId = useSelector((state: State) => state.accounts.activeId || state.user.id)
+  const standalone = useSelector((state: State) =>
+    state.accounts.membership.some(member => member.account.id === activeAccountId && member.standalone)
+  )
   const actedFor = useRef<string | undefined>(undefined)
   useEffect(() => {
     if (!initialized) setInitLoad(true)
-    if (shouldRedirect && !devices.length && actedFor.current !== activeAccountId) {
+    if (shouldRedirect && !standalone && !devices.length && actedFor.current !== activeAccountId) {
       actedFor.current = activeAccountId
       if (defaultAccountId) accounts.select(defaultAccountId)
       else history.push('/add')
     }
-  }, [initialized, shouldRedirect, devices.length, defaultAccountId, activeAccountId, history, accounts])
+  }, [initialized, shouldRedirect, standalone, devices.length, defaultAccountId, activeAccountId, history, accounts])
 
   return (
     <DevicesDrawers>
