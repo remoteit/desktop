@@ -1,5 +1,7 @@
 import type { BrowserWindow, WebContents } from 'electron'
+import AirBrake from './AirBrake'
 import Logger from './Logger'
+import environment from './environment'
 import { withoutQuery } from './withoutQuery'
 
 const READY_TIMEOUT_MS = 15_000
@@ -21,10 +23,20 @@ export default function loadWindow(window: LoadableWindow, url: string, ready: P
   let startedAt = 0
   let startedLoading = false
   let committed = false
+  let markLoaded!: () => void
+  const loaded = new Promise<void>(resolve => (markLoaded = resolve))
   let timer: ReturnType<typeof setTimeout> | undefined
 
   const retry = (reason: string, details: Record<string, unknown> = {}) => {
-    if (attempts >= MAX_ATTEMPTS) return Logger.error('WINDOW LOAD GAVE UP', { attempts, reason, ...details })
+    if (attempts >= MAX_ATTEMPTS) {
+      Logger.error('WINDOW LOAD GAVE UP', { attempts, reason, ...details })
+      AirBrake.notify({
+        params: { type: 'WINDOW LOAD GAVE UP', attempts, reason, ...details },
+        context: { version: environment.version },
+        error: new Error(`The app window did not load after ${attempts} attempts (${reason})`),
+      })
+      return
+    }
     Logger.warn('WINDOW LOAD RETRY', { attempt: attempts + 1, reason, ...details })
     load()
   }
@@ -58,6 +70,7 @@ export default function loadWindow(window: LoadableWindow, url: string, ready: P
     if (committed || new URL(navigatedUrl).origin !== origin) return
     committed = true
     clearTimeout(timer)
+    markLoaded()
     if (attempts > 1) Logger.info('WINDOW LOADED', { attempts })
   })
 
@@ -80,8 +93,9 @@ export default function loadWindow(window: LoadableWindow, url: string, ready: P
   })
 
   return {
-    /** Before the first commit, replaces what is being loaded and retried; after it, a plain load. */
+    loaded,
     navigate(next: string) {
+      // Before the first commit, a plain load would be replaced by the pending first load or its retries.
       target = next
       if (committed)
         window.webContents.loadURL(next).catch(error => Logger.warn('WINDOW NAVIGATION FAILED', { error }))

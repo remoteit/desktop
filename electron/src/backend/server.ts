@@ -68,7 +68,6 @@ class Server {
   public socket?: SocketIO.Socket
   private app: Express
   private markListening!: () => void
-  /** Resolves once the app's own page can be served. */
   public readonly listening = new Promise<void>(resolve => (this.markListening = resolve))
 
   EVENTS = {

@@ -1,9 +1,12 @@
 import { EventEmitter } from 'events'
 import type { BrowserWindow } from 'electron'
+import AirBrake from './AirBrake'
 import Logger from './Logger'
 import loadWindow from './loadWindow'
 
 jest.mock('./Logger', () => ({ __esModule: true, default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() } }))
+jest.mock('./AirBrake', () => ({ __esModule: true, default: { notify: jest.fn() } }))
+jest.mock('./environment', () => ({ __esModule: true, default: { version: '4.0.4' } }))
 
 const APP = 'http://127.0.0.1:29999/'
 
@@ -111,11 +114,15 @@ describe('loadWindow', () => {
     expect(loads(window)).toHaveLength(2)
   })
 
-  it('gives up after the last attempt', async () => {
+  it('gives up after the last attempt, and reports it', async () => {
     start()
     await jest.advanceTimersByTimeAsync(50_000)
     expect(loads(window)).toHaveLength(5)
     expect(Logger.error).toHaveBeenCalledWith('WINDOW LOAD GAVE UP', expect.objectContaining({ attempts: 5 }))
+    expect(AirBrake.notify).toHaveBeenCalledTimes(1)
+    expect(AirBrake.notify).toHaveBeenCalledWith(
+      expect.objectContaining({ params: expect.objectContaining({ type: 'WINDOW LOAD GAVE UP', reason: 'stalled' }) })
+    )
     await jest.advanceTimersByTimeAsync(60_000)
     expect(loads(window)).toHaveLength(5)
   })
@@ -134,6 +141,20 @@ describe('loadWindow', () => {
     window.destroyed = true
     await jest.advanceTimersByTimeAsync(60_000)
     expect(loads(window)).toHaveLength(1)
+  })
+
+  it('says when the app has loaded, for what must wait for it', async () => {
+    const loader = start()
+    const loaded = jest.fn()
+    void loader.loaded.then(loaded)
+    await jest.advanceTimersByTimeAsync(0)
+    window.commit('about:blank')
+    await jest.advanceTimersByTimeAsync(0)
+    expect(loaded).not.toHaveBeenCalled()
+
+    window.commit()
+    await jest.advanceTimersByTimeAsync(0)
+    expect(loaded).toHaveBeenCalled()
   })
 
   describe('navigate', () => {

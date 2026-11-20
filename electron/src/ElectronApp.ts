@@ -454,7 +454,9 @@ export default class ElectronApp {
       void this.deliverAuthCallback(index != -1 ? location.substring(index) : '')
     } else if (location) {
       Logger.info('OPENING WINDOW LOCATION', { location })
-      this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
+      // On a cold start the page isn't loading yet, and executeJavaScript would set the hash on about:blank.
+      const { webContents } = this.window
+      void this.loader?.loaded.then(() => webContents.executeJavaScript(`window.location.hash="#/${location}"`))
     }
 
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
