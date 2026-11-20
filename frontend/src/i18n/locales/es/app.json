@@ -574,6 +574,9 @@
     "why": "",
     "whyTitle": ""
   },
+  "buttons": {
+    "cancel": ""
+  },
   "changeEmailDialog": {
     "cancel": "Cancelar",
     "currentEmail": "Correo electrónico actual:",
@@ -658,6 +661,19 @@
     "claimingForOrg": "Reclamando para {{name}}",
     "claimingWarning": "Estás reclamando este dispositivo para una organización en lugar de para ti.",
     "title": "Reclamar un dispositivo"
+  },
+  "closeOrganization": {
+    "code": "",
+    "confirm_one": "",
+    "confirm_many": "",
+    "confirm_other": "",
+    "error": "",
+    "resend": "",
+    "resume": "",
+    "sendCode": "",
+    "submit": "",
+    "title": "",
+    "warning": ""
   },
   "columns": {
     "access": "Invitados",
@@ -986,12 +1002,19 @@
     "use": "Entréguela a la máquina como {{env}}, o guárdela en un archivo que solo el daemon pueda leer e indique ese archivo en {{file}}.",
     "wholeNumber": "Un número entero de 1 o más"
   },
+  "createOrganization": {
+    "error": "",
+    "name": "",
+    "submit": "",
+    "title": ""
+  },
   "creditCard": {
     "cardEndingIn": "{{brand}} terminada en {{last}}",
     "expiredDate": "Vencida {{month}}/{{year}}",
     "expiredNotice": "La tarjeta de crédito ha vencido.",
     "expiredNoticeDetail": "Actualiza tu tarjeta para continuar con el servicio.",
     "expiringDate": "Vence {{month}}/{{year}}",
+    "noCard": "",
     "processing": "Procesando...",
     "title": "Tarjeta de crédito",
     "update": "Actualizar"
@@ -3117,6 +3140,11 @@
   "organizationColor": {
     "theme": "Tema"
   },
+  "organizationContacts": {
+    "billing": "",
+    "notifications": "",
+    "title": ""
+  },
   "organizationEmptyPage": {
     "create": "Crear",
     "createOrgLine1": "Crea una organización para",
@@ -3146,6 +3174,7 @@
   },
   "organizationMembershipPage": {
     "cannotBeUndone": "Esta acción no se puede deshacer.",
+    "contactAdminHint": "",
     "contactOwnerHint": "Deberás ponerte en contacto con el propietario de la organización para que te vuelva a añadir.",
     "editOrganization": "Editar organización",
     "joined": "Fecha de ingreso",

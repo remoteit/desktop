@@ -17,27 +17,27 @@ import { selectRemoteitLicense } from '../selectors/organizations'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
 
-export const CreditCard: React.FC = () => {
+export const CreditCard: React.FC<{ accountId?: string }> = ({ accountId }) => {
   const { t } = useTranslation()
   const history = useHistory()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const { license, updating } = useSelector((state: State) => ({
-    license: selectRemoteitLicense(state, state.user.id),
+    license: selectRemoteitLicense(state, accountId ?? state.user.id),
     updating: state.plans.updating,
   }))
   const card = license?.subscription?.card
   const expired = !!card && card.expiration < new Date()
-  const update = () => dispatch.plans.updateCreditCard(license?.subscription?.card?.last)
+  const update = () => dispatch.plans.updateCreditCard({ last: card?.last, accountId })
 
   React.useEffect(() => {
-    if (location.pathname.includes('success')) {
+    if (!accountId && location.pathname.includes('success')) {
       dispatch.plans.restore()
       history.push('.')
     }
   }, [])
 
-  if (!card) return null
+  if (!card && (!accountId || !license?.subscription)) return null
 
   return (
     <>
@@ -50,32 +50,38 @@ export const CreditCard: React.FC = () => {
             </Notice>
           </ListItem>
         )}
-        <ListItemButton onClick={update}>
+        <ListItemButton onClick={update} disabled={!!updating}>
           <ListItemIcon>
             <Icon name="credit-card" size="md" />
           </ListItemIcon>
           <ListItemText
-            primary={t('creditCard.cardEndingIn', {
-              brand: card.brand.toUpperCase(),
-              last: card.last,
-              defaultValue: '{{brand}} ending in {{last}}',
-            })}
+            primary={
+              card
+                ? t('creditCard.cardEndingIn', {
+                    brand: card.brand.toUpperCase(),
+                    last: card.last,
+                    defaultValue: '{{brand}} ending in {{last}}',
+                  })
+                : t('creditCard.noCard', 'No card on file')
+            }
             secondary={
-              expired
-                ? t('creditCard.expiredDate', {
-                    month: card.month,
-                    year: card.year,
-                    defaultValue: 'Expired {{month}}/{{year}}',
-                  })
-                : t('creditCard.expiringDate', {
-                    month: card.month,
-                    year: card.year,
-                    defaultValue: 'Expiring {{month}}/{{year}}',
-                  })
+              card &&
+              (expired
+                ? t('creditCard.expiredDate', { month: card.month, year: card.year, defaultValue: 'Expired {{month}}/{{year}}' })
+                : t('creditCard.expiringDate', { month: card.month, year: card.year, defaultValue: 'Expiring {{month}}/{{year}}' }))
             }
           />
           <ListItemSecondaryAction>
-            <Button variant="contained" color="primary" size="small" onClick={update} disabled={!!updating}>
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              onClick={event => {
+                event.stopPropagation()
+                update()
+              }}
+              disabled={!!updating}
+            >
               {updating ? t('creditCard.processing', 'Processing...') : t('creditCard.update', 'Update')}
             </Button>
           </ListItemSecondaryAction>
