@@ -23,6 +23,7 @@ import { AddPage } from '../pages/AddPage'
 import { VirtualDeviceAddPage } from '../pages/VirtualDeviceAddPage'
 import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { DevicesPage } from '../pages/DevicesPage'
+import { ServicesPage } from '../pages/ServicesPage'
 import { DeviceBulkTransferPage } from '../pages/DeviceTransferPage'
 import { SetupDevice } from '../pages/SetupDevice'
 import { SetupWaiting } from '../pages/SetupWaiting'
@@ -325,6 +326,13 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <DeviceRouter layout={layout} />
         </DeviceContextWrapper>
       </Route>
+      {!remoteUI && (
+        <Route path="/services" exact>
+          <Panel layout={layout}>
+            <ServicesPage />
+          </Panel>
+        </Route>
+      )}
       {/* This device: the machine the app runs on (services/thisDevice) */}
       <Route path="/this-device">
         <Panel layout={layout}>

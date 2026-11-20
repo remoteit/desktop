@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 // Exits and proxies are in the menu in both layouts: a phone's bottom menu has Connections, Devices and Networks, and
 // its drawer the rest — Exits and Proxies among them, where the device-session API's pages are on.
-const flags = vi.hoisted(() => ({ mobile: false, deviceSessions: true }))
+const flags = vi.hoisted(() => ({ mobile: false, deviceSessions: true, services: false }))
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string, text?: unknown) => (typeof text === 'string' ? text : key) }) }))
 vi.mock('react-redux', () => ({
@@ -25,6 +25,9 @@ vi.mock('./UpgradeBanner', () => ({ UpgradeBanner: () => null }))
 vi.mock('./ResellerLogo', () => ({ ResellerLogo: () => null }))
 vi.mock('../hooks/useMobile', () => ({ useMobile: () => flags.mobile }))
 vi.mock('../hooks/useDeviceSessions', () => ({ useDeviceSessions: () => flags.deviceSessions }))
+vi.mock('../hooks/useServiceShortcutsSupport', () => ({
+  useServiceShortcutsSupport: () => ({ available: flags.services, namedAddress: false }),
+}))
 vi.mock('../hooks/useThisDevice', () => ({ useThisDevice: () => null, useThisDevicePage: () => false }))
 vi.mock('../hooks/useCounts', () => ({ useCounts: () => ({}) }))
 vi.mock('../selectors/organizations', () => ({ selectLimitsLookup: () => ({}) }))
@@ -44,8 +47,8 @@ describe('SidebarNav', () => {
   let container: HTMLDivElement
 
   const items = () => [...container.querySelectorAll('[data-nav]')].map(item => item.getAttribute('data-nav'))
-  const render = (mobile: boolean, deviceSessions = true) => {
-    Object.assign(flags, { mobile, deviceSessions })
+  const render = (mobile: boolean, deviceSessions = true, services = false) => {
+    Object.assign(flags, { mobile, deviceSessions, services })
     act(() => root.render(<SidebarNav />))
     return items()
   }
@@ -76,5 +79,11 @@ describe('SidebarNav', () => {
   it('neither, in either layout, where the device-session pages are off', () => {
     expect(render(true, false)).not.toEqual(expect.arrayContaining(['Exits']))
     expect(render(false, false)).not.toContain('Proxies')
+  })
+
+  it('shows Services in the sidebar and mobile drawer when its API is available', () => {
+    expect(render(false, false)).not.toContain('Services')
+    expect(render(false, false, true)).toContain('Services')
+    expect(render(true, false, true)).toContain('Services')
   })
 })

@@ -112,7 +112,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             />
           </ChatAgentGuide>
         )}
-        {!showSearch && <RefreshButton size="md" color="grayDarker" />}
+        {!showSearch && menu !== '/services' && <RefreshButton size="md" color="grayDarker" />}
         {sidebarHidden && (
           <Route path="/products">
             <Typography variant="h2">

@@ -19,6 +19,7 @@ import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { AccordionMenuItem } from './AccordionMenuItem'
 import { ServiceKeySetting } from './ServiceKeySetting'
 import { ServiceSubnetNameSetting } from './ServiceSubnetNameSetting'
+import { ShowInServicesSetting } from './ShowInServicesSetting'
 import { ServiceSchemeSuggestion } from './ServiceSchemeSuggestion'
 import { ListItemLocation } from './ListItemLocation'
 import { AutoLaunchToggle } from './AutoLaunchToggle'
@@ -129,6 +130,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
               ) : (
                 <ServiceKeySetting connection={connection} service={service} permissions={instance.permissions} />
               )}
+              {device?.permissions.includes('MANAGE') && <ShowInServicesSetting key={service.id} serviceId={service.id} />}
               <ServiceSubnetNameSetting device={device} service={service} />
               <PortalUI>
                 {showDesktopNotice && (
