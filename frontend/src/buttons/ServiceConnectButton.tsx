@@ -23,6 +23,7 @@ import { LocalPortConnect } from '../components/LocalPortConnect'
 import { LocalPortsListed } from '../components/LocalPortsListed'
 import { useLocalPort } from '../hooks/useLocalPort'
 import { wantsHttps } from '../services/localPorts'
+import { HTTP_TYPE } from '../services/graphQLDetectedScheme'
 
 export const ServiceConnectButton: React.FC = () => {
   const { t } = useTranslation()
@@ -34,6 +35,10 @@ export const ServiceConnectButton: React.FC = () => {
   // A service's own name's port goes with that name alone: the one this machine answered may be its device's (a daemon
   // without service names, through the portal's probe), reached at the service's own port.
   const namePort = local && local.name !== reach.name ? undefined : reach.port
+  const sharedHttpsInUse = device?.services.some(
+    other => other.id !== service?.id && other.enabled !== false && other.port === 443
+  )
+  const defaultHttp = !sharedHttpsInUse && service?.typeID === HTTP_TYPE && service.port === 80
   const [proxy, setProxy] = useState(false)
   // No agent here reaches it, but it has a name and serves the web: this browser's client can open it in its own tab
   // (services/browserGateway), the proxy one step away as for a local name.
@@ -43,7 +48,9 @@ export const ServiceConnectButton: React.FC = () => {
   // opens in our web SSH as well, with the person's own account (components/AppTerminal).
   const serving = useServiceApp(device, service)
   const byCertificate = opensTerminal(serving.app, serving.appService)
-  const gateway = !local && reach.checked && !!reach.name && (!!web || ssh) && !proxy
+  // The browser gateway uses the default HTTPS port. A shared name on another port needs a service connection.
+  const gatewayWeb = web && (reach.port === 443 || service?.port === 443 || defaultHttp)
+  const gateway = !local && reach.checked && !!reach.name && (gatewayWeb || ssh) && !proxy
   // A local port of this machine (services/localPorts), where it runs our daemon: asked for here, or open already —
   // then it is what the panel shows, until it is disconnected.
   const localPort = useLocalPort(service?.id, device?.id)
@@ -136,6 +143,7 @@ export const ServiceConnectButton: React.FC = () => {
                   <LocalSubnetConnect
                     local={local}
                     port={namePort}
+                    defaultHttp={defaultHttp}
                     service={service}
                     connection={connection}
                     byCertificate={byCertificate}

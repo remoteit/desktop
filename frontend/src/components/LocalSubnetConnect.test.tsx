@@ -99,7 +99,7 @@ describe('LocalSubnetConnect', () => {
 
   it('warns before launching a web service whose redirect to HTTPS would loop, and opens it only if asked', async () => {
     detect.mockResolvedValue({ [dmPro.id]: passed })
-    await render({ service: dmPro })
+    await render({ service: dmPro, defaultHttp: true })
     expect(detect).toHaveBeenCalledWith(dmPro.deviceID)
     await click('launch')
     expect(windowOpen).not.toHaveBeenCalled()
@@ -134,17 +134,33 @@ describe('LocalSubnetConnect', () => {
     expect(detect).not.toHaveBeenCalled()
   })
 
-  it('launches a web service as https on the name, never its own port', async () => {
+  it('launches two web services on the same name at their respective ports', async () => {
     await render()
+    await click('launch')
+    expect(windowOpen).toHaveBeenLastCalledWith(`https://${NAME}:8123`, '_blank')
+    await render({ service: { ...service, port: 80 }, defaultHttp: true })
+    await click('launch')
+    expect(windowOpen).toHaveBeenLastCalledWith(`https://${NAME}`, '_blank')
+  })
+
+  it('launches on explicit port 80 without warning about a redirect to a separate HTTPS port', async () => {
+    detect.mockResolvedValue({ [dmPro.id]: passed })
+    await render({ service: dmPro, defaultHttp: false })
+    await click('launch')
+    expect(windowOpen).toHaveBeenCalledExactlyOnceWith(`https://${NAME}:80`, '_blank')
+    expect(container.querySelector('[data-testid="confirm"]')).toBeNull()
+  })
+
+  it('uses the usual HTTPS port when the service has its own name', async () => {
+    await render({ port: 443 })
     await click('launch')
     expect(windowOpen).toHaveBeenCalledExactlyOnceWith(`https://${NAME}`, '_blank')
   })
 
-  it('shows and copies the URL it launches, scheme included', async () => {
+  it('shows and copies the URL it launches, scheme and port included', async () => {
     await render()
-    expect(container.querySelector('[data-testid="copy"]')!.getAttribute('data-value')).toBe(`https://${NAME}`)
-    expect(container.textContent).toContain(`https://${NAME}`)
-    expect(container.textContent).not.toContain(':8123')
+    expect(container.querySelector('[data-testid="copy"]')!.getAttribute('data-value')).toBe(`https://${NAME}:8123`)
+    expect(container.textContent).toContain(`https://${NAME}:8123`)
   })
 
   it('copies a service that is not a web one as name:port', async () => {
