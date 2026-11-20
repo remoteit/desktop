@@ -3373,6 +3373,28 @@
     "oneTimeUse": "EINMALIGE NUTZUNG",
     "screenViewCodeHint": "Oder verwenden Sie diesen Registrierungscode, um die ScreenView-App manuell zu beanspruchen."
   },
+  "portalUserMode": {
+    "active": "",
+    "activeDefault": "",
+    "adminRequired": "",
+    "approve": "",
+    "cancelRequest": "",
+    "confirmAccount": "",
+    "confirmFallback": "",
+    "confirmRevoke": "",
+    "confirmWhole": "",
+    "enable": "",
+    "loadFailed": "",
+    "localSignIn": "",
+    "missingCode": "",
+    "pending": "",
+    "policyOff": "",
+    "revoke": "",
+    "saveFailed": "",
+    "scope": "",
+    "waitingAdmin": "",
+    "wholeDevice": ""
+  },
   "portSetting": {
     "localPort": "Lokaler Port"
   },
