@@ -8,7 +8,7 @@ import { REGEX_LAST_PATH } from '../../constants'
 import { ServiceForm } from '../../components/ServiceForm'
 import { Typography } from '@mui/material'
 import { Container } from '../../components/Container'
-import { isRelay } from '../../helpers/connectionHelper'
+import { jumpHost } from '../../helpers/virtualDeviceHelper'
 import { Diagram } from '../../components/Diagram'
 import { Gutters } from '../../components/Gutters'
 import { Title } from '../../components/Title'
@@ -67,7 +67,7 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
                 (await dispatch.devices.cloudAddService({ form, deviceId: device?.id, ports: form.ports }))
               dispatch.ui.set({ setupAddingService: false })
             }}
-            onChange={form => setForward(isRelay(form))}
+            onChange={form => setForward(!!jumpHost(form, device))}
             onCancel={() => history.push(location.pathname.replace(REGEX_LAST_PATH, ''))}
           />
         </Gutters>
