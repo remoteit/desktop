@@ -67,6 +67,8 @@ class Server {
   public io?: SocketIO.Server
   public socket?: SocketIO.Socket
   private app: Express
+  private markListening!: () => void
+  public readonly listening = new Promise<void>(resolve => (this.markListening = resolve))
 
   EVENTS = {
     ready: 'ready',
@@ -123,6 +125,7 @@ class Server {
       .listen(WEB_PORT, HOST, () => {
         d(`Listening on port ${WEB_PORT}`)
         Logger.info('SERVER STARTED', { port: WEB_PORT, directory: WEB_DIR })
+        this.markListening()
       })
 
     const key = fs.readFileSync(path.join(SSL_DIR, 'key.pem'))
