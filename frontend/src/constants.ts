@@ -17,6 +17,7 @@ export const CHAT_FEATURE = 'ai-agent'
    Enterprise plan's, or the Proxy base add-on licence's, granted per account from Admin → Add-ons as the AI agent's is. */
 export const PROXY_BASE_LIMIT = 'proxy-base'
 export const ADMIN_ADDONS_ROUTE = '/admin/add-ons'
+export const TERMINAL_PATH = '/terminal'
 
 // One stage sets the login server with every endpoint: a token works only where its own login server
 // is trusted, and the dev agent accepts login.dev tokens alone.

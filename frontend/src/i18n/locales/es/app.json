@@ -4815,6 +4815,10 @@
     "mergeTagsConfirmTitle": "¿Combinar etiquetas?",
     "title": "Etiquetas"
   },
+  "terminal": {
+    "paste": "",
+    "pasteFailed": ""
+  },
   "testPage": {
     "addQueryHeader": "Agregar encabezado de consulta",
     "addQueryHeaderPlaceholder": "Ejemplo: \"key:value\"",

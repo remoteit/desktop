@@ -89,7 +89,7 @@ import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
 import { AdminRouteGuard } from './AdminRouteGuard'
-import { ADMIN_ADDONS_ROUTE } from '../constants'
+import { ADMIN_ADDONS_ROUTE, TERMINAL_PATH } from '../constants'
 
 export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const history = useHistory()
@@ -158,7 +158,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           state: { autoFeedback: true, isRedirect: true },
         }}
       />
-      <Route path="/terminal">
+      <Route path={TERMINAL_PATH}>
         <TerminalPage />
       </Route>
       <Route path="/endpoint-sign-in">

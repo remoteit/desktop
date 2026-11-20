@@ -1,13 +1,15 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // What the app shows signed out: in an app (a shell's thisDevice present) This device, the sign-in on it; in a plain
 // browser the sign-in screen, as before; signed in, the portal in either.
 
-const { state, device, mark } = vi.hoisted(() => ({
+const { state, device, viewport, mark } = vi.hoisted(() => ({
   state: { current: {} as any },
   device: { current: undefined as any },
+  viewport: { mobile: false },
   mark: (name: string) => () => React.createElement('div', { 'data-shown': name }),
 }))
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (_k: string, text: string) => text }) }))
@@ -15,7 +17,6 @@ vi.mock('react-redux', () => ({
   useSelector: (pick: any) => pick(state.current),
   useDispatch: () => ({ ui: { set: vi.fn() } }),
 }))
-vi.mock('react-router-dom', () => ({ useLocation: () => ({ pathname: '/devices' }) }))
 vi.mock('redux-persist/integration/react', () => ({ PersistGate: ({ children }: any) => <>{children}</> }))
 vi.mock('../store', () => ({ persistor: {} }))
 vi.mock('../services/browser', () => ({ default: { isMobile: false } }))
@@ -25,12 +26,17 @@ vi.mock('../hooks/useChatEnabled', () => ({
   useChatEnabled: () => false,
   useChatDocked: () => false,
   useSidebarWidth: () => 200,
-  useLayoutBreakpoints: () => ({ hideSidebar: false, singlePanel: false, triplePanel: false, mobile: false }),
+  useLayoutBreakpoints: () => ({
+    hideSidebar: viewport.mobile,
+    singlePanel: false,
+    triplePanel: false,
+    mobile: viewport.mobile,
+  }),
 }))
 vi.mock('../hooks/useThisDevice', () => ({ useThisDevice: () => device.current }))
 vi.mock('../selectors/organizations', () => ({ selectResellerRef: () => undefined }))
 vi.mock('../services/chatPopout', () => ({ isChatPopout: false }))
-vi.mock('../constants', () => ({ REGEX_FIRST_PATH: /^\/[^/]*/ }))
+vi.mock('../constants', () => ({ REGEX_FIRST_PATH: /^\/[^/]*/, TERMINAL_PATH: '/terminal' }))
 vi.mock('./InstallationNotice', () => ({ InstallationNotice: mark('installation') }))
 vi.mock('./LoadingMessage', () => ({ LoadingMessage: mark('loading') }))
 vi.mock('./ResellerLogo', () => ({ ResellerLogo: mark('reseller') }))
@@ -51,7 +57,7 @@ vi.mock('./AnnouncementBanner', () => ({ AnnouncementBanner: () => null }))
 import { App } from './App'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
-async function shown(auth: { authenticated: boolean; user?: object }, thisDevice: any) {
+async function shown(auth: { authenticated: boolean; user?: object }, thisDevice: any, path = '/devices') {
   state.current = {
     auth: { initialized: true, ...auth },
     binaries: { installed: true },
@@ -61,7 +67,13 @@ async function shown(auth: { authenticated: boolean; user?: object }, thisDevice
   }
   device.current = thisDevice
   const container = document.createElement('div')
-  await act(async () => createRoot(container).render(<App />))
+  await act(async () =>
+    createRoot(container).render(
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+      </MemoryRouter>
+    )
+  )
   dialog = container.querySelector('[data-offline-dialog]')?.getAttribute('data-offline-dialog')
   return [...container.querySelectorAll('[data-shown]')].map(e => e.getAttribute('data-shown'))
 }
@@ -70,6 +82,7 @@ const shell = { compatible: true, has: () => true }
 
 beforeEach(() => {
   device.current = undefined
+  viewport.mobile = false
 })
 
 describe('the app, signed out', () => {
@@ -95,5 +108,12 @@ describe('the app, signed in', () => {
     ['in a plain browser', null],
   ])('%s: the portal', async (_, thisDevice) => {
     expect(await shown({ authenticated: true, user: { id: 'U' } }, thisDevice)).toEqual(['sidebar', 'router'])
+  })
+
+  it('shows mobile navigation on the device list and opens the terminal without portal chrome', async () => {
+    viewport.mobile = true
+    const auth = { authenticated: true, user: { id: 'U' } }
+    expect(await shown(auth, null)).toEqual(['sidebarMenu', 'router', 'bottomMenu'])
+    expect(await shown(auth, null, '/terminal?name=console')).toEqual(['router'])
   })
 })

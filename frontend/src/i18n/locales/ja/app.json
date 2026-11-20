@@ -4601,6 +4601,10 @@
     "mergeTagsConfirmTitle": "タグをマージしますか?",
     "title": "タグ"
   },
+  "terminal": {
+    "paste": "",
+    "pasteFailed": ""
+  },
   "testPage": {
     "addQueryHeader": "クエリヘッダーを追加",
     "addQueryHeaderPlaceholder": "例: \"key:value\"",
