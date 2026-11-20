@@ -12,10 +12,11 @@ const APP = 'http://127.0.0.1:29999/'
 
 class FakeWindow {
   destroyed = false
+  loading = true
   webContents = Object.assign(new EventEmitter(), {
     loadURL: jest.fn((_: string) => new Promise<void>(() => undefined)),
     getURL: () => 'about:blank',
-    isLoading: () => true,
+    isLoading: () => this.loading,
     isWaitingForResponse: () => false,
     getOSProcessId: () => 4242,
   })
@@ -28,14 +29,17 @@ class FakeWindow {
   fail(errorCode = -102, isMainFrame = true, url = APP) {
     this.webContents.emit('did-fail-load', {}, errorCode, 'ERR_CONNECTION_REFUSED', url, isMainFrame)
   }
+  stop() {
+    this.loading = false
+    this.webContents.emit('did-stop-loading')
+  }
 }
 
 const loads = (window: FakeWindow) => window.webContents.loadURL.mock.calls.map(([url]) => url)
 
 describe('loadWindow', () => {
   let window: FakeWindow
-  const start = (ready: Promise<void> = Promise.resolve()) =>
-    loadWindow(window as unknown as BrowserWindow, APP, ready)
+  const start = (ready: Promise<void> = Promise.resolve()) => loadWindow(window as unknown as BrowserWindow, APP, ready)
 
   beforeEach(() => {
     jest.useFakeTimers()
@@ -95,6 +99,87 @@ describe('loadWindow', () => {
       'WINDOW LOAD RETRY',
       expect.objectContaining({ reason: 'failed', errorCode: -102 })
     )
+  })
+
+  it('loads again shortly after a load stops without the app or an error', async () => {
+    start()
+    await jest.advanceTimersByTimeAsync(0)
+    window.webContents.emit('did-start-loading')
+    window.stop()
+    await jest.advanceTimersByTimeAsync(999)
+    expect(loads(window)).toHaveLength(1)
+
+    await jest.advanceTimersByTimeAsync(1)
+    expect(loads(window)).toEqual([APP, APP])
+    expect(Logger.warn).toHaveBeenCalledWith('WINDOW LOAD RETRY', { attempt: 2, reason: 'stopped' })
+  })
+
+  it('loads again once an aborted load stops, saying it was aborted', async () => {
+    start()
+    await jest.advanceTimersByTimeAsync(0)
+    window.fail(-3)
+    window.stop()
+    await jest.advanceTimersByTimeAsync(1_000)
+    expect(loads(window)).toEqual([APP, APP])
+    expect(Logger.warn).toHaveBeenCalledWith(
+      'WINDOW LOAD RETRY',
+      expect.objectContaining({ attempt: 2, reason: 'failed', errorCode: -3 })
+    )
+  })
+
+  it('waits twice as long before each retry of a load that keeps stopping, then gives up', async () => {
+    start()
+    await jest.advanceTimersByTimeAsync(0)
+    const stopAndWait = async (ms: number) => {
+      window.stop()
+      window.loading = true
+      await jest.advanceTimersByTimeAsync(ms - 1)
+    }
+    for (const [ms, count] of [
+      [1_000, 2],
+      [2_000, 3],
+      [4_000, 4],
+      [8_000, 5],
+    ]) {
+      await stopAndWait(ms)
+      window.loading = false
+      expect(loads(window)).toHaveLength(count - 1)
+      await jest.advanceTimersByTimeAsync(1)
+      expect(loads(window)).toHaveLength(count)
+    }
+    window.stop()
+    await jest.advanceTimersByTimeAsync(60_000)
+    expect(loads(window)).toHaveLength(5)
+    expect(AirBrake.notify).toHaveBeenCalledTimes(1)
+  })
+
+  it('loads once for a failure that is followed by its stop', async () => {
+    start()
+    await jest.advanceTimersByTimeAsync(0)
+    window.fail()
+    window.stop()
+    await jest.advanceTimersByTimeAsync(5_000)
+    expect(loads(window)).toEqual([APP, APP])
+  })
+
+  it('waits for a load that starts after one stops, and retries it only when it stalls', async () => {
+    start()
+    await jest.advanceTimersByTimeAsync(0)
+    window.stop()
+    window.loading = true
+    await jest.advanceTimersByTimeAsync(10_999)
+    expect(loads(window)).toHaveLength(1)
+
+    await jest.advanceTimersByTimeAsync(1)
+    expect(loads(window)).toHaveLength(2)
+    expect(Logger.warn).toHaveBeenCalledWith('WINDOW LOAD RETRY', expect.objectContaining({ reason: 'stalled' }))
+  })
+
+  it('loads nothing for a stop before the server listens', async () => {
+    start(new Promise<void>(() => undefined))
+    window.stop()
+    await jest.advanceTimersByTimeAsync(5_000)
+    expect(loads(window)).toEqual([])
   })
 
   it('takes neither an aborted load nor a frame failure for a failed page', async () => {
@@ -176,7 +261,7 @@ describe('loadWindow', () => {
       expect(loads(window)).toEqual([APP, callback])
 
       window.fail(-102, true, callback)
-      await jest.advanceTimersByTimeAsync(1_000)
+      await jest.advanceTimersByTimeAsync(2_000)
       expect(loads(window)).toEqual([APP, callback, callback])
       expect(JSON.stringify((Logger.warn as jest.Mock).mock.calls)).not.toContain('secret-code')
     })
