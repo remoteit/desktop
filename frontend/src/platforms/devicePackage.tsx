@@ -12,7 +12,7 @@ import { IPlatform } from '.'
 // own downloads, behind the device-session gate (useDeviceSessions). Each stage installs into its own instance on the
 // machine, so a machine already on another stage joins this one beside it. Beside them, the same device as a Docker
 // container (the stage's image) and as the Home Assistant add-on (platforms/home-assistant).
-export const DEVICE_PACKAGE_PLATFORMS = ['linux', 'mac', 'windows', 'docker', 'home-assistant']
+export const DEVICE_PACKAGE_PLATFORMS = ['linux', 'mac', 'windows', 'ios', 'android', 'docker', 'home-assistant']
 
 export const devicePackagePath = (platform: string) => `/add/${platform}?package`
 
@@ -41,7 +41,7 @@ export function devicePackageCommand(platform: string, selfUpdate = true): strin
 // The id stays the platform's, so the code records its type. The instructions are a node, not catalogue text, so the
 // platform's own catalogue translation does not stand in for them. Home Assistant's add-on brings its own page.
 export function withDevicePackage(platform: IPlatform, t: TFunction): IPlatform {
-  if (platform.id === 'home-assistant') return platform
+  if (['home-assistant', 'ios', 'android'].includes(platform.id)) return platform
   if (platform.id === 'docker')
     return {
       ...platform,

@@ -214,7 +214,9 @@ export const AddPage: React.FC = () => {
                   icon={platform.id}
                   to={devicePackagePath(platform.id)}
                   title={platformText(t, platform).name}
-                  subtitle={t('addPage.oneLineInstall', 'One-line install')}
+                  subtitle={
+                    ['mac', 'windows', 'ios', 'android'].includes(p) ? undefined : t('addPage.oneLineInstall', 'One-line install')
+                  }
                   disableGutters
                 />
               )

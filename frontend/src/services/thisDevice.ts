@@ -89,7 +89,7 @@
    the shell would refuse. A shell before 1.10.0 says none: the page offers the choice, and shows the shell's refusal
    when it comes. */
 
-export const BRIDGE_VERSION = '1.10.0'
+export const BRIDGE_VERSION = '1.11.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -98,6 +98,7 @@ export type Capability =
   | 'settings' // settings.get, settings.set
   | 'permissions' // permissions.get, permissions.request (phones)
   | 'diagnostics' // diagnostics.save
+  | 'registration' // device.register for an installed app waiting for an account
   | 'auth' // auth.* — the shell signs in; the portal starts no flow of its own
   | 'stages' // stages.* — other stages joined beside the home stage (never in a prod build)
   | 'access' // 1.2.0: access.set — Access remote devices; DeviceStatus.access
@@ -194,6 +195,7 @@ export type DeviceStatus = {
     connectd?: string
     removal?: 'remove' | 'uninstall'
   }
+  registration?: { name: string; platform: number; pendingAccount?: string }
   engine: EngineState
   signedIn?: { sub: string; email?: string }
   vpn: { on: boolean; changing?: boolean; error?: string }
@@ -278,6 +280,7 @@ export type StageStatus = {
   stage: string
   joined: boolean
   signedIn?: { sub: string; email?: string }
+  registration?: { name: string; platform: number; pendingAccount?: string }
   engine: EngineState
 }
 
@@ -349,6 +352,7 @@ export type BridgeMethods = {
   'app.get': { args: {}; result: AppPrefs }
   'app.set': { args: { openAtLogin: boolean }; result: AppPrefs }
   // The shell asks the person, then an administrator; removed false when either said no.
+  'device.register': { args: { code?: string; name: string; accountId: string }; result: string }
   'device.remove': { args: {}; result: { removed: boolean } }
   // 1.6.0: remote.it started again where it was stopped; nothing to do while it runs.
   'device.start': { args: {}; result: DeviceStatus }

@@ -362,6 +362,12 @@ async function shellSignIn(s: Shell, opts: { prompt?: string }): Promise<boolean
     if (error?.code === 'cancelled') return false
     throw shellOidcError(error)
   }
+  if (s.device.has('registration')) {
+    const status = await s.device.call('status', {}).catch(() => undefined)
+    if (status?.registration && !window.location.hash.startsWith('#/this-device')) {
+      window.history.replaceState(window.history.state, '', '#/this-device')
+    }
+  }
   oidcShellHooks.reload()
   return true
 }

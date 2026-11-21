@@ -1359,6 +1359,18 @@
     "lastAddress": "Last resolved address",
     "title": "Hosting"
   },
+  "deviceInstaller": {
+    "command": "Command-line setup",
+    "getApp": "Get the app",
+    "hideCommand": "Hide command-line setup",
+    "mac": "Download for Mac",
+    "mobileUnavailable": "The app download for this environment is currently unavailable.",
+    "openApp": "Already installed? Open Remote.It",
+    "openDownload": "Open the downloaded installer and follow the prompts.",
+    "signIn": "Open Remote.It, sign in, and choose Add this device.",
+    "windowsArm64": "Windows (ARM64)",
+    "windowsX64": "Download for Windows (x64)"
+  },
   "deviceJoinKeyOnce": {
     "body": "It will not be shown again: remote.it keeps only its public half. If it is lost, revoke it and issue another.",
     "download": "Download",
@@ -1665,6 +1677,21 @@
     "notListeningConfiguration": "Not listening: turned off in the device's configuration",
     "notListeningLocal": "Not listening: set only on the device, which keeps it off",
     "notListeningOnDevice": "Not listening: turned off on the device"
+  },
+  "deviceRegistration": {
+    "add": "Add device",
+    "added": "Device added to {{account}}.",
+    "adding": "Adding device…",
+    "failed": "Could not add this device. Try again.",
+    "later": "Later",
+    "name": "Device name",
+    "open": "Add this device",
+    "owner": "Owning account",
+    "pendingUnavailable": "Sign in with an account that can finish adding this device.",
+    "signedInAs": "Signed in as {{email}}",
+    "targetUnavailable": "Choose an account. The setup link’s account is unavailable.",
+    "title": "Add this device to {{account}}?",
+    "vpn": "Allow the system VPN prompt so Remote.It can register this device."
   },
   "deviceRuns": {
     "actions": "Everything it runs",

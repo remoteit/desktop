@@ -42,8 +42,8 @@ describe('device package installs', () => {
     expect(p.installation?.description).toBeUndefined()
   })
 
-  it('offers Docker and Home Assistant beside the installs', () => {
-    expect(DEVICE_PACKAGE_PLATFORMS).toEqual(['linux', 'mac', 'windows', 'docker', 'home-assistant'])
+  it('offers desktop, phone, and container setup', () => {
+    expect(DEVICE_PACKAGE_PLATFORMS).toEqual(['linux', 'mac', 'windows', 'ios', 'android', 'docker', 'home-assistant'])
   })
 
   it("Docker's command keeps the device in a volume and, on by default, updates itself", () => {

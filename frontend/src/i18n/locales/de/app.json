@@ -1359,6 +1359,18 @@
     "lastAddress": "",
     "title": ""
   },
+  "deviceInstaller": {
+    "command": "",
+    "getApp": "",
+    "hideCommand": "",
+    "mac": "",
+    "mobileUnavailable": "",
+    "openApp": "",
+    "openDownload": "",
+    "signIn": "",
+    "windowsArm64": "",
+    "windowsX64": ""
+  },
   "deviceJoinKeyOnce": {
     "body": "",
     "download": "",
@@ -1665,6 +1677,21 @@
     "notListeningConfiguration": "",
     "notListeningLocal": "",
     "notListeningOnDevice": ""
+  },
+  "deviceRegistration": {
+    "add": "",
+    "added": "",
+    "adding": "",
+    "failed": "",
+    "later": "",
+    "name": "",
+    "open": "",
+    "owner": "",
+    "pendingUnavailable": "",
+    "signedInAs": "",
+    "targetUnavailable": "",
+    "title": "",
+    "vpn": ""
   },
   "deviceRuns": {
     "actions": "",
