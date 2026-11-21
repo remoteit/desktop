@@ -90,9 +90,10 @@
    when it comes.
 
    1.12.0 (additive): the menu's two set-once items, so they can leave the tray for This device (device-package
-   docs/menu-app.md §7.1, §7.5). 'ssh' (ssh.get, ssh.set): the person's own ssh to the addresses they reach, by
-   short-lived certificates — the menu's "Use remote.it for ssh" — offered where the shell sets it up, changed only by
-   someone signed in here (needsSignIn says so). 'exitNode' (exitNode.list, exitNode.join, exitNode.create;
+   docs/menu-app.md §7.1, §7.5). 'ssh' (ssh.get, ssh.set; DeviceStatus.ssh): the person's own ssh to the addresses
+   they reach, by short-lived certificates — the menu's "Use remote.it for ssh" — offered where the shell sets it up,
+   changed only by someone signed in here (needsSignIn says so); in the status, so a change from the menu reaches the
+   page. 'exitNode' (exitNode.list, exitNode.join, exitNode.create;
    DeviceStatus.exitNode): offering this machine as one of its owner's exits — the menu's "Use this Mac as an exit…":
    the owner's exits and the one it runs with its checks, a join or a new exit, each confirmed by the machine's
    administrator first (a no is 'cancelled'), refused while held (exitNode.held). Leaving an exit is the account's, on
@@ -227,8 +228,9 @@ export type DeviceStatus = {
   relay?: { using: boolean }
   // 1.10.0: the local ports that answer this OS account — every one, to the machine's administrator. Absent: not said.
   ports?: ListedPort[]
-  // 1.12.0, with 'exitNode'.
+  // 1.12.0, with 'exitNode' and 'ssh'.
   exitNode?: ExitNodeStatus
+  ssh?: SshState
 }
 
 /* 1.10.0: a local port of the machine as the daemon lists it to the caller's OS account (connectd control/client
@@ -285,7 +287,7 @@ export type ExitNodeRuns = {
   checks?: ExitNodeCheck[] | null
 }
 
-export type ExitNodeList = { exits: ExitNodeExit[]; runs: ExitNodeRuns | null }
+export type ExitNodeList = { exits: ExitNodeExit[] | null; runs: ExitNodeRuns | null }
 // created: the cloud made the exit; turnedOn: the engine turned the machine's exit node on itself (its administrator
 // keeps it local).
 export type ExitNodeJoined = {

@@ -315,6 +315,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
           case 'ssh.set':
             if (bridge.ssh.needsSignIn) throw new BridgeError('notSignedIn', 'sign in to use remote.it for ssh')
             bridge.ssh = { on: !!a.on }
+            derive()
+            changed()
             return bridge.ssh
           case 'exitNode.list':
           case 'exitNode.join':
@@ -431,7 +433,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
         : undefined,
       lanServices: capabilities.includes('lanServices') ? served : undefined,
       services: capabilities.includes('services') ? served : undefined,
-      exitNode: capabilities.includes('exitNode') ? options.exitNode?.status ?? {} : undefined,
+      exitNode: capabilities.includes('exitNode') ? s.exitNode ?? options.exitNode?.status ?? {} : undefined,
+      ssh: capabilities.includes('ssh') ? bridge.ssh : undefined,
     }
   }
   derive()

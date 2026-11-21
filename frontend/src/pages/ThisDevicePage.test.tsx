@@ -1061,6 +1061,8 @@ describe('This device’s ssh and exit', () => {
     await click(part.querySelector('[data-control="ssh"] input'))
     expect(bridge.calls.filter(c => c.method === 'ssh.set').map(c => c.args)).toEqual([{ on: true }])
     expect(part.querySelector('[data-ssh]')!.getAttribute('data-ssh')).toBe('on')
+    await act(async () => bridge.emit('status', { ...bridge.status, ssh: { on: false } }))
+    expect(part.querySelector('[data-ssh]')!.getAttribute('data-ssh')).toBe('off')
 
     const out = await render({ capabilities: caps, ssh: { on: true, needsSignIn: true } }, { part: 'advanced' })
     const held = out.container.querySelector('[data-section="ssh"]')!
@@ -1077,6 +1079,11 @@ describe('This device’s ssh and exit', () => {
     expect(state(container).textContent).toContain('Off')
     expect(part.querySelector('[data-setting="exit_node"]')!.textContent).toContain('Carry exit traffic')
     expect(bridge.calls.filter(c => c.method === 'exitNode.list')).toHaveLength(1)
+
+    bridge.status = { ...bridge.status, exitNode: undefined }
+    await act(async () => bridge.emit('status', bridge.status))
+    expect(container.querySelector('[data-section="exit-node"]')).toBeNull()
+    expect(container.querySelector('[data-section="settings"] [data-setting="exit_node"]')).not.toBeNull()
   })
 
   it('joins an exit: what joining opens said first, the administrator after, then Joining with its checks', async () => {
@@ -1130,6 +1137,7 @@ describe('This device’s ssh and exit', () => {
     expect(dialog()!.querySelector('[data-note="exit-error"]')!.textContent).toBe(
       'Couldn’t join. it runs Office, where 2 devices use it.'
     )
+    expect(bridge.calls.filter(c => c.method === 'exitNode.list')).toHaveLength(2)
   })
 
   it('what it runs, in one or two words, and the way to leave it where the page gives one', async () => {

@@ -58,7 +58,21 @@ export const ThisDeviceExitNode: React.FC<{
   }, [device])
 
   useEffect(() => {
-    if (!held) load()
+    if (held) setJoined(undefined)
+    else load()
+  }, [held, load])
+
+  // Shown again: listed again, at most every 10 s, as the menu's window does — the cloud counts a device's asks.
+  useEffect(() => {
+    if (held) return
+    let listed = Date.now()
+    const shown = () => {
+      if (document.hidden || Date.now() - listed < 10000) return
+      listed = Date.now()
+      load()
+    }
+    document.addEventListener('visibilitychange', shown)
+    return () => document.removeEventListener('visibilitychange', shown)
   }, [held, load])
 
   const runs = held
@@ -82,7 +96,10 @@ export const ThisDeviceExitNode: React.FC<{
     : (runs.state as StateKey)
 
   const join = async (run: () => Promise<{ runs: ExitNodeRuns; turnedOn: boolean }>) => {
-    const answer = await run()
+    const answer = await run().catch(e => {
+      if (e?.code !== 'cancelled') load()
+      throw e
+    })
     setJoined({ runs: answer.runs, turnedOn: answer.turnedOn })
     setChoosing(false)
     await load()
@@ -284,7 +301,7 @@ const ChooseExit: React.FC<{
   onJoin: (id: string) => Promise<void>
   onCreate: (name: string) => Promise<void>
 }> = ({ kind, platform, deviceName, list, lanLocal, t, onClose, onJoin, onCreate }) => {
-  const exits = list.exits.filter(x => x.id !== list.runs?.id)
+  const exits = (list.exits ?? []).filter(x => x.id !== list.runs?.id)
   const [chosen, setChosen] = useState(exits.length ? exits[0].id : NEW)
   const [name, setName] = useState('')
   const [waiting, setWaiting] = useState(false)
@@ -298,7 +315,6 @@ const ChooseExit: React.FC<{
       if (chosen === NEW) await onCreate(name.trim())
       else await onJoin(chosen)
     } catch (e: any) {
-      // The administrator said no: nothing to say, as the menu says nothing.
       if (e?.code !== 'cancelled') setError(e?.message || String(e))
     } finally {
       setWaiting(false)

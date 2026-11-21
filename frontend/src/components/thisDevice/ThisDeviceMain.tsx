@@ -51,7 +51,7 @@ export const ThisDeviceMain: React.FC<{
     has('diagnostics') ||
     (has('app') && !!m.app?.openAtLogin) ||
     (has('remove') && !!d?.removal) ||
-    (has('ssh') && !!m.ssh) ||
+    (has('ssh') && !!m.status?.ssh) ||
     (has('exitNode') && !!m.status?.exitNode)
 
   return (

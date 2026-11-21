@@ -16,7 +16,8 @@ export const ThisDeviceAdvanced: React.FC<{
   m: ThisDeviceModel
   exitRunsHref?: (uid: string) => string
 }> = ({ device, m, exitRunsHref }) => {
-  const { t, has, status, kind, permissions, logging, app, ssh } = m
+  const { t, has, status, kind, permissions, logging, app } = m
+  const ssh = status?.ssh
   const d = status?.device
   // Its apps' words, as the API says them (the device by its UID): its settings name none (shared appSettings).
   const { apps } = useDeviceApps(d?.uid, { offers: false })
@@ -80,7 +81,12 @@ export const ThisDeviceAdvanced: React.FC<{
                 disabled={m.busy || !!ssh.needsSignIn}
                 inputProps={{ 'aria-label': t('thisDevice.useForSsh', 'Use Remote.It for ssh') }}
                 data-control="ssh"
-                onChange={() => m.act(async () => m.setSsh(await device.call('ssh.set', { on: !ssh.on })))}
+                onChange={() =>
+                  m.act(async () => {
+                    const next = await device.call('ssh.set', { on: !ssh.on })
+                    m.setStatus(s => s && { ...s, ssh: next })
+                  })
+                }
               />
             }
           >
