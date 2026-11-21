@@ -59,7 +59,7 @@ export type MockBridgeOptions = {
 }
 
 // The owner's exits and the one the machine runs (none unless said); a join or a create puts it in one, joining, with
-// checks; refusal refuses every ask as the cloud would; confirm false is the administrator saying no ('cancelled').
+// checks; refusal refuses every join and create as the cloud would; confirm false is the administrator saying no ('cancelled').
 export type MockExitNode = {
   status?: ExitNodeStatus
   exits?: ExitNodeExit[]
@@ -325,8 +325,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             if (held) throw new BridgeError('refused', `held: ${held}`)
             if (method !== 'exitNode.list' && options.exitNode?.confirm === false)
               throw new BridgeError('cancelled', 'the administrator’s confirmation was cancelled')
-            if (options.exitNode?.refusal) throw new BridgeError('refused', options.exitNode.refusal)
             if (method === 'exitNode.list') return { exits: bridge.exitNode.exits, runs: bridge.exitNode.runs }
+            if (options.exitNode?.refusal) throw new BridgeError('refused', options.exitNode.refusal)
             let exit = bridge.exitNode.exits.find(x => x.id === a.id)
             const created = method === 'exitNode.create'
             if (created) {

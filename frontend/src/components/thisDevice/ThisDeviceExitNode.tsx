@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Alert,
   Button,
@@ -18,12 +18,15 @@ import {
 import {
   ExitNodeCheck,
   ExitNodeExit,
+  ExitNodeJoined,
   ExitNodeList,
   ExitNodeRuns,
   ExitNodeStatus,
   Platform,
   ThisDevice,
 } from '../../services/thisDevice'
+import { failing, runStateLabel } from '../../helpers/runsHelper'
+import type { RunState } from '../../services/graphQLDeviceRuns'
 import { ThisDeviceModel } from './model'
 import { Note, SettingRow, T } from './shared'
 
@@ -44,11 +47,13 @@ export const ThisDeviceExitNode: React.FC<{
   const [list, setList] = useState<ExitNodeList>()
   const [listError, setListError] = useState<string>()
   // The checks a join answered with, which a list does not say.
-  const [joined, setJoined] = useState<{ runs: ExitNodeRuns; turnedOn: boolean }>()
+  const [joined, setJoined] = useState<{ id: string; checks?: ExitNodeCheck[] | null; turnedOn: boolean }>()
   const [choosing, setChoosing] = useState(false)
+  const listedAt = useRef(0)
   const held = status.held
 
   const load = useCallback(async () => {
+    listedAt.current = Date.now()
     setListError(undefined)
     try {
       setList(await device.call('exitNode.list', {}))
@@ -57,19 +62,15 @@ export const ThisDeviceExitNode: React.FC<{
     }
   }, [device])
 
-  useEffect(() => {
-    if (held) setJoined(undefined)
-    else load()
-  }, [held, load])
-
   // Shown again: listed again, at most every 10 s, as the menu's window does — the cloud counts a device's asks.
   useEffect(() => {
-    if (held) return
-    let listed = Date.now()
+    if (held) {
+      setJoined(undefined)
+      return
+    }
+    load()
     const shown = () => {
-      if (document.hidden || Date.now() - listed < 10000) return
-      listed = Date.now()
-      load()
+      if (!document.hidden && Date.now() - listedAt.current >= 10000) load()
     }
     document.addEventListener('visibilitychange', shown)
     return () => document.removeEventListener('visibilitychange', shown)
@@ -77,11 +78,11 @@ export const ThisDeviceExitNode: React.FC<{
 
   const runs = held
     ? undefined
-    : joined && (!list?.runs || list.runs.id === joined.runs.id)
-    ? { ...(list?.runs ?? joined.runs), checks: joined.runs.checks }
+    : list?.runs && joined && list.runs.id === joined.id
+    ? { ...list.runs, checks: joined.checks }
     : list?.runs
   const checks = runs?.joining ? runs.checks ?? [] : []
-  const key: StateKey = held
+  const key = held
     ? 'held'
     : !list
     ? listError
@@ -89,20 +90,22 @@ export const ThisDeviceExitNode: React.FC<{
       : 'checking'
     : !runs
     ? 'off'
+    : runs.joining && failing(checks).length
+    ? 'failed'
     : runs.joining
-    ? checks.some(c => !c.passed && !c.pending)
-      ? 'failed'
-      : 'joining'
-    : (runs.state as StateKey)
+    ? 'joining'
+    : runs.state
 
-  const join = async (run: () => Promise<{ runs: ExitNodeRuns; turnedOn: boolean }>) => {
+  // A join from the dialog changes the exits' counts, so they are listed again; Check again changes only what it runs.
+  const join = async (run: () => Promise<ExitNodeJoined>, relist: boolean) => {
     const answer = await run().catch(e => {
       if (e?.code !== 'cancelled') load()
       throw e
     })
-    setJoined({ runs: answer.runs, turnedOn: answer.turnedOn })
+    setJoined({ id: answer.runs.id, checks: answer.runs.checks, turnedOn: answer.turnedOn })
     setChoosing(false)
-    await load()
+    if (relist) await load()
+    else setList(l => l && { ...l, runs: answer.runs })
   }
 
   return (
@@ -112,7 +115,11 @@ export const ThisDeviceExitNode: React.FC<{
       </Typography>
       <ListItem data-exit-node-state={key}>
         <ListItemText
-          primary={stateWords(t)[key] ?? runs?.state}
+          primary={
+            runs
+              ? runStateLabel(t as any, { state: runs.state.toUpperCase() as RunState, joining: runs.joining, checks })
+              : stateWords(t)[key as keyof ReturnType<typeof stateWords>]
+          }
           secondary={
             held
               ? heldLine(held, kind, t)
@@ -145,12 +152,12 @@ export const ThisDeviceExitNode: React.FC<{
       {checks.map((c, i) => (
         <Note
           key={`${c.name}-${i}`}
-          id={`check-${c.passed ? 'passed' : c.pending ? 'pending' : 'failed'}`}
+          id={`check-${checkState(c)}`}
           text={checkLine(c, t)}
-          warn={!c.passed && !c.pending}
+          warn={checkState(c) === 'failed'}
         />
       ))}
-      {joined?.turnedOn && runs && (
+      {joined?.turnedOn && runs?.id === joined.id && (
         <Note
           id="exit-turned-on"
           text={t(
@@ -183,7 +190,7 @@ export const ThisDeviceExitNode: React.FC<{
               size="small"
               disabled={m.busy}
               data-control="exit-check"
-              onClick={() => m.act(() => join(() => device.call('exitNode.join', { id: runs.id })))}
+              onClick={() => m.act(() => join(() => device.call('exitNode.join', { id: runs.id }), false))}
             >
               {t('thisDevice.checkAgain', 'Check again')}
             </Button>
@@ -212,27 +219,23 @@ export const ThisDeviceExitNode: React.FC<{
           lanLocal={!!status.lanLocal}
           t={t}
           onClose={() => setChoosing(false)}
-          onJoin={id => join(() => device.call('exitNode.join', { id }))}
-          onCreate={name => join(() => device.call('exitNode.create', { name }))}
+          onJoin={id => join(() => device.call('exitNode.join', { id }), true)}
+          onCreate={name => join(() => device.call('exitNode.create', { name }), true)}
         />
       )}
     </List>
   )
 }
 
-type StateKey = 'held' | 'unknown' | 'checking' | 'off' | 'joining' | 'failed' | 'active' | 'draining' | 'retired'
-
-const stateWords = (t: T): { [key in StateKey]: string } => ({
+// The state before there is an exit it runs to say; that one is said in the portal's words (runStateLabel).
+const stateWords = (t: T) => ({
   held: t('thisDevice.exitHeld', 'Not allowed'),
   unknown: t('thisDevice.exitUnknown', 'Unknown'),
   checking: t('thisDevice.exitChecking', 'Checking…'),
   off: t('thisDevice.exitOff', 'Off'),
-  joining: t('thisDevice.exitJoining', 'Joining'),
-  failed: t('thisDevice.exitCheckFailed', 'Check failed'),
-  active: t('thisDevice.exitInService', 'In service'),
-  draining: t('thisDevice.exitDraining', 'Draining'),
-  retired: t('thisDevice.exitOutOfService', 'Out of service'),
 })
+
+const checkState = (c: ExitNodeCheck) => (c.passed ? 'passed' : c.pending ? 'pending' : 'failed')
 
 function exitLine(runs: ExitNodeRuns | null | undefined, kind: string, t: T) {
   if (!runs)
@@ -262,11 +265,11 @@ function heldLine(held: string, kind: string, t: T) {
 }
 
 const checkLine = (c: ExitNodeCheck, t: T) =>
-  c.passed
-    ? t('thisDevice.checkPassed', 'Passed: {{reason}}', { reason: c.reason })
-    : c.pending
-    ? t('thisDevice.checkPending', 'Waiting: {{reason}}', { reason: c.reason })
-    : t('thisDevice.checkFailed', 'Failed: {{reason}}', { reason: c.reason })
+  ({
+    passed: t('thisDevice.checkPassed', 'Passed: {{reason}}', { reason: c.reason }),
+    pending: t('thisDevice.checkPending', 'Waiting: {{reason}}', { reason: c.reason }),
+    failed: t('thisDevice.checkFailed', 'Failed: {{reason}}', { reason: c.reason }),
+  }[checkState(c)])
 
 function confirmLine(platform: Platform, kind: string, t: T) {
   if (platform === 'mac')

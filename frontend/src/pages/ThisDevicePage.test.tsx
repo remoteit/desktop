@@ -1098,7 +1098,7 @@ describe('This device’s ssh and exit', () => {
     expect(bridge.calls.filter(c => c.method === 'exitNode.join').map(c => c.args)).toEqual([{ id: 'gk3x9q2m7ab1' }])
     expect(dialog()).toBeNull()
     expect(state(container).getAttribute('data-exit-node-state')).toBe('failed')
-    expect(state(container).textContent).toContain('Check failed')
+    expect(state(container).textContent).toContain('Joining')
     expect(container.querySelector('[data-note="check-failed"]')!.textContent).toBe('Failed: it refuses exit flows')
     expect(container.querySelector('[data-note="exit-lan"]')!.textContent).toBe('Users of Office can reach this Mac’s local network.')
     await click(container.querySelector('[data-control="exit-check"]'))
@@ -1125,23 +1125,22 @@ describe('This device’s ssh and exit', () => {
     await click(document.body.querySelector('[data-dialog="exit-node"] button'))
     expect(dialog()).toBeNull()
 
-    const bridge = createMockBridge({ capabilities: caps, exitNode: { exits } })
-    const { container } = await mount(bridge, { part: 'advanced' })
+    const { container, bridge } = await render(
+      { capabilities: caps, exitNode: { exits, refusal: 'it runs Office, where 2 devices use it.' } },
+      { part: 'advanced' }
+    )
     await click(container.querySelector('[data-control="exit-choose"]'))
-    bridge.exitNode.exits = exits
-    ;(bridge as any).transport.call = ((call: any) => async (method: string, args: any) => {
-      if (method === 'exitNode.join') throw new BridgeError('refused', 'it runs Office, where 2 devices use it.')
-      return call(method, args)
-    })(bridge.transport.call)
     await click(dialog()!.querySelector('[data-control="exit-go"]'))
     expect(dialog()!.querySelector('[data-note="exit-error"]')!.textContent).toBe(
       'Couldn’t join. it runs Office, where 2 devices use it.'
     )
     expect(bridge.calls.filter(c => c.method === 'exitNode.list')).toHaveLength(2)
+    await click(document.body.querySelector('[data-dialog="exit-node"] button'))
+    expect(dialog()).toBeNull()
   })
 
   it('what it runs, in one or two words, and the way to leave it where the page gives one', async () => {
-    const words = { active: 'In service', draining: 'Draining', retired: 'Out of service' }
+    const words = { active: 'In service', draining: 'Draining', retired: 'Retired' }
     for (const [s, word] of Object.entries(words)) {
       const runs = { id: 'gk3x9q2m7ab1', name: 'Office', state: s, joining: false, lan: false }
       const { container } = await render({ capabilities: caps, exitNode: { exits, runs } }, { part: 'advanced' })
@@ -1183,6 +1182,20 @@ describe('This device’s ssh and exit', () => {
     await act(async () => bridge.emit('status', bridge.status))
     expect(state(container).getAttribute('data-exit-node-state')).toBe('held')
     expect(container.querySelector('[data-note="exit-lan"]')).toBeNull()
+  })
+
+  it('a list that says it runs no exit is believed, after a join on this page too', async () => {
+    const { container, bridge } = await render({ capabilities: caps, exitNode: { exits, checks } }, { part: 'advanced' })
+    await click(container.querySelector('[data-control="exit-choose"]'))
+    await click(dialog()!.querySelector('[data-control="exit-go"]'))
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('failed')
+    bridge.exitNode.runs = null
+    const now = Date.now()
+    const later = vi.spyOn(Date, 'now').mockReturnValue(now + 11000)
+    await act(async () => document.dispatchEvent(new Event('visibilitychange')))
+    later.mockRestore()
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('off')
+    expect(container.querySelector('[data-control="exit-check"]')).toBeNull()
   })
 
   it('the way to Advanced is there for either alone', async () => {
