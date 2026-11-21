@@ -1,6 +1,6 @@
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import { getApiRestURL, getApiURL } from '../helpers/apiHelper'
-import { apiHeaders } from './remoteit'
+import { apiRequest } from './remoteit'
 import { store } from '../store'
 import network from './Network'
 import sleep from '../helpers/sleep'
@@ -11,31 +11,41 @@ export function resetErrorCount() {
   errorCount = 0
 }
 
-export async function post(data: ILookup<any, string> = {}, path: string = '', silent = false) {
+export async function post(
+  data: ILookup<any, string> = {},
+  path: string = '',
+  silent = false,
+  retry = false
+): Promise<AxiosResponse | 'ERROR'> {
   if (store.getState().ui.offline) return 'ERROR'
 
   // graphql at its URL; a REST route (a path) under the API's REST root (getApiRestURL: on the unified front, /api).
   const url = (path ? getApiRestURL() : getApiURL()) + path
-  const headers = await apiHeaders('POST', url)
-  if (!headers) {
-    console.warn('Unable to get token for API request.', data)
-    return 'ERROR'
-  }
-
-  const request = {
-    url,
-    method: 'post' as 'post',
-    headers,
-    data,
-  }
-
   try {
-    return await axios.request(request)
+    const response = await apiRequest('POST', url, async headers =>
+      headers ? axios.request({ url, method: 'post', headers, data }) : undefined
+    )
+    if (!response) {
+      console.warn('Unable to get token for API request.', data)
+      return 'ERROR'
+    }
+    return response
   } catch (error) {
+    if (retry && droppedInFlight(error)) {
+      console.warn('POST DROPPED, RETRYING', { data, path })
+      await sleep(1000)
+      return await post(data, path, silent)
+    }
     console.error('POST ERROR', { data, path })
     await apiError(error, silent)
     return 'ERROR'
   }
+}
+
+// Chromium drops in-flight requests with ERR_NETWORK_CHANGED when the OS network shifts (as on the
+// relaunch after an update); axios sees only a Network Error with no response.
+function droppedInFlight(error: unknown) {
+  return axios.isAxiosError(error) && !error.response && error.code === 'ERR_NETWORK'
 }
 
 export async function postFile(file: File, data: ILookup<any, string> = {}, path: string = '') {

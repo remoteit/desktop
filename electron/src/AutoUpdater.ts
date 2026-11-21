@@ -1,7 +1,8 @@
 import { app } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import axios from 'axios'
-import { EventBus, Logger, EVENTS, preferences, environment, brand } from './backend'
+import { EventBus, Logger, EVENTS, preferences, environment } from './backend'
+import { GitHubRepo, releaseRepo } from './backend/releaseRepo'
 import {
   detectNativeWindowsArch,
   isEligibleRelease,
@@ -11,13 +12,6 @@ import {
 
 const AUTO_UPDATE_CHECK_INTERVAL = 43200000 // one half day
 const PRE_RELEASE_CHECK_INTERVAL = 900000 // fifteen minutes
-const DEFAULT_GITHUB_OWNER = 'remoteit'
-const DEFAULT_GITHUB_REPO = 'desktop'
-
-interface GitHubFeedConfig {
-  owner: string
-  repo: string
-}
 
 interface GitHubReleaseAsset {
   name: string
@@ -30,17 +24,6 @@ interface GitHubRelease {
   assets: GitHubReleaseAsset[]
 }
 
-// Same pattern as scripts/release-repo.js, which resolves the repository for CI.
-const resolveGitHubFeedFromBrand = (): GitHubFeedConfig => {
-  const repositoryUrl = brand?.package?.repository?.url || ''
-  const match = repositoryUrl.match(/github\.com[/:]([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?$/i)
-
-  return {
-    owner: match?.[1] || DEFAULT_GITHUB_OWNER,
-    repo: match?.[2] || DEFAULT_GITHUB_REPO,
-  }
-}
-
 export default class AppUpdater {
   nextCheck: number = 0
   checking: boolean = false
@@ -50,7 +33,7 @@ export default class AppUpdater {
   version?: string
   error: boolean = false
   private steering: WindowsArch | null = null
-  private readonly defaultGithubFeed: GitHubFeedConfig = resolveGitHubFeedFromBrand()
+  private readonly defaultGithubFeed: GitHubRepo = releaseRepo()
 
   constructor() {
     if (environment.isHeadless) return

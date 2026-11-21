@@ -14,6 +14,7 @@ import { WEB_PORT, SSL_PORT, START_ORIGIN } from './constants'
 import preferences from './preferences'
 import user, { User } from './User'
 import { parseAgentOwned } from '@common/agentOwner'
+import serverTime from './serverTime'
 
 jest.mock('./index', () => ({ __esModule: true, default: {} }))
 jest.mock('./Logger', () => ({ __esModule: true, default: { info: jest.fn(), warn: jest.fn(), error: jest.fn() } }))
@@ -23,6 +24,7 @@ jest.mock('./cliInterface', () => ({
 }))
 jest.mock('./LAN', () => ({ __esModule: true, default: { EVENTS: {} } }))
 jest.mock('./systemInfo', () => ({ __esModule: true, default: async () => ({ id: 'device-1' }) }))
+jest.mock('./serverTime', () => ({ __esModule: true, default: jest.fn() }))
 
 describe('backend/server broadcasts', () => {
   const credentials = { username: 'a@test', authHash: 'hash-a' }
@@ -334,6 +336,31 @@ describe('backend/server over HTTP', () => {
 
     it('refuses a DNS-rebound name that resolves to this machine', async () => {
       expect((await system({ host: `attacker.example:${port}` })).status).toBe(403)
+    })
+  })
+
+  describe('/serverTime', () => {
+    const asked = 'https://login.remote.it/token'
+    const time = (host: string) => request(`/serverTime?url=${encodeURIComponent(asked)}`, { host })
+
+    beforeEach(() => jest.mocked(serverTime).mockReset())
+
+    it("answers the app with the sign-in server's clock", async () => {
+      jest.mocked(serverTime).mockResolvedValue(1795000000000)
+      const answer = await time(`127.0.0.1:${port}`)
+      expect(answer.status).toBe(200)
+      expect(JSON.parse(answer.body)).toEqual({ serverTime: 1795000000000 })
+      expect(serverTime).toHaveBeenCalledWith(asked)
+    })
+
+    it('refuses a DNS-rebound name that resolves to this machine', async () => {
+      expect((await time(`attacker.example:${port}`)).status).toBe(403)
+      expect(serverTime).not.toHaveBeenCalled()
+    })
+
+    it('says so when the server has no clock to give', async () => {
+      jest.mocked(serverTime).mockResolvedValue(undefined)
+      expect((await time(`127.0.0.1:${port}`)).status).toBe(502)
     })
   })
 

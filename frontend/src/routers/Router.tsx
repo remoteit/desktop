@@ -71,6 +71,7 @@ import { ProxyAddPage } from '../pages/ProxyAddPage'
 import { ChooseOne } from '../components/ChooseOne'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { PublisherPage } from '../pages/PublisherPage'
+import { ConnectAIPage } from '../pages/ConnectAIPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
 import { ConnectedAppsPage } from '../pages/ConnectedAppsPage'
 import { ConnectedAppDetailPage } from '../pages/ConnectedAppDetailPage'
@@ -88,6 +89,7 @@ import { AdminUpgradesPage } from '../pages/AdminUpgradesPage/AdminUpgradesPage'
 import { PartnerStatsPage } from '../pages/PartnerStatsPage/PartnerStatsPage'
 import browser, { getOs } from '../services/browser'
 import analytics from '../services/analytics'
+import { showPendingNotice } from '../services/openNotification'
 import { AdminRouteGuard } from './AdminRouteGuard'
 import { ADMIN_ADDONS_ROUTE, TERMINAL_PATH } from '../constants'
 
@@ -102,17 +104,15 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const registered = useSelector((state: State) => !!state.backend.thisId)
   const os = useSelector((state: State) => state.backend.environment.os) || getOs()
   // Connected Apps depends on an API that ships with the MCP production release
-  const testUI = useSelector((state: State) => !!state.ui.testUI)
   const virtualDevices = useVirtualDevices()
   const deviceSessions = useDeviceSessions()
 
   // A push tap's route (services/pushNotifications), kept across the webview reload of a mobile sign-in
   useEffect(() => {
-    const initialRoute = window.localStorage.getItem('initialRoute')
+    const initialRoute = showPendingNotice()
     if (initialRoute) {
       if (initialRoute !== location.pathname) history.push(initialRoute)
       console.log('UI REDIRECT INIT', initialRoute)
-      window.localStorage.removeItem('initialRoute')
     }
   }, [])
 
@@ -121,8 +121,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
       console.log('UI REDIRECT', redirect)
       history.push(redirect)
       ui.set({ redirect: undefined })
-      // A push tap writes both; left behind, the next cold start would replay it
-      if (window.localStorage.getItem('initialRoute') === redirect) window.localStorage.removeItem('initialRoute')
+      // A notification tap writes both; left behind, the next cold start would replay it
+      showPendingNotice(redirect)
     }
     analytics.pageView(location.pathname)
   }, [history.location, ui, redirect])
@@ -365,6 +365,11 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <FeedbackPage />
         </Panel>
       </Route>
+      <Route path="/connect-ai">
+        <Panel layout={layout}>
+          <ConnectAIPage />
+        </Panel>
+      </Route>
       {/* Scripting */}
       <Route
         path={[
@@ -508,16 +513,12 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <Route path="/account/publisher">
                 <PublisherPage />
               </Route>
-              {testUI && (
-                <Route path="/account/connected/:clientId">
-                  <ConnectedAppDetailPage />
-                </Route>
-              )}
-              {testUI && (
-                <Route path="/account/connected">
-                  <ConnectedAppsPage />
-                </Route>
-              )}
+              <Route path="/account/connected/:clientId">
+                <ConnectedAppDetailPage />
+              </Route>
+              <Route path="/account/connected">
+                <ConnectedAppsPage />
+              </Route>
               <Route path={['/account', '/account/overview']}>
                 <ProfilePage />
               </Route>

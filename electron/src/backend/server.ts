@@ -11,6 +11,7 @@ import user from './User'
 import Logger from './Logger'
 import SocketIO from 'socket.io'
 import systemInfo from './systemInfo'
+import serverTime from './serverTime'
 import socketioAuth from 'socketio-auth'
 import Preferences from './preferences'
 import environment from './environment'
@@ -66,6 +67,8 @@ class Server {
   public io?: SocketIO.Server
   public socket?: SocketIO.Socket
   private app: Express
+  private markListening!: () => void
+  public readonly listening = new Promise<void>(resolve => (this.markListening = resolve))
 
   EVENTS = {
     ready: 'ready',
@@ -92,6 +95,15 @@ class Server {
       response.json(app.deepLinks ? {} : { redirectUri: `http://${IP_PRIVATE}:${WEB_PORT}/authCallback` })
     })
 
+    // The renderer can't read another origin's Date header (CORS), and the sign-in service refuses a
+    // DPoP proof dated by a wrong clock, so the sign-in code reads the server's time through here.
+    router.get('/serverTime', async (request, response) => {
+      const { host } = request.headers
+      if (!isOwnOrigin(`${request.protocol}://${host}`, host)) return response.sendStatus(403)
+      const time = await serverTime(String(request.query.url ?? ''))
+      return time === undefined ? response.sendStatus(502) : response.json({ serverTime: time })
+    })
+
     router.get('/system', async (request, response) => {
       // A DNS-rebound page is same-origin with this server, so dropping CORS alone doesn't stop it reading this.
       const { host } = request.headers
@@ -113,6 +125,7 @@ class Server {
       .listen(WEB_PORT, HOST, () => {
         d(`Listening on port ${WEB_PORT}`)
         Logger.info('SERVER STARTED', { port: WEB_PORT, directory: WEB_DIR })
+        this.markListening()
       })
 
     const key = fs.readFileSync(path.join(SSL_DIR, 'key.pem'))

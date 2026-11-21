@@ -4,17 +4,30 @@ import path from 'path'
 import AutoUpdater from './AutoUpdater'
 import TrayMenu from './TrayMenu'
 import { t, setLanguage } from './i18n'
-import { EVENTS, PROTOCOL, START_URL, START_ORIGIN, brand, environment, preferences, EventBus, Logger } from './backend'
+import {
+  EVENTS,
+  PROTOCOL,
+  START_URL,
+  START_ORIGIN,
+  brand,
+  environment,
+  preferences,
+  EventBus,
+  Logger,
+  loadWindow,
+  serverListening,
+  withoutQuery,
+} from './backend'
+import type { WindowLoader } from './backend/loadWindow'
 
 const URL_REGEX = new RegExp('^https?://')
-// An auth deep link carries the OAuth code and state in its query, so logs keep only the part before it.
-const withoutQuery = (url = '') => url.split('?')[0]
 
 export default class ElectronApp {
   public app: electron.App
   public tray?: electron.Tray
   public readonly deepLinks: boolean
   private window?: electron.BrowserWindow
+  private loader?: WindowLoader
   private autoUpdater: AutoUpdater
   private quitSelected: boolean
   private isMaximized: boolean
@@ -34,12 +47,6 @@ export default class ElectronApp {
     this.autoUpdater = new AutoUpdater()
     this.protocol = PROTOCOL.substring(0, PROTOCOL.length - 3)
     setLanguage(preferences.get().language)
-
-    if (!this.app.requestSingleInstanceLock()) {
-      Logger.warn('ANOTHER APP INSTANCE IS RUNNING. EXITING.')
-      this.quitSelected = true
-      this.app.quit()
-    }
 
     Logger.info('ELECTRON STARTING UP', { version: electron.app.getVersion() })
 
@@ -238,7 +245,7 @@ export default class ElectronApp {
       autoHideMenuBar: true,
     })
 
-    this.window.loadURL(START_URL)
+    this.loader = loadWindow(this.window, START_URL, serverListening)
 
     this.window.on('close', event => {
       this.saveWindowState()
@@ -402,6 +409,8 @@ export default class ElectronApp {
     }
   }
 
+  // The .ico must stay out of app.asar (win.asarUnpack): Electron loads a packed .ico by writing a new temp file,
+  // and Defender holds a process's first open of a file it just wrote for ~6 s, blocking the main thread.
   private getIconPath() {
     const iconFile = environment.isMac
       ? 'iconTemplate.png'
@@ -441,7 +450,9 @@ export default class ElectronApp {
       void this.deliverAuthCallback(index != -1 ? location.substring(index) : '')
     } else if (location) {
       Logger.info('OPENING WINDOW LOCATION', { location })
-      this.window.webContents.executeJavaScript(`window.location.hash="#/${location}"`)
+      // On a cold start the page isn't loading yet, and executeJavaScript would set the hash on about:blank.
+      const { webContents } = this.window
+      void this.loader?.loaded.then(() => webContents.executeJavaScript(`window.location.hash="#/${location}"`))
     }
 
     if (openDevTools) this.window.webContents.openDevTools({ mode: 'detach' })
@@ -454,7 +465,7 @@ export default class ElectronApp {
       return Logger.info('AUTH CALLBACK HANDLED BY THE OPEN WINDOW')
     const fullUrl = START_URL + parameters
     Logger.info('OPENING AUTH URL', { url: withoutQuery(fullUrl) })
-    this.window?.loadURL(fullUrl)
+    this.loader?.navigate(fullUrl)
   }
 
   async takeAuthCallback(parameters: string): Promise<string | undefined> {

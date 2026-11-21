@@ -1,25 +1,36 @@
-# app.next.remote.it — the NEXT portal — is this branch built for PRODUCTION's AS and container
-# (Amplify branch `next`, env VITE_OAUTH_ISSUER=https://login.remote.it and cloud.remote.it for
-# the API). Amplify deploys a branch once, so `next` is a git branch that MIRRORS this one: every
-# push here is pushed through, and Amplify's webhook builds it. Nobody commits to `next`.
+name: Mirror main to next
+
+# `next` is `main`, built by Amplify (the app.remote.it app's `next` branch) with PRODUCTION's issuer and API in its
+# branch environment, and served at app.next.remote.it: the pre-promotion portal, signed into and run against
+# production (the e2e `prod2` lane) before it becomes app.remote.it. Amplify keys a branch's settings to a git branch, so
+# the same commit needs a second branch name; this keeps that name equal to `main` on every push and nobody edits it.
 #
-# Why a mirror rather than a second Amplify app: one app, one GitHub connection, one build spec
-# and one set of app-level env — `next` differs from app.dev by six branch-level variables.
-name: Mirror to next
+# A push made with the workflow's GITHUB_TOKEN starts no other workflow, but repository webhooks still fire, so
+# Amplify's webhook builds `next` as it builds `main`.
 
 on:
   push:
-    branches: [feat/permitteer-login]
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: mirror-next
+  cancel-in-progress: false
 
 jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
-      - name: Push this commit to next
-        run: git push --force origin HEAD:refs/heads/next
+
+      # A force push, so `next` is always exactly `main`, even after a history rewrite on main.
+      - name: Push main to next
+        run: git push --force origin "refs/remotes/origin/main:refs/heads/next"

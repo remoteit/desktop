@@ -36,11 +36,12 @@ vi.mock('./CopyCodeBlock', () => ({
     </div>
   ),
 }))
-vi.mock('react-i18next', () => {
+vi.mock('react-i18next', async importOriginal => {
   const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
   return {
+    ...await importOriginal<typeof import('react-i18next')>(),
     useTranslation: () => ({
-      t: (_key: string, a: any, b?: any) => (typeof a === 'string' ? fill(a, b) : fill(a.defaultValue, a)),
+      t: (_key: string, a: any, b?: any) => (typeof a === 'string' ? fill(a, b) : fill(a.defaultValue ?? (a.count === 1 ? a.defaultValue_one : a.defaultValue_other) ?? _key, a)),
     }),
   }
 })
@@ -258,7 +259,7 @@ describe('ProductRegistrationCodes', () => {
     await render(
       <ProductRegistrationCodes
         product={product({
-          registrationCodes: [...codes, { code: 'REUSE-0', created: at(-2 * HOUR), revoked: at(-HOUR) }],
+          registrationCodes: [...codes, { code: 'REUSE-0', created: at(-2 * HOUR) }],
         })}
       />
     )

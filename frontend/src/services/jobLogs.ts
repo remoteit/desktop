@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { getApiRestURL } from '../helpers/apiHelper'
-import { apiHeaders } from './remoteit'
+import { apiRequest } from './remoteit'
 
 export type DeviceLogEntry = {
   jobDeviceId: string
@@ -41,10 +41,9 @@ export type GetJobLogsResult =
 export async function getJobLogs(jobId: string, jobDeviceId?: string, zipOnly = false): Promise<GetJobLogsResult> {
   const query = jobDeviceId ? `?jobDeviceId=${encodeURIComponent(jobDeviceId)}` : zipOnly ? '?devices=0' : ''
   const url = `${getApiRestURL()}/job/log/all/${jobId}${query}`
-  const headers = await apiHeaders('GET', url)
-  if (!headers) return { kind: 'error', status: 401, message: 'Not signed in' }
   try {
-    const response = await axios.get(url, { headers })
+    const response = await apiRequest('GET', url, async headers => (headers ? axios.get(url, { headers }) : undefined))
+    if (!response) return { kind: 'error', status: 401, message: 'Not signed in' }
     return { kind: 'ok', data: response?.data as JobLogsResponse }
   } catch (err: any) {
     const status: number | undefined = err?.response?.status

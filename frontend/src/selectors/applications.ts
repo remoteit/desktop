@@ -6,11 +6,14 @@ import {
   getApplicationService,
   getApplicationConnection,
   getApplicationTypes,
+  getAllApplicationTypes,
+  getEnvironment,
 } from './state'
 import { selectActiveAccountId } from './accounts'
 
+// getApplication reads the types and environment through the adaptor; as inputs they drop stale results
 export const selectApplication = createSelector(
-  [getConnectionDefaults, getLaunchTokens, getApplicationService, getApplicationConnection],
+  [getConnectionDefaults, getLaunchTokens, getApplicationService, getApplicationConnection, getAllApplicationTypes, getEnvironment],
   (globalDefaults, launchTokens, service, connection) => {
     const app = getApplication(service, connection, globalDefaults)
     app.savedTokens = launchTokens[service?.id || connection?.id || ''] || {}

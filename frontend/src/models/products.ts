@@ -17,7 +17,10 @@ import {
   graphQLRevokeDeviceProductJoinKey,
   graphQLSetDeviceProductLifecycle,
   ProductLifecycle,
+  ProductRegistrationService,
+  ProductServiceInput,
 } from '../services/graphQLDeviceProducts'
+import { registrationCodesToRetire } from '../helpers/productCredentials'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { State } from '../store'
 
@@ -25,7 +28,8 @@ export interface IProductService {
   id: string
   name: string
   type: { id: number; name: string } | null
-  port: number
+  host: string | null
+  port: number | null
   enabled: boolean
 }
 
@@ -196,14 +200,21 @@ export default createModel<RootModel>()({
       return null
     },
 
-    // A new code becomes the product's current one; the earlier codes keep working until revoked. The product is read
-    // again after every credential change, so its command and its lists come from graphql together.
-    async rotateCode(productId: string, state) {
+    // The legacy portal keeps two codes in use. A product with join keys keeps its earlier reusable codes
+    // until an admin explicitly revokes them.
+    async rotateCode({ productId, revokePrevious }: { productId: string; revokePrevious?: boolean }, state) {
       const accountId = selectActiveAccountId(state)
+      const product = getProductModel(state, accountId).all.find(p => p.id === productId)
+      const retired = product ? registrationCodesToRetire(product, revokePrevious) : []
       const response = await graphQLRotateDeviceProductCode(productId)
       if (response === 'ERROR' || !response?.data?.data?.rotateDeviceProductCode) return false
+      let revoked = true
+      for (const { code } of retired) {
+        const result = await graphQLRevokeDeviceProductCode(productId, code)
+        if (result === 'ERROR' || !result?.data?.data?.revokeDeviceProductCode) revoked = false
+      }
       await dispatch.products.refreshCredentials({ productId, accountId })
-      return true
+      return revoked
     },
 
     // A reusable code or a one-time code: graphql revokes either.
@@ -339,7 +350,7 @@ export default createModel<RootModel>()({
     },
 
     async addService(
-      { productId, input }: { productId: string; input: { name: string; type: string; port: number; enabled: boolean } },
+      { productId, input }: { productId: string; input: ProductServiceInput },
       state
     ) {
       const accountId = selectActiveAccountId(state)
@@ -364,7 +375,7 @@ export default createModel<RootModel>()({
       input: {
         platform: number
         tags?: string[]
-        services: { application: number; name?: string; port?: number; enabled?: boolean }[]
+        services: ProductRegistrationService[]
       },
       state
     ) {

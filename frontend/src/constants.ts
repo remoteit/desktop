@@ -1,4 +1,5 @@
 import brand from '@common/brand/config'
+import { SIGN_IN_ISSUERS } from '@common/constants'
 import { CATALOGUE } from './platforms/catalogue'
 import pkg from '../package.json'
 const env = import.meta.env
@@ -24,14 +25,14 @@ export const TERMINAL_PATH = '/terminal'
 export const STAGES = {
   prod: {
     name: 'Production',
-    issuer: 'https://login.remote.it',
+    issuer: SIGN_IN_ISSUERS.prod,
     api: 'https://cloud.remote.it/api',
     agent: 'https://agent.remote.it',
     mcp: 'https://cloud.remote.it/mcp',
   },
   dev: {
     name: 'Dev',
-    issuer: 'https://login.dev.remote.it',
+    issuer: SIGN_IN_ISSUERS.dev,
     api: 'https://cloud.dev.remote.it/api',
     agent: 'https://agent.dev.remote.it',
     mcp: 'https://cloud.dev.remote.it/mcp',
@@ -240,6 +241,7 @@ export const SCREEN_VIEW_APP_LINK =
 // Client capabilities, not catalogue data — see platforms/README.md.
 export const OEM_GUIDE_LINK = 'https://link.remote.it/docs/oem-overview'
 export const DESKTOP_HELP_LINK = 'https://link.remote.it/documentation-desktop/overview'
+export const MCP_CONNECT_DOCS_LINK = 'https://docs.remote.it/mcp-server/connect'
 export const DEVICE_SETUP_PATH = '/devices/setup'
 export const DEMO_SCRIPT_URL =
   'https://raw.githubusercontent.com/remoteit/code_samples/refs/heads/main/scripts/linux/script_demo.sh'
@@ -277,6 +279,8 @@ export const SIGN_OUT_EVERYWHERE_TIMEOUT = 10000
 // and the person is watching the button — past this the app signs out locally regardless.
 export const SIGN_OUT_SESSION_TIMEOUT = 5000
 export const PUSH_UNREGISTER_TIMEOUT = 3000
+// Long enough to sign in after a tap, short enough that a tap the app never opened isn't replayed on a later launch
+export const PENDING_NOTIFICATION_TTL = 10 * 60 * 1000
 
 // The APNs environment follows the build's signing, not the API it talks to: a development
 // profile gets sandbox tokens, TestFlight and the App Store production ones (build-ios.yml).

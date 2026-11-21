@@ -6,6 +6,7 @@ import plist from 'plist'
 import path from 'path'
 import os from 'os'
 import fs from 'fs'
+import packageJson from './packageJson'
 
 export class Environment {
   isElevated: boolean = false
@@ -50,7 +51,7 @@ export class Environment {
     this.isDev = process.env.NODE_ENV === 'development'
     this.simpleOS = this.getSimpleOS()
     this.osVersion = this.getOsVersion()
-    this.version = this.getAppVersion()
+    this.version = packageJson.version
     this.isHeadless = !isElectron()
     this.symlinkPath = ''
     this.sshConfigPath = PATHS.SSH_CONFIG
@@ -145,21 +146,6 @@ export class Environment {
       }
     }
     return release
-  }
-
-  getAppVersion() {
-    const candidates = [
-      path.resolve(__dirname, '../package.json'),
-      path.resolve(__dirname, '..', '..', 'package.json'),
-      path.resolve(__dirname, '..', '..', '..', 'package.json'),
-    ]
-
-    const pkgPath = candidates.find(fs.existsSync)
-    if (!pkgPath) return '0.0.0'
-
-    const content = fs.readFileSync(pkgPath)
-    const json = JSON.parse(content.toString())
-    return json.version
   }
 
   getManufacturerDetails(): ManufacturerDetails {

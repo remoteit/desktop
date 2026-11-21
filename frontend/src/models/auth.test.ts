@@ -108,7 +108,7 @@ vi.mock('../services/analytics', () => ({ default: {} }))
 vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn() } }))
 vi.mock('../services/pushNotifications', () => ({ default: { register: vi.fn(), unregister: pushUnregister } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
-vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthHeaders: vi.fn() }))
+vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthorized: vi.fn() }))
 vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
 const persist = vi.hoisted(() => ({
   bootstrapped: true,

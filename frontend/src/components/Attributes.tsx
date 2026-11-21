@@ -120,6 +120,10 @@ class RestoreAttribute<TOptions = IDataOptions> extends Attribute<TOptions> {
   type: Attribute<TOptions>['type'] = 'RESTORE'
 }
 
+// The API withholds a service's host from anyone who can't manage it,
+// so show them neither host nor port rather than a false 127.0.0.1.
+const managed = (device?: IDevice) => !!device?.permissions.includes('MANAGE')
+
 const ATTRIBUTES = [
   { label: 'Category A', id: 'categoryA' },
   { label: 'Category B', id: 'categoryB' },
@@ -543,14 +547,15 @@ export const attributes: Attribute[] = [
     label: 'Service Host',
     defaultWidth: 130,
     // A virtual device's service with no host of its own uses the device's (graphql answers null): never the gateway.
-    value: ({ device, service }) => service?.host || (device?.virtual ? device.host || '–' : IP_PRIVATE),
+    value: ({ device, service }) =>
+      managed(device) ? service?.host || (device?.virtual ? device.host || '–' : IP_PRIVATE) : undefined,
   }),
   new ServiceAttribute({
     id: 'servicePort',
     label: 'Service Port',
     defaultWidth: 130,
     // A multi-port service's ports and ranges, its first first (services/multiPortServices).
-    value: ({ service }) => (isMultiPort(service) ? formatPorts(service?.ports) : service?.port),
+    value: ({ device, service }) => (managed(device) ? (isMultiPort(service) ? formatPorts(service?.ports) : service?.port) : undefined),
   }),
   new ServiceAttribute({
     id: 'serviceProtocol',
