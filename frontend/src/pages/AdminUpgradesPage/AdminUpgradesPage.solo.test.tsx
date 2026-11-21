@@ -86,7 +86,6 @@ async function render(path: string) {
   return el
 }
 
-// Body's scroll box: what it stretches is its first child of each type, so the content must be one element.
 const scrollBoxChildren = (el: HTMLElement) =>
   [...el.querySelectorAll('.upgrades-scroll')].map(box => box.children.length)
 

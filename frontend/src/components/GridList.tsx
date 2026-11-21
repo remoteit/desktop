@@ -1,8 +1,8 @@
-import { List,ListProps } from '@mui/material'
+import { List, ListProps } from '@mui/material'
 import React from 'react'
 import { fontSizes, spacing, toSxArray } from '../styling'
 import { Attribute } from './Attributes'
-import { GridListHeader } from './GridListHeader'
+import { GridListHeader, MIN_COLUMN_WIDTH } from './GridListHeader'
 
 type DeviceListProps<TOptions = IDataOptions, THeaderContext = unknown> = ListProps & {
   attributes: Attribute<TOptions>[]
@@ -33,6 +33,8 @@ export const GridList = <TOptions, THeaderContext = unknown>({
   ...props
 }: DeviceListProps<TOptions, THeaderContext>) => {
   const requiredWidth = required?.width(columnWidths) || 0
+  const columns = [requiredWidth, ...attributes.map(attribute => attribute.width(columnWidths))].filter(Boolean)
+  const visibleColumns = mobile ? 'minmax(0, 1fr)' : columns.map(width => `${width}px`).join(' ')
 
   const header = (
     <GridListHeader<TOptions> {...{ required, attributes, fetching, columnWidths, mobile }} icon={headerIcon} />
@@ -43,11 +45,13 @@ export const GridList = <TOptions, THeaderContext = unknown>({
       sx={[
         {
           minWidth: '100%',
-          width: requiredWidth + (mobile ? 0 : attributes?.reduce((w, a) => w + a.width(columnWidths), 0)),
+          width: mobile ? '100%' : columns.reduce((total, width) => total + width, 0),
           '& .MuiListItemButton-root, & .MuiListSubheader-root': {
-            gridTemplateColumns: `${requiredWidth ? `${requiredWidth}px ` : ''}${
-              mobile ? '' : attributes?.map(a => a.width(columnWidths)).join('px ') + 'px'
-            }`,
+            gridTemplateColumns: visibleColumns,
+          },
+          // Give the remaining columns room to scroll into view if the first one is very wide.
+          [`@container scroll-body (width < ${requiredWidth + MIN_COLUMN_WIDTH}px)`]: {
+            '& .GridList-pinned': { position: 'relative' },
           },
         },
         theme => ({

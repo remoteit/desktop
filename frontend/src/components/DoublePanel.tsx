@@ -1,7 +1,6 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
+import React, { useRef, useCallback } from 'react'
 import { getPanelWidthDefault, usePanelWidth } from '../hooks/usePanelWidth'
 import { usePanelDrag } from '../hooks/usePanelDrag'
-import { subscribeViewport } from '../hooks/useViewportWidth'
 import { REGEX_FIRST_PATH } from '../constants'
 import { useLocation } from 'react-router-dom'
 import { Box } from '@mui/material'
@@ -22,9 +21,8 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
   const [panelWidth, setPanelWidth] = usePanelWidth()
   const location = useLocation()
   const routeKey = location.pathname.match(REGEX_FIRST_PATH)?.[0].substring(1) || ''
-  const secondaryMinWidth = getPanelWidthDefault(routeKey, undefined, MIN_WIDTH)
+  const secondaryDefaultWidth = getPanelWidthDefault(routeKey, undefined, MIN_WIDTH)
   const primaryRef = useRef<HTMLDivElement>(null)
-  const [parentWidth, setParentWidth] = useState<number | undefined>()
 
   const sidePanelWidth = layout.sidePanelWidth + PADDING
 
@@ -32,8 +30,8 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
     const fullWidth = primaryRef.current?.parentElement?.offsetWidth || 1000
     // Never below the minimum: a max < min makes usePanelDrag oscillate and
     // emit negative widths when reserved chrome exceeds the window
-    return Math.max(MIN_WIDTH, fullWidth - secondaryMinWidth - sidePanelWidth)
-  }, [secondaryMinWidth, sidePanelWidth])
+    return Math.max(MIN_WIDTH, fullWidth - secondaryDefaultWidth - sidePanelWidth)
+  }, [secondaryDefaultWidth, sidePanelWidth])
 
   const drag = usePanelDrag(panelWidth, {
     minWidth: MIN_WIDTH,
@@ -41,18 +39,6 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
     onPersist: setPanelWidth,
     layoutDep: layout,
   })
-
-  const measureParent = useCallback(() => {
-    const parent = (primaryRef.current?.parentElement?.offsetWidth || 1000) - sidePanelWidth
-    setParentWidth(parent)
-  }, [sidePanelWidth])
-
-  useEffect(() => {
-    measureParent()
-  }, [layout, drag.width, measureParent])
-  // The shared listener stands in for a resize listener: coalesced to a frame, silent when
-  // nothing moved, and no render of this panel until the measurement changes
-  useEffect(() => subscribeViewport(measureParent), [measureParent])
 
   const panelSx = {
     height: '100%',
@@ -80,8 +66,7 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
       </Box>
       <Box
         className="drag-region"
-        sx={[panelSx, { flexGrow: 1, flexShrink: 10, paddingTop: 3, paddingRight: layout.insets?.rightPx }]}
-        style={{ minWidth: parentWidth ? Math.max(parentWidth - drag.width, secondaryMinWidth) : secondaryMinWidth }}
+        sx={[panelSx, { flex: 1, minWidth: MIN_WIDTH, paddingTop: 3, paddingRight: layout.insets?.rightPx }]}
       >
         {right}
       </Box>

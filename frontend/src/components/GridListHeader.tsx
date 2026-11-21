@@ -1,12 +1,12 @@
-import { Box,ListItemIcon,ListSubheader } from '@mui/material'
-import React,{ useRef,useState } from 'react'
+import { Box, ListItemIcon, ListSubheader } from '@mui/material'
+import React, { useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { Attribute } from './Attributes'
 import { GridListHeaderTitle } from './GridListHeaderTitle'
 import { LinearProgress } from './LinearProgress'
 
-const MIN_WIDTH = 50
+export const MIN_COLUMN_WIDTH = 50
 
 type Props<TOptions = IDataOptions> = {
   required?: Attribute<TOptions>
@@ -44,13 +44,13 @@ export const GridListHeader = <TOptions,>({
     event.preventDefault()
     window.removeEventListener('mousemove', onMove)
     window.removeEventListener('mouseup', onUp)
-    const px = Math.max(moveRef.current[1] + (event.clientX - moveRef.current[2]), MIN_WIDTH)
+    const px = Math.max(moveRef.current[1] + (event.clientX - moveRef.current[2]), MIN_COLUMN_WIDTH)
     ui.resizeColumn({ id: moveRef.current[0], width: px })
     setResize(0)
   }
 
   const onMove = (event: MouseEvent) => {
-    if (moveRef.current[1] + (event.clientX - moveRef.current[2]) < MIN_WIDTH) return
+    if (moveRef.current[1] + (event.clientX - moveRef.current[2]) < MIN_COLUMN_WIDTH) return
     setResize(event.pageX - moveRef.current[3])
   }
 

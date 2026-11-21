@@ -124,7 +124,7 @@ export const radius = {
 
 /* The app's scrollbar. One implementation, so every scroll surface matches:
    the thumb hides against its own background and only appears while the pointer
-   is over the surface. `width` is the knob — the page default, or NARROW for
+   is over the surface unless showThumb is set. `width` is the knob — the page default, or NARROW for
    small overflow areas (inline code, tables) where the full bar would swamp the
    content. Body passes 0 on mobile, where the OS draws its own overlay bar.
 
@@ -133,15 +133,19 @@ export const radius = {
 export const SCROLLBAR_WIDTH = 15
 export const SCROLLBAR_WIDTH_NARROW = 8
 
-export const scrollbarStyles = (theme: Theme, options: { background?: Color; width?: number } = {}) => {
-  const { background = 'white', width = SCROLLBAR_WIDTH } = options
+export const scrollbarStyles = (
+  theme: Theme,
+  options: { background?: Color; width?: number; showThumb?: boolean } = {}
+) => {
+  const { background = 'white', width = SCROLLBAR_WIDTH, showThumb } = options
   const bg = theme.palette[background].main
   const thumb = theme.palette.grayLight.main
+  const restingThumb = showThumb ? thumb : bg
   const narrow = width <= SCROLLBAR_WIDTH_NARROW
   return {
     // Firefox has no thumb pseudo-element; it takes the pair directly
     scrollbarWidth: (narrow ? 'thin' : 'auto') as 'thin' | 'auto',
-    scrollbarColor: `${bg} transparent`,
+    scrollbarColor: `${restingThumb} transparent`,
     '&:hover': { scrollbarColor: `${thumb} transparent` },
     '&::-webkit-scrollbar': { WebkitAppearance: 'none' as const },
     '&::-webkit-scrollbar:vertical': { width },
@@ -151,7 +155,7 @@ export const scrollbarStyles = (theme: Theme, options: { background?: Color; wid
       borderRadius: radius.sm,
       // The inset border is what makes the thumb read as slim inside a wide track
       border: `${narrow ? 2 : 4}px solid ${bg}`,
-      backgroundColor: bg,
+      backgroundColor: restingThumb,
     },
     '&:hover::-webkit-scrollbar-thumb': { backgroundColor: thumb },
   }

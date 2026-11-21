@@ -18,6 +18,7 @@ export const GridListHeaderTitle = <TOptions,>({ attribute, sticky, onMouseDown,
 
   return (
     <Box
+      className={sticky ? 'GridList-pinned' : undefined}
       sx={[
         sticky
           ? theme => ({
@@ -25,7 +26,7 @@ export const GridListHeaderTitle = <TOptions,>({ attribute, sticky, onMouseDown,
               zIndex: 4,
               position: 'sticky',
               paddingLeft: `${spacing.md}px`,
-              backgroundImage: `linear-gradient(90deg, ${theme.palette.white.main} 95%, transparent)`,
+              backgroundColor: theme.palette.white.main,
               borderBottom: `1px solid ${theme.palette.grayLighter.main}`,
             })
           : theme => ({

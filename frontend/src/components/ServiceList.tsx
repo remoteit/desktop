@@ -60,8 +60,7 @@ export const ServiceList: React.FC<DeviceListProps> = ({
   /* Measured wrapper: `width: 100%` resolves against the scroll container, so it reports
      the space this list ACTUALLY has. The GridList inside is deliberately wider than the
      container when columns overflow — that IS the horizontal scroll — so measuring the
-     list itself would report content width instead. Overflow still reaches the scroll
-     container, and Body's first-child rule now applies to this box just the same. */
+     list itself would report content width instead. */
   return (
     <Box ref={containerRef} sx={{ width: '100%' }}>
       <GridList
