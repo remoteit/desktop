@@ -22,7 +22,7 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const insets = layout.insets
 
   return (
-    <OrganizationSidebar insets={layout.insets} hide={!layout.showOrgs || adminMode}>
+    <OrganizationSidebar insets={layout.insets} hide={!layout.showOrgs}>
       <Body
         scrollbarBackground="grayLighter"
         sx={theme => ({

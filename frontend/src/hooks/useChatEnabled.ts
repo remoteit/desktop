@@ -119,8 +119,7 @@ export const useHideSidebar = (): boolean => useLayoutBreakpoints().hideSidebar
    chat is NOT in that row (it is a column beside the whole app side) and must not be counted:
    the panels' own parent already excludes it, and adding it back subtracted the chat twice,
    which drove their max width below their minimum and froze the drag. */
-export const useSidebarWidth = (): number => {
-  const showOrgs = useSelector((state: State) => !!state.accounts.membership.length)
+export const useSidebarWidth = (showOrgs: boolean): number => {
   const hideSidebar = useHideSidebar()
   return hideSidebar ? 0 : SIDEBAR_WIDTH + (showOrgs ? ORGANIZATION_BAR_WIDTH : 0)
 }

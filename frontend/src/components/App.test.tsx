@@ -35,6 +35,8 @@ vi.mock('../hooks/useChatEnabled', () => ({
 }))
 vi.mock('../hooks/useThisDevice', () => ({ useThisDevice: () => device.current }))
 vi.mock('../selectors/organizations', () => ({ selectResellerRef: () => undefined }))
+vi.mock('../selectors/accounts', () => ({ selectShowOrganizations: () => false }))
+vi.mock('../selectors/ui', () => ({ selectIsAdminRouteMode: () => false }))
 vi.mock('../services/chatPopout', () => ({ isChatPopout: false }))
 vi.mock('../constants', () => ({ REGEX_FIRST_PATH: /^\/[^/]*/, TERMINAL_PATH: '/terminal' }))
 vi.mock('./InstallationNotice', () => ({ InstallationNotice: mark('installation') }))

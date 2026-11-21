@@ -1,5 +1,6 @@
 import { createSelector } from 'reselect'
 import { dateSort } from '../helpers/utilHelper'
+import { State } from '../store'
 import { getUserId, getUser, getActiveId, optionalAccountId, getMemberships } from './state'
 
 /*
@@ -12,6 +13,9 @@ export const selectDefaultAccountId = createSelector([getActiveId, getMembership
     ? undefined
     : memberships.filter(member => !member.standalone).sort((a, b) => dateSort(b.created, a.created))[0]?.account.id
 )
+
+export const selectShowOrganizations = (state: State) =>
+  !!state.accounts.membership.length || !!state.accounts.standaloneOrganizations
 
 export const selectActiveAccountId = createSelector(
   [optionalAccountId, getActiveId, getUserId],
