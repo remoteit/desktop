@@ -1,0 +1,30 @@
+{
+  "terms": {
+    "remote.it (brand in prose)": 115,
+    "Device subnet": 5,
+    "Reach devices by name": 1,
+    "Protect": 14,
+    "exit node": 1,
+    "Runs on": 4,
+    "DNS name": 10,
+    "subnet name": 0,
+    "Name on your network": 1,
+    "endpoint": 66,
+    "Initiator": 14,
+    "daemon": 6,
+    "connectd": 2,
+    "device package": 4,
+    "remote.it device": 2,
+    "Control Link": 4,
+    "Classic": 1,
+    "upgrade": 23,
+    "console": 2,
+    "web SSH": 4,
+    "reflector": 7,
+    "decommission": 11,
+    "hosted by / hosts / Hosting": 13,
+    "Allow remote access to services": 4
+  },
+  "longStrings": 97,
+  "internalWords": 23
+}
