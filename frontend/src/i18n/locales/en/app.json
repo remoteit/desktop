@@ -4709,8 +4709,9 @@
     "title": "Tags"
   },
   "terminal": {
-    "paste": "Paste",
-    "pasteFailed": "Could not read the clipboard."
+    "hideKeyboard": "Hide keyboard",
+    "input": "Terminal input",
+    "selectText": "Select terminal text"
   },
   "testPage": {
     "addQueryHeader": "Add query header",
