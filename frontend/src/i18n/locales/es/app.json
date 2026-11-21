@@ -4816,8 +4816,9 @@
     "title": "Etiquetas"
   },
   "terminal": {
-    "paste": "",
-    "pasteFailed": ""
+    "hideKeyboard": "",
+    "input": "",
+    "selectText": ""
   },
   "testPage": {
     "addQueryHeader": "Agregar encabezado de consulta",

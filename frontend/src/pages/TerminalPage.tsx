@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { Box, Button, Typography } from '@mui/material'
+import { Box, Button, useMediaQuery } from '@mui/material'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
 import { openSSH, resetBrowserClient, SSHSession } from '../services/browserClient'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { TerminalTouchControls } from './TerminalTouchControls'
 
 /* A terminal on a device's SSH service through this browser's remote.it client — nothing to install
    (services/browserClient). Opened in its own tab: /terminal?name=<subnet name>&port=22&title=…&service=<id>. It asks
@@ -16,31 +16,42 @@ import { graphQLBasicRequest } from '../services/graphQL'
    accepted host key, by the client. A session that fails, or does not open in RESET_OFFER_MS, offers to reset this
    browser's client — one whose device was removed cannot sign in again — and opens the terminal anew. */
 const RESET_OFFER_MS = 20_000
+const TOUCH_QUERY = '(any-pointer: coarse)'
 
 export const TerminalPage: React.FC = () => {
-  const { t } = useTranslation()
+  const touch = useMediaQuery(TOUCH_QUERY)
+  const frame = useRef<HTMLDivElement>(null)
   const box = useRef<HTMLDivElement>(null)
-  const pasteTarget = useRef<(text: string) => void>()
-  const params = new URLSearchParams(useLocation().search)
+  const { search } = useLocation()
+  const params = new URLSearchParams(search)
   const name = params.get('name') || ''
   const port = Number(params.get('port') || 22)
   const title = params.get('title') || name
   const serviceId = params.get('service') || ''
   const [offerReset, setOfferReset] = useState(false)
   const [resetting, setResetting] = useState(false)
-  const [canPaste, setCanPaste] = useState(false)
-  const [pasteFailed, setPasteFailed] = useState(false)
+  const [terminal, setTerminal] = useState<Terminal>()
+  const [inputAvailable, setInputAvailable] = useState(false)
 
-  const paste = async () => {
-    const target = pasteTarget.current
-    if (!target) return
-    setPasteFailed(false)
-    // Safari needs the clipboard read to start during the tap, and may ask the user to confirm it.
-    const text = await navigator.clipboard?.readText().catch(() => undefined)
-    if (target !== pasteTarget.current) return
-    if (text === undefined) setPasteFailed(true)
-    else if (text) target(text)
-  }
+  useLayoutEffect(() => {
+    const viewport = window.visualViewport
+    const shell = frame.current
+    if (!touch || !viewport || !shell) return
+    // On iOS the keyboard shrinks the visual viewport, while fixed elements still use the layout viewport.
+    const position = () => {
+      shell.style.top = `${viewport.offsetTop}px`
+      shell.style.height = `${viewport.height}px`
+    }
+    position()
+    viewport.addEventListener('resize', position)
+    viewport.addEventListener('scroll', position)
+    return () => {
+      viewport.removeEventListener('resize', position)
+      viewport.removeEventListener('scroll', position)
+      shell.style.removeProperty('top')
+      shell.style.removeProperty('height')
+    }
+  }, [touch])
 
   const reset = async () => {
     setResetting(true)
@@ -55,6 +66,7 @@ export const TerminalPage: React.FC = () => {
     const fit = new FitAddon()
     term.loadAddon(fit)
     term.open(box.current)
+    setTerminal(term)
     fit.fit()
     const observer = new ResizeObserver(() => fit.fit())
     observer.observe(box.current)
@@ -64,14 +76,7 @@ export const TerminalPage: React.FC = () => {
     const setInput = (receive?: (data: string) => void) => {
       if (disposed) return
       receiveInput = receive
-      pasteTarget.current =
-        receive &&
-        (text => {
-          term.paste(text)
-          term.focus()
-        })
-      setCanPaste(!!receive)
-      setPasteFailed(false)
+      setInputAvailable(!!receive)
     }
     setInput()
 
@@ -140,17 +145,19 @@ export const TerminalPage: React.FC = () => {
             setInput(data => session?.input(new TextEncoder().encode(data)))
             clearTimeout(offerTimer)
             setOfferReset(false)
-            term.focus()
+            if (!window.matchMedia(TOUCH_QUERY).matches) term.focus()
           },
           data: bytes => term.write(bytes),
           end: () => {
             if (disposed) return
             setInput()
+            term.blur()
             term.write('\r\n\x1b[2mConnection closed.\x1b[0m\r\n')
           },
           error: message => {
             if (disposed) return
             setInput()
+            term.blur()
             term.write(`\r\n\x1b[31m${message}\x1b[0m\r\n`)
             setOfferReset(true)
           },
@@ -188,6 +195,7 @@ export const TerminalPage: React.FC = () => {
       ).catch(err => {
         if (disposed) return undefined
         setInput()
+        term.blur()
         term.write(`\r\n\x1b[31m${err.message}\x1b[0m\r\n`)
         setOfferReset(true)
         return undefined
@@ -197,7 +205,6 @@ export const TerminalPage: React.FC = () => {
 
     return () => {
       disposed = true
-      pasteTarget.current = undefined
       clearTimeout(offerTimer)
       typed.dispose()
       resized.dispose()
@@ -208,29 +215,27 @@ export const TerminalPage: React.FC = () => {
   }, [name, port, serviceId])
 
   return (
-    <Box sx={{ position: 'fixed', inset: 0, bgcolor: '#111111', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1, px: 1 }}>
-        {pasteFailed && (
-          <Typography role="status" variant="body2" sx={{ color: 'white', mr: 'auto' }}>
-            {t('terminal.pasteFailed', 'Could not read the clipboard.')}
-          </Typography>
-        )}
-        <Button
-          variant="contained"
-          size="small"
-          disabled={!name || !canPaste}
-          onClick={paste}
-          sx={{ display: 'none', '@media (any-pointer: coarse)': { display: 'inline-flex', minHeight: 44 } }}
-        >
-          {t('terminal.paste', 'Paste')}
-        </Button>
-        {offerReset && (
+    <Box ref={frame} sx={{ position: 'fixed', inset: 0, bgcolor: '#111111', display: 'flex', flexDirection: 'column' }}>
+      {offerReset && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 1 }}>
           <Button variant="contained" size="small" disabled={resetting} onClick={reset}>
             {resetting ? 'Resetting…' : "Reset this browser's remote.it client"}
           </Button>
-        )}
-      </Box>
-      <Box ref={box} sx={{ flex: 1, minHeight: 0, overflow: 'hidden', p: 1 }} />
+        </Box>
+      )}
+      <Box
+        ref={box}
+        sx={{ flex: 1, minHeight: 0, overflow: 'hidden', p: 1 }}
+        onPointerDown={event => {
+          if (event.pointerType !== 'touch') return
+          // Keep the synthetic mouse event from focusing the terminal when tapping its output.
+          event.preventDefault()
+          terminal?.blur()
+        }}
+      />
+      {touch && terminal && name && (
+        <TerminalTouchControls key={search} terminal={terminal} inputAvailable={inputAvailable} />
+      )}
     </Box>
   )
 }

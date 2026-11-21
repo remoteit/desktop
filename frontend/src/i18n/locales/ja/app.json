@@ -4602,8 +4602,9 @@
     "title": "タグ"
   },
   "terminal": {
-    "paste": "",
-    "pasteFailed": ""
+    "hideKeyboard": "",
+    "input": "",
+    "selectText": ""
   },
   "testPage": {
     "addQueryHeader": "クエリヘッダーを追加",

@@ -4709,8 +4709,9 @@
     "title": "Tags"
   },
   "terminal": {
-    "paste": "",
-    "pasteFailed": ""
+    "hideKeyboard": "",
+    "input": "",
+    "selectText": ""
   },
   "testPage": {
     "addQueryHeader": "Abfrage-Header hinzufügen",
