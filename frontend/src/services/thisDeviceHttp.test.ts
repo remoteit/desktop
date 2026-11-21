@@ -37,6 +37,17 @@ describe('the desktop bridge transport', () => {
     expect(odd.code).toBe('failed')
   })
 
+  it('1.12.0: an exit joined by its id, the administrator’s no as cancelled', async () => {
+    const fetcher = answer(409, { error: { code: 'cancelled', message: 'the administrator’s confirmation was cancelled' } })
+    const error = await httpTransport(PAGE, fetcher as any)
+      .call('exitNode.join', { id: 'gk3x9q2m7ab1' })
+      .catch(e => e)
+    const [url, init] = fetcher.mock.calls[0] as any
+    expect(url).toBe(PAGE + 'bridge/exitNode.join')
+    expect(JSON.parse(init.body)).toEqual({ id: 'gk3x9q2m7ab1' })
+    expect(error.code).toBe('cancelled')
+  })
+
   it('is unavailable when the app does not answer', async () => {
     const t = httpTransport(PAGE, vi.fn(async () => Promise.reject(new TypeError('Failed to fetch'))) as any)
     expect((await t.call('info', {}).catch(e => e)).code).toBe('unavailable')
