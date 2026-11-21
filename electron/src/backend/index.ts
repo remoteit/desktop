@@ -11,6 +11,9 @@ import preferences from './preferences'
 import ConnectionPool from './ConnectionPool'
 import EventBus from './EventBus'
 import Logger from './Logger'
+import server from './server'
+import loadWindow from './loadWindow'
+import { withoutQuery } from './withoutQuery'
 import LAN from './LAN'
 import cli from './cliInterface'
 import user, { User } from './User'
@@ -75,4 +78,7 @@ export {
   PROTOCOL,
   START_URL,
   START_ORIGIN,
+  loadWindow,
+  withoutQuery,
 }
+export const serverListening = server.listening

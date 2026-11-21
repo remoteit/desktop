@@ -14,7 +14,7 @@ import { ProductJoinKeys } from '../../components/ProductJoinKeys'
 import { ProductLifecycle } from '../../components/ProductLifecycle'
 import { ProductMaxDevices } from '../../components/ProductMaxDevices'
 import { ProductOneTimeCodes } from '../../components/ProductOneTimeCodes'
-import { ProductRegistrationCodes } from '../../components/ProductRegistrationCodes'
+import { ProductRegistrationCodes, ProductRevokedCodes } from '../../components/ProductRegistrationCodes'
 import { getProductModel } from '../../selectors/products'
 import { selectActiveAccountId } from '../../selectors/accounts'
 import { dispatch } from '../../store'
@@ -97,6 +97,9 @@ export const ProductSettingsPage: React.FC = () => {
 
         <ProductMaxDevices product={product} />
 
+      </Gutters>
+      <ProductRevokedCodes product={product} />
+      <Gutters>
         <Typography variant="subtitle2" color="textSecondary" gutterBottom sx={{ marginTop: 3 }}>
           Details
         </Typography>

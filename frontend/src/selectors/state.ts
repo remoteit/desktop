@@ -34,6 +34,8 @@ export const getConnectionDefaults = (state: State) => state.user.attributes?.co
 // What a launch asked for and was given, per service (helpers/connectionHelper saveLaunchTokens).
 export const getLaunchTokens = (state: State): ILookup<ILookup<string>> => state.user.attributes?.launch || EMPTY_CONNECTION_DEFAULTS
 export const getApplicationTypes = (state: State) => state.applicationTypes
+export const getAllApplicationTypes = (state: State) => state.applicationTypes.all
+export const getEnvironment = (state: State) => state.backend.environment
 export const getApplicationService = (_: State, service?: IService) => service
 export const getApplicationConnection = (_: State, _service?: IService, connection?: IConnection) => connection
 

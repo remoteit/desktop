@@ -16,7 +16,7 @@ type Props = {
 
 export const InlineTemplateSetting: React.FC<Props> = ({ app, service, connection, disabled, disableGutters }) => {
   if (!connection) connection = newConnection(service)
-  const secureReverseProxy = isSecureReverseProxy(app.template)
+  const secureReverseProxy = app.publicOnlyTemplate ? null : isSecureReverseProxy(app.template)
 
   const update = (template: string) =>
     connection &&

@@ -3,6 +3,7 @@ import { Box } from '@mui/material'
 import { DiagramIcon } from './DiagramIcon'
 import { DiagramPath } from './DiagramPath'
 import { useLocation } from 'react-router-dom'
+import { useApplication } from '../hooks/useApplication'
 import { connectionState } from '../helpers/connectionHelper'
 import { jumpHost } from '../helpers/virtualDeviceHelper'
 import { DeviceContext, DiagramContext } from '../services/Context'
@@ -26,7 +27,10 @@ export const Diagram: React.FC<Props> = ({ to: toTypes, relay, highlightTypes = 
 
   const proxy = connection.proxyOnly
   const publik = connection.connectLink || connection.public
-  const protekted = connection.connectLink ? !!connection.password : connection.publicRestriction === IP_LATCH
+  const app = useApplication(service, connection)
+  const protekted = connection.connectLink
+    ? !!connection.password
+    : !app.publicReverseProxy && connection.publicRestriction === IP_LATCH
   const page = location.pathname.match(REGEX_LAST_PATH)?.[0]
 
   relay = relay || !!jumpHost(service, device)

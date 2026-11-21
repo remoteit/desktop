@@ -433,3 +433,124 @@ describe('oidcStart on desktop', () => {
     expect(oidcFlowPending('someone-else')).toBe(false)
   })
 })
+
+describe('a DPoP proof refused for its time', () => {
+  const SERVER = Date.UTC(2026, 10, 19, 2, 10, 0)
+  const LOCAL = SERVER + 60 * 60 * 1000
+  const refusal = () =>
+    new Response(
+      JSON.stringify({
+        error: 'invalid_dpop_proof',
+        error_description: 'proof iat is missing or outside the acceptance window',
+      }),
+      { status: 400 }
+    )
+  const accessToken = (exp: number) => ['e30', btoa(JSON.stringify({ exp })).replace(/=+$/, ''), 'sig'].join('.')
+  let tokenCalls: number
+  let serverTimeCalls: number
+  let serverTime: () => Promise<Response>
+  let token: () => Promise<Response>
+
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+    Object.assign(browser, { hasBackend: true })
+    vi.spyOn(Date, 'now').mockReturnValue(LOCAL)
+    tokenCalls = 0
+    serverTimeCalls = 0
+    serverTime = () => Promise.resolve(new Response(JSON.stringify({ serverTime: SERVER })))
+    stubDiscovery(
+      { authorization_endpoint: 'https://login.test/authorize', token_endpoint: 'https://login.test/token' },
+      (url, init) => {
+        if (String(url).startsWith('/serverTime')) {
+          serverTimeCalls++
+          return serverTime()
+        }
+        if (String(init?.body ?? '').includes('grant_type=')) {
+          tokenCalls++
+          return token()
+        }
+        return Promise.reject(new Error('offline'))
+      }
+    )
+    invalidateOidcToken()
+  })
+  afterEach(() => {
+    delete (browser as { hasBackend?: boolean }).hasBackend
+    vi.restoreAllMocks()
+    vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline')))
+  })
+  const startExchange = async () => {
+    await oidcStart()
+    const { state } = JSON.parse(window.sessionStorage.getItem('oidc.flow') || 'null')
+    window.history.replaceState({}, '', `/?code=c1&state=${state}`)
+  }
+
+  it('retries once on the server’s time, and judges the new token by that time too', async () => {
+    const tokens = { refresh_token: 'r1', id_token: idToken('a', OAUTH_ISSUER) }
+    window.localStorage.setItem('oidc.tokens', JSON.stringify(tokens))
+    window.localStorage.setItem('oidc.accounts', JSON.stringify({ a: tokens }))
+    const minted = accessToken(SERVER / 1000 + 300)
+    token = () =>
+      Promise.resolve(
+        tokenCalls === 1 ? refusal() : new Response(JSON.stringify({ refresh_token: 'r2', access_token: minted }))
+      )
+
+    expect(await oidcAccessToken()).toBe(minted)
+    expect(tokenCalls).toBe(2)
+    expect(serverTimeCalls).toBe(1)
+
+    // An hour past the token's expiry by this computer's clock, five minutes before it by the server's.
+    expect(await oidcAccessToken()).toBe(minted)
+    expect(tokenCalls).toBe(2)
+  })
+
+  it('names the clock when the server’s time can’t be learned', async () => {
+    serverTime = () => Promise.reject(new Error('no desktop backend'))
+    token = () => Promise.resolve(refusal())
+    await startExchange()
+
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'clock', oauthError: 'invalid_dpop_proof' })
+    expect(tokenCalls).toBe(1)
+  })
+
+  it('asks no desktop backend where the page has none (web, mobile)', async () => {
+    delete (browser as { hasBackend?: boolean }).hasBackend
+    token = () => Promise.resolve(refusal())
+    await startExchange()
+
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'clock' })
+    expect(serverTimeCalls).toBe(0)
+  })
+
+  it('takes the server’s time from the refusal itself when the AS exposes its Date', async () => {
+    const exposed = refusal()
+    exposed.headers.set('date', new Date(SERVER).toUTCString())
+    token = () =>
+      Promise.resolve(
+        tokenCalls === 1 ? exposed : new Response(JSON.stringify({ refresh_token: 'r2', access_token: 'at' }), {})
+      )
+    await startExchange()
+
+    await oidcCompleteFromUrl().catch(() => undefined)
+    expect(serverTimeCalls).toBe(0)
+    expect(tokenCalls).toBe(2)
+  })
+
+  it('does not blame a clock that matches the server’s', async () => {
+    serverTime = () => Promise.resolve(new Response(JSON.stringify({ serverTime: LOCAL + 5000 })))
+    token = () => Promise.resolve(refusal())
+    await startExchange()
+
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'refused' })
+    expect(tokenCalls).toBe(1)
+  })
+
+  it('stops after one retry and reports how far off the clock was', async () => {
+    token = () => Promise.resolve(refusal())
+    await startExchange()
+
+    await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'clock', clockOffset: -3600 })
+    expect(tokenCalls).toBe(2)
+  })
+})

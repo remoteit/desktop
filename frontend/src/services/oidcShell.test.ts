@@ -45,6 +45,9 @@ beforeEach(() => {
 })
 afterEach(() => vi.unstubAllGlobals())
 
+const headersFor = (oidc: typeof import('./oidc')) =>
+  oidc.oidcAuthorized('POST', API + '/graphql', API, async headers => headers, () => undefined)
+
 const stored = () => [...Object.keys(localStorage), ...Object.keys(sessionStorage)]
 
 describe('with the shell signing in', () => {
@@ -69,13 +72,13 @@ describe('with the shell signing in', () => {
     expect(await oidc.oidcAccessToken(account)).toBe('token-for:sub-person:' + account)
     const asked = bridge!.calls.filter(c => c.method === 'auth.accessToken').map(c => c.args.resource)
     expect(asked).toEqual([API, account])
-    expect(await oidc.oidcAuthHeaders('POST', API + '/graphql', API)).toEqual({ authorization: 'Bearer token-for:sub-person:' + API })
+    expect(await headersFor(oidc)).toEqual({ authorization: 'Bearer token-for:sub-person:' + API })
     expect(stored()).toEqual([])
   })
 
   it('presents a DPoP-bound token with the shell’s proof, and makes no key of its own', async () => {
     const { oidc, bridge } = await boot({ tokenType: 'DPoP' })
-    const headers = await oidc.oidcAuthHeaders('POST', API + '/graphql', API)
+    const headers = await headersFor(oidc)
     expect(headers).toEqual({ authorization: 'DPoP token-for:sub-person:' + API, DPoP: 'proof:POST:' + API + '/graphql' })
     expect(bridge!.calls.find(c => c.method === 'auth.dpopProof')!.args).toEqual({
       method: 'POST',

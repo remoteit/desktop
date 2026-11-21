@@ -5,7 +5,7 @@ const { uiSet, request, ui } = vi.hoisted(() => ({ uiSet: vi.fn(), request: vi.f
 vi.mock('../store', () => ({
   store: { getState: () => ({ ui }), dispatch: { ui: { set: uiSet, deprecated: vi.fn() } } },
 }))
-vi.mock('./remoteit', () => ({ apiHeaders: vi.fn().mockResolvedValue({ authorization: 'token' }) }))
+vi.mock('./remoteit', () => ({ apiRequest: vi.fn((_method, _url, send) => send({ authorization: 'token' })) }))
 vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql' }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))

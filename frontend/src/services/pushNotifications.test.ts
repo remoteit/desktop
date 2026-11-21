@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { plugin, listeners, state, set, browser, constants, register, unregister, actor } = vi.hoisted(() => {
+const { plugin, listeners, state, open, browser, constants, register, unregister, actor } = vi.hoisted(() => {
   const listeners: Record<string, (event: any) => unknown> = {}
   return {
     listeners,
@@ -18,7 +18,7 @@ const { plugin, listeners, state, set, browser, constants, register, unregister,
       unregister: vi.fn(async () => {}),
     },
     state: { auth: { user: { id: 'user-1' } as any }, ui: { apis: {} as { apnsEnvironment?: string } } },
-    set: vi.fn(),
+    open: vi.fn(),
     browser: { isMobile: true, isIOS: true, isAndroid: false },
     constants: {
       APNS_ENVIRONMENT: 'sandbox',
@@ -32,13 +32,16 @@ const { plugin, listeners, state, set, browser, constants, register, unregister,
 })
 
 vi.mock('@capacitor/push-notifications', () => ({ PushNotifications: plugin }))
-vi.mock('../store', () => ({ store: { getState: () => state, dispatch: { ui: { set } } } }))
+vi.mock('../store', () => ({ store: { getState: () => state } }))
 vi.mock('./browser', () => ({ default: browser }))
 vi.mock('../constants', () => constants)
 vi.mock('./graphQLMutation', () => ({ graphQLRegisterPushToken: register, graphQLUnregisterPushToken: unregister }))
 vi.mock('./oidc', () => ({ oidcActor: actor }))
+vi.mock('./openNotification', () => ({ openNotification: open }))
 vi.mock('../i18n', () => ({ default: { t: (_key: string, value: string) => value } }))
 vi.mock('../helpers/versionHelper', () => ({ version: '3.48.10' }))
+
+const TIME = '2026-11-09T12:00:00.000Z'
 
 import pushNotifications from './pushNotifications'
 
@@ -58,12 +61,39 @@ afterEach(() => {
 })
 
 describe('tap routing', () => {
-  it('routes a running app and survives a sign-in reload', async () => {
+  it('opens the page with what was tapped', async () => {
+    await pushNotifications.listen()
+    listeners.pushNotificationActionPerformed({
+      actionId: 'tap',
+      notification: { title: 'pi went offline', body: 'Linux', data: { url: '/devices/abc', time: TIME } },
+    })
+
+    expect(open).toHaveBeenCalledWith('/devices/abc', {
+      title: 'pi went offline',
+      body: 'Linux',
+      time: Date.parse(TIME),
+    })
+  })
+
+  it('reads what was tapped from the data on Android, which hands over nothing else', async () => {
+    await pushNotifications.listen()
+    listeners.pushNotificationActionPerformed({
+      actionId: 'tap',
+      notification: { id: 'm1', data: { url: '/devices/abc', title: 'pi came online', body: 'Linux', time: TIME } },
+    })
+
+    expect(open).toHaveBeenCalledWith('/devices/abc', {
+      title: 'pi came online',
+      body: 'Linux',
+      time: Date.parse(TIME),
+    })
+  })
+
+  it('opens without a time from a server that sends none', async () => {
     await pushNotifications.listen()
     listeners.pushNotificationActionPerformed({ actionId: 'tap', notification: { data: { url: '/devices/abc' } } })
 
-    expect(set).toHaveBeenCalledWith({ redirect: '/devices/abc' })
-    expect(window.localStorage.getItem('initialRoute')).toBe('/devices/abc')
+    expect(open).toHaveBeenCalledWith('/devices/abc', { title: undefined, body: undefined, time: undefined })
   })
 
   it('ignores a url that is not an app path', async () => {
@@ -71,8 +101,7 @@ describe('tap routing', () => {
     listeners.pushNotificationActionPerformed({ actionId: 'tap', notification: { data: { url: 'https://x.test' } } })
     listeners.pushNotificationActionPerformed({ actionId: 'tap', notification: { data: {} } })
 
-    expect(set).not.toHaveBeenCalled()
-    expect(window.localStorage.getItem('initialRoute')).toBeNull()
+    expect(open).not.toHaveBeenCalled()
   })
 
   it('attaches the listeners once however often it is asked', async () => {

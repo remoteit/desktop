@@ -6,7 +6,6 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { windowOpen } from '../services/browser'
 import { Container } from '../components/Container'
 import { BillingUI } from '../components/BillingUI'
-import { TestUI } from '../components/TestUI'
 import { Logo } from '@common/brand/Logo'
 import { Icon } from '../components/Icon'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
@@ -52,14 +51,12 @@ export const AccountPage: React.FC = () => {
         {deviceSessions && (
           <ListItemLocation title={t('settings.appPublisher', 'App publisher')} to="/account/publisher" icon="cube" dense />
         )}
-        <TestUI>
-          <ListItemLocation
-            title={t('settings.connectedApps', 'Connected Apps')}
-            to="/account/connected"
-            icon="puzzle-piece-simple"
-            dense
-          />
-        </TestUI>
+        <ListItemLocation
+          title={t('settings.connectedApps', 'Connected Apps')}
+          to="/account/connected"
+          icon="puzzle-piece-simple"
+          dense
+        />
       </List>
     </Container>
   )

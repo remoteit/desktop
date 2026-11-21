@@ -79,6 +79,7 @@ export interface AuthState {
   signInErrorCode?: SignInErrorCode
   /** Seconds the server asked us to wait, when it said so (429). */
   signInRetryAfter?: number
+  signInClockOffset?: number
   signingIn?: boolean
   user?: IUser
 }
@@ -113,6 +114,7 @@ const defaultState: AuthState = {
   signInError: undefined,
   signInErrorCode: undefined,
   signInRetryAfter: undefined,
+  signInClockOffset: undefined,
   signingIn: false,
   user: undefined,
 }
@@ -126,6 +128,7 @@ const signInFailure = (error: any): Partial<AuthState> => ({
   signInError: error?.message || 'Sign in failed',
   signInErrorCode: error instanceof OidcError ? error.code : undefined,
   signInRetryAfter: error instanceof OidcError ? error.retryAfter : undefined,
+  signInClockOffset: error instanceof OidcError ? error.clockOffset : undefined,
 })
 
 // auth.init is not gated on rehydration, and an owner read before it sees the empty default.
@@ -144,6 +147,7 @@ const signInCleared = {
   signInError: undefined,
   signInErrorCode: undefined,
   signInRetryAfter: undefined,
+  signInClockOffset: undefined,
 }
 
 // This phone's push token goes with the agent's grant: both calls mint from the session, so they run

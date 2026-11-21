@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const {
   graphQLDeleteDeviceProduct,
   graphQLRemoveDeviceProductService,
+  graphQLRevokeDeviceProductCode,
+  graphQLRotateDeviceProductCode,
   graphQLTransferDeviceProduct,
   graphQLDeviceProduct,
   graphQLCreateDeviceProductJoinKey,
@@ -12,6 +14,8 @@ const {
 } = vi.hoisted(() => ({
   graphQLDeleteDeviceProduct: vi.fn(),
   graphQLRemoveDeviceProductService: vi.fn(),
+  graphQLRevokeDeviceProductCode: vi.fn(),
+  graphQLRotateDeviceProductCode: vi.fn(),
   graphQLTransferDeviceProduct: vi.fn(),
   graphQLDeviceProduct: vi.fn(),
   graphQLCreateDeviceProductJoinKey: vi.fn(),
@@ -22,6 +26,8 @@ const {
 vi.mock('../services/graphQLDeviceProducts', () => ({
   graphQLDeleteDeviceProduct,
   graphQLRemoveDeviceProductService,
+  graphQLRevokeDeviceProductCode,
+  graphQLRotateDeviceProductCode,
   graphQLTransferDeviceProduct,
   graphQLDeviceProduct,
   graphQLCreateDeviceProductJoinKey,
@@ -227,5 +233,73 @@ describe('mergeCredentials', () => {
   it('leaves the state as it is when nothing changes', () => {
     const merged = reducers.mergeCredentials(store, { accountId: 'org', productId: 'p1', credentials })
     expect(reducers.mergeCredentials(merged, { accountId: 'org', productId: 'p1', credentials })).toBe(merged)
+  })
+})
+
+describe('replacing a registration code keeps at most two in use', () => {
+  const coded = {
+    id: 'p3',
+    name: 'Gateway',
+    services: [],
+    registrationCodes: [
+      { code: 'C3', created: '2026-11-13T03:00:00Z', revoked: null },
+      { code: 'C2', created: '2026-11-13T02:00:00Z', revoked: null },
+      { code: 'C1', created: '2026-11-13T01:00:00Z', revoked: null },
+      { code: 'C0', created: '2026-11-13T00:00:00Z', revoked: '2026-11-13T00:30:00Z' },
+    ],
+  }
+  const codedState = { products: { acct: { initialized: true, fetching: false, all: [coded], selected: [] } } }
+  const rotated = { data: { data: { rotateDeviceProductCode: { code: 'C4' } } } }
+  const revoked = { data: { data: { revokeDeviceProductCode: { code: 'C' } } } }
+
+  it('keeps the replaced code and revokes the older ones the API would keep', async () => {
+    graphQLRotateDeviceProductCode.mockResolvedValue(rotated)
+    graphQLRevokeDeviceProductCode.mockResolvedValue(revoked)
+
+    expect(await effects().rotateCode({ productId: 'p3' }, codedState)).toBe(true)
+    expect(graphQLRevokeDeviceProductCode.mock.calls).toEqual([
+      ['p3', 'C2'],
+      ['p3', 'C1'],
+    ])
+    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({ productId: 'p3', accountId: 'acct' })
+  })
+
+  it('revokes the replaced code too with revokePrevious', async () => {
+    graphQLRotateDeviceProductCode.mockResolvedValue(rotated)
+    graphQLRevokeDeviceProductCode.mockResolvedValue(revoked)
+
+    await effects().rotateCode({ productId: 'p3', revokePrevious: true }, codedState)
+
+    expect(graphQLRevokeDeviceProductCode.mock.calls.map(([, code]) => code)).toEqual(['C3', 'C2', 'C1'])
+  })
+
+  it('revokes nothing when the new code was not issued', async () => {
+    graphQLRotateDeviceProductCode.mockResolvedValue('ERROR')
+
+    expect(await effects().rotateCode({ productId: 'p3', revokePrevious: true }, codedState)).toBe(false)
+    expect(graphQLRevokeDeviceProductCode).not.toHaveBeenCalled()
+  })
+})
+
+describe('rotating a product with join keys leaves earlier reusable codes active', () => {
+  const registrationCodes = ['C3', 'C2', 'C1'].map(code => ({ code, created: '2026-11-13T00:00:00Z' }))
+  const codedState = {
+    products: { acct: { ...state.products.acct, all: [{ ...pump, registrationCodes, joinKeys: [joinKey] }] } },
+  }
+
+  it('keeps every earlier code active by default', async () => {
+    graphQLRotateDeviceProductCode.mockResolvedValue({ data: { data: { rotateDeviceProductCode: { code: 'C4' } } } })
+
+    expect(await effects().rotateCode({ productId: pump.id }, codedState)).toBe(true)
+    expect(graphQLRevokeDeviceProductCode).not.toHaveBeenCalled()
+    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({ productId: pump.id, accountId: 'acct' })
+  })
+
+  it('revokes just the current code when selected', async () => {
+    graphQLRotateDeviceProductCode.mockResolvedValue({ data: { data: { rotateDeviceProductCode: { code: 'C4' } } } })
+    graphQLRevokeDeviceProductCode.mockResolvedValue({ data: { data: { revokeDeviceProductCode: { code: 'C3' } } } })
+
+    expect(await effects().rotateCode({ productId: pump.id, revokePrevious: true }, codedState)).toBe(true)
+    expect(graphQLRevokeDeviceProductCode.mock.calls).toEqual([[pump.id, 'C3']])
   })
 })

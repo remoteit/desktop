@@ -16,7 +16,7 @@ const state = { ui: { layout: { singlePanel: false }, columnWidths: {} }, auth: 
 vi.mock('../../store', () => ({
   store: { getState: () => state, dispatch: { ui: { set: uiSet, deprecated: vi.fn() } } },
 }))
-vi.mock('../../services/remoteit', () => ({ apiHeaders: vi.fn().mockResolvedValue({ authorization: 'token' }) }))
+vi.mock('../../services/remoteit', () => ({ apiRequest: vi.fn((_method, _url, send) => send({ authorization: 'token' })) }))
 vi.mock('../../helpers/apiHelper', () => ({
   getApiURL: () => 'https://cloud.solo.remote.it/api/graphql',
   getApiRestURL: () => 'https://cloud.solo.remote.it/api',

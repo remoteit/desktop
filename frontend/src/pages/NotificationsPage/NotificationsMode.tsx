@@ -6,6 +6,7 @@ import { ListItemSwitch } from '../../components/ListItemSwitch'
 import { ListItemSetting } from '../../components/ListItemSetting'
 import { PushCategoryList } from '../../components/PushCategoryList'
 import { ProductNotificationsSetting } from '../../components/ProductNotificationsSetting'
+import { OrganizationNotifications } from './OrganizationNotifications'
 import { Link } from '../../components/Link'
 import { Quote } from '../../components/Quote'
 import { useDispatch, useSelector } from 'react-redux'
@@ -110,6 +111,7 @@ export const NotificationMode: React.FC = () => {
           disabled={pushNotifications === false}
           onChange={pushCategories => updateNotificationSettings({ ...metadata, pushCategories })}
         />
+        <OrganizationNotifications disabled={pushNotifications === false} />
         <ListItemSwitch
           label={t('settings.notifyEmail', 'Email')}
           icon="envelope"

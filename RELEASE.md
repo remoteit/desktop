@@ -92,12 +92,20 @@ publishes into it. Checking `build_main` builds `main` itself instead; that, and
 a run on any other branch, compiles and discards everything, so with
 `skip_signing` off the `prepare` job refuses to start rather than pay for
 signatures nobody receives.
+Which certificate signs a Windows build, and how the result is checked, is under
+[Windows code signing](#windows-code-signing).
+
+The backend's Airbrake project comes from the `AIRBRAKE_PROJECT_ID` repository
+variable and the `AIRBRAKE_PROJECT_KEY` secret, not the repository (locally, from
+`.env`): `electron/scripts/airbrake.js` writes them into the packaged
+`package.json`, and a build without them warns and reports nothing. Rotate the
+key in that secret.
 
 A `prepare` job first resolves the release repository for the selected brand
 (`brands/<brand>/config.ts` — `cachengo` publishes to `cachengo/desktop`) and
 creates the **draft** release there for the version (on tag builds only; if
 that version is already published it fails, so bump the version), then a
-matrix of ubuntu-latest / macos-14 / windows-latest reads
+matrix of ubuntu-latest / macos-15 / windows-latest reads
 the version from `package.json` (not from the tag) and attaches the installers
 to it. The draft is created up front on purpose: electron-builder otherwise
 creates it lazily from whichever runner uploads first, and concurrent runners
@@ -109,7 +117,9 @@ reaches the repository the workflow runs in, so a tag build for a brand that
 publishes elsewhere needs the `RELEASE_TOKEN` secret (a token with write access
 there); `prepare` checks it before anything is built, and it is used only for
 that repository — a same-repository build keeps the automatic token. Branch
-builds publish nothing, skip the check, and never touch a draft. Node comes from `.nvmrc` — electron-builder
+builds publish nothing, skip the check, and never touch a draft: electron-builder runs with
+`--publish onTag`, because its CI default uploads into any draft of the same version, which put a
+branch build's unsigned installers into the 4.0.0 draft. Node comes from `.nvmrc` — electron-builder
 needs Node >= 20.19 / 22.12, so don't pin it lower.
 
 Windows ships three installers, one per arch (`-ia32`, `-x64`, `-arm64`), and
@@ -229,6 +239,55 @@ back into `main` first.
 Amplify builds the branch from `amplify.yml` in this repo. A branch that
 contains it ignores the build settings in the Amplify console.
 
+## Windows code signing
+
+electron-builder reads a config file _instead of_ package.json's `build`, never
+both, so `electron/electron-builder.config.js` spreads the branded `build` and
+adds only the signing part, chosen from the environment by
+`electron/scripts/win-signing.js`:
+
+- **`SKIP_SIGNING=true`** (the `skip_signing` input): no signing configuration
+  at all. Nothing is signed and nothing is verified. The config file also loads
+  `electron/.env`, which electron-builder itself would not, so a local build
+  that sets it there is unsigned too.
+- **`AZURE_SIGN_*` set**: `win.azureSignOptions` — Microsoft Artifact Signing.
+- **Otherwise**: package.json's `build` untouched, i.e. the SSL.com eSigner hook
+  in `scripts/sign.js`.
+
+The Azure side is four repository **variables** — `AZURE_SIGN_ENDPOINT` (the
+per-region URL, e.g. `https://wus2.codesigning.azure.net`), `AZURE_SIGN_ACCOUNT`,
+`AZURE_SIGN_PROFILE`, and `AZURE_SIGN_PUBLISHER` (the certificate subject,
+verbatim) — and three **secrets** for `azure/login`: `AZURE_CLIENT_ID`,
+`AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`. Login is OIDC through the `signing`
+environment the `release` job runs in, so there is no client secret anywhere.
+Setting all four variables is the switch; unset, SSL.com keeps signing; set only
+some of them and the build fails rather than guess.
+
+An Azure-signed build also writes `publisherName` into the app's
+`app-update.yml`: the new subject and the SSL.com name `remot3.it, Inc.`. From
+that build on, the updater verifies the **next** installer's signature against
+that list before running it. Nothing shipped since 3.15 verifies anything today
+(the eSigner hook gave electron-builder no certificate to derive a name from), so
+the first Azure-signed release installs everywhere and the second is the one that
+proves the list. Keep the SSL.com name in the list until that certificate is
+retired, so a hotfix signed with it still installs over an Azure-signed release.
+
+After every signed Windows build, `verify-win-installers.js` runs
+`Get-AuthenticodeSignature` — the cmdlet electron-updater's own check is built
+on — over each installer and the executables inside its payload
+(`Remote.It.exe`, `remoteit.exe`, `connectd.exe`, `muxer.exe`, `demuxer.exe`;
+electron-builder signs all of them) and reports any signature that is not valid,
+timestamped, and from an expected publisher. Under Azure that fails the build
+and removes the installers from the draft; under SSL.com it is a `::warning::`
+annotation only, because eSigner bills per signature and a finding must never
+force a re-sign. This is the guard; electron-builder's `forceCodeSigning` cannot
+be, since it only fires when no signing configuration exists at all. The
+expected publisher is `AZURE_SIGN_PUBLISHER` when set and the SSL.com name
+otherwise — under Azure the SSL.com name is *not* accepted, so a build that was
+still signed by eSigner cannot pass as migrated — matched by electron-updater's
+rule: a full distinguished name must agree on every attribute it lists, a bare
+name must equal the certificate's CN.
+
 ## Windows installer payloads
 
 The app payload inside each NSIS installer is a 7z archive that NSIS extracts with
@@ -279,6 +338,30 @@ along with the uninstaller entry), and an explicit `/D=` is never overridden.
 It also migrates a machine that already sits in the default (x86) folder on its
 next update, since the old install is uninstalled first.
 Every currently-ia32 machine takes this hop when it goes native.
+
+## The agent binary on Windows updates
+
+electron-builder copies the new payload over the install folder and retries a locked file five
+times. After that, its "cannot be closed" dialog's Retry, and the silent default, extract again
+with errors ignored, so a locked file keeps its old version and nothing reports it. The 4.0.1
+update left a test machine with every file new except `resources\remoteit.exe`, still the 4.1.0
+agent; which process held it was not caught. The app then asked to install the agent, which
+cannot help: that only reinstalls the service from the file already on disk.
+
+`customUnInstallCheck` runs after the old uninstaller and before the copy. When the `it.remote.cli`
+service runs from this folder it is disabled, so a crash-recovery restart cannot start it again
+mid-copy, and asked to stop; after about three seconds any process still running from
+`resources\` is ended, and one that survives ten seconds is logged as still running.
+`customInstall` sets a disabled service back to automatic before the agent is reinstalled. Both
+steps are in the installer log (`%TEMP%\remoteit.log`). An install cancelled between the two
+leaves the service disabled until the next install.
+
+Defining `customUnInstallCheck` replaces electron-builder's own check of the old uninstaller's
+result (`handleUninstallResult` in `app-builder-lib/templates/nsis/include/installUtil.nsh`), so the
+macro repeats it. After an electron-builder upgrade, compare the two.
+
+To check a machine after an update, compare `resources\remoteit.exe`'s version (`remoteit version`)
+with `cli` in `electron/src/backend/binary-versions.json` for that release.
 
 ## Windows update manifests
 

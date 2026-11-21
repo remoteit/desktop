@@ -73,6 +73,7 @@ declare global {
     // App/settings
     | 'navigate'
     | 'maximize'
+    | 'open'
     | 'showFolder'
     | 'filePrompt'
     | 'cancelBluetooth'
@@ -162,6 +163,15 @@ declare global {
     path: string
     version: string
     installedVersion?: string
+    outdated?: AgentOutdated
+  }
+
+  interface AgentOutdated {
+    agentVersion?: string
+    arch: string
+    releaseUrl: string
+    installerLog: string
+    appLog: string
   }
 
   interface UserCredentials {
