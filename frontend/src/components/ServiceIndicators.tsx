@@ -26,7 +26,23 @@ export const ServiceIndicators: React.FC<Props> = ({ device, services = [], conn
   const display = services.slice(0, MAX_INDICATORS)
 
   return (
-    <Box zIndex={3} position="relative" onClick={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
+    <Box
+      sx={{
+        position: 'relative',
+        zIndex: 3,
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        minWidth: 0,
+        gap: '2px',
+        py: '2px',
+        whiteSpace: 'normal',
+        overflowWrap: 'anywhere',
+        '& > *': { maxWidth: '100%' },
+      }}
+      onClick={e => e.stopPropagation()}
+      onMouseDown={e => e.stopPropagation()}
+    >
       {display.map(service => (
         <ServiceMiniState
           key={service.id}
@@ -43,7 +59,6 @@ export const ServiceIndicators: React.FC<Props> = ({ device, services = [], conn
           size="small"
           color="primary"
           onClick={() => history.push(`/devices/${device.id}`)}
-          sx={{ marginLeft: 0.5 }}
         />
       )}
     </Box>

@@ -77,10 +77,8 @@ export const DeviceListItem: React.FC<Props> = ({
         required={
           mobile && service ? (
             <MobileServiceName {...{ mobile, device, service, connection, connections, duplicateName }} />
-          ) : (
-            !duplicateName && (
-              <AttributeValueMemo {...{ mobile, device, service, connection, connections, attribute: required }} />
-            )
+          ) : duplicateName ? null : (
+            <AttributeValueMemo {...{ mobile, device, service, connection, connections, attribute: required }} />
           )
         }
         disableGutters

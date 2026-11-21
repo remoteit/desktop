@@ -17,12 +17,12 @@ const FADE_SIZE = 30
    holding a strip back there leaves a hard band of un-faded content where no bar is —
    which is what the old painted gradients did. A classic bar does reserve the strip,
    and nothing else is painted under it, so holding it solid costs nothing there. */
-const fadeMask = (direction: 'to bottom' | 'to right', fadeStart: boolean, gutter: number) => {
+const fadeMask = (fadeStart: boolean, gutter: number) => {
   const start = fadeStart ? `transparent, black ${FADE_SIZE}px` : 'black'
   const end = gutter
     ? `black calc(100% - ${FADE_SIZE + gutter}px), transparent calc(100% - ${gutter}px), black calc(100% - ${gutter}px)`
     : `black calc(100% - ${FADE_SIZE}px), transparent`
-  return `linear-gradient(${direction}, ${start}, ${end})`
+  return `linear-gradient(to bottom, ${start}, ${end})`
 }
 
 /* How wide the scrollbars actually are on this surface — 0 for overlay bars. Watched
@@ -85,11 +85,8 @@ export const Body: React.FC<BodyProps> = ({
     },
     [bodyRef]
   )
-  const masks = [
-    verticalOverflow && fadeMask('to bottom', !!fadeTop, gutter),
-    horizontalOverflow && fadeMask('to right', false, gutter),
-  ].filter(Boolean)
-  const mask = masks.join(', ')
+  // Scrollbars mark overflow on table surfaces without obscuring the last row or column.
+  const mask = verticalOverflow && !horizontalOverflow && fadeMask(!!fadeTop, gutter)
 
   return (
     <Box
@@ -97,29 +94,25 @@ export const Body: React.FC<BodyProps> = ({
       className={className}
       style={maxHeight ? { maxHeight } : undefined}
       sx={[
-        theme => scrollbarStyles(theme, { background: bg, width: scrollbarWidth }),
+        theme => scrollbarStyles(theme, { background: bg, width: scrollbarWidth, showThumb: horizontalOverflow }),
         mask
           ? {
               // -webkit- first so the standard property wins where both are understood
               WebkitMaskImage: mask,
               maskImage: mask,
-              WebkitMaskComposite: 'source-in',
-              maskComposite: 'intersect',
             }
           : {},
-        theme => ({
+        {
           flexGrow: 1,
           height: '100%',
-          overflow: verticalOverflow && horizontalOverflow ? 'scroll' : 'auto',
+          overflow: 'auto',
           overscrollBehaviorX: 'none',
           position: 'relative',
           WebkitOverflowScrolling: 'touch',
-          [theme.breakpoints.down('sm')]: {
-            overflowX: 'hidden',
-          },
-          // forces right scrollbar to appear (overflow: scroll causes extra padding)
-          ...(horizontalOverflow ? { '& > *:first-of-type': { minHeight: '100.1%' } } : {}),
-        }),
+        },
+        horizontalOverflow
+          ? { containerType: 'inline-size', containerName: 'scroll-body' }
+          : theme => ({ [theme.breakpoints.down('sm')]: { overflowX: 'hidden' } }),
         flex
           ? {
               display: 'flex',

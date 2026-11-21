@@ -1,5 +1,5 @@
 import React from 'react'
-import { radius, spacing, toSxArray } from '../styling'
+import { spacing, toSxArray } from '../styling'
 import { Box, ListItemIcon, ListItemButton, ListItemButtonProps } from '@mui/material'
 
 type Props = ListItemButtonProps & {
@@ -11,7 +11,8 @@ type Props = ListItemButtonProps & {
 }
 
 export const GridListItem: React.FC<Props> = ({ required, icon, mobile, stickyCenter, children, sx, ...props }) => {
-  const hasSticky = !!(icon || required)
+  // A null value leaves a blank cell in the required column of a grouped row.
+  const hasSticky = !!icon || required !== undefined
 
   return (
     <ListItemButton
@@ -20,14 +21,12 @@ export const GridListItem: React.FC<Props> = ({ required, icon, mobile, stickyCe
           borderTopLeftRadius: 0,
           borderBottomLeftRadius: 0,
           width: '100%',
-          '&:hover': {
+          backgroundColor: theme.palette.white.main,
+          '&:hover, &.Mui-focusVisible, &.Mui-selected, &.Mui-selected.Mui-focusVisible': {
             backgroundColor: theme.palette.primaryHighlight.main,
           },
-          '&:hover > div:first-of-type, &.Mui-selected > div:first-of-type': {
-            backgroundImage: `linear-gradient(90deg, ${theme.palette.primaryHighlight.main} 95%, transparent)`,
-          },
-          '&.Mui-selected:hover > div:first-of-type': {
-            backgroundImage: `linear-gradient(90deg, ${theme.palette.primaryLighter.main} 95%, transparent)`,
+          '&.Mui-selected:hover': {
+            backgroundColor: theme.palette.primaryLighter.main,
           },
           '& > div:first-of-type > div': {
             width: '100%',
@@ -39,20 +38,19 @@ export const GridListItem: React.FC<Props> = ({ required, icon, mobile, stickyCe
     >
       {hasSticky && (
         <Box
+          className="GridList-pinned"
           sx={[
-            theme => ({
+            {
               position: 'sticky',
               left: 0,
               zIndex: 4,
               display: 'flex',
               alignItems: 'start !important',
-              borderTopRightRadius: radius.lg,
-              borderBottomRightRadius: radius.lg,
-              backgroundImage: `linear-gradient(90deg, ${theme.palette.white.main} 95%, transparent)`,
+              backgroundColor: 'inherit',
               overflow: 'visible',
               paddingLeft: `${spacing.md}px`,
               height: '100%',
-            }),
+            },
             stickyCenter ? { justifyContent: 'center', paddingLeft: 0 } : {},
           ]}
         >
