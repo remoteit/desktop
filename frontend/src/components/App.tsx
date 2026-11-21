@@ -7,6 +7,8 @@ import { persistor } from '../store'
 import { useLocation, useRouteMatch } from 'react-router-dom'
 import { PersistGate } from 'redux-persist/integration/react'
 import { selectResellerRef } from '../selectors/organizations'
+import { selectShowOrganizations } from '../selectors/accounts'
+import { selectIsAdminRouteMode } from '../selectors/ui'
 import { useSelector, useDispatch } from 'react-redux'
 import { REGEX_FIRST_PATH, TERMINAL_PATH } from '../constants'
 import { State, Dispatch } from '../store'
@@ -49,7 +51,8 @@ export const App: React.FC = () => {
   const user = useSelector((state: State) => state.auth.user)
   const installed = useSelector((state: State) => state.binaries.installed)
   const waitMessage = useSelector((state: State) => state.ui.waitMessage)
-  const showOrgs = useSelector((state: State) => !!state.accounts.membership.length || !!state.accounts.standaloneOrganizations)
+  const adminMode = useSelector((state: State) => selectIsAdminRouteMode(state, location.pathname))
+  const showOrgs = useSelector(selectShowOrganizations) && !adminMode
   const chatEnabled = useChatEnabled()
   const chatDocked = useChatDocked()
   // In an app, the machine the page runs on (services/thisDevice); null in a plain browser.
@@ -57,7 +60,7 @@ export const App: React.FC = () => {
   // organization.initialized flips exactly when the user's license limits have been parsed,
   // so it is the one signal that chatEnabled has been RESOLVED rather than merely not yet loaded
   const chatEntitlementResolved = useSelector((state: State) => state.organization.initialized)
-  const sidebarWidth = useSidebarWidth()
+  const sidebarWidth = useSidebarWidth(showOrgs)
   const reseller = useSelector(selectResellerRef)
   const dispatch = useDispatch<Dispatch>()
   // Breakpoints measure the EFFECTIVE width — the window minus the docked chat
