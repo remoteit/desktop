@@ -6,39 +6,38 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // What the app shows signed out: in an app (a shell's thisDevice present) This device, the sign-in on it; in a plain
 // browser the sign-in screen, as before; signed in, the portal in either.
 
-const { state, device, viewport, mark } = vi.hoisted(() => ({
+const { state, device, viewport, mark, setUi } = vi.hoisted(() => ({
   state: { current: {} as any },
   device: { current: undefined as any },
-  viewport: { mobile: false },
+  viewport: { width: 1440 },
   mark: (name: string) => () => React.createElement('div', { 'data-shown': name }),
+  setUi: vi.fn(),
 }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (_k: string, text: string) => text }) }))
+vi.mock('react-i18next', async importOriginal => ({
+  ...(await importOriginal<typeof import('react-i18next')>()),
+  useTranslation: () => ({ t: (_k: string, text: string) => text }),
+}))
 vi.mock('react-redux', () => ({
   useSelector: (pick: any) => pick(state.current),
-  useDispatch: () => ({ ui: { set: vi.fn() } }),
+  useDispatch: () => ({ ui: { set: setUi } }),
 }))
 vi.mock('redux-persist/integration/react', () => ({ PersistGate: ({ children }: any) => <>{children}</> }))
 vi.mock('../store', () => ({ persistor: {} }))
-vi.mock('../services/browser', () => ({ default: { isMobile: false } }))
+vi.mock('../services/browser', () => ({ default: { isMobile: false }, getLocalStorage: vi.fn() }))
+vi.mock('../models/backend', () => ({ NOTICE_VERSION_ID: 'notice' }))
+vi.mock('../styling/theme', () => ({ getTheme: vi.fn() }))
 vi.mock('../hooks/useSafeArea', () => ({ default: () => ({ insets: {} }) }))
 vi.mock('../hooks/useCapacitor', () => ({ default: () => () => {} }))
-vi.mock('../hooks/useChatEnabled', () => ({
-  useChatEnabled: () => false,
-  useChatDocked: () => false,
-  useSidebarWidth: () => 200,
-  useLayoutBreakpoints: () => ({
-    hideSidebar: viewport.mobile,
-    singlePanel: false,
-    triplePanel: false,
-    mobile: viewport.mobile,
-  }),
+vi.mock('../hooks/useViewportWidth', () => ({
+  useViewportSelect: (select: (width: number) => unknown) => select(viewport.width),
+  useViewportWiderThan: (width: number) => viewport.width >= width,
 }))
 vi.mock('../hooks/useThisDevice', () => ({ useThisDevice: () => device.current }))
-vi.mock('../selectors/organizations', () => ({ selectResellerRef: () => undefined }))
-vi.mock('../selectors/accounts', () => ({ selectShowOrganizations: () => false }))
-vi.mock('../selectors/ui', () => ({ selectIsAdminRouteMode: () => false }))
+vi.mock('../selectors/organizations', () => ({
+  selectResellerRef: () => undefined,
+  selectUserLimitsLookup: () => ({}),
+}))
 vi.mock('../services/chatPopout', () => ({ isChatPopout: false }))
-vi.mock('../constants', () => ({ REGEX_FIRST_PATH: /^\/[^/]*/, TERMINAL_PATH: '/terminal' }))
 vi.mock('./InstallationNotice', () => ({ InstallationNotice: mark('installation') }))
 vi.mock('./LoadingMessage', () => ({ LoadingMessage: mark('loading') }))
 vi.mock('./ResellerLogo', () => ({ ResellerLogo: mark('reseller') }))
@@ -57,14 +56,20 @@ vi.mock('./AnnouncementDialog', () => ({ AnnouncementDialog: () => null }))
 vi.mock('./AnnouncementBanner', () => ({ AnnouncementBanner: () => null }))
 
 import { App } from './App'
+import { ORGANIZATION_BAR_WIDTH, SIDEBAR_WIDTH } from '../constants'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
-async function shown(auth: { authenticated: boolean; user?: object }, thisDevice: any, path = '/devices') {
+async function shown(
+  auth: { authenticated: boolean; user?: object },
+  thisDevice: any,
+  path = '/devices',
+  accounts: object = {}
+) {
   state.current = {
     auth: { initialized: true, ...auth },
     binaries: { installed: true },
     ui: {},
-    accounts: { membership: [] },
+    accounts: { membership: [], ...accounts },
     organization: { initialized: true },
   }
   device.current = thisDevice
@@ -84,7 +89,8 @@ const shell = { compatible: true, has: () => true }
 
 beforeEach(() => {
   device.current = undefined
-  viewport.mobile = false
+  viewport.width = 1440
+  setUi.mockClear()
 })
 
 describe('the app, signed out', () => {
@@ -113,9 +119,25 @@ describe('the app, signed in', () => {
   })
 
   it('shows mobile navigation on the device list and opens the terminal without portal chrome', async () => {
-    viewport.mobile = true
+    viewport.width = 400
     const auth = { authenticated: true, user: { id: 'U' } }
     expect(await shown(auth, null)).toEqual(['sidebarMenu', 'router', 'bottomMenu'])
     expect(await shown(auth, null, '/terminal?name=console')).toEqual(['router'])
+  })
+
+  it('reserves the Organizations rail width for a standalone account without memberships', async () => {
+    await shown({ authenticated: true, user: { id: 'U' } }, null, '/networks', { standaloneOrganizations: true })
+    expect(setUi).toHaveBeenLastCalledWith({
+      layout: expect.objectContaining({ showOrgs: true, sidePanelWidth: SIDEBAR_WIDTH + ORGANIZATION_BAR_WIDTH }),
+    })
+  })
+
+  it('reserves only the sidebar width on an admin route even for an organization member', async () => {
+    await shown({ authenticated: true, user: { id: 'U', admin: true } }, null, '/admin/users', {
+      membership: [{ account: { id: 'org' } }],
+    })
+    expect(setUi).toHaveBeenLastCalledWith({
+      layout: expect.objectContaining({ showOrgs: false, sidePanelWidth: SIDEBAR_WIDTH }),
+    })
   })
 })
