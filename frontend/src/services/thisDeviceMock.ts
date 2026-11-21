@@ -325,7 +325,10 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             if (held) throw new BridgeError('refused', `held: ${held}`)
             if (method !== 'exitNode.list' && options.exitNode?.confirm === false)
               throw new BridgeError('cancelled', 'the administrator’s confirmation was cancelled')
-            if (method === 'exitNode.list') return { exits: bridge.exitNode.exits, runs: bridge.exitNode.runs }
+            if (method === 'exitNode.list') {
+              const runs = bridge.exitNode.runs
+              return { exits: bridge.exitNode.exits, runs: runs && { ...runs, checks: null } }
+            }
             if (options.exitNode?.refusal) throw new BridgeError('refused', options.exitNode.refusal)
             let exit = bridge.exitNode.exits.find(x => x.id === a.id)
             const created = method === 'exitNode.create'

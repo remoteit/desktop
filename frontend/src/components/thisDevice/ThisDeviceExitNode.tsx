@@ -50,15 +50,18 @@ export const ThisDeviceExitNode: React.FC<{
   const [joined, setJoined] = useState<{ id: string; checks?: ExitNodeCheck[] | null; turnedOn: boolean }>()
   const [choosing, setChoosing] = useState(false)
   const listedAt = useRef(0)
+  const listAsked = useRef(0)
   const held = status.held
 
   const load = useCallback(async () => {
+    const ask = ++listAsked.current
     listedAt.current = Date.now()
     setListError(undefined)
     try {
-      setList(await device.call('exitNode.list', {}))
+      const next = await device.call('exitNode.list', {})
+      if (ask === listAsked.current) setList(next)
     } catch (e: any) {
-      setListError(e?.message || String(e))
+      if (ask === listAsked.current) setListError(e?.message || String(e))
     }
   }, [device])
 
@@ -102,10 +105,11 @@ export const ThisDeviceExitNode: React.FC<{
       if (e?.code !== 'cancelled') load()
       throw e
     })
+    listAsked.current++
     setJoined({ id: answer.runs.id, checks: answer.runs.checks, turnedOn: answer.turnedOn })
+    setList(l => l && { ...l, runs: answer.runs })
     setChoosing(false)
     if (relist) await load()
-    else setList(l => l && { ...l, runs: answer.runs })
   }
 
   return (
@@ -227,7 +231,6 @@ export const ThisDeviceExitNode: React.FC<{
   )
 }
 
-// The state before there is an exit it runs to say; that one is said in the portal's words (runStateLabel).
 const stateWords = (t: T) => ({
   held: t('thisDevice.exitHeld', 'Not allowed'),
   unknown: t('thisDevice.exitUnknown', 'Unknown'),
@@ -308,17 +311,18 @@ const ChooseExit: React.FC<{
   const [chosen, setChosen] = useState(exits.length ? exits[0].id : NEW)
   const [name, setName] = useState('')
   const [waiting, setWaiting] = useState(false)
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<{ reason: string; creating: boolean }>()
   const exit = exits.find(x => x.id === chosen)
 
   const go = async () => {
+    const creating = chosen === NEW
     setWaiting(true)
     setError(undefined)
     try {
-      if (chosen === NEW) await onCreate(name.trim())
+      if (creating) await onCreate(name.trim())
       else await onJoin(chosen)
     } catch (e: any) {
-      if (e?.code !== 'cancelled') setError(e?.message || String(e))
+      if (e?.code !== 'cancelled') setError({ reason: e?.message || String(e), creating })
     } finally {
       setWaiting(false)
     }
@@ -400,9 +404,9 @@ const ChooseExit: React.FC<{
         </Typography>
         {error && (
           <Alert severity="error" sx={{ marginTop: 2 }} data-note="exit-error">
-            {chosen === NEW
-              ? t('thisDevice.exitNotCreated', 'Couldn’t create the exit. {{reason}}', { reason: error })
-              : t('thisDevice.exitNotJoined', 'Couldn’t join. {{reason}}', { reason: error })}
+            {error.creating
+              ? t('thisDevice.exitNotCreated', 'Couldn’t create the exit. {{reason}}', { reason: error.reason })
+              : t('thisDevice.exitNotJoined', 'Couldn’t join. {{reason}}', { reason: error.reason })}
           </Alert>
         )}
       </DialogContent>

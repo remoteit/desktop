@@ -1192,10 +1192,26 @@ describe('This device’s ssh and exit', () => {
     bridge.exitNode.runs = null
     const now = Date.now()
     const later = vi.spyOn(Date, 'now').mockReturnValue(now + 11000)
-    await act(async () => document.dispatchEvent(new Event('visibilitychange')))
-    later.mockRestore()
+    try {
+      await act(async () => document.dispatchEvent(new Event('visibilitychange')))
+    } finally {
+      later.mockRestore()
+    }
     expect(state(container).getAttribute('data-exit-node-state')).toBe('off')
     expect(container.querySelector('[data-control="exit-check"]')).toBeNull()
+  })
+
+  it('a join is said from its answer, though the list after it fails', async () => {
+    const { container, bridge } = await render({ capabilities: caps, exitNode: { exits, checks } }, { part: 'advanced' })
+    const call = bridge.transport.call
+    bridge.transport.call = (async (method: any, args: any) => {
+      if (method === 'exitNode.list') throw new BridgeError('failed', 'the cloud did not answer')
+      return call(method, args)
+    }) as typeof call
+    await click(container.querySelector('[data-control="exit-choose"]'))
+    await click(dialog()!.querySelector('[data-control="exit-go"]'))
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('failed')
+    expect(container.querySelector('[data-control="exit-check"]')).not.toBeNull()
   })
 
   it('the way to Advanced is there for either alone', async () => {
