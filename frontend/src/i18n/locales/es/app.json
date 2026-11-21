@@ -2843,6 +2843,13 @@
     "totalDevices": "Total de dispositivos",
     "totalNetworks": "Total de redes"
   },
+  "navGroup": {
+    "devices": "",
+    "fleet": "",
+    "network": "",
+    "team": "",
+    "thisDevice": ""
+  },
   "network": {
     "active": "Activo",
     "cloudProxy": "Proxy en la nube",
@@ -4882,6 +4889,10 @@
     "localPortsOnPhone": "",
     "localPortsOnPhoneHint": "",
     "mintError": "Este destino fue rechazado al emitir el token: {{error}}",
+    "navVariant": "",
+    "navVariantClassic": "",
+    "navVariantGrouped": "",
+    "navVariantHint": "",
     "overrideDefaultAPIs": "Anular las API predeterminadas",
     "overrideLicensesAndLimits": "Anular licencias y límites",
     "proxyFleet": "",
