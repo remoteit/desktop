@@ -124,6 +124,9 @@ export const DEVICE_SESSIONS_DEFAULT = env.VITE_DEVICE_SESSIONS === 'on'
 // are; hooks/useVirtualDevices.
 export const VIRTUAL_DEVICES_DEFAULT = env.VITE_VIRTUAL_DEVICES === 'on'
 export const DEVICE_DOWNLOADS_URL = (env.VITE_DEVICE_DOWNLOADS_URL || 'https://downloads.remote.it/device').replace(/\/+$/, '')
+export const DEVICE_IOS_INSTALL_URL = env.VITE_IOS_INSTALL_URL || ''
+export const DEVICE_ANDROID_INSTALL_URL = env.VITE_ANDROID_INSTALL_URL || ''
+
 // The data plane defaults to the resource we mint for rather than to a fixed stage — otherwise an
 // install that sets only the OIDC vars calls one stage with another stage's token and 401s with
 // nothing in the UI explaining why. Set VITE_GRAPHQL_API (or pick a stage in Test Settings) to

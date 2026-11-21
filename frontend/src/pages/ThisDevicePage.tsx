@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { useRouteMatch } from 'react-router-dom'
 import { State } from '../store'
 import { Container } from '../components/Container'
+import { DeviceRegistration } from '../components/thisDevice/DeviceRegistration'
 import { ThisDeviceSignIn } from '../components/ThisDeviceSignIn'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceContext } from '../services/Context'
@@ -77,6 +78,11 @@ export const ThisDevicePage: React.FC = () => {
               signedIn ? shown => <TransferUsageHint accountId={userId} kind="exit" shown={shown} /> : undefined
             }
             readExits={signedIn ? readCloudExits : undefined}
+            renderRegistration={
+              signedIn && device.has('registration')
+                ? status => <DeviceRegistration device={device} status={status} />
+                : undefined
+            }
           />
         </>
       )}

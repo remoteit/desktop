@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
-import { useMediaQuery, Typography, Box, Stack, Divider, Theme, Chip } from '@mui/material'
+import { useMediaQuery, Typography, Box, Stack, Divider, Theme, Chip, Button } from '@mui/material'
 import { AddPlatformServices } from '../components/AddPlatformServices'
 import { selectCanRegister } from '../selectors/organizations'
 import { AddPlatformTags } from '../components/AddPlatformTags'
@@ -10,7 +10,10 @@ import { AddDownload } from '../components/AddDownload'
 import { AddDevice } from '../components/AddDevice'
 import { platforms } from '../platforms'
 import { withDevicePackage } from '../platforms/devicePackage'
+import { DeviceInstaller } from '../components/DeviceInstaller'
+import { hasDeviceInstaller, isPhoneInstaller } from '../services/deviceOnboarding'
 import { DevicePackageContainer } from '../components/DevicePackageContainer'
+import { DESKTOP_PROTOCOL } from '../constants'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { Notice } from '../components/Notice'
 import { Body } from '../components/Body'
@@ -32,6 +35,10 @@ export const PlatformAddPage: React.FC = () => {
   const [platformTags, setPlatformTags] = useState<string[]>([])
   const [serviceTypes, setServiceTypes] = useState<number[]>(defaultServices)
   const [oneTimeUse, setOneTimeUse] = useState(false)
+  const [commandLine, setCommandLine] = useState(false)
+  const installer = devicePackage && DESKTOP_PROTOCOL === 'remoteit-solo://' && hasDeviceInstaller(platform)
+  const phone = installer && isPhoneInstaller(platform)
+  const showCommand = !phone && (!installer || commandLine)
   const xs = useMediaQuery((theme: Theme) => theme.breakpoints.down('md'))
 
   return (
@@ -52,7 +59,7 @@ export const PlatformAddPage: React.FC = () => {
           flexDirection={{ xs: 'row', md: 'column' }}
         >
           <Icon name={platform} fontSize={100} inlineLeft={xs} platformIcon />
-          {platformObj.installation?.command && canRegister && (
+          {showCommand && platformObj.installation?.command && canRegister && (
             <Stack alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
               {!xs && <Divider sx={{ marginTop: 4, width: '80%' }} />}
               <AddPlatformServices
@@ -112,10 +119,41 @@ export const PlatformAddPage: React.FC = () => {
                 )}
               </Notice>
             </Box>
+          ) : installer ? (
+            <>
+              <DeviceInstaller platform={platform} />
+              {!phone && (
+                <Button sx={{ alignSelf: 'flex-start', mt: 2 }} onClick={() => setCommandLine(shown => !shown)}>
+                  {commandLine
+                    ? t('deviceInstaller.hideCommand', 'Hide command-line setup')
+                    : t('deviceInstaller.command', 'Command-line setup')}
+                </Button>
+              )}
+              {showCommand && platformObj.installation?.command && (
+                <AddDevice
+                  platform={platformObj}
+                  tags={platformTags}
+                  serviceTypes={serviceTypes}
+                  redirect={redirect}
+                  oneTimeUse={oneTimeUse}
+                />
+              )}
+            </>
           ) : platformObj.override ? (
-            <platformObj.override platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} oneTimeUse={oneTimeUse} />
+            <platformObj.override
+              platform={platformObj}
+              tags={platformTags}
+              serviceTypes={serviceTypes}
+              oneTimeUse={oneTimeUse}
+            />
           ) : platformObj.installation?.command && !platformObj.installation?.download ? (
-            <AddDevice platform={platformObj} tags={platformTags} serviceTypes={serviceTypes} redirect={redirect} oneTimeUse={oneTimeUse} />
+            <AddDevice
+              platform={platformObj}
+              tags={platformTags}
+              serviceTypes={serviceTypes}
+              redirect={redirect}
+              oneTimeUse={oneTimeUse}
+            />
           ) : (
             <>
               <AddDownload platform={platformObj} />

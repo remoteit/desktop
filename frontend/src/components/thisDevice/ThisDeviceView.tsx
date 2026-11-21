@@ -1,6 +1,6 @@
 import React from 'react'
 import { Alert, Box } from '@mui/material'
-import { BRIDGE_VERSION, ThisDevice } from '../../services/thisDevice'
+import { BRIDGE_VERSION, DeviceStatus, ThisDevice } from '../../services/thisDevice'
 import { useThisDeviceModel } from './model'
 import { ThisDeviceMain } from './ThisDeviceMain'
 import { ThisDeviceDetails } from './ThisDeviceDetails'
@@ -22,7 +22,8 @@ export const ThisDeviceView: React.FC<{
   renderName?: (uid: string, name: string) => React.ReactNode
   renderExitUsage?: (shown: boolean) => React.ReactNode
   readExits?: ReadCloudExits
-}> = ({ device, signedIn = true, part = 'main', renderName, renderExitUsage, readExits }) => {
+  renderRegistration?: (status: DeviceStatus | undefined) => React.ReactNode
+}> = ({ device, signedIn = true, part = 'main', renderName, renderExitUsage, readExits, renderRegistration }) => {
   const m = useThisDeviceModel(device)
   const { t } = m
 
@@ -52,6 +53,7 @@ export const ThisDeviceView: React.FC<{
           {m.notice}
         </Alert>
       )}
+      {part === 'main' && renderRegistration?.(m.status)}
       {part === 'details' ? (
         <ThisDeviceDetails m={m} />
       ) : part === 'advanced' ? (
