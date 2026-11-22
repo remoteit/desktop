@@ -4,13 +4,20 @@ import { PermissionName, ThisDevice } from '../../services/thisDevice'
 import { useDeviceApps } from '../../hooks/useDeviceApps'
 import { ThisDeviceModel } from './model'
 import { appSettings, SettingRow, SWITCH_TEXT } from './shared'
+import { ThisDeviceExitNode } from './ThisDeviceExitNode'
 
 /* This device's Advanced (pages/ThisDevicePage.tsx, /this-device/advanced): what is changed seldom — what the device
-   offers beyond the three switches (exit node, its apps and their settings, any port, proxy, the relay), a phone's permissions,
-   the app's own Open at login, the detailed logging and the diagnostics, and last its removal. */
+   offers beyond the three switches (exit node, its apps and their settings, any port, proxy, the relay), whether it
+   shares its connection as an exit and the person's ssh (1.12.0), a phone's permissions, the app's own Open at login,
+   the detailed logging and the diagnostics, and last its removal. */
 
-export const ThisDeviceAdvanced: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {
+export const ThisDeviceAdvanced: React.FC<{
+  device: ThisDevice
+  m: ThisDeviceModel
+  exitRunsHref?: (uid: string) => string
+}> = ({ device, m, exitRunsHref }) => {
   const { t, has, status, kind, permissions, logging, app } = m
+  const ssh = status?.ssh
   const d = status?.device
   // Its apps' words, as the API says them (the device by its UID): its settings name none (shared appSettings).
   const { apps } = useDeviceApps(d?.uid, { offers: false })
@@ -51,6 +58,52 @@ export const ThisDeviceAdvanced: React.FC<{ device: ThisDevice; m: ThisDeviceMod
               ))}
             </React.Fragment>
           ))}
+        </List>
+      )}
+
+      {has('exitNode') && status?.exitNode && (
+        <ThisDeviceExitNode
+          device={device}
+          m={m}
+          status={status.exitNode}
+          leaveHref={d?.uid && exitRunsHref ? exitRunsHref(d.uid) : undefined}
+        />
+      )}
+
+      {has('ssh') && ssh && (
+        <List data-section="ssh">
+          {heading(t('thisDevice.sshTitle', 'SSH'))}
+          <ListItem
+            secondaryAction={
+              <Switch
+                edge="end"
+                checked={ssh.on}
+                disabled={m.busy || !!ssh.needsSignIn}
+                inputProps={{ 'aria-label': t('thisDevice.useForSsh', 'Use Remote.It for ssh') }}
+                data-control="ssh"
+                onChange={() =>
+                  m.act(async () => {
+                    const next = await device.call('ssh.set', { on: !ssh.on })
+                    m.setStatus(s => s && { ...s, ssh: next })
+                  })
+                }
+              />
+            }
+          >
+            <ListItemText
+              primary={t('thisDevice.useForSsh', 'Use Remote.It for ssh')}
+              secondary={
+                ssh.needsSignIn
+                  ? t('thisDevice.sshSignIn', 'Sign in to change it.')
+                  : t(
+                      'thisDevice.sshLine',
+                      'Connect with plain ssh to your devices’ addresses. Remote.It signs you in with short-lived certificates.'
+                    )
+              }
+              sx={SWITCH_TEXT}
+              data-ssh={ssh.on ? 'on' : 'off'}
+            />
+          </ListItem>
         </List>
       )}
 

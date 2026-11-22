@@ -13,6 +13,7 @@ export type ThisDevicePart = 'main' | 'details' | 'advanced'
 // signedIn false: nothing of the account's (the device's page in remote.it, renaming it) — the bridge's parts alone.
 // renderName: the device's name as the page draws it, editable where it can be (the page's, signed in); plain without.
 // renderExitUsage: the account's public-exit transfer under the exit picker (the page's, signed in); nothing without.
+// exitRunsHref: the device's page of what it runs, where leaving an exit is (the page's, signed in); nothing without.
 // readExits: what the account knows of the engine's exits — each one's devices counted, the device of the exit in use
 // (the page's, signed in); the engine's list alone without it.
 export const ThisDeviceView: React.FC<{
@@ -23,7 +24,17 @@ export const ThisDeviceView: React.FC<{
   renderExitUsage?: (shown: boolean) => React.ReactNode
   readExits?: ReadCloudExits
   renderRegistration?: (status: DeviceStatus | undefined) => React.ReactNode
-}> = ({ device, signedIn = true, part = 'main', renderName, renderExitUsage, readExits, renderRegistration }) => {
+  exitRunsHref?: (uid: string) => string
+}> = ({
+  device,
+  signedIn = true,
+  part = 'main',
+  renderName,
+  renderExitUsage,
+  readExits,
+  renderRegistration,
+  exitRunsHref,
+}) => {
   const m = useThisDeviceModel(device)
   const { t } = m
 
@@ -57,7 +68,7 @@ export const ThisDeviceView: React.FC<{
       {part === 'details' ? (
         <ThisDeviceDetails m={m} />
       ) : part === 'advanced' ? (
-        <ThisDeviceAdvanced device={device} m={m} />
+        <ThisDeviceAdvanced device={device} m={m} exitRunsHref={exitRunsHref} />
       ) : (
         <ThisDeviceMain
           device={device}
@@ -71,4 +82,3 @@ export const ThisDeviceView: React.FC<{
     </Box>
   )
 }
-

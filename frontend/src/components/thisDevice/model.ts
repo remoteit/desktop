@@ -97,6 +97,9 @@ export const useThisDeviceModel = (device: ThisDevice) => {
   const lan = servicesVia === 'services' ? status?.services : status?.lanServices
   // The printers are under Access, as in the menu's Settings: they are announced at the subnet's names.
   const printers = has('access') ? settings.find(s => s.name === 'printers') : undefined
+  // 1.12.0: the exit node's switch is part of "Shares its connection" where the shell offers the exit's flow.
+  const exitNodeSetting =
+    has('exitNode') && status?.exitNode ? settings.find(s => s.name === 'exit_node') : undefined
   // The settings listed under Advanced: the switches on the page in their place — Access is subnet, the services switch
   // services. lan_services is the setting's earlier name, never listed.
   const listed = settings.filter(
@@ -104,7 +107,8 @@ export const useThisDeviceModel = (device: ThisDevice) => {
       !(s.name === 'subnet' && has('access')) &&
       !(s.name === 'services' && servicesVia) &&
       s.name !== 'lan_services' &&
-      s !== printers
+      s !== printers &&
+      s !== exitNodeSetting
   )
 
   const setSetting = (name: string, value: any) =>
@@ -147,6 +151,7 @@ export const useThisDeviceModel = (device: ThisDevice) => {
     phoneServices: has('permissions'),
     servicesOff: !!servicesVia && !!lan && !lan.on,
     printers,
+    exitNodeSetting,
     listed,
   }
 }

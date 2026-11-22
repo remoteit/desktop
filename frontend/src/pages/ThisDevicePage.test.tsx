@@ -40,6 +40,7 @@ type Props = {
   renderName?: (uid: string, name: string) => React.ReactNode
   renderExitUsage?: (shown: boolean) => React.ReactNode
   readExits?: ReadCloudExits
+  exitRunsHref?: (uid: string) => string
 }
 
 // A part on a mock shell's bridge: another part can be mounted on the same one (mount), as the pages share the machine.
@@ -1027,5 +1028,194 @@ describe('This device’s exits, each with its devices', () => {
       ['US West (remote.it)', '2 devices'],
     ])
     expect(note(container, 'exit.through')).toBe('Going out through e1 now · one of 2 devices')
+  })
+})
+
+// 1.12.0: the menu's two set-once items on Advanced, so they can leave the tray — the person's ssh, and offering this
+// machine as an exit ("Shares its connection") — each only where the shell offers it.
+describe('This device’s ssh and exit', () => {
+  const caps: Capability[] = ['status', 'settings', 'access', 'protect', 'ssh', 'exitNode']
+  const exits = [
+    { id: 'gk3x9q2m7ab1', name: 'Office', devices: 2, inService: 2, users: 5, dormant: false, lan: true },
+    { id: 'g8f2m1qz0ac4', name: 'Spare exit', devices: 0, inService: 0, users: 0, dormant: true, lan: false },
+  ]
+  const checks = [
+    { name: 'health', passed: true, pending: false, reason: 'it is online' },
+    { name: 'nat', passed: false, pending: false, reason: 'it refuses exit flows' },
+  ]
+  const state = (c: HTMLElement) => c.querySelector('[data-exit-node-state]')!
+  const dialog = () => document.body.querySelector('[data-dialog="exit-node"]')
+  const click = (e: Element | null) => act(async () => (e as HTMLElement).click())
+
+  it('nothing of either from a shell before 1.12.0: the exit node a setting, as before', async () => {
+    const { container } = await render({ capabilities: ['status', 'settings', 'access', 'protect'] }, { part: 'advanced' })
+    expect(container.querySelector('[data-section="ssh"]')).toBeNull()
+    expect(container.querySelector('[data-section="exit-node"]')).toBeNull()
+    expect(container.querySelector('[data-section="settings"] [data-setting="exit_node"]')).not.toBeNull()
+  })
+
+  it('turns the person’s ssh on and off; signed out, it is held and says so', async () => {
+    const { container, bridge } = await render({ capabilities: caps }, { part: 'advanced' })
+    const part = container.querySelector('[data-section="ssh"]')!
+    expect(part.textContent).toContain('Use Remote.It for ssh')
+    await click(part.querySelector('[data-control="ssh"] input'))
+    expect(bridge.calls.filter(c => c.method === 'ssh.set').map(c => c.args)).toEqual([{ on: true }])
+    expect(part.querySelector('[data-ssh]')!.getAttribute('data-ssh')).toBe('on')
+    await act(async () => bridge.emit('status', { ...bridge.status, ssh: { on: false } }))
+    expect(part.querySelector('[data-ssh]')!.getAttribute('data-ssh')).toBe('off')
+
+    const out = await render({ capabilities: caps, ssh: { on: true, needsSignIn: true } }, { part: 'advanced' })
+    const held = out.container.querySelector('[data-section="ssh"]')!
+    expect((held.querySelector('[data-control="ssh"] input') as HTMLInputElement).disabled).toBe(true)
+    expect(held.textContent).toContain('Sign in to change it.')
+  })
+
+  it('in place of the bare Exit node row: Off, and its switch inside', async () => {
+    const { container, bridge } = await render({ capabilities: caps, exitNode: { exits } }, { part: 'advanced' })
+    expect(container.querySelector('[data-section="settings"] [data-setting="exit_node"]')).toBeNull()
+    const part = container.querySelector('[data-section="exit-node"]')!
+    expect(part.textContent).toContain('Shares its connection')
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('off')
+    expect(state(container).textContent).toContain('Off')
+    expect(part.querySelector('[data-setting="exit_node"]')!.textContent).toContain('Carry exit traffic')
+    expect(bridge.calls.filter(c => c.method === 'exitNode.list')).toHaveLength(1)
+
+    bridge.status = { ...bridge.status, exitNode: undefined }
+    await act(async () => bridge.emit('status', bridge.status))
+    expect(container.querySelector('[data-section="exit-node"]')).toBeNull()
+    expect(container.querySelector('[data-section="settings"] [data-setting="exit_node"]')).not.toBeNull()
+  })
+
+  it('joins an exit: what joining opens said first, the administrator after, then Joining with its checks', async () => {
+    const { container, bridge } = await render({ capabilities: caps, exitNode: { exits, checks } }, { part: 'advanced' })
+    await click(container.querySelector('[data-control="exit-choose"]'))
+    expect(dialog()!.textContent).toContain('Use this Mac as an exit')
+    expect(dialog()!.querySelector('[data-note="exit-lan-join"]')!.textContent).toBe(
+      'Joining lets this exit’s users reach this Mac’s local network.'
+    )
+    expect(dialog()!.querySelector('[data-note="exit-confirm"]')!.textContent).toContain('Touch ID')
+    await click(dialog()!.querySelector('[data-control="exit-go"]'))
+    expect(bridge.calls.filter(c => c.method === 'exitNode.join').map(c => c.args)).toEqual([{ id: 'gk3x9q2m7ab1' }])
+    expect(dialog()).toBeNull()
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('failed')
+    expect(state(container).textContent).toContain('Joining')
+    expect(container.querySelector('[data-note="check-failed"]')!.textContent).toBe('Failed: it refuses exit flows')
+    expect(container.querySelector('[data-note="exit-lan"]')!.textContent).toBe('Users of Office can reach this Mac’s local network.')
+    await click(container.querySelector('[data-control="exit-check"]'))
+    expect(bridge.calls.filter(c => c.method === 'exitNode.join')).toHaveLength(2)
+  })
+
+  it('creates an exit by the name given', async () => {
+    const { container, bridge } = await render({ capabilities: caps, exitNode: { exits: [] } }, { part: 'advanced' })
+    await click(container.querySelector('[data-control="exit-choose"]'))
+    expect(dialog()!.querySelector('[data-control="exit-go"]')!.textContent).toBe('Create exit')
+    const name = dialog()!.querySelector('[data-control="exit-name"]') as HTMLInputElement
+    expect(name.placeholder).toBe('Mock MacBook exit')
+    await click(dialog()!.querySelector('[data-control="exit-go"]'))
+    expect(bridge.calls.filter(c => c.method === 'exitNode.create').map(c => c.args)).toEqual([{ name: '' }])
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('joining')
+    expect(state(container).textContent).toContain('Joining')
+  })
+
+  it('the administrator’s no says nothing; the cloud’s refusal is said in the dialog', async () => {
+    const no = await render({ capabilities: caps, exitNode: { exits, confirm: false } }, { part: 'advanced' })
+    await click(no.container.querySelector('[data-control="exit-choose"]'))
+    await click(dialog()!.querySelector('[data-control="exit-go"]'))
+    expect(dialog()!.querySelector('[data-note="exit-error"]')).toBeNull()
+    await click(document.body.querySelector('[data-dialog="exit-node"] button'))
+    expect(dialog()).toBeNull()
+
+    const { container, bridge } = await render(
+      { capabilities: caps, exitNode: { exits, refusal: 'it runs Office, where 2 devices use it.' } },
+      { part: 'advanced' }
+    )
+    await click(container.querySelector('[data-control="exit-choose"]'))
+    await click(dialog()!.querySelector('[data-control="exit-go"]'))
+    expect(dialog()!.querySelector('[data-note="exit-error"]')!.textContent).toBe(
+      'Couldn’t join. it runs Office, where 2 devices use it.'
+    )
+    expect(bridge.calls.filter(c => c.method === 'exitNode.list')).toHaveLength(2)
+    await click(document.body.querySelector('[data-dialog="exit-node"] button'))
+    expect(dialog()).toBeNull()
+  })
+
+  it('what it runs, in one or two words, and the way to leave it where the page gives one', async () => {
+    const words = { active: 'In service', draining: 'Draining', retired: 'Retired' }
+    for (const [s, word] of Object.entries(words)) {
+      const runs = { id: 'gk3x9q2m7ab1', name: 'Office', state: s, joining: false, lan: false }
+      const { container } = await render({ capabilities: caps, exitNode: { exits, runs } }, { part: 'advanced' })
+      expect(state(container).textContent).toContain(word)
+      expect(container.querySelector('[data-control="exit-leave"]')).toBeNull()
+    }
+    const runs = { id: 'gk3x9q2m7ab1', name: 'Office', state: 'active', joining: false, lan: true }
+    const { container } = await render(
+      { capabilities: caps, exitNode: { exits, runs, status: { lanLocal: true } } },
+      { part: 'advanced', exitRunsHref: uid => `#/devices/${uid}/runs` }
+    )
+    expect(container.querySelector('[data-control="exit-leave"]')!.getAttribute('href')).toBe(
+      '#/devices/80:00:00:00:01:0A:BC:DE/runs'
+    )
+    expect(container.querySelector('[data-note="exit-lan"]')!.textContent).toBe(
+      'This Mac decides whether users of Office reach its local network.'
+    )
+  })
+
+  it('held by the machine’s administrator: why, nothing asked of the cloud, no way to join', async () => {
+    for (const [held, line] of [
+      ['forbidden', 'This Mac’s administrator doesn’t allow exits on it.'],
+      ['portal', 'This Mac’s administrator sets this in the portal only.'],
+      ['viewer', 'Your account on this Mac can’t change Remote.It.'],
+    ]) {
+      const { container, bridge } = await render({ capabilities: caps, exitNode: { exits, status: { held } } }, { part: 'advanced' })
+      expect(state(container).textContent).toContain('Not allowed')
+      expect(state(container).textContent).toContain(line)
+      expect(container.querySelector('[data-control="exit-choose"]')).toBeNull()
+      expect(bridge.calls.filter(c => c.method === 'exitNode.list')).toHaveLength(0)
+    }
+  })
+
+  it('held while the page is open: what it listed before is not said', async () => {
+    const runs = { id: 'gk3x9q2m7ab1', name: 'Office', state: 'active', joining: false, lan: true }
+    const { container, bridge } = await render({ capabilities: caps, exitNode: { exits, runs } }, { part: 'advanced' })
+    expect(container.querySelector('[data-note="exit-lan"]')).not.toBeNull()
+    bridge.status = { ...bridge.status, exitNode: { held: 'forbidden' } }
+    await act(async () => bridge.emit('status', bridge.status))
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('held')
+    expect(container.querySelector('[data-note="exit-lan"]')).toBeNull()
+  })
+
+  it('a list that says it runs no exit is believed, after a join on this page too', async () => {
+    const { container, bridge } = await render({ capabilities: caps, exitNode: { exits, checks } }, { part: 'advanced' })
+    await click(container.querySelector('[data-control="exit-choose"]'))
+    await click(dialog()!.querySelector('[data-control="exit-go"]'))
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('failed')
+    bridge.exitNode.runs = null
+    const now = Date.now()
+    const later = vi.spyOn(Date, 'now').mockReturnValue(now + 11000)
+    try {
+      await act(async () => document.dispatchEvent(new Event('visibilitychange')))
+    } finally {
+      later.mockRestore()
+    }
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('off')
+    expect(container.querySelector('[data-control="exit-check"]')).toBeNull()
+  })
+
+  it('a join is said from its answer, though the list after it fails', async () => {
+    const { container, bridge } = await render({ capabilities: caps, exitNode: { exits, checks } }, { part: 'advanced' })
+    const call = bridge.transport.call
+    bridge.transport.call = (async (method: any, args: any) => {
+      if (method === 'exitNode.list') throw new BridgeError('failed', 'the cloud did not answer')
+      return call(method, args)
+    }) as typeof call
+    await click(container.querySelector('[data-control="exit-choose"]'))
+    await click(dialog()!.querySelector('[data-control="exit-go"]'))
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('failed')
+    expect(container.querySelector('[data-control="exit-check"]')).not.toBeNull()
+  })
+
+  it('the way to Advanced is there for either alone', async () => {
+    const { container } = await render({ capabilities: ['status', 'ssh'] })
+    expect(container.querySelector('[data-link="advanced"]')).not.toBeNull()
   })
 })
