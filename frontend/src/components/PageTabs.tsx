@@ -17,7 +17,7 @@ export const PageTabs: React.FC<TabsProps> = ({ sx, children, ...props }) => (
           padding: '6px 0 8px',
           marginRight: 3,
           borderRadius: 0,
-          [theme.breakpoints.down('sm')]: { minHeight: 40 },
+          [theme.breakpoints.down('sm')]: { minHeight: 40, marginRight: 2 },
           '&:hover': { backgroundColor: 'transparent', color: theme.palette.black.main },
           '&.Mui-selected': { backgroundColor: 'transparent', color: theme.palette.black.main },
         },

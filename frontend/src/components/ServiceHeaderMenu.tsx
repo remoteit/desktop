@@ -48,7 +48,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
         <>
           <OutOfBand />
           {layout.mobile && (
-            <Box marginLeft={5} marginTop={2}>
+            <Box marginLeft={4.5} marginTop={2}>
               <ButtonBase onClick={() => history.push(`/devices/${device.id}`)}>
                 <Typography variant="caption">
                   <Icon size="sm" platform={device?.targetPlatform} platformIcon inlineLeft />
