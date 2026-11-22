@@ -112,6 +112,8 @@ type Props = {
   enterDelay?: number
   queueAfter?: string
   sidebar?: boolean
+  /** Keeps the bubble this wide, and against its anchor, so it stays inside a narrow column (the sidebar). */
+  width?: number
   sx?: BoxProps['sx']
   children?: React.ReactNode
 }
@@ -129,6 +131,7 @@ export const GuideBubble: React.FC<Props> = ({
   enterDelay,
   queueAfter,
   sidebar,
+  width,
   sx,
   children,
 }) => {
@@ -192,7 +195,15 @@ export const GuideBubble: React.FC<Props> = ({
 
   return (
     <Tooltip
-      slotProps={{ tooltip: { sx: tipSx }, arrow: { sx: arrowSx }, popper: { sx: popperSx, ...contained } }}
+      slotProps={{
+        tooltip: {
+          sx: width
+            ? [tipSx, { width, maxWidth: width, margin: `${spacing.sm}px 0 !important`, padding: `${spacing.md}px` }]
+            : tipSx,
+        },
+        arrow: { sx: arrowSx },
+        popper: { sx: popperSx, ...contained },
+      }}
       open={open}
       arrow={!hideArrow}
       placement={placement || 'top'}

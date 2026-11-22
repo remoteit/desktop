@@ -5,6 +5,7 @@ import { State } from '../store'
 import { useLocation } from 'react-router-dom'
 import { IconButton, ButtonProps } from '../buttons/IconButton'
 import { selectCanRegister } from '../selectors/organizations'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { Typography, Paper } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { GuideBubble } from './GuideBubble'
@@ -12,12 +13,20 @@ import { spacing } from '../styling'
 
 type Props = ButtonProps & { fab?: boolean; buttonSize: number; sidebar?: boolean }
 
+// The sidebar's width less its gutters: the tip stays inside it, clear of every page's title.
+const SIDEBAR_TIP_WIDTH = 214
+
+/** The "Add a device" tip is for an account with nothing in it yet, read once its list is known. */
+export const showsAddDeviceTip = (devices: { initialized: boolean; total: number }) =>
+  devices.initialized && devices.total === 0
+
 export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, ...props }) => {
   const { t } = useTranslation()
   const location = useLocation()
   const layout = useSelector((state: State) => state.ui.layout)
   const unauthorized = !useSelector(selectCanRegister)
   const disabled = unauthorized || location.pathname === '/add'
+  const empty = useSelector((state: State) => showsAddDeviceTip(selectDeviceModelAttributes(state)))
 
   // The sidebar button stays visible but disabled, so the tooltip can explain the
   // missing permission. The mobile FAB does not: it is a floating primary action
@@ -29,26 +38,22 @@ export const RegisterMenu: React.FC<Props> = ({ fab, buttonSize = 38, sidebar, .
     <GuideBubble
       sidebar={sidebar}
       guide="addDevice"
-      placement="bottom"
+      placement={sidebar ? 'bottom-end' : 'top-end'}
+      width={sidebar ? SIDEBAR_TIP_WIDTH : undefined}
       startDate={GUIDE_START_DATE}
       added={GUIDE_START_DATE}
       enterDelay={400}
-      hide={disabled}
+      hide={disabled || !empty}
       instructions={
         <>
           <Typography variant="h3" gutterBottom>
             <b>{t('registerMenu.guideTitle', 'Add a device')}</b>
           </Typography>
           <Typography variant="body2" gutterBottom>
-            {t(
-              'registerMenu.guideInstallAgent',
-              'First step is to install our agent on any device you would like to connect to.'
-            )}
+            {t('registerMenu.guideInstall', 'Install the Remote.It agent on a device you want to reach.')}
           </Typography>
           <Typography variant="body2" gutterBottom>
-            {t('registerMenu.guideRegistersBefore', 'Your device will automatically register and appear on the')}{' '}
-            <cite>{t('registerMenu.guideDevices', 'devices')}</cite>{' '}
-            {t('registerMenu.guideRegistersAfter', 'page.')}
+            {t('registerMenu.guideAppears', 'It shows up in Devices once it is online.')}
           </Typography>
         </>
       }
