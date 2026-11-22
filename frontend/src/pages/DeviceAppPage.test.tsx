@@ -189,7 +189,7 @@ describe('the app on this device', () => {
     expect(page.querySelector('[data-app-publisher]')?.textContent).toBe('By Acme · Verified: acme.com')
     // A restricted app needs nothing more of the device: nothing said.
     expect(page.querySelector('[data-app-runs]')).toBeNull()
-    expect(page.querySelector('[data-app-back]')?.getAttribute('data-to')).toBe('/devices/D1/edit')
+    expect(page.querySelector('[data-app-back]')?.getAttribute('data-to')).toBe('/devices/D1/services')
     expect(catalog).toHaveBeenCalledWith('acme.backup', { accountId: 'A1', releases: 100 })
     act(() => root.unmount())
     container.remove()
@@ -757,7 +757,7 @@ describe('enable, disable and remove', () => {
     )
     await click(page.querySelector('[data-confirm-ok]'))
     expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }))
-    expect(push).toHaveBeenCalledWith('/devices/D1/edit')
+    expect(push).toHaveBeenCalledWith('/devices/D1/services')
   })
 
   it('a refusal stays on the page, in graphql’s words', async () => {

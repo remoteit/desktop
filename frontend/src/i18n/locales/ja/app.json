@@ -1190,15 +1190,12 @@
     "warning": "デバイスの削除は元に戻せないため、復元するにはデバイスに物理的にアクセスする必要がある場合があります。"
   },
   "deviceAbout": {
-    "accountAdded": "",
     "accountAdmin": "",
     "accountDisabled": "",
     "accountDomain": "",
-    "accountField": "",
     "accountHidden": "",
     "accountLocal": "",
     "accountRemoteit": "",
-    "accountRemoved": "",
     "accounts": "",
     "accountSignedIn": "",
     "accountsMore_other": "",
@@ -1207,7 +1204,6 @@
     "agent": "",
     "arch": "",
     "board": "",
-    "boot": "",
     "build": "",
     "close": "",
     "copy": "",
@@ -1216,19 +1212,10 @@
     "declaredProduct": "",
     "detailsTitle": "",
     "diskSerial": "",
-    "duplicate": "",
-    "duplicateCopy": "",
-    "duplicateCopyOf": "",
-    "duplicateJoinKey": "",
-    "duplicateKept": "",
-    "duplicateKeptFrom": "",
-    "duplicateKey": "",
-    "duplicateOriginal": "",
     "firmware": "",
     "hardwareChanged": "",
     "hardwareRevision": "",
     "hardwareUuid": "",
-    "history": "",
     "identifiers": "",
     "kernel": "",
     "machineId": "",
@@ -1249,66 +1236,83 @@
     "natPortPerDestination": "",
     "natSince": "",
     "natStrict": "",
-    "nothing": "",
     "os": "",
     "package": "",
     "product": "",
     "reported": "",
-    "restored": "",
     "serial": "",
     "software": "",
     "system": "",
-    "updateFailed": "",
-    "updateRefused": "",
-    "upgrade": "",
     "viewDetails": "",
     "virtual": ""
   },
+  "deviceAccess": {
+    "dormant": "",
+    "failed": "",
+    "full": "",
+    "fullHint": "",
+    "fullOther": "",
+    "label": "",
+    "networks": "",
+    "networksHint": "",
+    "off": "",
+    "offHint": ""
+  },
+  "deviceActivity": {
+    "events": ""
+  },
   "deviceAgent": {
     "channel": "",
+    "core": "",
+    "details": "",
     "downloading": "",
-    "error": "",
-    "failed": "",
     "follow": "",
     "followAccount": "",
-    "followAccountHint": "",
-    "held": "ブロック中 — デバイスの管理者が保留しています",
-    "heldHint": "デバイス上でパッケージが保留またはロックされています。保留が解除されるとアップグレードされます。",
-    "hold": "",
-    "holdHint": "",
+    "followAccountNote": "",
+    "hideDetails": "",
     "installed": "",
     "installing": "",
-    "none": "",
-    "noTarget": "",
-    "noTargetHint": "",
+    "noAgent": "",
+    "noTargetRelease": "",
+    "noTargetVersion": "",
     "notReported": "",
-    "notReportedHint": "",
-    "notTaken": "ここでは適用されていません: {{version}}",
-    "noUpdate": "",
-    "pending": "",
+    "notReportedOlder": "",
+    "notTakenUpdate": "",
+    "noUpdateReported": "",
+    "paused": "",
+    "pausedHere": "",
+    "pausedHint": "",
+    "pauseNote": "",
+    "pauseUpdates": "",
+    "pendingUpdate": "",
     "pinned": "",
-    "pinnedHint": "",
-    "refused": "",
+    "pinnedNote": "",
+    "readFailed": "",
+    "refusedUpdate": "",
     "release": "",
     "rollback": "",
+    "rollbackBody": "",
     "rollbackConfirm": "",
-    "rollbackConfirmBody": "",
-    "rollbackHint": "",
-    "runs": "",
-    "runsPackage": "",
-    "started": "",
-    "target": "",
-    "targetRollback": "",
-    "unsupported": "",
-    "upgrades": "",
+    "rollbackNote": "",
+    "startedUpdate": "",
+    "targetRolledBack": "",
+    "targetVersion": "",
+    "unsupportedAgent": "",
+    "updateFailed": "",
+    "updates": "",
     "upToDate": "",
     "withApp": "",
-    "withAppHint": "",
+    "withAppNote": "",
     "withPortal": "",
-    "withPortalHint": ""
+    "withPortalNote": ""
+  },
+  "deviceAi": {
+    "heldHow": "",
+    "hint": "",
+    "label": ""
   },
   "deviceAnyPort": {
-    "placeholder": "",
+    "portsPlaceholder": "",
     "tcp": "",
     "udp": ""
   },
@@ -1379,7 +1383,7 @@
     "transferringCount_other": "{{count}}台のデバイスを新しい所有者に譲渡しています。"
   },
   "deviceDescriptionSetting": {
-    "label": "デバイスの説明"
+    "description": ""
   },
   "deviceExit": {
     "byNetwork": "",
@@ -1421,14 +1425,67 @@
     "title": "デバイスグラフ"
   },
   "deviceHeaderMenu": {
-    "agent": "",
-    "configure": "設定",
-    "details": "詳細",
-    "exitFlows": "",
-    "logs": "ログ",
-    "runs": "",
-    "shareAccess": "アクセスを共有",
+    "share": "",
     "unknown": "不明"
+  },
+  "deviceHistory": {
+    "accountAdded": "",
+    "accountChanged": "",
+    "accountRemoved": "",
+    "adminChanged": "",
+    "agentPackage": "",
+    "agentReported": "",
+    "agentStarted": "",
+    "agentUpdated": "",
+    "appChanged": "",
+    "appInstalled": "",
+    "appOff": "",
+    "appRemoved": "",
+    "appRemoving": "",
+    "appStarted": "",
+    "appStarting": "",
+    "appStatus": "",
+    "appStopped": "",
+    "appUpdated": "",
+    "copy": "",
+    "copyOf": "",
+    "duplicate": "",
+    "firmwareUpdated": "",
+    "hardwareChanged": "",
+    "hardwareId": "",
+    "hideRaw": "",
+    "interfaceChanged": "",
+    "ipChanged": "",
+    "joinKeyElsewhere": "",
+    "kept": "",
+    "keptFrom": "",
+    "kernelUpdated": "",
+    "keyElsewhere": "",
+    "labelChanged": "",
+    "natChanged": "",
+    "networkFound": "",
+    "networkMoved": "",
+    "nothing": "",
+    "osChanged": "",
+    "osUpdated": "",
+    "printers": "",
+    "recovered": "",
+    "routerChanged": "",
+    "scriptsChanged": "",
+    "scriptsNotReady": "",
+    "scriptsReady": "",
+    "settingChanged": "",
+    "showRaw": "",
+    "signIns": "",
+    "swapped": "",
+    "terminalApp": "",
+    "terminalChanged": "",
+    "terminalFixed": "",
+    "terminalProblem": "",
+    "title": "",
+    "updateFailed": "",
+    "updateRefused": "",
+    "web": ""
   },
   "deviceHosting": {
     "address": "",
@@ -1463,6 +1520,7 @@
     "expired": "",
     "expires": "",
     "full": "",
+    "heading": "",
     "issue": "",
     "lastBoot": "",
     "neverBooted": "",
@@ -1480,8 +1538,7 @@
     "revokeLastBody": "",
     "revokeTitle": "",
     "stale": "",
-    "staleSuggestion": "",
-    "title": ""
+    "staleSuggestion": ""
   },
   "deviceLabelSetting": {
     "label": "デバイスラベル"
@@ -1523,8 +1580,8 @@
     "virtualDevice": ""
   },
   "deviceNameSetting": {
-    "alsoSubnet": "",
-    "label": "デバイス名"
+    "alsoAddress": "",
+    "name": ""
   },
   "deviceNetwork": {
     "accountOwner": "",
@@ -1661,6 +1718,25 @@
     "shareAccess": "アクセスを共有",
     "transferDevice": "デバイスを譲渡"
   },
+  "deviceOverview": {
+    "address": "",
+    "allServices": "",
+    "copyAddress": "",
+    "details": "",
+    "disabled": "",
+    "doNow": "",
+    "gateway": "",
+    "hideDetails": "",
+    "lastSeen": "",
+    "offline": "",
+    "online": "",
+    "openService": "",
+    "ownedBy": "",
+    "showDetails": "",
+    "status": "",
+    "unknownPlatform": "",
+    "virtualAddress": ""
+  },
   "devicePackage": {
     "containerSelfUpdate": "自動的に最新の状態に保つ",
     "containerSelfUpdateOff": "イメージを再度プルしてコンテナを再作成することで更新されます (Compose、Watchtower)。",
@@ -1672,17 +1748,15 @@
   },
   "devicePage": {
     "availableServices": "利用可能なサービス",
-    "availableServicesDescription": "デバイスがホストするサービス(アプリケーション)がここに一覧表示されます。",
+    "availableServicesNote": "",
     "chooseGateway": "",
     "deviceNotFound": "デバイスが見つかりません。",
     "deviceOffline": "デバイスはオフラインです",
     "deviceUnlicensed": "デバイスにライセンスがありません",
+    "recoverDevice": "",
     "registeringEllipsis": "登録中...",
-    "restoreDevice": "デバイスを復元",
     "selectServiceInstruction": "サービスを選択して設定するか、接続を開始してください。",
-    "service": "サービス",
-    "servicesOff": "",
-    "servicesOffHint": ""
+    "services": ""
   },
   "devicePresenceSetting": {
     "label": "プレゼンスアドレス"
@@ -1690,9 +1764,14 @@
   "deviceProduct": {
     "attach": "",
     "change": "",
+    "copyCode": "",
+    "hideCode": "",
     "none": "",
     "product": "",
-    "registeredWith": ""
+    "registeredCode": "",
+    "registeredHidden": "",
+    "registeredWith": "",
+    "showCode": ""
   },
   "deviceProductNotice": {
     "enforced": "",
@@ -1728,20 +1807,20 @@
     "vpn": ""
   },
   "deviceRuns": {
-    "actions": "",
-    "actionsHint": "",
+    "carries": "",
+    "everything": "",
+    "everythingHint": "",
     "exit": "",
-    "failed": "",
-    "makeExit": "",
-    "makeProxy": "",
+    "managersOnly": "",
     "noExit": "",
-    "noExitHint": "",
-    "noProxy": "",
-    "noProxyHint": "",
-    "notManaged": "",
-    "proxy": "",
-    "title": "",
-    "unsupported": ""
+    "noExitNote": "",
+    "noProxyNote": "",
+    "noProxyServer": "",
+    "proxyServer": "",
+    "readFailed": "",
+    "setUpExit": "",
+    "setUpProxy": "",
+    "unsupportedServer": ""
   },
   "devicesActionMenu": {
     "confirmTitle": "デバイスの削除を確認",
@@ -1760,13 +1839,18 @@
     "screenView": "ScreenView"
   },
   "deviceScripts": {
-    "hint": "このデバイスでスクリプトを実行できる人は、ここでコマンドを実行できます — このデバイス上の自分のアカウントで、アカウントがなければ root で。オフにすると、ここではスクリプトは実行されません。",
-    "hintWindows": "このデバイスでスクリプトを実行できる人は、SYSTEM としてコマンドを実行できます。オフにすると、ここではスクリプトは実行されません。",
-    "label": "スクリプトを許可"
+    "note": "",
+    "scripts": "",
+    "windowsNote": ""
   },
   "deviceServices": {
-    "hint": "",
-    "label": ""
+    "none": "",
+    "port": "",
+    "share": "",
+    "shareNote": "",
+    "sharingOff": "",
+    "sharingOffNote": "",
+    "title": ""
   },
   "deviceSetting": {
     "controlFixedTo": "",
@@ -1775,8 +1859,12 @@
     "controlOn": "",
     "deprecated": "",
     "deprecatedWhy": "",
-    "initiators": "",
     "inPortalBy": "",
+    "lockedAdmin": "",
+    "lockedLocal": "",
+    "lockedProduct": "",
+    "off": "",
+    "on": "",
     "onComputerBy": "",
     "onDevice": "",
     "onDeviceBy": "",
@@ -1784,7 +1872,16 @@
     "productEnforced": "",
     "productLocked": "",
     "productSynced": "",
-    "updates": ""
+    "remoteUpdates": ""
+  },
+  "deviceSettings": {
+    "accessTraffic": "",
+    "advanced": "",
+    "agent": "",
+    "notificationDefaults": "",
+    "outgoing": "",
+    "servicesSharing": "",
+    "thisDevice": ""
   },
   "deviceSetupItem": {
     "alreadyCreated": "作成済み",
@@ -1796,16 +1893,21 @@
     "restoring": "デバイスを復元中...",
     "thisSystem": "このシステム"
   },
+  "deviceShares": {
+    "label": "",
+    "offNote": "",
+    "onNote": "",
+    "open": ""
+  },
   "deviceSignIns": {
-    "doesNotManage": "",
-    "manages": "",
-    "none": "",
-    "signedIn": "",
-    "signedInMachine": "",
+    "canRoute": "",
+    "noOne": "",
+    "onAccount": "",
+    "seesRoute": "",
+    "signedInPerson": "",
     "since": ""
   },
   "deviceSshAccess": {
-    "about": "",
     "add": "",
     "admin": "",
     "anyUser": "",
@@ -1816,7 +1918,6 @@
     "existingAdministrator": "",
     "existingLabel": "",
     "existingNote": "",
-    "fallback": "",
     "handleLabel": "",
     "handleNote": "",
     "login": "",
@@ -1824,21 +1925,29 @@
     "loginOwn": "",
     "name": "",
     "nameFailed": "",
-    "ownAdmin": "",
+    "ownAdministrator": "",
+    "ownerDefault": "",
     "ownExisting": "",
     "renameNote": "",
     "revoke": "",
     "save": "",
-    "title": ""
+    "terminalAccess": "",
+    "terminalNote": ""
   },
-  "deviceSubnet": {
-    "hint": "",
-    "label": ""
-  },
+  "deviceSubnet": {},
   "deviceSubnetLabel": {
+    "address": "",
+    "addressNote": "",
     "hint": "",
-    "label": "",
     "problem": ""
+  },
+  "deviceTabs": {
+    "activity": "",
+    "exit": "",
+    "overview": "",
+    "services": "",
+    "settings": "",
+    "sharing": ""
   },
   "deviceTransferPage": {
     "confirmTransferPrefix": "次の所有権を譲渡しようとしています:",
@@ -1849,24 +1958,21 @@
     "transferringTo": "「{{name}}」を新しい所有者に譲渡しています。"
   },
   "deviceUserMode": {
-    "label": "",
-    "off": "",
-    "onOther": "",
-    "onYou": ""
+    "label": ""
   },
   "deviceWebsocket": {
+    "alwaysNote": "",
     "auto": "",
-    "autoHint": "",
-    "label": "",
+    "autoNote": "",
     "off": "",
-    "offConfirm": "",
     "offConfirmAction": "",
-    "offConfirmBody": "",
-    "offConfirmUnknown": "",
-    "offHint": "",
+    "offNote": "",
+    "offRelay": "",
+    "offRelayBody": "",
+    "offRelayUnknown": "",
     "on": "",
-    "onHint": "",
-    "using": ""
+    "relay": "",
+    "usingRelay": ""
   },
   "disabledDevice": {
     "by": "",
@@ -2099,13 +2205,13 @@
     "carried": "",
     "error": "",
     "further": "",
-    "managerHint": "",
+    "heading": "",
+    "managerNote": "",
     "more": "",
     "none": "",
     "noneYet": "",
-    "ownHint": "",
+    "ownNote": "",
     "through": "",
-    "title": "",
     "window": {
       "day": "",
       "days": "",
@@ -2352,7 +2458,7 @@
   },
   "hostedDevices": {
     "add": "",
-    "empty": "",
+    "addVirtual": "",
     "gatewayHint": "",
     "services_other": "",
     "virtualDevices": ""
@@ -3053,10 +3159,10 @@
   },
   "notificationSettings": {
     "custom": "カスタム",
-    "email": "メール",
+    "emailNotifications": "",
     "globalSettings": "グローバル設定",
-    "push": "モバイルプッシュ",
-    "systemNotification": "システム通知",
+    "pushNotifications": "",
+    "systemNotifications": "",
     "title": "デバイス通知"
   },
   "onboardScanning": {
@@ -5193,7 +5299,7 @@
     "dhcpHint": "",
     "gateway": "",
     "noGateway": "",
-    "notHostedNotice": "",
+    "noGatewayNotice": "",
     "platform": ""
   }
 }

@@ -7,14 +7,15 @@ import { ServiceRouter } from './ServiceRouter'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { Switch, Route, Redirect, useParams } from 'react-router-dom'
 import { ServiceAddPage } from '../pages/ServiceAddPage'
-import { DeviceLogPage } from '../pages/DeviceLogPage'
 import { DeviceDetailPage } from '../pages/DeviceDetailPage'
 import { DeviceUsersPage } from '../pages/DeviceUsersPage'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { DeviceEditPage } from '../pages/DeviceEditPage'
-import { DeviceAgentPage } from '../pages/DeviceAgentPage'
 import { DeviceRunsPage } from '../pages/DeviceRunsPage'
-import { DeviceExitFlowsPage } from '../pages/DeviceExitFlowsPage'
+import { DeviceServicesPage } from '../pages/DeviceServicesPage'
+import { DeviceActivityPage } from '../pages/DeviceActivityPage'
+import { useDeviceCarries } from '../hooks/useDeviceCarries'
+import { LEGACY_PAGES, LegacyPage, legacyTarget } from '../helpers/deviceTabs'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { DynamicPanel } from '../components/DynamicPanel'
 import { DevicePage } from '../pages/DevicePage'
@@ -37,7 +38,7 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
     const lookupResult = defaultServiceLookup[deviceID || '']
     const validLookup = lookupResult === null || device?.services.find(s => s.id === lookupResult)
     const serviceId = validLookup ? lookupResult : device?.services?.[0]?.id
-    const redirect = device?.state === 'active' && serviceId ? `${serviceId}/connect` : 'details'
+    const redirect = device?.state === 'active' && serviceId ? `${serviceId}/connect` : 'overview'
     return { pathname: `/devices/${deviceID}/${redirect}`, state: { isRedirect: true } }
   }
 
@@ -68,35 +69,35 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path={['/devices/:deviceID/users/:userID', '/devices/:deviceID/share']}>
             <SharePage />
           </Route>
-          <Route path="/devices/:deviceID/edit">
-            <DeviceEditPage />
-          </Route>
           <Route path="/devices/:deviceID/transfer">
             <DeviceTransferPage device={device} />
           </Route>
-          <Route path="/devices/:deviceID/users">
+          <Route path="/devices/:deviceID/overview">
+            <DeviceDetailPage />
+          </Route>
+          <Route path="/devices/:deviceID/services">
+            <DeviceServicesPage />
+          </Route>
+          <Route path="/devices/:deviceID/sharing">
             <DeviceUsersPage device={device} />
           </Route>
-          <Route path="/devices/:deviceID/logs">
-            <DeviceLogPage device={device} />
+          <Route path="/devices/:deviceID/settings/:section?">
+            <DeviceEditPage />
           </Route>
-          {deviceSessions && !device?.virtual && (
-            <Route path="/devices/:deviceID/agent">
-              <DeviceAgentPage />
-            </Route>
-          )}
-          {deviceSessions && !device?.virtual && (
-            <Route path="/devices/:deviceID/runs">
+          <Route path="/devices/:deviceID/activity/:section?">
+            <DeviceActivityPage />
+          </Route>
+          {deviceSessions && !device?.virtual ? (
+            <Route path="/devices/:deviceID/exit/:section?">
               <DeviceRunsPage />
             </Route>
-          )}
-          {deviceSessions && !device?.virtual && (
-            <Route path="/devices/:deviceID/exit-flows">
-              <DeviceExitFlowsPage />
+          ) : (
+            <Route path="/devices/:deviceID/exit">
+              <Redirect to={`/devices/${deviceID}/overview`} />
             </Route>
           )}
-          <Route path="/devices/:deviceID/details">
-            <DeviceDetailPage />
+          <Route path={`/devices/:deviceID/:page(${LEGACY_PAGES.join('|')})`}>
+            <LegacyRedirect />
           </Route>
           {/* An app id always holds a dot, so add never reads as one; both before a service's routes. */}
           <Route path="/devices/:deviceID/apps/add">
@@ -116,4 +117,13 @@ export const DeviceRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
       layout={layout}
     />
   )
+}
+
+// An address from before the tabs, sent to its tab and section.
+export const LegacyRedirect: React.FC = () => {
+  const { deviceID, page } = useParams<{ deviceID: string; page: LegacyPage }>()
+  const { device } = React.useContext(DeviceContext)
+  const target = legacyTarget(page, useDeviceCarries(device))
+  if (!target) return <LoadingMessage />
+  return <Redirect to={{ pathname: `/devices/${deviceID}/${target}`, state: { isRedirect: true } }} />
 }

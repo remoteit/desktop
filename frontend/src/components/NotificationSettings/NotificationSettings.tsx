@@ -21,7 +21,7 @@ import { Icon } from '../Icon'
 import { DEFAULT_PUSH_CATEGORIES, DEVICE_PUSH_CATEGORIES } from '../../constants'
 import browser from '../../services/browser'
 
-export const NotificationSettings: React.FC = () => {
+export const NotificationSettings: React.FC<{ embedded?: boolean }> = ({ embedded }) => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
   const { devices } = useDispatch<Dispatch>()
@@ -108,6 +108,7 @@ export const NotificationSettings: React.FC = () => {
 
   return (
     <>
+      {!embedded && (
       <Typography variant="subtitle1">
         <Title>{t('notificationSettings.title', 'Device Notifications')}</Title>
         <IconButton
@@ -119,13 +120,14 @@ export const NotificationSettings: React.FC = () => {
           shiftDown
         />
       </Typography>
-      <List>
+      )}
+      <List disablePadding={embedded}>
         {!browser.isMobile && (
           <ListItemButton onClick={handleInAppNotifications} dense>
             <ListItemIcon>
               <Icon name={inapp ? 'bell-on' : 'bell-slash'} size="md" />
             </ListItemIcon>
-            <ListItemText primary={t('notificationSettings.systemNotification', 'System notification')} />
+            <ListItemText primary={t('notificationSettings.systemNotifications', 'System notifications')} />
             <ListItemSecondaryAction>
               {inAppOverridden && chipOverridden('inapp')}
               <Switch
@@ -142,7 +144,7 @@ export const NotificationSettings: React.FC = () => {
         )}
         <ListItemSetting
           icon={pushOn && pushEnabled.length ? 'mobile-vibrate' : 'mobile-vibrate-slash'}
-          label={t('notificationSettings.push', 'Mobile push')}
+          label={t('notificationSettings.pushNotifications', 'Push notifications')}
           toggle={pushOn}
           onClick={() => saveSettings({ pushNotifications: !pushOn })}
           secondaryContent={pushOverridden ? chipOverridden('push') : undefined}
@@ -158,7 +160,7 @@ export const NotificationSettings: React.FC = () => {
           <ListItemIcon>
             <Icon name={email ? 'envelope' : 'envelope-slash'} size="md" />
           </ListItemIcon>
-          <ListItemText primary={t('notificationSettings.email', 'Email')} />
+          <ListItemText primary={t('notificationSettings.emailNotifications', 'Email notifications')} />
           <ListItemSecondaryAction>
             {emailOverridden && chipOverridden('email')}
             <Switch

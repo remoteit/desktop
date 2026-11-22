@@ -66,35 +66,32 @@ export const DeviceWebsocketSetting: React.FC = () => {
       <DeviceSettingChoice
         setting={websocket}
         icon="arrows-repeat"
-        label={t('deviceWebsocket.label', 'Reflector (websocket)')}
+        label={t('deviceWebsocket.relay', 'Relay')}
         value={websocketMode(websocket)}
         choices={[
           {
             key: 'auto',
             name: t('deviceWebsocket.auto', 'Automatic'),
-            description: t('deviceWebsocket.autoHint', 'Used only when this device’s UDP is blocked'),
+            description: t('deviceWebsocket.autoNote', 'Used only when UDP is blocked'),
           },
           {
             key: 'on',
             name: t('deviceWebsocket.on', 'Always'),
-            description: t(
-              'deviceWebsocket.onHint',
-              'All traffic through remote.it’s reflector — for networks that block UDP'
-            ),
+            description: t('deviceWebsocket.alwaysNote', 'All traffic goes through the relay'),
           },
           {
             key: 'off',
             name: t('deviceWebsocket.off', 'Off'),
-            description: t('deviceWebsocket.offHint', 'Never; with UDP blocked the device goes offline'),
+            description: t('deviceWebsocket.offNote', 'Never. With UDP blocked, this device goes offline.'),
           },
         ]}
-        note={state?.using ? t('deviceWebsocket.using', 'Reaching remote.it through the reflector') : undefined}
+        note={state?.using ? t('deviceWebsocket.usingRelay', 'Connected through the relay now') : undefined}
         disabled={saving || !device.permissions.includes('MANAGE')}
         onChange={mode => choose(mode as WebsocketMode)}
       />
       <Confirm
         open={confirming}
-        title={t('deviceWebsocket.offConfirm', 'Turn the reflector off?')}
+        title={t('deviceWebsocket.offRelay', 'Turn the relay off?')}
         action={t('deviceWebsocket.offConfirmAction', 'Turn off')}
         color="error"
         onConfirm={() => {
@@ -106,12 +103,12 @@ export const DeviceWebsocketSetting: React.FC = () => {
         <Typography variant="body2">
           {state?.using
             ? t(
-                'deviceWebsocket.offConfirmBody',
-                'This device reaches remote.it through the reflector now. Turning it off disconnects it until someone changes it on the device.'
+                'deviceWebsocket.offRelayBody',
+                'This device connects through the relay now. Turning the relay off disconnects this device.'
               )
             : t(
-                'deviceWebsocket.offConfirmUnknown',
-                "remote.it can't tell whether this device needs the reflector right now. If its UDP is blocked, turning it off disconnects it until someone changes it on the device."
+                'deviceWebsocket.offRelayUnknown',
+                "Remote.It can't tell if this device needs the relay. If UDP is blocked, this device disconnects."
               )}
         </Typography>
       </Confirm>

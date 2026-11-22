@@ -49,8 +49,7 @@ async function render(element: React.ReactElement) {
 
 const row = (page: HTMLElement) => page.querySelector('[data-row]') as HTMLButtonElement | null
 
-const HINT =
-  'People you share with can reach the services defined on this device, through it. Off, none are served — nor its ports beyond them or its console.'
+const HINT = "People you share with can reach this device's services."
 
 describe('Allow remote access to services, the cloud’s side', () => {
   it('absent where the API serves no services setting — one before it, or no settings at all', async () => {
@@ -64,7 +63,7 @@ describe('Allow remote access to services, the cloud’s side', () => {
     const settings = settingsOf([services()])
     const page = await render(<DeviceServicesSetting settings={settings} canManage />)
     expect(row(page)!.dataset.on).toBe('true')
-    expect(page.textContent).toBe(`Allow remote access to services — ${HINT}`)
+    expect(page.textContent).toBe(`Share this device — ${HINT}`)
     await act(async () => row(page)!.click())
     expect(settings.set).toHaveBeenCalledWith('services', false)
   })
@@ -82,7 +81,7 @@ describe('Allow remote access to services, the cloud’s side', () => {
       <DeviceServicesSetting settings={settingsOf([services({ value: true, onDevice: true, by: 'the app' })])} canManage />
     )
     expect(row(page)!.dataset.on).toBe('true')
-    expect(page.textContent).toBe('Allow remote access to services — Set on the device by the app')
+    expect(page.textContent).toBe('Share this device — Set on the device by the app')
   })
 
   it('greyed for one who does not manage the device', async () => {

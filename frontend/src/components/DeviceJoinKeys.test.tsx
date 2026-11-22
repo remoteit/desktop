@@ -130,7 +130,7 @@ describe('DeviceJoinKeys', () => {
       key({ id: 'k1', name: 'Leaked', revoked: '2026-11-02T10:00:00Z' }),
     ])
     await render()
-    expect(text()).toContain('Device Join Keys')
+    expect(text()).toContain('Device join keys')
     expect(text()).toContain('Image v2')
     expect(text()).toContain('No boot yet')
     expect(text()).toContain('Boots: 0')

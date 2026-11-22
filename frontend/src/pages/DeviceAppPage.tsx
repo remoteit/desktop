@@ -106,7 +106,7 @@ export const DeviceAppPage: React.FC = () => {
 
   if (!device || apps === undefined) return <LoadingMessage />
   const app = apps?.find(a => a.id === appID)
-  const back = `/devices/${device.id}/edit`
+  const back = `/devices/${device.id}/services`
 
   const header = (
     <>

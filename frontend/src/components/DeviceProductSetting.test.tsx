@@ -19,7 +19,7 @@ vi.mock('./ListItemSetting', () => ({
   ListItemSetting: ({ label, subLabel, button, onButtonClick }: any) => (
     <div data-row>
       {label}
-      {subLabel ? ` — ${subLabel}` : ''}
+      {subLabel ? <> — {subLabel}</> : ''}
       {button && (
         <button data-button onClick={onButtonClick}>
           {button}
@@ -34,6 +34,8 @@ vi.mock('./ProductMoveDialog', () => ({
     return props.open ? <div data-dialog /> : null
   },
 }))
+vi.mock('../buttons/CopyIconButton', () => ({ CopyIconButton: () => <span data-copy /> }))
+vi.mock('../buttons/IconButton', () => ({ IconButton: ({ onClick }: any) => <button data-reveal onClick={onClick} /> }))
 vi.mock('react-i18next', () => {
   const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
   return {
@@ -85,6 +87,20 @@ describe('a device’s product, on its settings', () => {
     expect(page.querySelector('[data-row]')?.textContent).toBe(
       'Product: Pumps · Synced — Registered with Pumps (staging)Change'
     )
+  })
+
+  it('registered with a code and no name: the code hidden until revealed, with copy', async () => {
+    hook.current = {
+      served,
+      state: { product: null, origin: { id: 'db8cbc74-36a2-4e3c', name: null }, tags: [], services: [] },
+      reload,
+    }
+    const page = await render()
+    expect(page.textContent).toContain('Registered with a code')
+    expect(page.textContent).not.toContain('db8cbc74-36a2-4e3c')
+    expect(page.querySelector('[data-copy]')).not.toBeNull()
+    await act(async () => (page.querySelector('[data-reveal]') as HTMLElement).click())
+    expect(page.textContent).toContain('Registered with code db8cbc74-36a2-4e3c')
   })
 
   it('none: attached from here', async () => {
