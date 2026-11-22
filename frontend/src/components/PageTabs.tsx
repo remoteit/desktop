@@ -9,7 +9,6 @@ export const PageTabs: React.FC<TabsProps> = ({ sx, children, ...props }) => (
     sx={[
       theme => ({
         borderBottom: `1px solid ${theme.palette.grayLighter.main}`,
-        '&::after': { display: 'none' },
         '& .MuiTabs-indicator': { height: 2, backgroundColor: theme.palette.primary.main },
         '& .MuiTab-root': {
           fontSize: theme.typography.body2.fontSize,
