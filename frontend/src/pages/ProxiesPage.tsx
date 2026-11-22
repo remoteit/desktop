@@ -1,37 +1,33 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
+import { useHistory } from 'react-router-dom'
+import { Button, List, ListSubheader, Typography } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
-import { AccountProxyBase, ListedProxy, ProxyOwnNameBrief, graphQLProxies } from '../services/graphQLProxy'
-import { endpointsLine, outOfService, runsOnLine } from '../helpers/runsHelper'
+import { AccountProxyBase, ListedProxy, ProxyChoice, ProxyOwnNameBrief, graphQLProxies } from '../services/graphQLProxy'
+import { outOfService } from '../helpers/runsHelper'
+import { proxySummary } from '../helpers/exitWords'
 import { useAccountProxies, useAccountProxyBase } from '../hooks/useAccountExits'
 import { useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
 import { useAccountAdmin } from '../hooks/useAccountAdmin'
 import { baseStateLine } from '../helpers/proxyBaseHelper'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { LoadingMessage } from '../components/LoadingMessage'
-import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 
-type Choice = Exclude<Awaited<ReturnType<typeof graphQLProxies>>, 'ERROR' | typeof UNSUPPORTED>[number]
-
-/* Proxies (graphql-api docs/PROXY-GROUPS.md §13 and §14): where endpoints into device services are reached, run by
-   devices. The account's own — each with its own name where it has one, its host, the devices it runs on, its
-   endpoints and its certificate, and marked where it is reached on its devices' own network only — open on their page
-   (pages/ProxyPage.tsx); remote.it's, which anyone may make endpoints on, are listed. For an admin of the account, its
-   base for its proxies' names first, as it stands, opening on its page (pages/ProxyBasePage.tsx). New proxy makes one,
-   then its devices are added (pages/ProxyAddPage.tsx). Behind the device-sessions flag. */
+/* Proxy servers: your own first, each saying whether it is ready and where it runs; Remote.It's, labelled; and last,
+   for an admin of the account, the paid add-on that names public addresses under your own domain. */
 export const ProxiesPage: React.FC = () => {
   const { t } = useTranslation()
+  const history = useHistory()
   const manage = useDisabledDevicesAccess()
   const admin = useAccountAdmin()
   const { value: proxies } = useAccountProxies()
-  const [remoteit, setRemoteit] = useState<Choice[]>([])
+  const [remoteit, setRemoteit] = useState<ProxyChoice[]>([])
 
   useEffect(() => {
     graphQLProxies().then(list => setRemoteit(Array.isArray(list) ? list.filter(proxy => proxy.remoteit) : []))
@@ -44,16 +40,24 @@ export const ProxiesPage: React.FC = () => {
       header={
         <>
           <Typography variant="subtitle1">
-            <Title>{t('proxiesPage.title', 'Proxies')}</Title>
+            <Title>{t('proxiesPage.title', 'Proxy servers')}</Title>
             {manage && (
-              <IconButton icon="plus" title={t('proxiesPage.new', 'New proxy')} to="/proxies/new" size="md" />
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={<Icon name="plus" size="sm" />}
+                onClick={() => history.push('/proxies/new')}
+                data-create
+              >
+                {t('proxiesPage.create', 'Create proxy server')}
+              </Button>
             )}
           </Typography>
           <Gutters top={null} bottom="sm">
             <Typography variant="body2" color="textSecondary">
               {t(
-                'proxiesPage.description',
-                'A proxy gives a service an address anyone you choose can reach — from the internet, or on its devices’ own network only: a name for https, a port for tcp and udp. A proxy runs on devices: make one, then add the devices that run it.'
+                'proxiesPage.intro',
+                'Run public addresses for your services on your own devices. Remote.It’s proxy servers are always there too.'
               )}
             </Typography>
           </Gutters>
@@ -63,16 +67,15 @@ export const ProxiesPage: React.FC = () => {
       {proxies === undefined ? (
         <LoadingMessage />
       ) : proxies === UNSUPPORTED ? (
-        <Notice gutterTop>{t('proxiesPage.unsupported', 'This server does not have proxies.')}</Notice>
+        <Notice gutterTop>{t('proxiesPage.unsupported', 'Proxy servers aren’t available on this server.')}</Notice>
       ) : proxies === 'ERROR' ? (
         <Notice severity="error" gutterTop>
-          {t('proxiesPage.failed', 'The proxies could not be read.')}
+          {t('proxiesPage.failed', 'Couldn’t load your proxy servers. Try again.')}
         </Notice>
       ) : (
         <>
-          {admin && <AccountBaseEntry />}
           <List>
-            <ListSubheader>{t('proxiesPage.own', 'Yours')}</ListSubheader>
+            <ListSubheader>{t('proxiesPage.own', 'Your proxy servers')}</ListSubheader>
             {proxies.map(proxy => (
               <ListItemLocation
                 key={proxy.id}
@@ -94,50 +97,57 @@ export const ProxiesPage: React.FC = () => {
               />
             ))}
             {!proxies.length && (
-              <ListItem>
-                <ListItemText
-                  secondary={t('proxiesPage.none', 'None yet: make a proxy, then add the devices that run it.')}
-                />
-              </ListItem>
+              <Gutters top="xs" bottom="sm">
+                <Typography variant="body2" color="textSecondary" data-empty>
+                  {t(
+                    'proxiesPage.none',
+                    'No proxy servers yet. Your public addresses use Remote.It’s until you create one.'
+                  )}
+                </Typography>
+              </Gutters>
             )}
           </List>
           {!!remoteit.length && (
             <List>
-              <ListSubheader>{t('proxiesPage.remoteit', 'remote.it’s')}</ListSubheader>
+              <ListSubheader>{t('proxiesPage.remoteit', 'Remote.It proxy servers')}</ListSubheader>
               {remoteit.map(proxy => (
-                <ListItem key={proxy.id} data-remoteit={proxy.id}>
-                  <ListItemIcon>
-                    <Icon name="globe" size="md" fixedWidth />
-                  </ListItemIcon>
-                  <ListItemText primary={proxy.name} secondary={[proxy.host, proxy.provider].filter(Boolean).join(' · ')} />
-                </ListItem>
+                <ListItemLocation
+                  key={proxy.id}
+                  data-remoteit={proxy.id}
+                  to={`/proxies/${proxy.id}`}
+                  match={`/proxies/${proxy.id}`}
+                  icon={<Icon name="globe" size="md" fixedWidth />}
+                  title={proxy.name}
+                  subtitle={[proxy.location || proxy.provider, t('exitsPage.runByRemoteit', 'Run by Remote.It')]
+                    .filter(Boolean)
+                    .join(' · ')}
+                />
               ))}
             </List>
           )}
+          {admin && <AccountBaseEntry />}
         </>
       )}
     </Container>
   )
 }
 
-/* The account's base for its proxies' names, as it stands — none yet (a paid feature), or its subdomain and where it
-   stands —, leading to its page. Hidden where this server has none, or it could not be read. */
 const AccountBaseEntry: React.FC = () => {
   const { t } = useTranslation()
   const { value: base } = useAccountProxyBase()
   if (base === undefined || base === 'ERROR' || base === UNSUPPORTED) return null
   return (
     <List data-proxy-base={base?.state ?? 'none'}>
-      <ListSubheader>{t('proxyBase.title', 'Account base for proxies')}</ListSubheader>
+      <ListSubheader>{t('proxiesPage.ownDomain', 'Your own domain')}</ListSubheader>
       <ListItemLocation
         to="/proxies/base"
         match="/proxies/base"
         icon={<Icon name="sitemap" size="md" color={baseColor(base)} fixedWidth />}
-        title={base?.base ?? t('proxyBase.none', 'None')}
+        title={base?.base ?? t('proxiesPage.ownDomainNone', 'Not set up')}
         subtitle={
           base
             ? baseStateLine(t, base)
-            : t('proxyBase.noneLine', 'A paid feature: every proxy named under a subdomain you delegate to remote.it')
+            : t('proxiesPage.ownDomainLine', 'A paid add-on that puts your public addresses under a domain you own.')
         }
       />
     </List>
@@ -147,29 +157,21 @@ const AccountBaseEntry: React.FC = () => {
 const baseColor = (base: AccountProxyBase | null) =>
   !base ? 'grayDark' : base.state === 'active' ? 'primary' : base.state === 'broken' ? 'danger' : 'warning'
 
-// Whether any of its devices is in service: not joining or disabled, and not out of it — failing a check, or not
-// reachable from the internet.
 export const serving = (proxy: Pick<ListedProxy, 'devices'>) =>
   !!proxy.devices?.some(
     device => device.state === 'ACTIVE' && !device.joining && !device.disabled && !outOfService(device)
   )
 
-// One of yours, in a line: its own name where it has one, its host, the devices it runs on, its endpoints, and a
-// certificate still to come.
 export function proxyLine(t: TFunction, proxy: ListedProxy): string {
   return [
-    proxy.ownName ? ownNameLine(t, proxy.ownName) : '',
-    proxy.host,
-    runsOnLine(t, proxy.devices),
-    endpointsLine(t, proxy.endpointCount),
+    proxySummary(t, proxy),
+    proxy.ownName ? ownNameLine(t, proxy.ownName) : proxy.host,
     proxy.certificate === 'pending' ? t('proxiesPage.certificatePending', 'Certificate pending') : '',
   ]
     .filter(Boolean)
     .join(' · ')
 }
 
-// Its own name — its own, or one its account's base gave it — and, not reached under it yet or no longer right, where it
-// stands.
 export function ownNameLine(t: TFunction, own: ProxyOwnNameBrief): string {
   if (own.state === 'pending') return t('proxiesPage.ownNamePending', '{{name}} (pending)', { name: own.name })
   if (own.state === 'verified') return t('proxiesPage.ownNameVerified', '{{name}} (not moved yet)', { name: own.name })

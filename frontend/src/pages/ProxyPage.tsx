@@ -22,18 +22,22 @@ import {
   graphQLSetProxyPublicEndpoints,
 } from '../services/graphQLProxy'
 import { NAME_MAX, graphQLAccountSlug, validLabel } from '../services/subnetNames'
-import { deleteProxyLine, endpointsLine, proxyKindLabel, stillRunsLine } from '../helpers/runsHelper'
+import { proxyKindLabel } from '../helpers/runsHelper'
+import { afterActionLine, deleteProxyWords } from '../helpers/exitWords'
+import { expiresLine, kindLabel, whoMayUse } from '../helpers/publicAddressWords'
 import { useAccountProxies } from '../hooks/useAccountExits'
 import { RunDevicePicker, addEach } from '../components/RunDevicePicker'
 import { EndpointLocalAddresses } from '../components/EndpointLocalAddresses'
 import { ProxyOwnName } from '../components/ProxyOwnName'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
 import { ListItemSetting } from '../components/ListItemSetting'
+import { ListItemLocation } from '../components/ListItemLocation'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { SelectSetting } from '../components/SelectSetting'
-import { RunListItem } from '../components/RunListItem'
+import { CarrierRow } from '../components/CarrierRow'
 import { ProxyAccessList } from '../components/ProxyAccessList'
-import { IconButton } from '../buttons/IconButton'
+import { Button } from '@mui/material'
+import { Icon } from '../components/Icon'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Confirm } from '../components/Confirm'
@@ -105,7 +109,9 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
   useEffect(() => {
     if (!ownerId) return
     graphQLAccountSlug(ownerId)
-      .then(answer => setSlug(typeof answer === 'string' && answer !== 'ERROR' && answer !== UNSUPPORTED ? answer : null))
+      .then(answer =>
+        setSlug(typeof answer === 'string' && answer !== 'ERROR' && answer !== UNSUPPORTED ? answer : null)
+      )
       .catch(() => setSlug(null))
   }, [ownerId])
 
@@ -115,8 +121,8 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
       <Gutters>
         <Notice severity={proxy === 'ERROR' ? 'error' : 'info'} fullWidth>
           {proxy === 'ERROR'
-            ? t('proxyPage.failed', 'The proxy could not be read.')
-            : t('proxyPage.none', 'No such proxy, or not one you may see.')}
+            ? t('proxyPage.failed', 'Couldn’t load this proxy server. Try again.')
+            : t('proxyPage.none', 'This proxy server doesn’t exist, or you can’t see it.')}
         </Notice>
       </Gutters>
     )
@@ -124,7 +130,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
   const own = !proxy.remoteit
   const devices = proxy.devices ?? []
 
-  const failed = t('proxyPage.notChanged', 'It was not changed: try again.')
+  const failed = t('proxyPage.notChanged', 'Couldn’t save the change. Try again.')
 
   const change = async (run: () => Promise<Parameters<typeof refusalOf>[0]>, failed: string) => {
     setBusy(true)
@@ -151,13 +157,17 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
     setBusy(false)
     setDeleting(false)
     if (refused !== undefined)
-      return setNotice({ severity: 'error', text: refused || t('proxyPage.notDeleted', 'It was not deleted.') })
+      return setNotice({
+        severity: 'error',
+        text: refused || t('proxyPage.notDeleted', 'Couldn’t delete the proxy server. Try again.'),
+      })
     reloadList()
     history.push('/proxies')
   }
 
   // A name saved as it was is no change, and is not sent.
-  const rename = (name: string) => (name === proxy.name ? undefined : change(() => graphQLRenameProxy(proxy.id, name), failed))
+  const rename = (name: string) =>
+    name === proxy.name ? undefined : change(() => graphQLRenameProxy(proxy.id, name), failed)
   const label = proxy.label ?? labelOf(proxy.host)
   // Its host under a slug the account no longer has: the same label moves it onto the account's slug now.
   const slugMoved = !!slug && hostWith(proxy.host, label, slug) !== proxy.host
@@ -190,7 +200,9 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
           <Gutters top={null} bottom="sm">
             <Typography variant="body2" color="textSecondary">
               {proxy.remoteit
-                ? t('proxyPage.remoteit', 'One of remote.it’s proxies · {{host}}', { host: proxy.host })
+                ? [proxy.location || proxy.provider, t('exitsPage.runByRemoteit', 'Run by Remote.It')]
+                    .filter(Boolean)
+                    .join(' · ')
                 : `${proxy.host} · ${proxyKindLabel(t, proxy)}`}
             </Typography>
           </Gutters>
@@ -220,7 +232,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
             {own ? (
               <InlineTextFieldSetting
                 icon="globe"
-                label={t('proxyPage.host', 'Host: its label before your account slug')}
+                label={t('proxyPage.host', 'Address')}
                 value={label}
                 displayValue={proxy.host}
                 filter={/[^a-z0-9]/g}
@@ -233,7 +245,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                 }
                 helper={value =>
                   value && (value !== label || slugMoved)
-                    ? t('proxyPage.labelSays', 'Its host becomes {{host}}: what moves is said before anything does.', {
+                    ? t('proxyPage.labelSays', 'Becomes {{host}}. You’ll see what changes before anything moves.', {
                         host: hostWith(proxy.host, value, slug),
                       })
                     : undefined
@@ -241,17 +253,18 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                 onSave={value => setLabel(String(value))}
               />
             ) : (
-              <ListItemSetting icon="globe" label={proxy.host} subLabel={t('proxyPage.hostHint', 'Where it is reached')} />
+              <ListItemSetting icon="globe" label={proxy.host} subLabel={t('proxyPage.hostHint', 'Address')} />
             )}
             {own && slugMoved && (
               <ListItemSetting
                 icon="arrow-right-arrow-left"
                 iconColor="warning"
-                label={t('proxyPage.oldSlug', 'Its host is under the account’s former slug')}
-                subLabel={t('proxyPage.oldSlugHint', 'Moved onto the account’s slug now, it becomes {{host}}', {
+                label={t('proxyPage.oldSlug', 'Its address uses your account’s old name')}
+                subLabel={t('proxyPage.oldSlugHint', 'Move it to {{host}}', {
                   host: hostWith(proxy.host, label, slug),
                 })}
                 button={t('proxyPage.oldSlugMove', 'Move')}
+                secondaryContentWidth="100px"
                 buttonDisabled={busy}
                 onButtonClick={() => setNaming(label)}
               />
@@ -264,13 +277,13 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                   proxy.local
                     ? t(
                         'proxyKind.localHint',
-                        'Reached only on its devices’ own network, for printers, PCs and anything without remote.it.'
+                        'Only devices on the same local network can reach it. Good for printers and PCs.'
                       )
-                    : t('proxyKind.internetHint', 'Reached from anywhere its devices can be reached.'),
+                    : t('proxyKind.internetHint', 'Anyone on the internet can reach its public addresses.'),
                   proxy.local && !proxy.localNetwork
-                    ? t('proxyPage.localNetworkFirst', 'Its network is its first device’s.')
+                    ? t('proxyPage.localNetworkFirst', 'Its first device sets the network.')
                     : '',
-                  t('proxyPage.kindFixed', 'Chosen when it was made: it cannot be changed.'),
+                  t('proxyPage.kindFixed', 'This can’t be changed.'),
                 ]
                   .filter(Boolean)
                   .join(' ')}
@@ -281,16 +294,16 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                 icon="certificate"
                 iconColor={proxy.certificate === 'pending' ? 'warning' : 'success'}
                 label={certificateLine(t, proxy.certificate)}
-                subLabel={t('proxyPage.certificate', 'Its https certificate')}
+                subLabel={t('proxyPage.certificate', 'HTTPS certificate')}
               />
             )}
             {own && (
               <ListItemSetting
                 icon="users"
-                label={t('proxyPage.publicEndpoints', 'Takes public endpoints')}
+                label={t('proxyPage.publicEndpoints', 'Allow public addresses anyone can open')}
                 subLabel={t(
                   'proxyPage.publicEndpointsHint',
-                  'Public: anyone with the address; else only signed-in and address-locked ones'
+                  'When off, people must sign in or use an allowed address.'
                 )}
                 toggle={proxy.publicEndpoints}
                 disabled={busy}
@@ -299,11 +312,11 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
             )}
             <SelectSetting
               icon="right-to-bracket"
-              label={t('proxyPage.activation', 'A device added goes into service')}
+              label={t('exitPage.activation', 'New exit devices start')}
               value={proxy.activation}
               values={[
-                { key: 'auto', name: t('proxyPage.activationAuto', 'By itself, once its checks pass') },
-                { key: 'admin', name: t('proxyPage.activationAdmin', 'When an admin puts it in service') },
+                { key: 'auto', name: t('exitPage.activationAuto', 'Automatically') },
+                { key: 'admin', name: t('exitPage.activationAdmin', 'After you approve') },
               ]}
               disabled={busy}
               onChange={activation =>
@@ -312,9 +325,29 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
             />
           </List>
         )}
+        {proxy.remoteit && (
+          <List data-remoteit-proxy>
+            {(proxy.location || proxy.provider) && (
+              <ListItemSetting
+                icon="location-dot"
+                label={proxy.provider || proxy.location}
+                subLabel={t('exitPage.location', 'Location')}
+              />
+            )}
+            <ListItemSetting icon="globe" label={proxy.host} subLabel={t('proxyPage.hostHint', 'Address')} />
+            <ListItemSetting
+              icon="shield-check"
+              label={t('proxyPage.remoteitRuns', 'Remote.It runs and looks after this proxy server')}
+              subLabel={t(
+                'proxyPage.remoteitPlan',
+                'Your public addresses use the one nearest each device unless you choose.'
+              )}
+            />
+          </List>
+        )}
         {proxy.manage && own && <ProxyOwnName proxy={proxy} busy={busy} onBusy={setBusy} onChanged={refresh} />}
         <List data-endpoints>
-          <ListSubheader>{t('proxyPage.endpointsTitle', 'Endpoints')}</ListSubheader>
+          <ListSubheader>{t('proxyPage.addressesTitle', 'Public addresses')}</ListSubheader>
           {(proxy.endpoints ?? []).map(endpoint => (
             <ListItem key={endpoint.id} data-endpoint={endpoint.id}>
               <ListItemText
@@ -322,39 +355,39 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                 secondaryTypographyProps={{ component: 'div' }}
                 secondary={
                   <>
-                    {[endpoint.kind, endpoint.access, endpoint.lifetime].join(' · ')}
+                    {[kindLabel(t, endpoint.kind), whoMayUse(t, endpoint), expiresLine(t, endpoint)].join(' · ')}
                     <EndpointLocalAddresses endpoint={endpoint} />
                   </>
                 }
               />
             </ListItem>
           ))}
-          <ListItem>
-            <ListItemText
-              secondary={[
-                proxy.endpointCount !== null ? endpointsLine(t, proxy.endpointCount) : '',
-                t('proxyPage.endpointsHint', 'Made on it from a service’s page, under Proxy endpoints'),
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            />
-          </ListItem>
+          <ListItemLocation
+            to="/public-addresses/new"
+            icon="plus"
+            title={t('publicAddresses.add', 'Add public address')}
+            subtitle={proxy.endpoints?.length ? undefined : t('proxyPage.addressesNone', 'No public addresses yet.')}
+            dense
+            data-add-address
+          />
         </List>
         {proxy.manage && (
           <List data-runs-on>
             <ListSubheader>
-              {t('proxyPage.runsOn', 'Runs on')}
+              {t('proxyPage.devices', 'Devices')}
               {own && (
-                <IconButton
-                  icon={adding ? 'times' : 'plus'}
-                  title={adding ? t('proxyPage.cancelAdd', 'Cancel') : t('proxyPage.add', 'Add devices')}
-                  size="sm"
+                <Button
+                  size="small"
+                  startIcon={<Icon name={adding ? 'times' : 'plus'} size="sm" />}
                   disabled={busy}
                   onClick={() => {
                     setRefusals({})
                     setAdding(!adding)
                   }}
-                />
+                  data-add
+                >
+                  {adding ? t('exitPage.cancelAdd', 'Cancel') : t('exitPage.addDevice', 'Add device')}
+                </Button>
               )}
             </ListSubheader>
             {adding && proxy.owner && (
@@ -370,17 +403,16 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
               </Gutters>
             )}
             {devices.map(device => (
-              <RunListItem
+              <CarrierRow
                 key={device.id}
                 kind="proxy"
                 run={device}
                 name={proxy.name}
                 activation={proxy.activation}
                 local={proxy.local}
-                to={`/devices/${device.id}/runs`}
                 manage
                 onChanged={async (runs, which) => {
-                  setNotice({ severity: 'info', text: stillRunsLine(t, which.name, runs) })
+                  setNotice({ severity: 'info', text: afterActionLine(t, 'proxy', proxy, which.name, runs) })
                   await refresh()
                 }}
               />
@@ -391,10 +423,10 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                   secondary={
                     proxy.endpointCount
                       ? t(
-                          'proxyPage.runsOnNoneEndpoints',
-                          'No device runs it: its endpoints keep their addresses, and work again once a device added is in service.'
+                          'proxyPage.devicesNoneAddresses',
+                          'No device yet. Its public addresses work again once you add one.'
                         )
-                      : t('proxyPage.runsOnNone', 'No device runs it: add one to serve its endpoints.')
+                      : t('exitPage.devicesNone', 'No device yet.')
                   }
                 />
               </ListItem>
@@ -406,25 +438,20 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
             {!devices.length && !!proxy.endpointCount && (
               <ListItemSetting
                 icon="arrow-right-arrow-left"
-                label={t('proxyPage.move', 'Move its endpoints to another proxy')}
-                subLabel={t(
-                  'proxyPage.moveHint',
-                  'Its tcp and udp endpoints move to the other proxy’s name; its https ones keep their own'
-                )}
+                label={t('proxyPage.move', 'Move its public addresses to another proxy server')}
+                subLabel={t('proxyPage.moveHint', 'TCP and UDP addresses change. HTTPS addresses stay the same.')}
                 button={t('proxyPage.moveButton', 'Move')}
+                secondaryContentWidth="100px"
                 buttonDisabled={busy}
                 onButtonClick={() => setMoving(true)}
               />
             )}
             <ListItemSetting
               icon="trash"
-              label={t('proxyPage.delete', 'Delete this proxy')}
-              subLabel={
-                devices.length
-                  ? t('proxyPage.deleteRunning', 'Take its devices out of it first')
-                  : t('proxyPage.deleteHint', 'It is kept until it is deleted, with no device running it too')
-              }
+              label={t('proxyPage.delete', 'Delete proxy server')}
+              subLabel={devices.length ? t('proxyPage.deleteRunning', 'Remove its devices first.') : undefined}
               button={t('proxyPage.deleteButton', 'Delete')}
+              secondaryContentWidth="100px"
               buttonDisabled={busy || !!devices.length}
               onButtonClick={() => setDeleting(true)}
             />
@@ -454,7 +481,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
       )}
       <Confirm
         open={!!publicOff}
-        title={t('proxyPage.publicOffTitle', 'Stop {{proxy}} taking public endpoints?', { proxy: proxy.name })}
+        title={t('proxyPage.publicOffTitle', 'Stop allowing public addresses on {{proxy}}?', { proxy: proxy.name })}
         action={t('proxyPage.publicOffAction', 'Remove them')}
         color="error"
         disabled={busy}
@@ -465,10 +492,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
           {publicOff}
         </Typography>
         <Typography variant="body2">
-          {t(
-            'proxyPage.publicOffBody',
-            'Confirmed, its public endpoints are removed, for everyone using one; the others stay.'
-          )}
+          {t('proxyPage.publicOffBody', 'Its public addresses anyone can open are removed. The others stay.')}
         </Typography>
       </Confirm>
       {moving && (
@@ -490,7 +514,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
         onConfirm={remove}
         onDeny={() => setDeleting(false)}
       >
-        <Typography variant="body2">{deleteProxyLine(t, proxy.endpointCount)}</Typography>
+        <Typography variant="body2">{deleteProxyWords(t, proxy.endpointCount)}</Typography>
       </Confirm>
     </Container>
   )
@@ -498,11 +522,8 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
 
 // An own proxy's certificate: remote.it's for every proxy name, held or still to come.
 export function certificateLine(t: TFunction, certificate: Proxy['certificate']): string {
-  if (certificate === 'ready') return t('proxyPage.certificateReady', "remote.it's, for every proxy name")
-  return t(
-    'proxyPage.certificatePending',
-    "remote.it's, not issued yet: until it is, its https endpoints are not served"
-  )
+  if (certificate === 'ready') return t('proxyPage.certificateReady', 'Ready')
+  return t('proxyPage.certificatePending', 'Not issued yet. HTTPS addresses work once it is.')
 }
 
 /* Its label changed: what moves said first — its host after, every endpoint address before and after (its tcp and udp
@@ -529,7 +550,8 @@ const MoveNames: React.FC<{
     setBusy(true)
     const done = await ask(true)
     setBusy(false)
-    if ('reason' in done) return setRefusal(done.reason || t('proxyPage.namesNotMoved', 'Nothing was moved: try again.'))
+    if ('reason' in done)
+      return setRefusal(done.reason || t('proxyPage.namesNotMoved', 'Nothing was moved. Try again.'))
     onMoved()
   }
 
@@ -553,10 +575,10 @@ const MoveNames: React.FC<{
         <LoadingMessage />
       ) : 'reason' in said ? (
         <Notice severity="error" fullWidth>
-          {said.reason || t('proxyPage.namesUnsaid', 'What it would do could not be said: try again.')}
+          {said.reason || t('proxyPage.namesUnsaid', 'Couldn’t check what would change. Try again.')}
         </Notice>
       ) : nothing ? (
-        <Typography variant="body2">{t('proxyPage.namesNothing', 'Nothing moves: it is so already.')}</Typography>
+        <Typography variant="body2">{t('proxyPage.namesNothing', 'Nothing changes.')}</Typography>
       ) : (
         <>
           <Typography variant="body2" gutterBottom data-names-certificate>
@@ -580,7 +602,7 @@ const MoveNames: React.FC<{
               ))}
             </List>
           ) : (
-            <Typography variant="body2">{t('proxyPage.namesNoAddresses', 'No endpoint address moves.')}</Typography>
+            <Typography variant="body2">{t('proxyPage.namesNoAddresses', 'No public address changes.')}</Typography>
           )}
         </>
       )}
@@ -637,7 +659,7 @@ const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved:
     setRefusal(undefined)
     const said = await graphQLMoveProxyEndpoints(proxy.id, target, false)
     if (chosen.current !== target) return
-    if ('reason' in said) setRefusal(said.reason || t('proxyPage.moveFailed', 'The move could not be said: try again.'))
+    if ('reason' in said) setRefusal(said.reason || t('proxyPage.moveFailed', 'Couldn’t check the move. Try again.'))
     else setPreview(said)
   }
 
@@ -645,8 +667,7 @@ const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved:
     setBusy(true)
     const done = await graphQLMoveProxyEndpoints(proxy.id, to, true)
     setBusy(false)
-    if ('reason' in done)
-      return setRefusal(done.reason || t('proxyPage.moveNotMade', 'The move was not made: try again.'))
+    if ('reason' in done) return setRefusal(done.reason || t('proxyPage.moveNotMade', 'Couldn’t move them. Try again.'))
     onMoved()
   }
 
@@ -654,7 +675,7 @@ const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved:
     <Confirm
       open
       maxWidth="sm"
-      title={t('proxyPage.moveTitle', 'Move the endpoints of {{proxy}}', { proxy: proxy.name })}
+      title={t('proxyPage.moveTitle', 'Move the public addresses of {{proxy}}', { proxy: proxy.name })}
       action={t('proxyPage.moveButton', 'Move')}
       disabled={busy || !preview || !!refusal}
       onConfirm={move}
@@ -664,10 +685,12 @@ const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved:
         <LoadingMessage />
       ) : targets === 'ERROR' ? (
         <Notice severity="error" fullWidth>
-          {t('proxyPage.moveUnread', 'Its account’s proxies could not be read: try again.')}
+          {t('proxyPage.moveUnread', 'Couldn’t load your other proxy servers. Try again.')}
         </Notice>
       ) : !targets.length ? (
-        <Typography variant="body2">{t('proxyPage.moveNone', 'Its account has no other proxy to take them.')}</Typography>
+        <Typography variant="body2">
+          {t('proxyPage.moveNone', 'You have no other proxy server to move them to.')}
+        </Typography>
       ) : (
         <TextField
           select
