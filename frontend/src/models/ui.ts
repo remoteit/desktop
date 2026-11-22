@@ -11,6 +11,7 @@ import { OAUTH_ISSUER, SIDEBAR_WIDTH, CHAT_PANEL_WIDTH } from '../constants'
 import { selectActiveAccountId } from '../selectors/accounts'
 import browser, { getLocalStorage, setLocalStorage } from '../services/browser'
 import type { UploadPhase } from '../services/directUpload'
+import type { NavPageId, NavSectionId } from '../helpers/navSections'
 
 export const DEFAULT_INTERFACE = 'searching'
 
@@ -43,6 +44,7 @@ const SAVED_ACROSS_LOGOUT = [
   'chatOpen',
   'chatWidth',
   'chatPoppedOut',
+  'sectionPage',
 ]
 
 export type UIState = {
@@ -118,6 +120,7 @@ export type UIState = {
   chatOpen: boolean
   chatWidth: number
   chatPoppedOut: boolean
+  sectionPage: Partial<Record<NavSectionId, NavPageId>>
   poppedBubbles: string[]
   /** WHEN the user last chose "dismiss all", as a timestamp — not whether they did.
    *  A bubble introduced after that moment still gets shown. `true` is the legacy
@@ -227,6 +230,7 @@ export const defaultState: UIState = {
   chatOpen: true,
   chatWidth: CHAT_PANEL_WIDTH,
   chatPoppedOut: false,
+  sectionPage: {},
   poppedBubbles: [],
   expireBubbles: false,
   guidesResetDate: undefined,
