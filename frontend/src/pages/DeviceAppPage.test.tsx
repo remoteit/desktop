@@ -272,7 +272,7 @@ describe('held back, with why and what releases it', () => {
   it('a new version needing root: Update now…, which asks first and moves it with consentRoot alone', async () => {
     apps.value.apps = [backup({ awaitingRoot: '1.5.0', upToDate: false, heldBack: { reason: 'consent', detail: '' } })]
     const page = await render()
-    expect(page.querySelector('[data-app-held-back="consent"]')?.textContent).toBe('Not updated: A new version needs to run as root')
+    expect(page.querySelector('[data-app-held-back="consent"]')?.textContent).toBe('Not updated: A new version needs full control')
     await click(page.querySelector('[data-app-update-now]'))
     expect(setRelease).not.toHaveBeenCalled()
     expect(page.querySelector('[data-root-consent-update]')?.textContent).toContain('Backup 1.5.0 needs to run as root')
@@ -330,7 +330,7 @@ describe('channel and pin', () => {
     // Beta gives 1.5.0, which runs as root: asked first, as graphql refuses it without.
     await select(channel, 'beta')
     expect(setRelease).toHaveBeenCalledTimes(1)
-    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Backup as root?')
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Give Backup full control of this device?')
     expect(page.querySelector('[data-confirm-ok]')?.textContent).toBe('Consent and update')
     await click(page.querySelector('[data-confirm-ok]'))
     expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { channel: 'beta', consentRoot: true })
@@ -348,7 +348,7 @@ describe('channel and pin', () => {
     const page = await render()
     await select(page.querySelector('[data-app-channel]') as HTMLSelectElement, 'beta')
     expect(setRelease).not.toHaveBeenCalled()
-    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Backup as root?')
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Give Backup full control of this device?')
     expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual(['ssh-exec'])
     await click(page.querySelector('[data-confirm-ok]'))
     expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { channel: 'beta', consentRoot: true })
@@ -395,7 +395,7 @@ describe('channel and pin', () => {
     expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { version: '1.4.0' })
     await select(pin, '1.5.0')
     expect(setRelease).toHaveBeenCalledTimes(1)
-    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Backup as root?')
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Give Backup full control of this device?')
     await click(page.querySelector('[data-confirm-ok]'))
     expect(setRelease).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), { version: '1.5.0', consentRoot: true })
   })
@@ -437,7 +437,7 @@ describe('channel and pin', () => {
     expect(page.querySelector('[data-root-consent-unknown]')?.textContent).toBe(
       'What this version asks could not be read, so it cannot be consented to here. Try again later.'
     )
-    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Backup as root?')
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Give Backup full control of this device?')
     expect(page.querySelector('[data-confirm] [data-app-capability]')).toBeNull()
   })
 
@@ -666,7 +666,7 @@ describe('its service, settings, root, delivery and problems', () => {
       }),
     ]
     const page = await render()
-    expect(page.querySelector('[data-app-consent]')?.textContent).toMatch(/^Consented to run as root by bob@acme.com, .+ · to 1.4.0$/)
+    expect(page.querySelector('[data-app-consent]')?.textContent).toMatch(/^Given full control by bob@acme.com, .+ · to 1.4.0$/)
   })
 
   it('the delivery grant’s end; the device’s problems', async () => {

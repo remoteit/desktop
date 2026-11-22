@@ -65,7 +65,7 @@ describe('ProductMaxDevicesSetting', () => {
     await render(
       <ProductMaxDevicesSetting value={{ maxDevices: null, devicesCounted: 4 }} manage onChange={onChange} />
     )
-    expect(body()).toContain('Device Limit')
+    expect(body()).toContain('Device limit')
     expect(body()).toContain('No maximum')
     expect(body()).toContain('4 device(s) count against it; disabled ones do not')
     expect(body()).not.toContain('over')

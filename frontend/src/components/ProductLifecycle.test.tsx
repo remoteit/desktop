@@ -67,7 +67,7 @@ afterEach(() => act(() => root.unmount()))
 describe('ProductLifecycle', () => {
   it('a persistent product: its devices keep their identity on disk, the switch off', async () => {
     await render(<ProductLifecycle product={product({})} />)
-    expect(body()).toContain('Device Lifecycle')
+    expect(body()).toContain('Device lifecycle')
     expect(body()).toContain('Ephemeral devices')
     expect(body()).toContain('Off: each device keeps its identity on disk, through restarts and reboots')
     expect(toggle().checked).toBe(false)
@@ -76,7 +76,7 @@ describe('ProductLifecycle', () => {
   it('an ephemeral product: said plainly — restarts keep it, a reboot is a new device, removed offline', async () => {
     await render(<ProductLifecycle product={product({ lifecycle: 'ephemeral' })} />)
     expect(toggle().checked).toBe(true)
-    expect(body()).toContain('a daemon restart keeps it, but after a reboot or on a new machine each is a new device')
+    expect(body()).toContain('an agent restart keeps it, but after a reboot or on a new machine each is a new device')
     expect(body()).toContain('registers again with a join key')
     expect(body()).toContain('removed when it deregisters, or after 10 minutes offline')
   })
@@ -90,7 +90,7 @@ describe('ProductLifecycle', () => {
     expect(dialog()?.textContent).toContain(
       'Its devices are removed at their next reboot, or after 10 minutes offline, unless the machine can register itself again with a join key.'
     )
-    await act(async () => dialogButton('Make Ephemeral').click())
+    await act(async () => dialogButton('Switch to ephemeral').click())
     expect(products.setLifecycle).toHaveBeenCalledWith({ productId: 'p1', lifecycle: 'ephemeral' })
   })
 
@@ -100,7 +100,7 @@ describe('ProductLifecycle', () => {
     expect(dialog()?.textContent).toContain('Make Pump’s devices persistent?')
     expect(dialog()?.textContent).toContain('no longer removed after 10 minutes offline')
     expect(dialog()?.textContent).not.toContain('removed at their next reboot')
-    await act(async () => dialogButton('Make Persistent').click())
+    await act(async () => dialogButton('Keep devices').click())
     expect(products.setLifecycle).toHaveBeenCalledWith({ productId: 'p1', lifecycle: 'persistent' })
   })
 
@@ -116,11 +116,11 @@ describe('ProductLifecycle', () => {
     products.setLifecycle.mockResolvedValue({ reason: refusal })
     await render(<ProductLifecycle product={product({})} />)
     await act(async () => toggle().click())
-    await act(async () => dialogButton('Make Ephemeral').click())
+    await act(async () => dialogButton('Switch to ephemeral').click())
     expect(body()).toContain(refusal)
     products.setLifecycle.mockResolvedValue({ reason: '' })
     await act(async () => toggle().click())
-    await act(async () => dialogButton('Make Ephemeral').click())
+    await act(async () => dialogButton('Switch to ephemeral').click())
     expect(body()).not.toContain(refusal)
     expect(body()).toContain('The lifecycle was not changed.')
   })

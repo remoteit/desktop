@@ -201,7 +201,7 @@ describe('FactorSettings — the first factor', () => {
     await render()
     await click('Add an authenticator app')
     expect(api.requestConfirmation).not.toHaveBeenCalled()
-    await type('Current Password', 'hunter22')
+    await type('Current password', 'hunter22')
     await click('Continue')
     expect(api.addStoreFactor).toHaveBeenCalledWith('totp', 'hunter22', undefined, undefined)
     await type('Code', '333444')

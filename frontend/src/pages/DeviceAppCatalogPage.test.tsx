@@ -117,7 +117,7 @@ describe('the catalogue for this device', () => {
     expect((offer(page, 'acme.new').querySelector('[data-available-add]') as HTMLButtonElement).disabled).toBe(false)
     await click(offer(page, 'acme.agent').querySelector('[data-available-add]'))
     expect(turn).not.toHaveBeenCalled()
-    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Agent as root?')
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Give Agent full control of this device?')
     await click(page.querySelector('[data-confirm-ok]'))
     expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.agent' }), true, true)
   })
