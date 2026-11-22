@@ -44,6 +44,9 @@ export type MockBridgeOptions = {
   // 1.10.0: why this account may not choose the exit here (protect.chooseRefusal): the route, Protect on and exit.set
   // refused with it, as the shell refuses; Protect off still taken. None unless said.
   chooseRefusal?: string
+  // The engine refusing a route (exit.set, protect.route, Protect on) with this reason, the state left as it was, as a
+  // policy or a stage holding the exit would. Not said in the status.
+  routeRefusal?: string
   // With 'services' or 'lanServices': whether it is on a local network (true unless said), and — a phone's, with
   // 'permissions' — its Local Network permission ('notAsked' unless said; services.set on asks, and a person not
   // refusing grants it).
@@ -206,6 +209,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
           case 'vpn.set':
           case 'protect.set':
             if (a.on && options.chooseRefusal) throw new BridgeError('refused', options.chooseRefusal)
+            if (a.on && options.routeRefusal) throw new BridgeError('refused', options.routeRefusal)
             if (a.on) {
               const exit = exits.find(e => e.id === route) ?? (exits.length === 1 ? exits[0] : undefined)
               if (!exit) throw new BridgeError('refused', 'choose an exit to route through first')
@@ -215,6 +219,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             return bridge.status
           case 'protect.route': {
             if (options.chooseRefusal) throw new BridgeError('refused', options.chooseRefusal)
+            if (options.routeRefusal) throw new BridgeError('refused', options.routeRefusal)
             const exit = exits.find(e => e.id === a.id)
             if (!exit) throw new BridgeError('refused', `${a.id} is not among this device's exits`)
             if (bridge.status.vpn.on) use(exit)
@@ -250,6 +255,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             return exits
           case 'exit.set': {
             if (a.id !== null && options.chooseRefusal) throw new BridgeError('refused', options.chooseRefusal)
+            if (a.id !== null && options.routeRefusal) throw new BridgeError('refused', options.routeRefusal)
             if (a.id === null) use(undefined)
             else {
               const exit = exits.find(e => e.id === a.id)

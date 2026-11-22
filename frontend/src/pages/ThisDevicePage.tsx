@@ -15,22 +15,21 @@ import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { ThisDevicePart, ThisDeviceView } from '../components/thisDevice/ThisDeviceView'
 import { TransferUsageHint } from '../components/TransferUsage'
 import { readCloudExits } from '../components/thisDevice/readCloudExits'
+import { ThisDeviceDevices } from '../components/thisDevice/ThisDeviceDevices'
 
-/* "This device" (device-package docs/one-app-plan.md): the machine this page runs on, the same page on every
-   platform. What it shows comes from the shell's capabilities only (thisDevice.info().capabilities) — never from which
-   platform it is — so the menu on a Mac and the phone's app draw it alike, each with what it can do.
+/* "This device" (device-package docs/one-app-plan.md): the machine this page runs on, and the app's home — the same
+   page on every platform. What it shows comes from the shell's capabilities only (thisDevice.info().capabilities),
+   never from which platform it is, so the menu on a Mac and the phone's app draw it alike, each with what it can do.
 
    Signed out, or offline, in an app it is the whole portal (components/ThisDeviceApp): the bridge is the machine's own,
-   so everything from it works; what is the account's — the device's page in remote.it, renaming it — waits for the
-   sign-in, which is offered at the top.
+   so its controls work; what is the account's waits for the sign-in, offered where "Your devices" would be.
 
-   Three pages (Evan, 2026-10-25), so what is used most is what is seen first, at a phone's width too:
-     /this-device           its name and whether remote.it runs here, the three switches — Access remote devices,
-                            remote.it Protect, Allow remote access to services — and the way to the other two;
-     /this-device/details   what there is to know of it: owner, address, UID, versions, what it serves, stages;
+   Its pages, so what is used most is what is seen first, at a phone's width too:
+     /this-device           its name and state, "Your devices", the three controls, and Settings;
+     /this-device/settings  the way to the other two, and to the device's page in the account;
+     /this-device/details   what there is to know of it: owner, address, UID, versions, what it shares, stages;
      /this-device/advanced  what is changed seldom: its other features and the relay, permissions, Open at login,
-                            diagnostics, and its removal.
-   Everything the menu's own Settings window shows is on one of them (1.5.0, "Settings → This device"). */
+                            diagnostics, and its removal. */
 
 export const ThisDevicePage: React.FC = () => {
   const { t } = useTranslation()
@@ -39,10 +38,13 @@ export const ThisDevicePage: React.FC = () => {
   const userId = useSelector((state: State) => state.auth.user?.id)
   const deviceSessions = useDeviceSessions()
   const match = useRouteMatch<{ part?: string }>('/this-device/:part')
+  const named = match?.params.part
   const part: ThisDevicePart =
-    match?.params.part === 'details' ? 'details' : match?.params.part === 'advanced' ? 'advanced' : 'main'
+    named === 'settings' || named === 'details' || named === 'advanced' ? named : 'main'
   const title =
-    part === 'details'
+    part === 'settings'
+      ? t('thisDevice.settings', 'Settings')
+      : part === 'details'
       ? t('thisDevice.details', 'Details')
       : part === 'advanced'
       ? t('thisDevice.advanced', 'Advanced')
@@ -60,16 +62,11 @@ export const ThisDevicePage: React.FC = () => {
       ) : device === null ? (
         <Box paddingX={4} paddingY={2}>
           <Typography variant="body2" color="textSecondary">
-            {t('thisDevice.absent', 'This page shows the machine the remote.it app runs on. Open it in the app.')}
+            {t('thisDevice.absent', 'This page shows the computer or phone running the Remote.It app. Open it in the app.')}
           </Typography>
         </Box>
       ) : (
         <>
-          {!signedIn && part === 'main' && (
-            <Box paddingX={2}>
-              <ThisDeviceSignIn />
-            </Box>
-          )}
           <ThisDeviceView
             device={device}
             signedIn={signedIn}
@@ -81,6 +78,7 @@ export const ThisDevicePage: React.FC = () => {
             }
             readExits={signedIn ? readCloudExits : undefined}
             exitRunsHref={signedIn && deviceSessions ? uid => `#/devices/${uid}/runs` : undefined}
+            renderDevices={uid => (signedIn ? <ThisDeviceDevices uid={uid} /> : <ThisDeviceSignIn />)}
             renderRegistration={
               signedIn && device.has('registration')
                 ? status => <DeviceRegistration device={device} status={status} />

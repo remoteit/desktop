@@ -41,6 +41,7 @@ type Props = {
   renderExitUsage?: (shown: boolean) => React.ReactNode
   readExits?: ReadCloudExits
   exitRunsHref?: (uid: string) => string
+  renderDevices?: (uid: string | undefined) => React.ReactNode
 }
 
 // A part on a mock shell's bridge: another part can be mounted on the same one (mount), as the pages share the machine.
@@ -57,29 +58,46 @@ async function mount(bridge: MockBridge, props: Props = {}) {
 }
 const render = (options: MockBridgeOptions = {}, props: Props = {}) => mount(createMockBridge(options), props)
 const sections = (c: HTMLElement) => [...c.querySelectorAll('[data-section]')].map(e => e.getAttribute('data-section'))
+// Route through, the one control: its select's hidden input, the value it shows, its line, and a choice made in it.
+const routeInput = (c: HTMLElement) => c.querySelector('input[data-control="route"]') as HTMLInputElement
+const routeValue = (c: HTMLElement) => routeInput(c).value
+const routeLine = (c: HTMLElement) => c.querySelector('[data-route]')!
+async function choose(c: HTMLElement, id: string) {
+  await act(async () => {
+    const input = routeInput(c)
+    // MUI's select: its hidden input takes the value; a change event is what the menu's click sends.
+    const props = Object.keys(input).find(k => k.startsWith('__reactProps'))!
+    ;(input as any)[props].onChange({ target: { value: id } })
+  })
+}
 
 describe('This device', () => {
   it('shows what the desktop menu offers, and nothing it does not', async () => {
     const { container, bridge } = await render()
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'more'])
+    expect(sections(container)).toEqual(['device', 'controls', 'access', 'route', 'more'])
     expect(container.textContent).toContain('Mock MacBook')
     expect(container.textContent).toContain('mockmacbook.on.solo.remote.it')
     const advanced = await mount(bridge, { part: 'advanced' })
     expect(sections(advanced.container)).toEqual(['settings', 'diagnostics'])
   })
 
-  it('the page leads to Details and Advanced, and to its page in remote.it signed in', async () => {
-    const { container } = await render()
-    const links = [...container.querySelectorAll('[data-link]')].map(a => [a.getAttribute('data-link'), a.getAttribute('href')])
-    expect(links).toEqual([
+  it('the page leads to Settings, and Settings to Details, Advanced and its page in Remote.It signed in', async () => {
+    const links = (c: HTMLElement) =>
+      [...c.querySelectorAll('[data-link]')].map(a => [a.getAttribute('data-link'), a.getAttribute('href')])
+    const { container, bridge } = await render()
+    expect(links(container)).toEqual([['settings', '#/this-device/settings']])
+    const settings = await mount(bridge, { part: 'settings' })
+    expect(links(settings.container)).toEqual([
       ['details', '#/this-device/details'],
       ['advanced', '#/this-device/advanced'],
       ['device-page', '#/devices/80:00:00:00:01:0A:BC:DE'],
     ])
+    const signedOut = await mount(bridge, { part: 'settings', signedIn: false })
+    expect(links(signedOut.container).map(([link]) => link)).toEqual(['details', 'advanced'])
   })
 
   it('no Advanced where there is nothing for it', async () => {
-    const { container } = await render({ capabilities: ['status'] })
+    const { container } = await render({ capabilities: ['status'] }, { part: 'settings' })
     expect(container.querySelector('[data-link="details"]')).not.toBeNull()
     expect(container.querySelector('[data-link="advanced"]')).toBeNull()
   })
@@ -95,7 +113,7 @@ describe('This device', () => {
   it('shows a phone’s permissions where the shell offers them', async () => {
     const caps: Capability[] = ['status', 'vpn', 'exit', 'settings', 'permissions', 'diagnostics', 'auth']
     const { container, bridge } = await render({ capabilities: caps, info: { platform: 'ios', shell: 'capacitor' } })
-    expect(sections(container)).toEqual(['device', 'vpn', 'more'])
+    expect(sections(container)).toEqual(['device', 'controls', 'route', 'more'])
     const advanced = await mount(bridge, { part: 'advanced' })
     expect(sections(advanced.container)).toEqual(['settings', 'permissions', 'diagnostics'])
   })
@@ -139,21 +157,23 @@ describe('This device', () => {
     expect(sections(container)).toEqual(['device', 'more'])
   })
 
-  it('turns the VPN on and off through the bridge, from a shell before Access and Protect', async () => {
+  it('a shell before Access and Protect: the same Route through, through exit.set', async () => {
     const caps: Capability[] = ['status', 'vpn', 'exit', 'settings', 'diagnostics']
-    const { container, bridge } = await render({ capabilities: caps, route: '80:00:00:00:01:0B:00:01' })
-    expect(sections(container)).toEqual(['device', 'vpn', 'more'])
-    const vpn = () =>
-      container.querySelector('[data-control="vpn"] input, input[data-control="vpn"]') as HTMLInputElement
-    const line = () => container.querySelector('[data-vpn]')!
-    expect(line().getAttribute('data-vpn')).toBe('off')
-    await act(async () => vpn().click())
-    expect(bridge.calls.filter(c => c.method === 'vpn.set').map(c => c.args)).toEqual([{ on: true }])
-    expect(line().getAttribute('data-vpn')).toBe('on')
-    expect(line().textContent).toContain('Connected through Office')
-    await act(async () => vpn().click())
-    expect(bridge.calls.filter(c => c.method === 'vpn.set').map(c => c.args)).toEqual([{ on: true }, { on: false }])
-    expect(line().getAttribute('data-vpn')).toBe('off')
+    const { container, bridge } = await render({ capabilities: caps })
+    expect(sections(container)).toEqual(['device', 'controls', 'route', 'more'])
+    expect(routeValue(container)).toBe('')
+    expect(routeLine(container).getAttribute('data-route')).toBe('off')
+    await choose(container, '80:00:00:00:01:0B:00:01')
+    expect(bridge.calls.filter(c => c.method === 'exit.set').map(c => c.args)).toEqual([{ id: '80:00:00:00:01:0B:00:01' }])
+    expect(routeValue(container)).toBe('80:00:00:00:01:0B:00:01')
+    expect(routeLine(container).textContent).toBe('All traffic from this Mac goes through Office.')
+    await choose(container, '')
+    expect(bridge.calls.filter(c => c.method === 'exit.set').map(c => c.args)).toEqual([
+      { id: '80:00:00:00:01:0B:00:01' },
+      { id: null },
+    ])
+    expect(routeValue(container)).toBe('')
+    expect(bridge.calls.filter(c => c.method === 'vpn.set')).toEqual([])
   })
 
   it('follows the status the shell sends', async () => {
@@ -165,68 +185,141 @@ describe('This device', () => {
         exit: { id: 'X', name: 'US West', kind: 'remoteit', state: 'connecting' },
       })
     )
-    expect(container.querySelector('[data-vpn]')!.textContent).toContain('Connecting to US West')
+    expect(routeLine(container).textContent).toBe('Connecting to US West…')
+    expect(routeValue(container)).toBe('X')
   })
 
-  it('turns Access and Protect on and off apart, Protect back on through the same exit', async () => {
+  it('Access on and off; Route through one control: an exit routes through it, Off stops', async () => {
     const { container, bridge } = await render()
     const control = (name: string) =>
       container.querySelector(`[data-control="${name}"] input, input[data-control="${name}"]`) as HTMLInputElement
-    const line = (name: string) => container.querySelector(`[data-${name}]`)!
     const calls = (method: string) => bridge.calls.filter(c => c.method === method).map(c => c.args)
-    expect(line('access').getAttribute('data-access')).toBe('on')
-    expect(line('access').textContent).toContain('This Mac is mockmacbook.on.solo.remote.it')
-    expect(line('protect').getAttribute('data-protect')).toBe('off')
-    // No exit chosen yet, two to choose from: Protect waits for Route through.
-    expect(control('protect').disabled).toBe(true)
-    expect(line('protect').textContent).toContain('Send all of this Mac’s internet traffic through an exit you choose')
+    const access = () => container.querySelector('[data-access]')!
+    expect(access().getAttribute('data-access')).toBe('on')
+    expect(access().textContent).toContain('This Mac’s address is mockmacbook.on.solo.remote.it.')
+    expect(container.querySelector('[data-state="access"]')!.textContent).toBe('On')
+    expect(container.querySelector('[data-control="protect"]')).toBeNull()
 
-    // Route through, chosen while Protect is off: kept, nothing turned on; the subtitle names it.
-    await act(async () => {
-      const input = control('route')
-      // MUI's select: its hidden input takes the value; a change event is what the menu's click sends.
-      const props = Object.keys(input).find(k => k.startsWith('__reactProps'))!
-      ;(input as any)[props].onChange({ target: { value: '80:00:00:00:01:0B:00:03' } })
-    })
-    expect(calls('protect.route')).toEqual([{ id: '80:00:00:00:01:0B:00:03' }])
-    expect(line('protect').getAttribute('data-protect')).toBe('off')
-    expect(line('protect').textContent).toBe(
-      'remote.it ProtectAll traffic from this Mac goes through US West. If US West can’t be reached, traffic stops rather than going out unprotected.'
-    )
-    await act(async () => control('protect').click())
-    expect(calls('protect.set')).toEqual([{ on: true }])
-    expect(bridge.status.exit?.id).toBe('80:00:00:00:01:0B:00:03')
-    expect(line('protect').getAttribute('data-protect')).toBe('on')
+    expect(routeValue(container)).toBe('')
+    expect(routeLine(container).textContent).toBe('Send all of this Mac’s internet traffic through one of your exits.')
+    await choose(container, '80:00:00:00:01:0B:00:03')
+    expect(calls('exit.set')).toEqual([{ id: '80:00:00:00:01:0B:00:03' }])
+    expect(bridge.status.protect?.on).toBe(true)
+    expect(routeValue(container)).toBe('80:00:00:00:01:0B:00:03')
+    expect(routeLine(container).getAttribute('data-route')).toBe('up')
+    expect(routeLine(container).textContent).toBe('All traffic from this Mac goes through US West.')
 
-    // Access off leaves Protect on; Protect off and on again goes through the same exit.
     await act(async () => control('access').click())
     expect(calls('access.set')).toEqual([{ on: false }])
-    expect(line('access').getAttribute('data-access')).toBe('off')
-    expect(line('protect').getAttribute('data-protect')).toBe('on')
-    await act(async () => control('protect').click())
-    expect(bridge.status.exit).toBeUndefined()
-    expect(line('protect').textContent).toContain('goes through US West')
-    await act(async () => control('protect').click())
-    expect(calls('protect.set')).toEqual([{ on: true }, { on: false }, { on: true }])
-    expect(bridge.status.exit?.id).toBe('80:00:00:00:01:0B:00:03')
-    expect(calls('vpn.set')).toEqual([])
-    expect(calls('exit.set')).toEqual([])
+    expect(access().getAttribute('data-access')).toBe('off')
+    expect(container.querySelector('[data-state="access"]')!.textContent).toBe('Off')
+    expect(routeValue(container)).toBe('80:00:00:00:01:0B:00:03')
+
+    await choose(container, '')
+    expect(calls('exit.set')).toEqual([{ id: '80:00:00:00:01:0B:00:03' }, { id: null }])
+    expect(bridge.status.protect?.on).toBe(false)
+    expect(routeValue(container)).toBe('')
+    // Off says Off, though the engine keeps the exit for next time.
+    expect(bridge.status.protect?.route?.id).toBe('80:00:00:00:01:0B:00:03')
+    expect(routeLine(container).getAttribute('data-route')).toBe('off')
+    expect(calls('protect.set')).toEqual([])
+    expect(calls('protect.route')).toEqual([])
   })
 
-  it('says when traffic goes out the usual way while the exit cannot be reached', async () => {
-    const { container } = await render({ route: '80:00:00:00:01:0B:00:01', killSwitch: false })
-    expect(container.querySelector('[data-protect]')!.textContent).toContain(
-      'If Office can’t be reached, traffic goes out the usual way meanwhile.'
+  it('each state of Route through in its own words', async () => {
+    const office = { id: '80:00:00:00:01:0B:00:01', name: 'Office', kind: 'device' as const }
+    const cases: [string, any, string, string][] = [
+      ['connecting', { on: true, route: office, changing: true }, 'connecting', 'Connecting to Office…'],
+      [
+        'blocked',
+        { on: true, route: office, killSwitch: true, error: 'Exit unreachable — traffic blocked' },
+        'blocked',
+        'Office can’t be reached. Traffic is blocked until it can.',
+      ],
+      [
+        'down, no kill switch',
+        { on: true, route: office, killSwitch: false },
+        'blocked',
+        'Office can’t be reached. Traffic goes out directly until it can.',
+      ],
+      ['refused', { on: true, route: office, error: 'Exit Office is not allowed here' }, 'refused', 'Exit Office is not allowed here'],
+      ['held off', { on: false, route: office, error: 'Protect is on in dev' }, 'refused', 'Protect is on in dev'],
+      ['up', { on: true, route: office }, 'up', 'All traffic from this Mac goes through Office.'],
+      ['off', { on: false, route: office }, 'off', 'Send all of this Mac’s internet traffic through one of your exits.'],
+    ]
+    for (const [name, protect, key, words] of cases) {
+      const { container, bridge } = await render()
+      const down = name.startsWith('down')
+      await act(async () =>
+        bridge.emit('status', {
+          ...bridge.status,
+          protect,
+          exit: protect.on ? { ...office, state: down ? 'down' : protect.changing ? 'connecting' : 'up' } : undefined,
+        })
+      )
+      expect([name, routeLine(container).getAttribute('data-route'), routeLine(container).textContent]).toEqual([
+        name,
+        key,
+        words,
+      ])
+      expect(routeValue(container)).toBe(protect.on ? office.id : '')
+    }
+  })
+
+  it('no exits yet: Off, said so, nothing to choose', async () => {
+    const { container } = await render({ exits: [] })
+    expect(routeLine(container).textContent).toBe('No exits to route through yet.')
+    expect(routeInput(container).disabled).toBe(true)
+  })
+
+  it('a refusal: its reason said under the control, which stays as it was', async () => {
+    const { container, bridge } = await render({ routeRefusal: 'only exits its administrator allows' })
+    await choose(container, '80:00:00:00:01:0B:00:01')
+    expect(container.querySelector('[data-note="route.refused"]')!.textContent).toBe(
+      'Couldn’t change Route through. only exits its administrator allows'
     )
+    expect(routeValue(container)).toBe('')
+    expect(routeLine(container).getAttribute('data-route')).toBe('off')
+    expect(bridge.status.protect?.on).toBe(false)
+    expect(container.querySelector('[role="alert"]')).toBeNull()
   })
 
-  it('Route through: always shown, the device chosen in it, Protect on or off — no Change device', async () => {
-    const route = (c: HTMLElement) => c.querySelector('input[data-control="route"], [data-control="route"] input') as HTMLInputElement
-    for (const options of [{}, { route: '80:00:00:00:01:0B:00:01' }, { route: '80:00:00:00:01:0B:00:01', status: { vpn: { on: true } } as any }]) {
+  it('fixed by the administrator: read-only, saying so', async () => {
+    const { container, bridge } = await render({ route: '80:00:00:00:01:0B:00:01' })
+    await act(async () =>
+      bridge.emit('status', {
+        ...bridge.status,
+        protect: { ...bridge.status.protect!, locked: true, lockedWhy: 'Set by this machine’s administrator' },
+      })
+    )
+    expect(routeInput(container).disabled).toBe(true)
+    expect(container.querySelector('[data-note="route.locked"]')!.textContent).toBe('Set by this machine’s administrator')
+  })
+
+  it('a shell with Protect but no exit.set: protect.route then protect.set, Off through protect.set', async () => {
+    const { container, bridge } = await render({
+      capabilities: ['status', 'settings', 'access', 'protect'],
+      route: '80:00:00:00:01:0B:00:01',
+    })
+    await choose(container, '80:00:00:00:01:0B:00:01')
+    expect(bridge.calls.filter(c => /^protect\./.test(c.method)).map(c => [c.method, c.args])).toEqual([
+      ['protect.route', { id: '80:00:00:00:01:0B:00:01' }],
+      ['protect.set', { on: true }],
+    ])
+    expect(routeValue(container)).toBe('80:00:00:00:01:0B:00:01')
+    await choose(container, '')
+    expect(bridge.calls.filter(c => c.method === 'protect.set').map(c => c.args)).toEqual([{ on: true }, { on: false }])
+    expect(routeValue(container)).toBe('')
+  })
+
+  it('Route through shows Off while off, the exit kept or not, and the exit while on', async () => {
+    for (const options of [
+      {},
+      { route: '80:00:00:00:01:0B:00:01' },
+      { route: '80:00:00:00:01:0B:00:01', status: { vpn: { on: true } } as any },
+    ]) {
       const { container } = await render(options)
-      expect(route(container)).not.toBeNull()
-      expect(route(container).value).toBe(options.route ?? '')
-      expect(container.querySelector('[data-control="changeRoute"]')).toBeNull()
+      expect(routeValue(container)).toBe(options.status ? options.route : '')
     }
   })
 
@@ -279,20 +372,20 @@ describe('This device', () => {
       ],
     })
     // The printers are under Access (1.5.0, as the menu's Settings has them): nothing else is left to list.
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'services', 'more'])
+    expect(sections(container)).toEqual(['device', 'controls', 'access', 'route', 'services', 'more'])
     expect(sections((await mount(bridge, { part: 'advanced' })).container)).toEqual(['diagnostics'])
     expect(container.querySelector('[data-section="access"] [data-setting="printers"]')).not.toBeNull()
     expect(container.querySelector('[data-setting="services"]')).toBeNull()
     expect(container.querySelector('[data-setting="lan_services"]')).toBeNull()
     const line = container.querySelector('[data-services]')!
     expect(line.getAttribute('data-services')).toBe('on')
-    expect(line.textContent).toBe('Allow remote access to servicesPeople you share with can reach this Mac’s services.')
+    expect(line.textContent).toBe('People you share with can reach this Mac’s services.')
     await act(async () => (container.querySelector('[data-control="services"] input') as HTMLInputElement).click())
     expect(bridge.calls.filter(c => c.method === 'services.set').map(c => c.args)).toEqual([{ on: false }])
     expect(bridge.calls.filter(c => c.method === 'permissions.request' || c.method === 'permissions.get')).toEqual([])
     expect(container.querySelector('[data-services]')!.getAttribute('data-services')).toBe('off')
     expect(container.querySelectorAll('[data-services-state]').length).toBe(0)
-    expect(container.textContent).not.toContain('No services on this')
+    expect(container.textContent).not.toContain('Nothing shared yet')
   })
 
   it('a shell without the switch lists services among the settings, and never lan_services', async () => {
@@ -308,7 +401,7 @@ describe('This device', () => {
     expect(sections(container)).not.toContain('services')
     expect(container.querySelector('[data-setting="lan_services"]')).toBeNull()
     const row = container.querySelector('[data-setting="services"]')!
-    expect(row.textContent).toContain('Allow remote access to services')
+    expect(row.textContent).toContain('Share this device')
     await act(async () => (row.querySelector('input') as HTMLInputElement).click())
     expect(bridge.calls.find(c => c.method === 'settings.set')!.args).toEqual({ name: 'services', value: false })
   })
@@ -340,14 +433,12 @@ describe('This device', () => {
   it('a phone: the switch after Access and Protect, in place of its setting, in a phone’s words', async () => {
     const { container } = await phone()
     // services was the phone's only setting: shown as the switch, no Settings section is left.
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'services', 'more'])
+    expect(sections(container)).toEqual(['device', 'controls', 'access', 'route', 'services', 'more'])
     expect(sections((await phone({}, 'advanced')).container)).toEqual(['permissions', 'diagnostics'])
     expect(container.querySelector('[data-setting="services"]')).toBeNull()
     const line = container.querySelector('[data-services]')!
     expect(line.getAttribute('data-services')).toBe('off')
-    expect(line.textContent).toBe(
-      'Allow remote access to servicesPeople you share with can reach devices on the network this iPhone is on, through it.'
-    )
+    expect(line.textContent).toBe('People you share with can reach devices on the network this iPhone is on.')
   })
 
   it('turns it on through services.set, the Local Network permission asked then, and lists what it serves', async () => {
@@ -359,7 +450,7 @@ describe('This device', () => {
     expect(container.querySelector('[data-services]')!.getAttribute('data-services')).toBe('on')
     expect(bridge.status.services?.localNetworkPermission).toBe('granted')
     expect(container.querySelectorAll('[data-services-state]').length).toBe(0)
-    expect(container.textContent).toContain('No services on this iPhone yet')
+    expect(container.textContent).toContain('Nothing shared yet')
     const advanced = await mount(bridge, { part: 'advanced' })
     expect(advanced.container.querySelector('[data-section="permissions"]')!.textContent).toContain('Local networkgranted')
 
@@ -375,7 +466,7 @@ describe('This device', () => {
       })
     )
     const summary = container.querySelector('[data-served-summary]')!
-    expect(summary.textContent).toBe('2 services · 2 connections — see them in Details')
+    expect(summary.textContent).toBe('2 services · 2 connections. See them in Details.')
     expect(summary.getAttribute('href')).toBe('#/this-device/details')
     expect(container.querySelectorAll('[data-served]').length).toBe(0)
     const served = [...details.container.querySelectorAll('[data-served]')].map(e => e.textContent)
@@ -413,8 +504,8 @@ describe('This device', () => {
       e.textContent,
     ])
     expect(states).toEqual([
-      ['permission', 'Needs Local Network access: turn on Local Network for remote.it in this iPhone’s Settings.'],
-      ['network', 'Not on a local network: this iPhone is on cellular or offline, so its services can’t be reached.'],
+      ['permission', 'Sharing needs Local Network access. Turn on Local Network for Remote.It in this iPhone’s Settings.'],
+      ['network', 'This iPhone is on cellular or offline. No one can reach what you share until it is on a local network.'],
     ])
     expect(bridge.status.services?.on).toBe(true)
   })
@@ -437,32 +528,26 @@ describe('This device', () => {
       settings: [{ name: 'services', value: false, source: 'machine', locked: true }],
     })
     expect((container.querySelector('[data-control="services"] input') as HTMLInputElement).disabled).toBe(true)
-    expect(container.querySelector('[data-services]')!.textContent).toContain('administrator')
+    expect(container.querySelector('[data-note="services.locked"]')!.textContent).toContain('administrator')
   })
 
-  it('works signed out: every switch through the bridge, nothing of the account’s', async () => {
+  it('works signed out: every control through the bridge, the sign-in where the devices would be', async () => {
     const signedIn = await render()
-    expect(signedIn.container.textContent).toContain('Its page in remote.it')
-    const { container, bridge } = await render({}, { signedIn: false })
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'more'])
+    expect(signedIn.container.querySelector('[data-block="devices"]')).toBeNull()
+    const { container, bridge } = await render(
+      {},
+      { signedIn: false, renderDevices: () => <div data-sign-in>Sign in to see your devices</div> }
+    )
+    const blocks = [...container.querySelectorAll('[data-block]')].map(e => e.getAttribute('data-block'))
+    expect(blocks).toEqual(['devices', 'controls'])
+    expect(container.querySelector('[data-block="devices"] [data-sign-in]')).not.toBeNull()
     expect(container.textContent).toContain('Mock MacBook')
-    expect(container.textContent).not.toContain('Its page in remote.it')
     expect(container.querySelector('a[href^="#/devices/"]')).toBeNull()
-    const control = (name: string) => container.querySelector(`[data-control="${name}"] input`) as HTMLInputElement
-    await act(async () => control('access').click())
+    await act(async () => (container.querySelector('[data-control="access"] input') as HTMLInputElement).click())
     expect(container.querySelector('[data-access]')!.getAttribute('data-access')).toBe('off')
-    await act(async () => {
-      const input = control('route') ?? (container.querySelector('input[data-control="route"]') as HTMLInputElement)
-      const props = Object.keys(input).find(k => k.startsWith('__reactProps'))!
-      ;(input as any)[props].onChange({ target: { value: '80:00:00:00:01:0B:00:01' } })
-    })
-    await act(async () => control('protect').click())
-    expect(container.querySelector('[data-protect]')!.getAttribute('data-protect')).toBe('on')
-    expect(bridge.calls.map(c => c.method).filter(m => /\.(set|route)$/.test(m))).toEqual([
-      'access.set',
-      'protect.route',
-      'protect.set',
-    ])
+    await choose(container, '80:00:00:00:01:0B:00:01')
+    expect(routeLine(container).getAttribute('data-route')).toBe('up')
+    expect(bridge.calls.map(c => c.method).filter(m => /\.(set|route)$/.test(m))).toEqual(['access.set', 'exit.set'])
     expect(bridge.calls.some(c => c.method.startsWith('auth.'))).toBe(false)
   })
 
@@ -539,7 +624,7 @@ describe('This device has what Settings has', () => {
     expect(text('[data-detail="owner"]')).toContain('owner@example.com')
     expect(text('[data-detail="address"]')).toContain('198.18.16.12')
     expect(text('[data-detail="uid"]')).toContain('80:00:00:00:01:0A:BC:DE')
-    expect(text('[data-detail="versions"]')).toBe('VersionsPackage 1.1.0.20261010 · connectd 5.6.1.20261010')
+    expect(text('[data-detail="versions"]')).toBe('VersionsApp 1.1.0.20261010 · Agent 5.6.1.20261010')
     expect(text('[data-detail="dnsName"]')).toContain('mockmacbook.on.solo.remote.it')
     expect(text('[data-detail="relay"]')).toContain('In use now')
     const main = await mount(bridge)
@@ -579,7 +664,7 @@ describe('This device has what Settings has', () => {
       { capabilities: caps, status: { ...status, device: { ...status.device, removal: 'uninstall' } }, settings },
       { part: 'advanced' }
     )
-    expect(container.querySelector('[data-control="remove"]')!.textContent).toBe('Uninstall remote.it from this Mac…')
+    expect(container.querySelector('[data-control="remove"]')!.textContent).toBe('Uninstall Remote.It from this Mac…')
   })
 
   it('under Access: the administrator’s reason, the range, and the printers', async () => {
@@ -591,7 +676,7 @@ describe('This device has what Settings has', () => {
     expect(access.querySelector('[data-note="range.warning"] [title]')!.getAttribute('title')).toContain('utun9')
     expect(access.querySelector('[data-note="access.locked"]')).toBeNull() // the mock says Access unlocked
     expect(access.querySelector('[data-note="range.moved"]')!.textContent).toContain(
-      'Moved to 198.18.16.0/20: another network took 198.18.0.0/20'
+      'Moved to 198.18.16.0/20 because another network took 198.18.0.0/20'
     )
     expect(access.querySelector('[data-setting="printers"]')!.textContent).toContain('Show remote printers on this Mac')
     expect(container.querySelector('[data-section="settings"] [data-setting="printers"]')).toBeNull()
@@ -613,7 +698,7 @@ describe('This device has what Settings has', () => {
     expect(row('exit_node').textContent).toContain('Turned off by this machine’s administrator')
     expect((row('exit_node').querySelector('input') as HTMLInputElement).disabled).toBe(true)
     expect(row('remoteit.console').textContent).toContain('Console')
-    expect(row('remoteit.console').textContent).toContain('Not served: remote access to services is off')
+    expect(row('remoteit.console').textContent).toContain('Not shared while sharing is off')
     expect(row('websocket').textContent).toContain('Changed from the portal to Always')
     expect(row('websocket').textContent).toContain('In use now')
     expect(row('websocket').textContent).toContain('Automatic')
@@ -727,14 +812,14 @@ describe('This device stopped', () => {
     const engine = container.querySelector('[data-engine]')!
     expect(engine.getAttribute('data-engine')).toBe('stopped')
     expect(engine.textContent).toBe(
-      'Not runningThis Mac is offline — no one can reach its services, and Protect and Access are off'
+      'Not runningNo one can reach this Mac, and Access and Route through are off.'
     )
     const access = container.querySelector(
       '[data-control="access"] input, input[data-control="access"]'
     ) as HTMLInputElement
     expect(access.disabled).toBe(true)
     const start = container.querySelector('[data-control="start"]') as HTMLButtonElement
-    expect(start.textContent).toBe('Start remote.it')
+    expect(start.textContent).toBe('Start Remote.It')
     await act(async () => start.click())
     expect(bridge.calls.filter(c => c.method === 'device.start')).toHaveLength(1)
     expect(container.querySelector('[data-engine]')!.getAttribute('data-engine')).toBe('online')
@@ -753,7 +838,7 @@ describe('This device stopped', () => {
       status: { engine: 'stopped' },
     })
     expect(container.querySelector('[data-engine]')!.textContent).toBe(
-      'OffTurn on Access, Protect or remote access to services to start it'
+      'OffTurn on Access, Route through or Share to start Remote.It.'
     )
     expect(container.querySelector('[data-control="start"]')).toBeNull()
     const access = container.querySelector(
@@ -827,7 +912,7 @@ describe('This device follows what the shell offers', () => {
 
   it('a shell before 1.7.0 (no info event): as it offered at boot', async () => {
     const { container } = await render({ capabilities: desktop, info: { bridgeVersion: '1.6.0' } })
-    expect(sections(container)).toEqual(['device', 'access', 'protect', 'more'])
+    expect(sections(container)).toEqual(['device', 'controls', 'access', 'route', 'more'])
   })
 
   describe('the account’s public-exit transfer under the exit picker', () => {
@@ -848,7 +933,7 @@ describe('This device follows what the shell offers', () => {
     })
     // As the page renders it, signed in.
     const renderExitUsage = (shown: boolean) => <TransferUsageHint accountId="USER" kind="exit" shown={shown} />
-    const hint = (c: HTMLElement) => c.querySelector('[data-section="protect"] [data-testid="transfer-usage-hint"]')
+    const hint = (c: HTMLElement) => c.querySelector('[data-section="route"] [data-testid="transfer-usage-hint"]')
 
     it.each([
       ['with an allowance', exit(), '8.2 of 10 GB this month'],
@@ -856,7 +941,7 @@ describe('This device follows what the shell offers', () => {
       ['with no allowance', exit({ allowanceBytes: null }), '8.2 GB this month'],
     ])('routed through remote.it’s exit, %s', async (_, row, text) => {
       usage.mockReset().mockResolvedValue([row])
-      const { container } = await render({ route: US_WEST }, { renderExitUsage })
+      const { container } = await render({ route: US_WEST, status: { vpn: { on: true } } as any }, { renderExitUsage })
       expect(usage).toHaveBeenCalledWith('USER')
       expect(hint(container)!.textContent).toBe(text)
       expect(hint(container)!.getAttribute('data-over')).toBe(row.over ? 'true' : null)
@@ -868,11 +953,7 @@ describe('This device follows what the shell offers', () => {
       expect(hint(container)).toBeNull()
       expect(usage).not.toHaveBeenCalled()
       // Route through changed to remote.it's: asked then, and said under it.
-      await act(async () => {
-        const input = container.querySelector('input[data-control="route"]') as HTMLInputElement
-        const props = Object.keys(input).find(k => k.startsWith('__reactProps'))!
-        ;(input as any)[props].onChange({ target: { value: US_WEST } })
-      })
+      await choose(container, US_WEST)
       await act(async () => {})
       expect(usage).toHaveBeenCalledTimes(1)
       expect(hint(container)!.textContent).toBe('8.2 of 10 GB this month')
@@ -880,9 +961,9 @@ describe('This device follows what the shell offers', () => {
 
     it('nothing where the usage cannot be read, and the page stands', async () => {
       usage.mockReset().mockResolvedValue('ERROR')
-      const { container } = await render({ route: US_WEST }, { renderExitUsage })
+      const { container } = await render({ route: US_WEST, status: { vpn: { on: true } } as any }, { renderExitUsage })
       expect(hint(container)).toBeNull()
-      expect(sections(container)).toEqual(['device', 'access', 'protect', 'more'])
+      expect(sections(container)).toEqual(['device', 'controls', 'access', 'route', 'more'])
       expect(container.querySelector('.MuiAlert-root')).toBeNull()
       usage.mockReset().mockRejectedValue(new Error('network'))
       expect(hint((await render({ route: US_WEST }, { renderExitUsage })).container)).toBeNull()
@@ -895,7 +976,7 @@ describe('This device follows what the shell offers', () => {
       const caps: Capability[] = ['status', 'vpn', 'exit', 'settings']
       const status = { vpn: { on: true }, exit: { id: US_WEST, name: 'US West', kind: 'remoteit', state: 'up' } } as any
       const { container } = await render({ capabilities: caps, status }, { renderExitUsage })
-      const line = () => container.querySelector('[data-section="vpn"] [data-testid="transfer-usage-hint"]')
+      const line = () => container.querySelector('[data-section="route"] [data-testid="transfer-usage-hint"]')
       expect(line()!.textContent).toBe('8.2 of 10 GB this month')
       const office = { vpn: { on: true }, exit: { id: OFFICE, name: 'Office', kind: 'device', state: 'up' } } as any
       const other = await render({ capabilities: caps, status: office }, { renderExitUsage })
@@ -942,6 +1023,18 @@ describe('This device’s exits, each with its devices', () => {
     await act(async () => list.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })))
     return items
   }
+  // Each item of the open picker: its value, and whether it may be chosen.
+  async function listedItems(c: HTMLElement) {
+    const field = control(c, 'route').parentElement!.querySelector('[role="combobox"]')!
+    await act(async () => field.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 })))
+    const list = [...document.querySelectorAll('[role="listbox"]')].at(-1)!
+    const items = [...list.querySelectorAll('[data-exit]')].map(item => [
+      item.getAttribute('data-exit'),
+      item.getAttribute('aria-disabled') === 'true',
+    ])
+    await act(async () => list.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })))
+    return items
+  }
   const note = (c: HTMLElement, id: string) => c.querySelector(`[data-note="${id}"]`)?.textContent ?? null
 
   it('each exit with its devices counted where the page reads them, for this device; the engine’s list alone without', async () => {
@@ -949,62 +1042,71 @@ describe('This device’s exits, each with its devices', () => {
     const { container } = await render({}, { readExits })
     expect(readExits).toHaveBeenCalledWith(MACHINE)
     expect(await listed(container, 'route')).toEqual([
+      ['Off', null],
       ['Office', '1 of 2 devices carrying traffic'],
-      ['US West (remote.it)', '2 devices'],
+      ['US West (Remote.It)', '2 devices'],
     ])
-    // The field shows the exit's name alone; the placeholder names what is chosen.
-    expect(container.querySelector('[data-section="protect"] [role="combobox"]')!.textContent).toBe('Choose an exit')
+    // The field shows Off, or the exit's name alone.
+    expect(container.querySelector('[data-section="route"] [role="combobox"]')!.textContent).toBe('Off')
 
     const signedOut = await render()
     expect(await listed(signedOut.container, 'route')).toEqual([
+      ['Off', null],
       ['Office', null],
-      ['US West (remote.it)', null],
+      ['US West (Remote.It)', null],
     ])
-    expect(note(signedOut.container, 'protect.through')).toBeNull()
+    expect(note(signedOut.container, 'route.through')).toBeNull()
   })
 
   it('the device of the exit in use, while Protect is on through it; read again as the route or Protect moves', async () => {
     const readExits = reader(cloud({ id: US_WEST, through: { id: 'E2', name: 'e2' }, serving: two }))
     const on = await render({ route: US_WEST, status: { vpn: { on: true } } as any }, { readExits })
-    expect(note(on.container, 'protect.through')).toBe('Going out through e2 now · one of 2 devices')
-    expect(on.container.querySelector('[data-section="protect"] [role="combobox"]')!.textContent).toBe('US West (remote.it)')
+    expect(note(on.container, 'route.through')).toBe('Going out through e2 now · one of 2 devices')
+    expect(on.container.querySelector('[data-section="route"] [role="combobox"]')!.textContent).toBe('US West (Remote.It)')
 
-    // Protect off: nothing goes through it now.
+    // Off: nothing goes through it now.
     const off = await render({ route: US_WEST }, { readExits })
-    expect(note(off.container, 'protect.through')).toBeNull()
+    expect(note(off.container, 'route.through')).toBeNull()
     const asked = readExits.mock.calls.length
-    await act(async () => control(off.container, 'protect').click())
+    await choose(off.container, US_WEST)
     await act(async () => {})
     expect(readExits.mock.calls.length).toBeGreaterThan(asked)
-    expect(note(off.container, 'protect.through')).toBe('Going out through e2 now · one of 2 devices')
+    expect(note(off.container, 'route.through')).toBe('Going out through e2 now · one of 2 devices')
 
     // The account says another exit is in use than the one chosen here: not said of this one.
     const other = await render(
       { route: OFFICE, status: { vpn: { on: true } } as any },
       { readExits: reader(cloud({ id: US_WEST, through: { id: 'E2', name: 'e2' }, serving: two })) }
     )
-    expect(note(other.container, 'protect.through')).toBeNull()
+    expect(note(other.container, 'route.through')).toBeNull()
   })
 
   it('who may not choose the machine’s exit here: read-only, with why; Protect off stays theirs', async () => {
     const chooseRefusal = 'Only someone who manages this device chooses its exit'
     const off = await render({ route: US_WEST, chooseRefusal }, { readExits: reader(cloud()) })
-    expect(control(off.container, 'route').closest('.MuiInputBase-root')!.classList.contains('Mui-disabled')).toBe(true)
-    expect(control(off.container, 'protect').disabled).toBe(true)
-    expect(note(off.container, 'protect.choose')).toBe(chooseRefusal)
+    const disabled = (c: HTMLElement) =>
+      control(c, 'route').closest('.MuiInputBase-root')!.classList.contains('Mui-disabled')
+    expect(disabled(off.container)).toBe(true)
+    expect(note(off.container, 'route.choose')).toBe(chooseRefusal)
 
     const on = await render({ route: US_WEST, chooseRefusal, status: { vpn: { on: true } } as any })
-    expect(control(on.container, 'protect').disabled).toBe(false)
-    await act(async () => control(on.container, 'protect').click())
-    expect(on.bridge.calls.filter(c => c.method === 'protect.set').map(c => c.args)).toEqual([{ on: false }])
-    expect(on.container.querySelector('[data-protect]')!.getAttribute('data-protect')).toBe('off')
-    // Off, it is not turned on again here.
-    expect(control(on.container, 'protect').disabled).toBe(true)
+    expect(disabled(on.container)).toBe(false)
+    const open = [...(await listedItems(on.container))]
+    expect(open).toEqual([
+      ['', false],
+      [OFFICE, true],
+      [US_WEST, true],
+    ])
+    await choose(on.container, '')
+    expect(on.bridge.calls.filter(c => c.method === 'exit.set').map(c => c.args)).toEqual([{ id: null }])
+    expect(routeLine(on.container).getAttribute('data-route')).toBe('off')
+    // Off, no exit is chosen again here.
+    expect(disabled(on.container)).toBe(true)
 
     // A shell before 1.10.0 says nothing: the choice is offered, and the shell's refusal shown when it comes.
     const before = await render({ route: US_WEST })
-    expect(control(before.container, 'protect').disabled).toBe(false)
-    expect(note(before.container, 'protect.choose')).toBeNull()
+    expect(disabled(before.container)).toBe(false)
+    expect(note(before.container, 'route.choose')).toBeNull()
   })
 
   it('remote.it’s exit said so once, where its name says so already', async () => {
@@ -1013,7 +1115,7 @@ describe('This device’s exits, each with its devices', () => {
       { id: US_WEST, name: 'US West', kind: 'remoteit' as const },
     ]
     const { container } = await render({ exits })
-    expect((await listed(container, 'route')).map(([name]) => name)).toEqual(['remote.it pdx1a', 'US West (remote.it)'])
+    expect((await listed(container, 'route')).map(([name]) => name)).toEqual(['Off', 'remote.it pdx1a', 'US West (Remote.It)'])
   })
 
   it('a shell before Protect: its exit picker the same, and the device in use under it', async () => {
@@ -1023,11 +1125,12 @@ describe('This device’s exits, each with its devices', () => {
       { capabilities: caps, status },
       { readExits: reader(cloud({ id: US_WEST, through: { id: 'E1', name: 'e1' }, serving: two })) }
     )
-    expect(await listed(container, 'exit')).toEqual([
+    expect(await listed(container, 'route')).toEqual([
+      ['Off', null],
       ['Office', '1 of 2 devices carrying traffic'],
-      ['US West (remote.it)', '2 devices'],
+      ['US West (Remote.It)', '2 devices'],
     ])
-    expect(note(container, 'exit.through')).toBe('Going out through e1 now · one of 2 devices')
+    expect(note(container, 'route.through')).toBe('Going out through e1 now · one of 2 devices')
   })
 })
 
@@ -1215,7 +1318,7 @@ describe('This device’s ssh and exit', () => {
   })
 
   it('the way to Advanced is there for either alone', async () => {
-    const { container } = await render({ capabilities: ['status', 'ssh'] })
+    const { container } = await render({ capabilities: ['status', 'ssh'] }, { part: 'settings' })
     expect(container.querySelector('[data-link="advanced"]')).not.toBeNull()
   })
 })

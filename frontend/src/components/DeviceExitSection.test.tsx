@@ -166,13 +166,12 @@ const described = (page: HTMLElement) =>
       }`
   )
 const notice = (page: HTMLElement) => page.querySelector('[data-notice]')?.textContent ?? null
-const protectRow = (page: HTMLElement) => page.querySelector('[data-item="shield"]') as HTMLElement
-const status = (page: HTMLElement) => protectRow(page)?.querySelector('[data-protect-status]')?.textContent ?? null
-// Protect's lines under its status: who set it, why it is held, why it cannot be turned on.
-const protectLines = (page: HTMLElement) =>
-  [...(protectRow(page)?.querySelectorAll('[data-sub] > span[class]') ?? [])].slice(1).map(line => line.textContent)
-const toggle = (page: HTMLElement) => protectRow(page)?.querySelector('[data-toggle]') as HTMLButtonElement
 const helper = (page: HTMLElement) => select(page)?.querySelector('[data-helper]')?.textContent ?? ''
+const helperLines = (page: HTMLElement) =>
+  [...(select(page)?.querySelectorAll('[data-helper] > span') ?? [])].map(line => line.textContent)
+// Route through's state, first under it; then who set it, and why it is held.
+const routeStatus = (page: HTMLElement) => helperLines(page)[0] ?? null
+const lines = (page: HTMLElement) => helperLines(page).slice(1)
 
 beforeEach(() => {
   deviceExit.mockReset().mockResolvedValue(exitOf())
@@ -192,236 +191,132 @@ const on = (exit: any = office, fields: Partial<DeviceExit> = {}) => exitOf({ us
 const offWith = (route: string, routeName: string | null = null) =>
   protect.mockResolvedValue({ on: false, route, routeName })
 
-describe('remote.it Protect, a switch', () => {
-  it('on: protecting, through its exit and the device of it in use', async () => {
-    deviceExit.mockResolvedValue(on(office, { usesExitThrough: { id: 'MAC', name: 'Office Mac' } }))
-    let page = await render()
-    expect(protectRow(page).querySelector('[data-label]')?.textContent).toBe('remote.it Protect')
-    expect(status(page)).toBe('Protecting — going out through Office (device Office Mac)')
-    expect(toggle(page).dataset.on).toBe('true')
-    expect(toggle(page).disabled).toBe(false)
-    expect(protectRow(page).dataset.color).toBe('primary')
-    deviceExit.mockResolvedValue(on(office))
-    page = await render()
-    expect(status(page)).toBe('Protecting — going out through Office')
-  })
-
-  it('off: traffic goes its usual way; the route kept, and a hint to turn Protect on through it', async () => {
-    offWith('xoffice', 'Office')
-    const page = await render()
-    expect(status(page)).toBe('Off — traffic goes its usual way')
-    expect(toggle(page).dataset.on).toBe('false')
-    expect(toggle(page).disabled).toBe(false)
-    expect(select(page).dataset.value).toBe('xoffice')
-    expect(helper(page)).toContain('Turn Protect on to send traffic through it')
-  })
-
-  it('turned on through the route kept, off keeping it; the device read again, for the list', async () => {
-    offWith('xoffice', 'Office')
-    let page = await render()
-    await click(toggle(page))
-    expect(setExit).toHaveBeenLastCalledWith('LAPTOP', 'xoffice')
-    expect(deviceExit).toHaveBeenCalledTimes(2)
-    expect(reload).toHaveBeenCalled()
-    expect(fetchSingleFull).toHaveBeenCalledWith({ id: 'LAPTOP', accountId: 'OWNER', silent: true })
-
-    deviceExit.mockResolvedValue(on(office))
-    page = await render()
-    await click(toggle(page))
-    expect(setExit).toHaveBeenLastCalledWith('LAPTOP', null)
-  })
-
-  it('no route: not turned on, saying why; nothing sent', async () => {
-    const page = await render()
-    expect(status(page)).toBe('Off — traffic goes its usual way')
-    expect(toggle(page).disabled).toBe(true)
-    expect(protectLines(page)).toEqual(['Choose an exit under Route through to turn Protect on'])
-    expect(select(page).dataset.value).toBe('')
-    expect(choices(page)[0]).toBe('=Choose an exit')
-    expect(helper(page)).not.toContain('Turn Protect on')
-    await click(toggle(page))
-    expect(setExit).not.toHaveBeenCalled()
-  })
-
-  it('the exit not working on the device: Protect’s line says so, in the danger or warning colour, in the device’s words', async () => {
-    deviceExit.mockResolvedValue(
-      on(office, {
-        usesExitThrough: { id: 'MAC', name: 'Office Mac' },
-        exitError: { code: 'routes-failed', message: FAILED, at: '2026-11-11T20:00:00Z' },
-      })
-    )
-    let page = await render()
-    expect(status(page)).toBe(
-      'Not working on this device: the exit’s routes could not be set — traffic goes out directly'
-    )
-    expect(protectRow(page).dataset.color).toBe('danger')
-    expect(protectLines(page)).toEqual([FAILED])
-    expect(page.textContent).not.toContain('Office Mac')
-    deviceExit.mockResolvedValue(on(office, { exitError: { code: 'routes-held', message: HELD, at: null } }))
-    page = await render()
-    expect(status(page)).toBe('Not working on this device: the exit’s routes could not be set — traffic is blocked')
-    expect(protectRow(page).dataset.color).toBe('warning')
-    // Off, an error left from before is not Protect's state.
-    deviceExit.mockResolvedValue(exitOf({ exitError: { code: 'routes-held', message: HELD, at: null } }))
-    offWith('xoffice')
-    expect(status(await render())).toBe('Off — traffic goes its usual way')
-  })
-
-  it('on with its exit dormant, or none of its devices taking its traffic: said in its line', async () => {
-    deviceExit.mockResolvedValue(
-      exitOf({ usesExit: uses(spare, { offered: false, dormant: true }), exitDormant: true })
-    )
-    let page = await render()
-    expect(status(page)).toBe('On — Spare has no device available, so traffic goes its usual way until one does')
-    expect(toggle(page).disabled).toBe(false) // off is still the portal's
-    expect(choices(page).at(-1)).toBe('xspare=Spare · no device available')
-    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(office, { offered: false }) }))
-    page = await render()
-    expect(status(page)).toBe('On — none of Office’s devices takes its traffic now: it stops until one does')
-  })
-
-  it('off with its route dormant: not turned on until a device of it is in service, saying so', async () => {
-    deviceExit.mockResolvedValue(exitOf({ exitDormant: true }))
-    offWith('xspare', 'Spare')
-    const page = await render()
-    expect(toggle(page).disabled).toBe(true)
-    expect(protectLines(page)).toEqual([
-      'Spare has no device available: Protect can be turned on through it once one does',
-    ])
-    expect(helper(page)).not.toContain('Turn Protect on')
-  })
-
-  it('a refusal in graphql’s words, or that nothing was changed; gone when closed', async () => {
-    deviceExit.mockResolvedValue(on(office))
-    const page = await render()
-    setExit.mockResolvedValueOnce({ reason: 'this machine’s administrator turned Protect on on the device' })
-    await click(toggle(page))
-    expect(notice(page)).toBe('this machine’s administrator turned Protect on on the device')
-    expect(fetchSingleFull).not.toHaveBeenCalled()
-    setExit.mockResolvedValueOnce('ERROR')
-    await click(toggle(page))
-    expect(notice(page)).toBe('It was not changed: try again.')
-    await click(page.querySelector('[data-close]'))
-    expect(notice(page)).toBeNull()
-  })
-})
-
-describe('Route through, a picker apart from Protect', () => {
-  it('offers the exits offered for the device, named by why, each with its devices counted', async () => {
+describe('Route through, one control', () => {
+  it('Off, then the exits offered for the device, named by why, each with its devices counted', async () => {
     const two = { devices: 2, carrying: 2, healthy: 2, draining: 0 }
     offered.mockResolvedValue([{ ...pdx, serving: two }, office, pats, router])
     const page = await render()
-    expect(offered).toHaveBeenCalledTimes(1)
+    expect(page.querySelector('[data-item="shield"]')).toBeNull() // no separate switch
+    expect(select(page).dataset.value).toBe('')
     expect(choices(page)).toEqual([
-      '=Choose an exit',
+      '=Off',
       'pdx1a=remote.it pdx1a',
       'xoffice=Office',
       'xpat=Pat exit · pat@example.com’s',
-      'xrouter=Home router · by its network',
+      'xrouter=Home router · chosen by a network',
     ])
-    expect(described(page)).toEqual(['= (off)', 'pdx1a=2 devices', 'xoffice=', 'xpat=', 'xrouter='])
+    expect(described(page)[1]).toBe('pdx1a=2 devices')
+    expect(routeStatus(page)).toBe('Off. Traffic goes out directly.')
   })
 
-  it('choosing a route leaves Protect as it is — off or on — and reads the device again', async () => {
+  it('on: the exit chosen, and what goes through it, in words', async () => {
+    deviceExit.mockResolvedValue(on(office, { usesExitThrough: { id: 'MAC', name: 'Office Mac' } }))
+    const page = await render()
+    expect(select(page).dataset.value).toBe('xoffice')
+    expect(routeStatus(page)).toBe('All traffic goes through Office (device Office Mac).')
+  })
+
+  it('choosing an exit routes through it; Off stops; the device read again', async () => {
     offWith('xoffice', 'Office')
     let page = await render()
-    await click(choice(page, 'xpat'))
-    expect(setRoute).toHaveBeenCalledWith('LAPTOP', 'xpat')
-    expect(setExit).not.toHaveBeenCalled()
-    expect(deviceExit).toHaveBeenCalledTimes(2)
+    // Off, though the device keeps an exit for next time.
+    expect(select(page).dataset.value).toBe('')
+    await click(choice(page, 'pdx1a'))
+    expect(setExit).toHaveBeenLastCalledWith('LAPTOP', 'pdx1a')
+    expect(fetchSingleFull).toHaveBeenCalledWith({ id: 'LAPTOP', accountId: 'OWNER', silent: true })
+    expect(reload).toHaveBeenCalled()
 
     deviceExit.mockResolvedValue(on(office))
     page = await render()
-    await click(choice(page, 'xrouter'))
-    expect(setRoute).toHaveBeenLastCalledWith('LAPTOP', 'xrouter')
+    await click(choice(page, ''))
+    expect(setExit).toHaveBeenLastCalledWith('LAPTOP', null)
+    // The same choice again sends nothing.
+    setExit.mockClear()
+    await click(choice(page, 'xoffice'))
     expect(setExit).not.toHaveBeenCalled()
-    // The route already chosen: nothing sent.
-    await click(choice(page, 'xoffice'))
-    expect(setRoute).toHaveBeenCalledTimes(2)
-  })
-
-  it('an API without keepProtect: choosing a route turns Protect on with it, and says so while off', async () => {
-    keeps.mockResolvedValue(false)
-    const page = await render()
-    expect(helper(page)).toContain('Choosing an exit turns Protect on')
-    await click(choice(page, 'xoffice'))
-    expect(setExit).toHaveBeenCalledWith('LAPTOP', 'xoffice')
     expect(setRoute).not.toHaveBeenCalled()
-    deviceExit.mockResolvedValue(on(office))
-    expect(helper(await render())).not.toContain('turns Protect on')
   })
 
-  it('while a change is being made, the controls are disabled and nothing else is sent', async () => {
-    let answer: (value: unknown) => void = () => {}
-    setRoute.mockImplementationOnce(() => new Promise(resolve => (answer = resolve)))
-    offWith('xoffice', 'Office')
+  it('a refusal in graphql’s words, or that nothing was changed; gone when closed', async () => {
+    setExit.mockResolvedValue({ reason: 'That exit is not offered to this device' })
+    let page = await render()
+    await click(choice(page, 'xoffice'))
+    expect(notice(page)).toBe('That exit is not offered to this device')
+    expect(fetchSingleFull).not.toHaveBeenCalled()
+    await click(page.querySelector('[data-close]'))
+    expect(notice(page)).toBeNull()
+    setExit.mockResolvedValue('ERROR')
+    page = await render()
+    await click(choice(page, 'xoffice'))
+    expect(notice(page)).toBe('Couldn’t change Route through. Try again.')
+  })
+
+  it('while a change is being made, the control is disabled and nothing else is sent', async () => {
+    let finish: (value: any) => void = () => {}
+    setExit.mockImplementation(() => new Promise(resolve => (finish = resolve)))
     const page = await render()
-    await click(choice(page, 'xpat'))
+    await click(choice(page, 'xoffice'))
     expect(select(page).dataset.disabled).toBe('true')
-    expect(toggle(page).disabled).toBe(true)
-    await click(choice(page, 'xrouter'))
-    expect(setRoute).toHaveBeenCalledTimes(1)
-    await act(async () => answer({}))
+    await click(choice(page, 'pdx1a'))
+    expect(setExit).toHaveBeenCalledTimes(1)
+    await act(async () => finish({}))
     expect(select(page).dataset.disabled).toBe('false')
   })
 
-  it('a route no longer offered still shows, as itself; one the administrator does not allow is listed, not chosen', async () => {
-    deviceExit.mockResolvedValue(on({ ...pats, id: 'xold', name: 'Old exit' }))
+  it('the exit not working on the device: said first, in the device’s words', async () => {
+    deviceExit.mockResolvedValue(on(office, { exitError: { code: 'routes-failed', message: FAILED, at: null } }))
     let page = await render()
-    expect(select(page).dataset.value).toBe('xold')
-    expect(choices(page).at(-1)).toBe('xold=Old exit')
-    deviceExit.mockResolvedValue(exitOf({ exitAllowed: ['pdx1a'] }))
-    offered.mockResolvedValue([pdx, office])
+    expect(routeStatus(page)).toBe('Exit not working on this device. Traffic goes out directly.')
+    expect(helper(page)).toContain(FAILED)
+    deviceExit.mockResolvedValue(on(office, { exitError: { code: 'routes-held', message: HELD, at: null } }))
     page = await render()
-    expect(described(page)).toEqual(['= (off)', 'pdx1a=', 'xoffice=Not allowed by this machine’s administrator (off)'])
+    expect(routeStatus(page)).toBe('Exit not working on this device. Traffic is blocked.')
   })
 
-  it('no exits for the device: said in the picker', async () => {
+  it('waiting for its exit: dormant, or none of its devices taking its traffic', async () => {
+    deviceExit.mockResolvedValue(on(office, { exitDormant: true }))
+    expect(routeStatus(await render())).toBe(
+      'Waiting for exit. Office has no device available, so traffic goes out directly.'
+    )
+    deviceExit.mockResolvedValue(exitOf({ usesExit: uses(office, { offered: false }) }))
+    expect(routeStatus(await render())).toBe('Waiting for exit. Traffic is blocked until a device of Office takes it.')
+  })
+
+  it('a route no longer offered still shows, as itself; one the administrator does not allow is listed, not chosen', async () => {
+    deviceExit.mockResolvedValue(on(spare, { exitAllowed: ['xoffice'] }))
+    const page = await render()
+    expect(choices(page)).toContain('xspare=Spare')
+    expect(described(page)).toContain('pdx1a=Not allowed by this device’s administrator (off)')
+    expect(described(page)).toContain('xoffice=')
+  })
+
+  it('no exits for the device: Off alone, said so', async () => {
     offered.mockResolvedValue([])
-    expect(choices(await render())).toEqual(['=No exits for this device'])
+    const page = await render()
+    expect(choices(page)).toEqual(['=Off'])
+    expect(helper(page)).toContain('No exits for this device yet.')
   })
 })
 
-describe('who set each, and what the administrator holds, per control', () => {
+describe('who set it, and what the administrator holds', () => {
   const protectSet = (fields: any) =>
     settings.mockReturnValue([
       { name: 'protect', value: false, at: null, by: null, onDevice: false, control: 'cloud+local', ...fields },
     ])
 
-  it('Protect: set in the portal, or on this computer by a signed-in person — ends at their sign-out', async () => {
-    offWith('xoffice', 'Office')
-    protectSet({ by: 'ann@example.com' })
-    expect(protectLines(await render())).toEqual(['Set in the portal by ann@example.com'])
-    protectSet({ by: 'pat', onDevice: true, signedIn: PAT })
-    expect(protectLines(await render())).toEqual([
-      'Set on this computer by pat@example.com — ends when pat@example.com signs out',
-    ])
-  })
-
-  it('the route: who chose it, and whose exit the machine goes through', async () => {
+  it('who chose the exit, and whose exit the device goes through', async () => {
     deviceExit.mockResolvedValue(
-      on(pats, {
-        exitSetOnDevice: true,
-        exitSetOnDeviceBy: 'pat',
-        exitSetOnDeviceSignedIn: PAT,
-        exitThroughPerson: PAT,
-      })
+      on(pats, { exitSetOnDevice: true, exitSetOnDeviceBy: 'pat', exitSetOnDeviceSignedIn: PAT, exitThroughPerson: PAT })
     )
-    let page = await render()
-    expect(helper(page)).toBe(
-      'Set on this computer by pat@example.com — ends when pat@example.com signs outMachine-wide through pat@example.com’s exit Pat exit'
-    )
-    deviceExit.mockResolvedValue(exitOf({ exitSetOnDevice: true, exitSetOnDeviceAdmin: true }))
-    offWith('xoffice', 'Office')
-    page = await render()
-    expect(helper(page)).toContain('Set on the device by its administrator')
-    deviceExit.mockResolvedValue(exitOf({ exitSetBy: { email: 'ann@example.com' } }))
-    page = await render()
-    expect(helper(page)).toContain('Set in the portal by ann@example.com')
+    expect(lines(await render())).toEqual([
+      'Set on the device by pat@example.com, until pat@example.com signs out',
+      'The whole device goes through Pat exit, pat@example.com’s exit',
+    ])
+    deviceExit.mockResolvedValue(on(office, { exitSetBy: { email: 'ann@example.com' } }))
+    expect(lines(await render())).toEqual(['Set in Remote.It by ann@example.com'])
   })
 
-  it('Protect held by its administrator’s control: read-only, saying so; the route still the portal’s', async () => {
-    offWith('xoffice', 'Office')
+  it('held by the protect setting’s control: read-only, saying so', async () => {
     for (const [control, line] of [
       ['off', 'Turned off on the device by its administrator'],
       ['on', 'Turned on on the device by its administrator'],
@@ -429,64 +324,58 @@ describe('who set each, and what the administrator holds, per control', () => {
     ]) {
       protectSet({ control })
       const page = await render()
-      expect(toggle(page).disabled).toBe(true)
-      expect(protectLines(page)).toEqual([line])
-      expect(select(page).dataset.disabled).toBe('false')
-      expect(helper(page)).not.toContain('Turn Protect on') // not the portal's to turn on
+      expect(select(page).dataset.disabled).toBe('true')
+      expect(lines(page)).toContain(line)
     }
   })
 
-  it('the exit kept local, none allowed, or one pinned (exit_control): both read-only, the reason said', async () => {
+  it('the exit kept local, or one fixed: read-only, the reason said', async () => {
     deviceExit.mockResolvedValue(on(office, { exitSetOnDevice: true, exitSetOnDeviceBy: 'bob', exitPolicy: 'local' }))
     let page = await render()
-    expect(toggle(page).disabled).toBe(true)
     expect(select(page).dataset.disabled).toBe('true')
-    expect(protectLines(page)).toEqual(['Set only on the device: its administrator keeps its exit local'])
-    expect(helper(page)).toContain('Set on the device by bob')
-    expect(helper(page)).not.toContain('keeps its exit local') // the lock's row says it
+    expect(lines(page)).toEqual([
+      'Set on the device by bob',
+      'Set on the device only. Its administrator keeps the exit local.',
+    ])
     expect(page.querySelector('[data-item="lock"]')?.textContent).toContain(
-      'Its exit is chosen on the device only; the portal cannot change it'
+      'The exit is chosen on the device only. Remote.It can’t change it.'
     )
-
-    deviceExit.mockResolvedValue(exitOf({ exitPolicy: 'never' }))
-    offWith('xoffice', 'Office')
-    page = await render()
-    expect(toggle(page).disabled).toBe(true)
-    expect(select(page).dataset.disabled).toBe('true')
-    expect(page.querySelector('[data-item="lock"]')?.textContent).toContain(
-      'This machine’s administrator allows it no exit'
-    )
-
     deviceExit.mockResolvedValue(on(office, { exitPinned: 'xoffice' }))
     page = await render()
-    expect(toggle(page).disabled).toBe(true)
     expect(select(page).dataset.disabled).toBe('true')
-    expect(protectLines(page)).toEqual(['Set by this machine’s administrator'])
+    expect(lines(page)).toContain('Set by this device’s administrator')
     expect(page.querySelector('[data-item="lock"]')?.textContent).toContain(
-      'Pinned by this machine’s administrator to xoffice'
+      'Fixed by this device’s administrator to xoffice'
     )
+  })
+
+  it('no exit allowed: read-only while off; while on, Off alone may be chosen', async () => {
+    deviceExit.mockResolvedValue(exitOf({ exitPolicy: 'never' }))
+    let page = await render()
+    expect(select(page).dataset.disabled).toBe('true')
+    expect(page.querySelector('[data-item="lock"]')?.textContent).toContain('This device’s administrator allows no exit')
+    deviceExit.mockResolvedValue(on(office, { exitPolicy: 'never' }))
+    page = await render()
+    expect(select(page).dataset.disabled).toBe('false')
+    expect(described(page).filter(each => each.endsWith('(off)')).length).toBe(choices(page).length - 1)
+    await click(choice(page, ''))
+    expect(setExit).toHaveBeenLastCalledWith('LAPTOP', null)
   })
 })
 
 describe('one who does not manage the device', () => {
-  it('sees Protect and its route as the device says them, read-only, and why', async () => {
+  it('sees Route through as the device says it, read-only, and why; nothing sent', async () => {
     protect.mockResolvedValue({ on: true, route: 'pdx1a', routeName: 'remote.it pdx1a' })
     let page = await render(['VIEW'])
-    expect(status(page)).toBe('Protecting — going out through remote.it pdx1a')
-    expect(toggle(page).dataset.on).toBe('true')
-    expect(toggle(page).disabled).toBe(true)
+    expect(routeStatus(page)).toBe('All traffic goes through remote.it pdx1a.')
     expect(select(page).dataset.disabled).toBe('true')
     expect(select(page).dataset.value).toBe('pdx1a')
-    expect(protectLines(page)).toEqual(['Only someone who manages this device changes Protect and its route'])
-    expect(helper(page)).not.toContain('Turn Protect on')
-
+    expect(lines(page)).toContain('Only someone who manages this device can change Route through.')
     offWith('xoffice', 'Office')
     page = await render(['VIEW'])
-    expect(status(page)).toBe('Off — traffic goes its usual way')
-    await click(toggle(page))
+    expect(routeStatus(page)).toBe('Off. Traffic goes out directly.')
     await click(choice(page, 'xpat'))
     expect(setExit).not.toHaveBeenCalled()
-    expect(setRoute).not.toHaveBeenCalled()
   })
 })
 
@@ -507,13 +396,13 @@ describe('nothing shown', () => {
 describe('the account’s transfer this month, under the picker', () => {
   const usage = (page: HTMLElement) => page.querySelector('[data-usage]')?.textContent ?? null
 
-  it('for one of remote.it’s exits as the route, Protect on or off: the device owner’s', async () => {
+  it('routed through one of Remote.It’s exits: the device owner’s; nothing while off', async () => {
     deviceExit.mockResolvedValue(on(pdx))
     expect(usage(await render())).toBe('8.2 of 10 GB this month')
     expect(usageHint).toHaveBeenLastCalledWith('OWNER', 'exit', true)
     deviceExit.mockResolvedValue(exitOf())
     offWith('pdx1a')
-    expect(usage(await render())).toBe('8.2 of 10 GB this month')
+    expect(usage(await render())).toBeNull()
   })
 
   it('none for an own exit, for no route, or for one who does not manage the device', async () => {
@@ -528,7 +417,7 @@ describe('the account’s transfer this month, under the picker', () => {
 })
 
 describe('in words', () => {
-  it('Protect’s state, as the menu says it', () => {
+  it('Route through’s state, as the menu says it', () => {
     const state = (fields: any) => ({
       on: true,
       exit: null,
@@ -538,16 +427,14 @@ describe('in words', () => {
       offered: true,
       ...fields,
     })
-    expect(statusLine(t, state({}), 'Office Mac', null)).toBe(
-      'Protecting — going out through Office (device Office Mac)'
-    )
-    expect(statusLine(t, state({}), undefined, null)).toBe('Protecting — going out through Office')
-    expect(statusLine(t, state({ on: false }), undefined, null)).toBe('Off — traffic goes its usual way')
+    expect(statusLine(t, state({}), 'Office Mac', null)).toBe('All traffic goes through Office (device Office Mac).')
+    expect(statusLine(t, state({}), undefined, null)).toBe('All traffic goes through Office.')
+    expect(statusLine(t, state({ on: false }), undefined, null)).toBe('Off. Traffic goes out directly.')
     expect(statusLine(t, state({ dormant: true }), undefined, null)).toContain('Office has no device available')
-    expect(statusLine(t, state({ offered: false }), undefined, null)).toContain('none of Office’s devices')
+    expect(statusLine(t, state({ offered: false }), undefined, null)).toContain('until a device of Office takes it')
     expect(
-      statusLine(t, state({}), 'Office Mac', { label: 'Not working on this device', words: undefined, color: 'danger' })
-    ).toBe('Not working on this device')
+      statusLine(t, state({}), 'Office Mac', { label: 'Exit not working on this device', words: undefined, color: 'danger' })
+    ).toBe('Exit not working on this device')
   })
 
   it('the route: the exit in use; else the one kept, named by the device, the exits offered, or its id', () => {
@@ -586,12 +473,12 @@ describe('in words', () => {
   it('the exit not working: a code it does not know is said as not working, in the device’s words; words that are only the code, not repeated', () => {
     expect(exitErrorLine(t, null)).toBeNull()
     expect(exitErrorLine(t, { code: 'routes-held', message: 'routes-held', at: null })).toEqual({
-      label: 'Not working on this device: the exit’s routes could not be set — traffic is blocked',
+      label: 'Exit not working on this device. Traffic is blocked.',
       words: undefined,
       color: 'warning',
     })
     expect(exitErrorLine(t, { code: 'dns-failed', message: 'its names could not be taken', at: null })).toEqual({
-      label: 'Not working on this device',
+      label: 'Exit not working on this device',
       words: 'its names could not be taken',
       color: 'danger',
     })
@@ -616,7 +503,7 @@ describe('an exit offered for the device, named', () => {
   })
 
   it('one its networks alone give it: said so', () => {
-    expect(choiceName(t, router)).toBe('Home router · by its network')
+    expect(choiceName(t, router)).toBe('Home router · chosen by a network')
   })
 
   it('with no reasons said, by whose it is', () => {
@@ -629,7 +516,7 @@ describe('who chose the exit, and the machine’s policy', () => {
     expect(chosenLine(t, { ...none, exitSetOnDevice: true, exitSetOnDeviceBy: 'bob' })).toBe('Set on the device by bob')
     expect(chosenLine(t, { ...none, exitSetOnDevice: true })).toBe('Set on the device')
     expect(chosenLine(t, { ...none, exitSetOnDevice: false, exitSetBy: { email: 'ann@example.com' } })).toBe(
-      'Set in the portal by ann@example.com'
+      'Set in Remote.It by ann@example.com'
     )
     expect(chosenLine(t, { ...none, exitSetBy: { email: null } })).toBeNull()
     expect(chosenLine(t, none)).toBeNull()
@@ -641,9 +528,9 @@ describe('who chose the exit, and the machine’s policy', () => {
   it('a choice made on the device by someone signed in there: ends at their sign-out; its administrator’s, said', () => {
     const onDevice = { ...none, exitSetOnDevice: true, exitSetOnDeviceBy: 'pat' }
     expect(chosenLine(t, { ...onDevice, exitSetOnDeviceSignedIn: PAT })).toBe(
-      'Set on this computer by pat@example.com — ends when pat@example.com signs out'
+      'Set on the device by pat@example.com, until pat@example.com signs out'
     )
-    expect(chosenLine(t, { ...onDevice, exitSetOnDeviceSignedIn: { id: 'PAT', email: null } })).toContain('by PAT —')
+    expect(chosenLine(t, { ...onDevice, exitSetOnDeviceSignedIn: { id: 'PAT', email: null } })).toContain('by PAT,')
     expect(chosenLine(t, { ...onDevice, exitSetOnDeviceBy: 'root', exitSetOnDeviceAdmin: true })).toBe(
       'Set on the device by root'
     )
@@ -656,7 +543,7 @@ describe('who chose the exit, and the machine’s policy', () => {
 
   it('an exit gone through on a person’s own access: lent to the whole machine, said so', () => {
     const pat = { ...none, usesExit: uses(pats), exitSetOnDevice: true, exitThroughPerson: PAT }
-    expect(lentLine(t, pat)).toBe('Machine-wide through pat@example.com’s exit Pat exit')
+    expect(lentLine(t, pat)).toBe('The whole device goes through Pat exit, pat@example.com’s exit')
     expect(lentLine(t, { ...pat, exitThroughPerson: null })).toBeNull()
     expect(lentLine(t, { ...pat, usesExit: null })).toBeNull()
   })
@@ -665,26 +552,26 @@ describe('who chose the exit, and the machine’s policy', () => {
     expect(policyLine(t, none)).toBeNull()
     expect(policyLine(t, null)).toBeNull()
     expect(policyLine(t, { ...none, exitPolicy: 'local' })).toEqual({
-      label: 'This machine’s administrator keeps its exit local',
-      hint: 'Its exit is chosen on the device only; the portal cannot change it',
+      label: 'This device’s administrator keeps the exit local',
+      hint: 'The exit is chosen on the device only. Remote.It can’t change it.',
     })
     expect(policyLine(t, { ...none, exitPolicy: 'never' })).toEqual({
-      label: 'This machine’s administrator allows it no exit',
+      label: 'This device’s administrator allows no exit',
       hint: 'Set on the device: sudo remoteit-device policy',
     })
     expect(policyLine(t, { ...none, exitPinned: 'xoffice' })).toEqual({
-      label: 'Pinned by this machine’s administrator to xoffice',
-      hint: 'The pinned exit holds over any chosen here',
+      label: 'Fixed by this device’s administrator to xoffice',
+      hint: 'The fixed exit holds over any chosen here.',
     })
     expect(policyLine(t, { ...none, exitAllowed: ['xoffice', 'pdx1a'] })).toEqual({
-      label: 'This machine’s administrator allows only some exits',
+      label: 'This device’s administrator allows only some exits',
       hint: 'xoffice, pdx1a',
     })
     expect(policyLine(t, { ...none, exitAllowed: [] })?.hint).toBe('None is allowed')
     // No exit at all holds over any exit pinned or allowed.
     expect(
       policyLine(t, { ...none, exitPolicy: 'never', exitPinned: 'xoffice', exitAllowed: ['xoffice'] })?.label
-    ).toBe('This machine’s administrator allows it no exit')
+    ).toBe('This device’s administrator allows no exit')
   })
 })
 

@@ -25,16 +25,16 @@ export const ThisDeviceSignIn: React.FC = () => {
       <List data-section="signIn" data-sign-in="unreachable">
         <ListItem>
           <ListItemText
-            primary={t('thisDevice.unreachable', 'Can’t reach remote.it')}
+            primary={t('thisDevice.unreachable', 'Can’t reach Remote.It')}
             secondary={
               offline
                 ? t(
                     'thisDevice.offlineSignedIn',
-                    'You’re signed in, but this device is offline. Its own controls below work meanwhile.'
+                    'You’re signed in, but this device is offline. The controls below still work.'
                   )
                 : t(
                     'thisDevice.unreachableLine',
-                    'You’re signed in, but remote.it can’t be reached from here. This device’s own controls below work meanwhile.'
+                    'You’re signed in, but Remote.It can’t be reached from here. The controls below still work.'
                   )
             }
           />
@@ -51,18 +51,18 @@ export const ThisDeviceSignIn: React.FC = () => {
     <List data-section="signIn" data-sign-in={signingIn ? 'waiting' : 'signedOut'}>
       <ListItem>
         <ListItemText
-          primary={t('thisDevice.signedOut', 'Not signed in')}
+          primary={t('thisDevice.signInTitle', 'Sign in to see your devices')}
           secondary={
             signingIn
               ? t('signIn.waiting', 'Waiting for your browser… finish signing in there.')
               : offline
               ? t(
                   'thisDevice.offlineSignIn',
-                  'This device is offline. Its own controls below work meanwhile; sign in once it’s back online.'
+                  'This device is offline. The controls below still work. Sign in once it’s back online.'
                 )
               : t(
                   'thisDevice.signInLine',
-                  'This device’s own controls below work without signing in. Sign in for your other devices, sharing and the rest of remote.it.'
+                  'Open your devices from here. The controls below work without signing in.'
                 )
           }
         />

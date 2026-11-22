@@ -26,11 +26,11 @@ export const ThisDeviceDetails: React.FC<{ m: ThisDeviceModel }> = ({ m }) => {
           {row('name', t('thisDevice.name', 'Name'), d?.name)}
           {row('owner', t('thisDevice.owner', 'Owner'), d?.owner)}
           {row('signedIn', t('thisDevice.signedIn', 'Signed in on this device'), status.signedIn?.email || status.signedIn?.sub)}
-          {row('dnsName', t('thisDevice.dnsName', 'Name on your network'), d?.dnsName, true)}
+          {row('dnsName', t('thisDevice.dnsName', 'Address'), d?.dnsName, true)}
           {status.subnet?.on &&
             row(
               'address',
-              t('thisDevice.address', 'Address'),
+              t('thisDevice.ipAddress', 'IP address'),
               [status.subnet.ipv4, status.subnet.ipv6].filter(Boolean).join(' · '),
               true
             )}
@@ -39,7 +39,7 @@ export const ThisDeviceDetails: React.FC<{ m: ThisDeviceModel }> = ({ m }) => {
             !has('access') &&
             row(
               'subnet',
-              t('thisDevice.subnet', 'Reach devices by name'),
+              t('thisDevice.access', 'Access'),
               status.subnet.on
                 ? [status.subnet.domain, status.subnet.ipv4, status.subnet.ipv6].filter(Boolean).join(' · ') ||
                     t('thisDevice.on', 'On')
@@ -49,18 +49,21 @@ export const ThisDeviceDetails: React.FC<{ m: ThisDeviceModel }> = ({ m }) => {
           {row(
             'versions',
             t('thisDevice.versions', 'Versions'),
-            [d?.package && t('thisDevice.package', 'Package {{v}}', { v: d.package }), d?.connectd && `connectd ${d.connectd}`]
+            [
+              d?.package && t('thisDevice.package', 'App {{v}}', { v: d.package }),
+              d?.connectd && t('thisDevice.agentVersion', 'Agent {{v}}', { v: d.connectd }),
+            ]
               .filter(Boolean)
               .join(' · ')
           )}
-          {row('stage', t('thisDevice.stage', 'Stage'), status.stage)}
+          {row('stage', t('thisDevice.server', 'Server'), status.stage)}
           {status.relay &&
             row(
               'relay',
               t('thisDevice.relay', 'Relay'),
               status.relay.using
-                ? t('thisDevice.relayUsing', 'In use now: this device’s traffic goes through remote.it’s relay')
-                : t('thisDevice.relayNotUsing', 'Not in use: this device reaches remote.it directly')
+                ? t('thisDevice.relayUsing', 'In use now. This device’s traffic goes through the relay.')
+                : t('thisDevice.relayNotUsing', 'Not in use. This device reaches Remote.It directly.')
             )}
         </List>
       )}
@@ -106,7 +109,7 @@ export const ThisDeviceDetails: React.FC<{ m: ThisDeviceModel }> = ({ m }) => {
       {has('stages') && stages.length > 0 && (
         <List data-section="stages">
           <Typography variant="subtitle1" paddingX={2}>
-            {t('thisDevice.stages', 'Stages')}
+            {t('thisDevice.servers', 'Servers')}
           </Typography>
           {stages.map(s => (
             <ListItem key={s.stage}>
