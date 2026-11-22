@@ -4,7 +4,8 @@ import type { TFunction } from 'i18next'
 import { ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { DeviceRuns, ExitDevice, ProxyDevice } from '../services/graphQLDeviceRuns'
-import { lanLine, outOfService, runDetail, runStateLabel } from '../helpers/runsHelper'
+import { lanLine, outOfService, runDetail } from '../helpers/runsHelper'
+import { carrierState } from '../helpers/exitWords'
 import { RunActions } from './RunActions'
 import { Link } from './Link'
 import { Icon } from './Icon'
@@ -72,7 +73,7 @@ export const RunListItem: React.FC<Props> = ({
           <>
             {to && actions ? <Link to={to}>{heading}</Link> : heading}
             <Typography component="span" variant="caption" color="textSecondary" marginLeft={1} data-run-state>
-              {runStateLabel(t, run)}
+              {carrierState(t, run)}
             </Typography>
           </>
         }

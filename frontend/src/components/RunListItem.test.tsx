@@ -73,7 +73,7 @@ describe('a device in a proxy or an exit', () => {
     const checks = [{ name: 'policy', passed: false, pending: false, reason: 'its machine forbids exits' }]
     const row = await render({ kind: 'exit', run: exitRun({ state: 'RETIRED', joining: true, checks }), name: 'HA Derby', to: '/devices/MAC/runs' })
     expect(row.textContent).toContain('Office Mac')
-    expect(row.querySelector('[data-run-state]')?.textContent).toBe('Joining')
+    expect(row.querySelector('[data-run-state]')?.textContent).toBe('Not ready')
     expect(row.textContent).toContain('Its checks fail: its machine forbids exits')
     await act(async () => (row.querySelector('[data-run]') as HTMLElement).click())
     expect(push).toHaveBeenCalledWith('/devices/MAC/runs')
@@ -142,10 +142,10 @@ describe('a device of an own proxy: Internet or Local network', () => {
     ).toEqual(['Not reachable from the internet: a connection to 203.0.113.5:40001 timed out'])
     expect(machineLines(t, 'proxy', own({ reachable: false }))).toEqual(['Not reachable from the internet'])
     let row = await render({ kind: 'proxy', run: own({ reachable: false, reachReason: 'refused' }), name: 'Gateway' })
-    expect(state(row)).toBe('Out of service')
+    expect(state(row)).toBe('Not working')
     expect(row.textContent).toContain('Not reachable from the internet: refused')
     row = await render({ kind: 'proxy', run: own({ reachable: true }), name: 'Gateway' })
-    expect(state(row)).toBe('In service')
+    expect(state(row)).toBe('On')
   })
 
   it('not tested, or not judged yet: nothing said of it', () => {
@@ -157,7 +157,7 @@ describe('a device of an own proxy: Internet or Local network', () => {
     expect(machineLines(t, 'proxy', pi, true)).toEqual(['Private address: 192.168.1.20'])
     expect(machineLines(t, 'proxy', pi)).toEqual([])
     const row = await render({ kind: 'proxy', run: pi, name: 'Office', local: true })
-    expect(state(row)).toBe('In service')
+    expect(state(row)).toBe('On')
     expect(row.textContent).toContain('Private address: 192.168.1.20')
   })
 
@@ -176,7 +176,7 @@ describe('a device of an own proxy: Internet or Local network', () => {
       name: 'Office',
       local: true,
     })
-    expect(state(row)).toBe('Out of service')
+    expect(state(row)).toBe('Not working')
     expect(row.textContent).toContain(
       'Its checks fail: Laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)'
     )
@@ -188,7 +188,7 @@ describe('a device of an own proxy: Internet or Local network', () => {
       name: 'Office',
       local: true,
     })
-    expect(state(joining)).toBe('Joining')
+    expect(state(joining)).toBe('Not ready')
     expect(joining.textContent).toContain('Its checks fail: Laptop is on another network')
   })
 })
