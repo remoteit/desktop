@@ -16,10 +16,10 @@ import { Icon } from '../components/Icon'
 import { platformsLine } from '../helpers/appsHelper'
 
 /* Apps (presence-server docs/device-apps-design.md, "The Apps pages", /apps): the account's catalogue — every app it may
-   use (graphql's appCatalog: remote.it's, its own publisher's) —, one row an app: its name, its publisher with
-   Verified: <domain> and Yours for the account's own, Runs as root or Restricted, its platforms as families, its
-   description, and how many of the account's devices have it. A row opens the app (/apps/:appID); Add… opens Add
-   (/apps/:appID/add). An app with no release on this stage says "No release here yet", and cannot be added. */
+   use (graphql's appCatalog: Remote.It's, its own publisher's) —, one row an app (components/AppCatalogRow): what it
+   does, where it runs, what it needs, how many of the account's devices have it, and who publishes it. A row opens the
+   app (/apps/:appID); Add to devices opens Add (/apps/:appID/add). An app with no release on this stage says so, and
+   cannot be added. */
 export const AppsPage: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
@@ -86,12 +86,12 @@ export const AppsPage: React.FC = () => {
         <Notice gutterTop>{t('apps.catalogUnserved', 'This server does not have the app catalogue yet.')}</Notice>
       ) : apps === 'ERROR' ? (
         <Notice severity="error" gutterTop>
-          {t('apps.catalogFailed', 'The apps could not be read.')}
+          {t('apps.catalogFailedRetry', 'Couldn’t load apps. Reload the page to try again.')}
         </Notice>
       ) : !shown.length ? (
         <Gutters>
           <Typography variant="body2" color="textSecondary" data-apps-empty>
-            {apps.length ? t('apps.noMatch', 'No app matches.') : t('apps.none', 'No app is offered to this account yet.')}
+            {apps.length ? t('apps.noMatchSearch', 'No apps match your search.') : t('apps.noneYet', 'No apps are available to this account yet.')}
           </Typography>
         </Gutters>
       ) : (
@@ -111,11 +111,15 @@ export const AppsPage: React.FC = () => {
                 protocol={app.protocol}
                 icon={app.icon}
                 description={app.description}
-                platforms={app.version ? platformsLine(t, app.platforms) : t('apps.noRelease', 'No release here yet')}
+                platforms={app.version ? platformsLine(t, app.platforms) : t('apps.noReleaseYet', 'Not available yet')}
                 aside={
                   devices
-                    ? t('apps.deviceCount', { count: devices, defaultValue_one: '{{count}} device', defaultValue_other: '{{count}} devices' })
-                    : '—'
+                    ? t('apps.onDeviceCount', {
+                        count: devices,
+                        defaultValue_one: 'On {{count}} device',
+                        defaultValue_other: 'On {{count}} devices',
+                      })
+                    : undefined
                 }
                 onOpen={() => history.push(`/apps/${app.id}`)}
                 action={
@@ -126,7 +130,7 @@ export const AppsPage: React.FC = () => {
                     onClick={() => history.push(`/apps/${app.id}/add`)}
                     data-apps-add={app.id}
                   >
-                    {t('apps.addEllipsis', 'Add…')}
+                    {t('apps.addToDevices', 'Add to devices')}
                   </Button>
                 }
               />

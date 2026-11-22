@@ -57,27 +57,31 @@ const click = (el: Element | null) => act(async () => (el as HTMLElement).click(
 const row = (page: HTMLElement, id: string) => page.querySelector(`[data-catalog-app="${id}"]`) as HTMLElement
 
 describe('Apps, the account’s catalogue', () => {
-  it('a row an app: publisher with Verified and Yours, root or restricted, platforms as families, description, devices', async () => {
+  it('a row an app: what it does first, platforms by name, what it needs, devices, then publisher with Verified and Yours', async () => {
     const page = await render()
     expect(catalog).toHaveBeenCalledWith(undefined)
     const backup = row(page, 'acme.backup')
-    expect(backup.querySelector('[data-catalog-publisher]')?.textContent).toBe('Acme · Verified: acme.com · Yours')
-    expect(backup.querySelector('[data-catalog-runs]')?.textContent).toBe('Restricted')
-    expect(backup.querySelector('[data-catalog-platforms]')?.textContent).toBe('linux · linux-musl')
+    expect(backup.querySelector('[data-catalog-publisher]')?.textContent).toBe('By Acme · Verified: acme.com · Yours')
+    // A restricted app needs nothing more: nothing said.
+    expect(backup.querySelector('[data-catalog-runs]')).toBeNull()
+    expect(backup.querySelector('[data-catalog-platforms]')?.textContent).toBe('Linux · Linux (musl)')
     expect(backup.querySelector('[data-catalog-description]')?.textContent).toBe('Nightly backups to your bucket.')
-    expect(backup.querySelector('[data-catalog-aside]')?.textContent).toBe('4 devices')
+    expect(backup.querySelector('[data-catalog-aside]')?.textContent).toBe('On 4 devices')
     const console = row(page, 'remoteit.console')
-    expect(console.querySelector('[data-catalog-runs]')?.textContent).toBe('Runs as root: full control of the device')
+    expect(console.querySelector('[data-catalog-runs]')?.textContent).toBe('Needs full control of the device')
     // What it asks of remote.it, beside Runs as root; an ordinary app asks nothing.
     expect(console.querySelector('[data-catalog-capabilities]')?.textContent).toBe(
-      'Keeps accounts for the people you share with · Signs in people by remote.it certificate · AI commands go through this app'
+      'Keeps accounts for the people you share with · Signs people in with their Remote.It certificate · Lets AI run commands you allow'
     )
     expect(backup.querySelector('[data-catalog-capabilities]')).toBeNull()
-    expect(console.querySelector('[data-catalog-platforms]')?.textContent).toBe('linux · darwin · windows')
-    expect(row(page, 'remoteit.files').querySelector('[data-catalog-aside]')?.textContent).toBe('—')
+    expect(console.querySelector('[data-catalog-platforms]')?.textContent).toBe('Linux · macOS · Windows')
+    expect(row(page, 'remoteit.files').querySelector('[data-catalog-aside]')).toBeNull()
+    // The console is named Terminal, for what people use it as.
+    expect(console.textContent).toMatch(/^Terminal/)
+    expect(console.textContent).not.toContain('Console')
   })
 
-  it('a row opens the app; Add… opens Add', async () => {
+  it('a row opens the app; Add to devices opens Add', async () => {
     const page = await render()
     await click(row(page, 'acme.backup').querySelector('.MuiListItemButton-root'))
     expect(push).toHaveBeenCalledWith('/apps/acme.backup')
@@ -88,7 +92,7 @@ describe('Apps, the account’s catalogue', () => {
   it('no release on this stage: said, and it cannot be added', async () => {
     catalog.mockResolvedValue([{ ...APPS[1], version: null }])
     const page = await render()
-    expect(row(page, 'remoteit.files').querySelector('[data-catalog-platforms]')?.textContent).toBe('No release here yet')
+    expect(row(page, 'remoteit.files').querySelector('[data-catalog-platforms]')?.textContent).toBe('Not available yet')
     expect((page.querySelector('[data-apps-add="remoteit.files"]') as HTMLButtonElement).disabled).toBe(true)
   })
 

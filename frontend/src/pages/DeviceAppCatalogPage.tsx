@@ -18,7 +18,7 @@ import { Icon } from '../components/Icon'
 import { adminControlLine, offered } from '../helpers/appsHelper'
 
 /* The catalogue for this device (presence-server docs/device-apps-design.md, "The Apps pages",
-   /devices/:deviceID/apps/add): the apps it may take and does not have (graphql's Device.availableApps) — remote.it's
+   /devices/:deviceID/apps/add): the apps it may take and does not have (graphql's Device.availableApps) — Remote.It's
    and its own account's —, each with its publisher, Runs as root or Restricted and what else it asks of remote.it (its
    capabilities, as graphql gives them for the release its stage gives), its description, and why it
    cannot be added here where it cannot: its administrator refuses it, or its stage has no release of it yet; and where
@@ -34,7 +34,7 @@ export const DeviceAppCatalogPage: React.FC = () => {
   const [refusal, setRefusal] = useState<string>()
   const { flip, consent } = useAppSwitch(
     deviceApps,
-    reason => setRefusal(reason || t('apps.notAdded', 'The app was not added.')),
+    reason => setRefusal(reason || t('apps.notAddedRetry', 'Couldn’t add the app. Try again.')),
     app => device && history.push(`/devices/${device.id}/apps/${app.id}`),
     device?.accountId
   )
@@ -78,7 +78,7 @@ export const DeviceAppCatalogPage: React.FC = () => {
           <Typography variant="body2" color="textSecondary" data-catalog-empty>
             {apps === null
               ? t('apps.unserved', 'This server does not have apps.')
-              : t('apps.nothingToAdd', 'There is no app this device does not have already.')}
+              : t('apps.nothingLeftToAdd', 'This device already has every app available to it.')}
           </Typography>
         </Gutters>
       ) : (
@@ -97,15 +97,14 @@ export const DeviceAppCatalogPage: React.FC = () => {
                 protocol={app.protocol}
                 icon={app.icon}
                 description={app.description}
-                aside={app.version}
                 onOpen={() => history.push(`/apps/${app.id}`)}
                 notes={
                   <>
                     {app.needsNewer && !why && (
                       <Typography variant="caption" component="div" color="warning.main" data-available-newer>
                         {t(
-                          'deviceApps.needsNewerAdd',
-                          'Needs a newer remote.it on this device: added now, it runs once remote.it is upgraded'
+                          'deviceApps.needsNewerAgentAdd',
+                          'Needs a newer agent on this device. Add it now and it starts once the agent is updated.'
                         )}
                       </Typography>
                     )}
@@ -136,7 +135,7 @@ export const DeviceAppCatalogPage: React.FC = () => {
         <Gutters>
           <Box data-add-app-scripting>
             <Typography variant="caption" color="textSecondary">
-              {t('deviceApps.addNeedsScripting', 'Adding an app runs code on this device: it needs Scripting there.')}
+              {t('deviceApps.addNeedsScriptingPermission', 'Adding an app runs code on this device. You need the Scripting permission there.')}
             </Typography>
           </Box>
         </Gutters>
@@ -153,5 +152,5 @@ function whyNot(t: TFunction, app: AvailableApp): string | undefined {
   const admin = adminControlLine(t, app)
   if (admin) return admin
   if (app.refused) return app.refused
-  if (!app.version) return t('deviceApps.noRelease', 'No release of it here yet')
+  if (!app.version) return t('apps.noReleaseYet', 'Not available yet')
 }

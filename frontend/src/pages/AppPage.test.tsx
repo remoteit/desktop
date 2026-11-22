@@ -99,14 +99,16 @@ const device = (page: HTMLElement, name: string) =>
   [...page.querySelectorAll('[data-fleet-device]')].find(el => el.textContent?.startsWith(name)) as HTMLElement
 
 describe('the app in the catalogue', () => {
-  it('its version, publisher, how it runs, description and platforms; Add… and Manage releases for its own publisher', async () => {
+  it('what it does first, then its platforms and publisher with Verified, what it needs; Add to devices and Manage releases for its own publisher', async () => {
     const page = await render()
     expect(catalog).toHaveBeenCalledWith('acme.backup', { accountId: undefined, releases: 20 })
     expect(page.querySelector('[data-title]')?.textContent).toBe('Backup')
-    expect(page.querySelector('[data-app-about]')?.textContent).toBe('1.4.0 · Acme · Verified: acme.com · Yours')
-    expect(page.querySelector('[data-app-runs]')?.textContent).toBe('Restricted')
+    expect(page.querySelector('[data-app-description]')?.textContent).toBe('Nightly backups to your bucket.')
+    expect(page.querySelector('[data-app-about]')?.textContent).toBe('Linux · Linux (musl) · By Acme · Verified: acme.com · Yours')
+    // A restricted app needs nothing more of the device: nothing said.
+    expect(page.querySelector('[data-app-runs]')).toBeNull()
     expect(page.querySelector('[data-app-asks]')).toBeNull()
-    expect(page.querySelector('[data-app-platforms]')?.textContent).toBe('linux-amd64 · linux-arm64 · linux-arm64-musl')
+    expect(page.querySelector('[data-app-platforms]')?.textContent).toBe('Latest version 1.4.0')
     await click(page.querySelector('[data-app-add]'))
     expect(push).toHaveBeenCalledWith('/apps/acme.backup/add')
     await click(page.querySelector('[data-app-manage]'))
@@ -119,7 +121,7 @@ describe('the app in the catalogue', () => {
     catalog.mockResolvedValue(mockCatalogApp('remoteit.console'))
     const page = await render()
     expect(page.querySelector('[data-app-manage]')).toBeNull()
-    expect(page.querySelector('[data-app-runs]')?.textContent).toBe('Runs as root: full control of the device')
+    expect(page.querySelector('[data-app-runs]')?.textContent).toBe('Needs full control of the device')
   })
 
   it('what it asks of remote.it beside how it runs — the app’s, and each release’s with its root', async () => {
@@ -127,11 +129,11 @@ describe('the app in the catalogue', () => {
     catalog.mockResolvedValue(mockCatalogApp('remoteit.console'))
     const page = await render()
     const asks =
-      'Keeps accounts for the people you share with · Signs in people by remote.it certificate · AI commands go through this app'
+      'Keeps accounts for the people you share with · Signs people in with their Remote.It certificate · Lets AI run commands you allow'
     expect(page.querySelector('[data-app-asks]')?.textContent).toBe(asks)
     await click(page.querySelector('[data-app-release="1.4.0"]'))
     expect(page.querySelector('[data-app-release-notes="1.4.0"]')?.textContent).toContain(
-      `Runs as root: full control of the device · ${asks}`
+      `Needs full control of the device · ${asks}`
     )
   })
 
@@ -191,12 +193,12 @@ describe('your devices', () => {
       '4 devices · 3 enabled · 1 disabled · 1 up to date · 2 held back'
     )
     expect(page.querySelector('[data-app-fleet-held-by]')?.textContent).toBe(
-      'Held back: Needs a newer remote.it on this device (1) · Pinned (1)'
+      'Not updated: Needs a newer agent on this device (1) · Pinned (1)'
     )
     expect(device(page, 'pi-kitchen').querySelector('[data-fleet-status]')?.textContent).toBe('Up to date')
     expect(device(page, 'nas').textContent).toContain('1.3.2 · Stable · Running')
     expect(device(page, 'nas').querySelector('[data-fleet-status]')?.textContent).toBe(
-      'Held back: Needs a newer remote.it on this device'
+      'Not updated: Needs a newer agent on this device'
     )
     expect(device(page, 'kiosk-4').querySelector('[data-fleet-status]')?.textContent).toBe('Pinned to 1.4.0')
     expect(device(page, 'gw-3').textContent).toContain('— · Beta · Disabled')
@@ -223,7 +225,7 @@ describe('your devices', () => {
     expect([...filter.options].map(o => o.textContent)).toEqual([
       'All',
       'Held back',
-      '— Needs a newer remote.it on this device (1)',
+      '— Needs a newer agent on this device (1)',
       '— Pinned (1)',
       'Up to date',
     ])

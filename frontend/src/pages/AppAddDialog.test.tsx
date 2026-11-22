@@ -124,12 +124,12 @@ describe('Add, to devices', () => {
     expect(disabled('D3')).toBe(true)
     expect(row('D4').textContent).toContain('Already there')
     expect(disabled('D4')).toBe(true)
-    expect(row('D5').textContent).toContain('Disabled there: adding enables it')
+    expect(row('D5').textContent).toContain('Off there. Adding turns it on.')
     expect(disabled('D5')).toBe(false)
     expect(row('D6').textContent).toContain('Needs Manage and Scripting on it')
     expect(disabled('D6')).toBe(true)
     expect(row('D7').textContent).toContain('Not allowed on this device by its administrator')
-    expect(row('D8').textContent).toContain('Needs a newer remote.it: it runs once remote.it is upgraded')
+    expect(row('D8').textContent).toContain('Needs a newer agent. It starts once the agent is updated.')
     expect(disabled('D8')).toBe(false)
     // Disabled there, under its administrator's local or off: adding would enable it, which graphql refuses.
     expect(row('D9').textContent).toContain('Kept local by this device’s administrator: changed on the device only')
@@ -229,11 +229,11 @@ describe('the root consent', () => {
       [...document.querySelectorAll('[data-app-add-root] [data-app-capability]')].map(c => c.textContent)
     expect(said()).toEqual([
       '· Keeps accounts for the people you share with',
-      '· Signs in people by remote.it certificate',
+      '· Signs people in with their Remote.It certificate',
     ])
     await click($('[data-app-add-pin]'))
     await select($('[data-app-add-version]'), '1.5.0-beta.2')
-    expect(said()).toEqual(['· AI commands go through this app'])
+    expect(said()).toEqual(['· Lets AI run commands you allow'])
   })
 
   it('a restricted app that declares capabilities asks the yes to them, as graphql does: Add only once it is given', async () => {
@@ -242,7 +242,7 @@ describe('the root consent', () => {
     await tick('D1')
     expect($('[data-app-add-root]')).toBeNull()
     expect($('[data-app-add-capabilities]').textContent).toBe(
-      'It asks of remote.it:· Signs in people by remote.it certificateI allow Acme’s Backup what it asks on these devices'
+      'It also asks for· Signs people in with their Remote.It certificateI allow Acme’s Backup what it asks on these devices'
     )
     expect(submit().disabled).toBe(true)
     await click($('[data-app-add-consent]'))
@@ -274,7 +274,7 @@ describe('the root consent', () => {
     expect($('[data-app-add-capabilities]')).toBeNull()
     await select($('[data-app-add-channel]'), 'beta')
     expect($('[data-app-add-capabilities]').textContent).toBe(
-      'It asks of remote.it:· AI commands go through this appI allow Acme’s Backup what it asks on these devices'
+      'It also asks for· Lets AI run commands you allowI allow Acme’s Backup what it asks on these devices'
     )
     expect($('[data-app-add-root]')).toBeNull()
     expect(submit().disabled).toBe(true)
@@ -295,7 +295,7 @@ describe('the root consent', () => {
     await select($('[data-app-add-channel]'), 'beta')
     expect([...document.querySelectorAll('[data-app-add-root] [data-app-capability]')].map(c => c.textContent)).toEqual([
       '· Keeps accounts for the people you share with',
-      '· AI commands go through this app',
+      '· Lets AI run commands you allow',
     ])
     expect(submit().disabled).toBe(true)
     await click($('[data-app-add-consent]'))

@@ -22,12 +22,12 @@ import { AppTerminalAction } from './AppTerminal'
 import {
   adminLine,
   adminRefuses,
+  appName,
+  appStatus,
   heldBackLine,
   managedLine,
   offered,
   openWord,
-  runsAsWord,
-  stateWord,
 } from '../helpers/appsHelper'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
@@ -140,7 +140,7 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
               <AppIcon icon={app.icon} protocol={app.protocol} size="md" />
             </ListItemIcon>
             <ListItemText
-              primary={app.name}
+              primary={appName(t, app)}
               secondaryTypographyProps={{ component: 'div' }}
               secondary={
                 <>
@@ -187,7 +187,7 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
                 (app.enabled ? !canManage : !canRun)
               }
               onChange={e => flip(app, e.target.checked)}
-              inputProps={{ 'aria-label': t('apps.enabledSwitch', '{{app}} enabled', { app: app.name }) }}
+              inputProps={{ 'aria-label': t('apps.onSwitch', 'Turn {{app}} on or off', { app: appName(t, app) }) }}
               data-app-switch={app.id}
             />
             <Icon name="angle-right" size="md" />
@@ -247,12 +247,12 @@ export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp; service: Devic
   )
 }
 
-// One line: its publisher, how it runs, the version the device runs, its state in a word.
+// One line: its state in a word or two, then who publishes it.
 function about(t: TFunction, app: DeviceApp, switching: boolean) {
   const state = switching
     ? t('deviceApps.switching', 'Waiting for the device…')
     : app.conversion === 'converting'
     ? t('deviceApps.converting', 'Converting from the old install')
-    : stateWord(t, app.state, app.detail)
-  return [app.publisher, runsAsWord(t, app.root), app.version ?? '—', state].join(' · ')
+    : appStatus(t, app).word
+  return [state, t('deviceApps.publisher', 'By {{publisher}}', { publisher: app.publisher })].join(' · ')
 }
