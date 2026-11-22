@@ -93,7 +93,7 @@ describe('SectionNav', () => {
   it('heads a list with its section title and sub-links, the page chosen', () => {
     render('/exits')
     expect(title()).toBe('Network')
-    expect(labels()).toEqual(['Networks', 'Exits', 'Proxy servers'])
+    expect(labels()).toEqual(['Networks', 'Exits', 'Public addresses', 'Proxy servers'])
     expect(selected()).toBe('Exits')
   })
 
@@ -142,6 +142,8 @@ describe('SectionNav', () => {
   it('opens a sub-link at its address, or where it was left', () => {
     render('/exits')
     act(() => (tabs()[2] as HTMLElement).click())
+    expect(push).toHaveBeenCalledWith('/public-addresses')
+    act(() => (tabs()[3] as HTMLElement).click())
     expect(push).toHaveBeenCalledWith('/proxies')
     act(() => (tabs()[0] as HTMLElement).click())
     expect(push).toHaveBeenCalledWith('/networks/n1')
