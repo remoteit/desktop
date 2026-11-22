@@ -61,7 +61,7 @@ describe('Allow scripts', () => {
     const settings = settingsOf([scripts()])
     const page = await render(<DeviceScriptsSetting settings={settings} canManage />)
     expect(row(page)!.dataset.on).toBe('true')
-    expect(page.textContent).toMatch(/^Allow scripts — Anyone who may script this device can run commands on it — as their own account on it, or as root/)
+    expect(page.textContent).toBe('Scripts — People allowed to script this device can run commands on it.')
     await act(async () => row(page)!.click())
     expect(settings.set).toHaveBeenCalledWith('scripts', false)
   })
@@ -71,7 +71,7 @@ describe('Allow scripts', () => {
       <DeviceScriptsSetting settings={settingsOf([scripts({ value: false, onDevice: true, by: 'root' })])} canManage />
     )
     expect(row(page)!.dataset.on).toBe('false')
-    expect(page.textContent).toBe('Allow scripts — Set on the device by root')
+    expect(page.textContent).toBe('Scripts — Set on the device by root')
   })
 
   it('locked by the administrator’s policy: off or on, greyed; local, set only on the device', async () => {
@@ -79,22 +79,22 @@ describe('Allow scripts', () => {
     expect([row(page)!.dataset.on, row(page)!.disabled, page.textContent]).toEqual([
       'false',
       true,
-      'Allow scripts — Turned off on the device by its administrator',
+      "Scripts — Locked by the device's administrator. They can change it on the device.",
     ])
     page = await render(<DeviceScriptsSetting settings={settingsOf([scripts({ value: false, control: 'on' })])} canManage />)
     expect([row(page)!.dataset.on, row(page)!.disabled]).toEqual(['true', true])
     page = await render(<DeviceScriptsSetting settings={settingsOf([scripts({ control: 'local' })])} canManage />)
-    expect([row(page)!.disabled, page.textContent]).toEqual([true, 'Allow scripts — Set only on the device'])
+    expect([row(page)!.disabled, page.textContent]).toEqual([true, 'Scripts — Set only on the device. Change it there.'])
   })
 
   it('on Windows it says scripts run as SYSTEM; elsewhere, as the person or root', async () => {
     for (const platform of [4, 5, 10]) {
       const page = await render(<DeviceScriptsSetting settings={settingsOf([scripts()])} canManage platform={platform} />)
-      expect(page.textContent).toMatch(/can run commands on it, as SYSTEM\./)
+      expect(page.textContent).toMatch(/run commands as SYSTEM\./)
     }
     for (const platform of [1120, 256, undefined]) {
       const page = await render(<DeviceScriptsSetting settings={settingsOf([scripts()])} canManage platform={platform} />)
-      expect(page.textContent).toMatch(/as their own account on it, or as root/)
+      expect(page.textContent).toMatch(/can run commands on it\./)
     }
   })
 

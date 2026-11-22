@@ -8,6 +8,9 @@ import { refreshDeviceSettings } from '../hooks/useDeviceSettings'
 import { syncLabel } from '../helpers/productPolicyHelper'
 import { ListItemSetting } from './ListItemSetting'
 import { ProductMoveDialog } from './ProductMoveDialog'
+import { CopyIconButton } from '../buttons/CopyIconButton'
+import { IconButton } from '../buttons/IconButton'
+import { Box } from '@mui/material'
 
 /* A device's product (graphql-api docs/PROXY-GROUPS.md §11, wave 4): the product it belongs to now and its level, and
    the one it registered with where that is another. Whoever manages the device attaches, changes or detaches it —
@@ -25,9 +28,13 @@ export const DeviceProductSetting: React.FC<{ device: IDevice }> = ({ device }) 
 
   const { product, origin } = state
   const elsewhere = origin && (!product || origin.id !== product.id)
-  const registered = elsewhere
-    ? t('deviceProduct.registeredWith', { name: origin.name || origin.id, defaultValue: 'Registered with {{name}}' })
-    : undefined
+  const registered = elsewhere ? (
+    origin.name ? (
+      t('deviceProduct.registeredWith', { name: origin.name, defaultValue: 'Registered with {{name}}' })
+    ) : origin.id ? (
+      <RegistrationCode code={origin.id} />
+    ) : undefined
+  ) : undefined
 
   const done = async () => {
     await reload()
@@ -63,5 +70,27 @@ export const DeviceProductSetting: React.FC<{ device: IDevice }> = ({ device }) 
         onDone={done}
       />
     </>
+  )
+}
+
+export const RegistrationCode: React.FC<{ code: string }> = ({ code }) => {
+  const { t } = useTranslation()
+  const [shown, setShown] = useState(false)
+  return (
+    <Box component="span" display="inline-flex" alignItems="center" gap={0.5} data-registration-code>
+      {shown
+        ? t('deviceProduct.registeredCode', 'Registered with code {{code}}', { code })
+        : t('deviceProduct.registeredHidden', 'Registered with a code')}
+      <IconButton
+        icon={shown ? 'eye-slash' : 'eye'}
+        size="sm"
+        title={shown ? t('deviceProduct.hideCode', 'Hide code') : t('deviceProduct.showCode', 'Show code')}
+        onClick={event => {
+          event.stopPropagation()
+          setShown(!shown)
+        }}
+      />
+      <CopyIconButton value={code} title={t('deviceProduct.copyCode', 'Copy code')} size="sm" />
+    </Box>
   )
 }

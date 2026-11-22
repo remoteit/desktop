@@ -77,7 +77,7 @@ export const VirtualDeviceSettings: React.FC<{ device: IDevice }> = ({ device })
       />
       {!current && (
         <Notice severity="warning" gutterTop>
-          {t('virtualDeviceSettings.notHostedNotice', 'Not hosted. Choose a gateway to bring it back online.')}
+          {t('virtualDeviceSettings.noGatewayNotice', 'No gateway. Choose one to bring this device back online.')}
         </Notice>
       )}
     </>

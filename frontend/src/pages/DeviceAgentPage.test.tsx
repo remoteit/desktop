@@ -19,7 +19,6 @@ vi.mock('../services/graphQLDaemon', async importOriginal => ({
 vi.mock('../services/Context', () => ({
   DeviceContext: React.createContext(context),
 }))
-vi.mock('../components/DeviceHeaderMenu', () => ({ DeviceHeaderMenu: ({ children }: any) => <div>{children}</div> }))
 vi.mock('../components/DeviceSettingRow', () => ({ DevicePolicyRow: () => null }))
 vi.mock('../components/SelectSetting', () => ({ SelectSetting: () => null }))
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div>loading</div> }))
@@ -39,7 +38,7 @@ vi.mock('react-i18next', () => {
   return { useTranslation: () => ({ t: (_key: string, text: string, values?: any) => fill(text, values) }) }
 })
 
-import { DeviceAgentPage } from './DeviceAgentPage'
+import { DeviceAgentSection } from './DeviceAgentPage'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const DAEMON = {
@@ -55,7 +54,7 @@ const DAEMON = {
 async function render() {
   const el = document.createElement('div')
   document.body.appendChild(el)
-  await act(async () => createRoot(el).render(<DeviceAgentPage />))
+  await act(async () => createRoot(el).render(<DeviceAgentSection />))
   await act(async () => {})
   return el
 }
@@ -70,7 +69,7 @@ describe('DeviceAgentPage', () => {
     daemon.mockResolvedValue({ ...DAEMON, update: { version: '1.1.0.10', state: 'held', detail: 'apt-mark hold' } })
     const el = await render()
     const row = el.querySelector('[data-setting="lock"]')!
-    expect(row.querySelector('[data-label]')!.textContent).toBe("Blocked — held by the device's admin")
+    expect(row.querySelector('[data-label]')!.textContent).toBe('Updates are paused on this device')
     expect(row.querySelector('[data-sublabel]')!.textContent).toBe('apt-mark hold')
     expect(el.querySelector('[data-setting="exclamation-triangle"]')).toBeNull()
   })
@@ -85,6 +84,19 @@ describe('DeviceAgentPage', () => {
     expect(el.querySelector('[data-setting="lock"] [data-sublabel]')!.textContent).toBe('package is held')
   })
 
+  it('one line says the version and where its updates stand', async () => {
+    daemon.mockResolvedValue({ ...DAEMON, target: { version: '1.1.0.9', rollback: false } })
+    const row = (await render()).querySelector('[data-setting="microchip"]')!
+    expect(row.querySelector('[data-label]')!.textContent).toBe('1.1.0.9')
+    expect(row.querySelector('[data-sublabel]')!.textContent).toBe('Up to date')
+  })
+
+  it('a failed update says so on its one line', async () => {
+    daemon.mockResolvedValue({ ...DAEMON, update: { version: '1.1.0.10', state: 'failed', detail: 'disk full' } })
+    const row = (await render()).querySelector('[data-setting="microchip"]')!
+    expect(row.querySelector('[data-sublabel]')!.textContent).toBe('Update to 1.1.0.10 failed')
+  })
+
   it('a failed upgrade still reads failed', async () => {
     daemon.mockResolvedValue({ ...DAEMON, update: { version: '1.1.0.10', state: 'failed', detail: 'disk full' } })
     const el = await render()
@@ -95,7 +107,7 @@ describe('DeviceAgentPage', () => {
   it('an API without Control Link devices says so, in those words', async () => {
     daemon.mockResolvedValue('UNSUPPORTED')
     const el = await render()
-    expect(el.querySelector('[data-notice]')!.textContent).toContain('does not serve Control Link devices')
+    expect(el.querySelector('[data-notice]')!.textContent).toContain("This server can't show the agent.")
   })
 
   // A daemon with no package is updated by what carries it: connectd takes no release, and nothing here upgrades it.
@@ -108,7 +120,7 @@ describe('DeviceAgentPage', () => {
     const row = el.querySelector('[data-setting="browser"]')!
     expect(row.querySelector('[data-label]')!.textContent).toBe('Updates with the portal')
     expect(el.querySelector('[data-setting="bullseye-arrow"]')).toBeNull()
-    expect(el.textContent).not.toContain('Upgrades')
+    expect(el.textContent).not.toContain('Pause updates')
     // What it runs is connectd's version: it has no package.
     expect(el.querySelector('[data-setting="microchip"] [data-label]')!.textContent).toBe('5.6.1.20261113000137')
   })
@@ -117,14 +129,14 @@ describe('DeviceAgentPage', () => {
     daemon.mockResolvedValue(PACKAGELESS)
     const el = await render()
     expect(el.querySelector('[data-setting="mobile"] [data-label]')!.textContent).toBe('Updated by the app that carries it')
-    expect(el.textContent).not.toContain('Upgrades')
+    expect(el.textContent).not.toContain('Pause updates')
   })
 
   it('a packaged daemon keeps its target and Upgrades', async () => {
     daemon.mockResolvedValue({ ...DAEMON, distribution: 'remoteit-device' })
     const el = await render()
     expect(el.querySelector('[data-setting="bullseye-arrow"]')).not.toBeNull()
-    expect(el.textContent).toContain('Upgrades')
+    expect(el.textContent).toContain('Pause updates')
   })
 
   // Something other than our rollouts upgrades it: said who and how, neutral — never a failure, whatever it refused.
@@ -147,7 +159,7 @@ describe('DeviceAgentPage', () => {
     expect(row.querySelector('[data-sublabel]')!.textContent).toContain('Pull the image again')
     expect(el.querySelector('[data-setting="exclamation-triangle"]')).toBeNull()
     expect(el.querySelector('[data-setting="lock"]')).toBeNull()
-    expect(el.textContent).not.toContain('Upgrades')
+    expect(el.textContent).not.toContain('Pause updates')
   })
 
   it('an older daemon refusing as a container, on an API before howToUpdate: by its updatedBy, no red', async () => {
@@ -173,7 +185,7 @@ describe('DeviceAgentPage', () => {
     const el = await render()
     expect(el.querySelector('[data-setting="toggle-off"] [data-label]')!.textContent).toBe('Updates turned off on the device')
     // Its admin's setting is the one to change: Upgrades stays.
-    expect(el.textContent).toContain('Upgrades')
+    expect(el.textContent).toContain('Pause updates')
   })
 
   it('below its kind\'s minimum: a warning first, with why and how its own updater brings it up to date', async () => {

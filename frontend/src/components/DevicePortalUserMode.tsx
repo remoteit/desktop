@@ -84,7 +84,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
         </Button>
       }
     >
-      {t('portalUserMode.loadFailed', 'Could not load user mode.')}
+      {t('portalUserMode.loadFailed', 'Couldn’t load full access. Try again.')}
     </Alert>
   )
   if (data === null && !failed) return <>{legacy}</>
@@ -111,7 +111,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
         const result = await requestPortalUserMode(deviceId, confirmation.enable)
         if (!result || result === 'ERROR' || 'reason' in result) {
           setSaveError(
-            result && result !== 'ERROR' ? result.reason : t('portalUserMode.saveFailed', 'Could not update user mode.')
+            result && result !== 'ERROR' ? result.reason : t('portalUserMode.saveFailed', 'Couldn’t change full access. Try again.')
           )
           return
         }
@@ -119,7 +119,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
         setChoice('')
       } else {
         if (!(await revokePortalUserMode(deviceId, confirmation.revoke.id))) {
-          setSaveError(t('portalUserMode.saveFailed', 'Could not update user mode.'))
+          setSaveError(t('portalUserMode.saveFailed', 'Couldn’t change full access. Try again.'))
           return
         }
         if (approval?.id === confirmation.revoke.id) setApproval(undefined)
@@ -128,7 +128,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
       setRefreshDue(true)
       refresh()
     } catch {
-      setSaveError(t('portalUserMode.saveFailed', 'Could not update user mode.'))
+      setSaveError(t('portalUserMode.saveFailed', 'Couldn’t change full access. Try again.'))
     } finally {
       setBusy(false)
     }
@@ -137,11 +137,11 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
   return (
     <ListItem disableGutters>
       <Stack spacing={1.5} sx={{ py: 1.5, width: '100%' }}>
-        <Typography variant="subtitle1">{t('deviceUserMode.label', 'User mode')}</Typography>
+        <Typography variant="subtitle1">{t('deviceUserMode.label', 'Full access')}</Typography>
         {readError}
         {eligibility.blockedByLocalPolicy && (
           <Alert severity="info">
-            {t('portalUserMode.policyOff', 'The OS administrator turned off user mode on this device.')}
+            {t('portalUserMode.policyOff', 'The device’s OS administrator turned off full access.')}
           </Alert>
         )}
         {bindings.map(binding => (
@@ -204,7 +204,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
               select
               size="small"
               fullWidth
-              label={t('portalUserMode.scope', 'Enable user mode for')}
+              label={t('portalUserMode.scope', 'Turn on full access for')}
               value={selected ? choice : ''}
               onChange={event => setChoice(event.target.value)}
             >
@@ -277,7 +277,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
                           'New connections from {{name}} will use the whole-device identity {{person}}.',
                           { name: confirmation.revoke.name, person: whole.person.email ?? whole.person.id }
                         )
-                      : t('portalUserMode.confirmRevoke', 'Revoking this binding ends the sessions using it.')}
+                      : t('portalUserMode.confirmRevoke', 'Revoking this sign-in ends the sessions using it.')}
                   </Typography>
                 )}
               </DialogContent>

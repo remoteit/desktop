@@ -21,8 +21,8 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/devices/:deviceID/:serviceID/advanced', '/devices/:deviceID'],
   ['/devices/:deviceID/:serviceID/share', '/devices/:deviceID'],
   // Devices — device sub-pages → device page
-  ['/devices/:deviceID/apps/add', '/devices/:deviceID/edit'],
-  ['/devices/:deviceID/apps/:appID', '/devices/:deviceID/edit'],
+  ['/devices/:deviceID/apps/add', '/devices/:deviceID/services'],
+  ['/devices/:deviceID/apps/:appID', '/devices/:deviceID/services'],
   ['/devices/:deviceID/add/scan', '/devices/:deviceID'],
   ['/devices/:deviceID/add', '/devices/:deviceID'],
   ['/devices/:deviceID/users/:userID', '/devices/:deviceID'],
@@ -32,6 +32,9 @@ const ROUTE_PARENTS: [string, string][] = [
   ['/devices/:deviceID/users', '/devices/:deviceID'],
   ['/devices/:deviceID/logs', '/devices/:deviceID'],
   ['/devices/:deviceID/details', '/devices/:deviceID'],
+  ['/devices/:deviceID/settings/:section', '/devices/:deviceID'],
+  ['/devices/:deviceID/activity/:section', '/devices/:deviceID'],
+  ['/devices/:deviceID/exit/:section', '/devices/:deviceID'],
   ['/devices/:deviceID/:serviceID', '/devices/:deviceID'],
   // Devices — device page → devices list
   ['/devices/disabled', '/devices'],

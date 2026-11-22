@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useSelector } from 'react-redux'
-import { Box, Button, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { getUserAdmin } from '../selectors/state'
 import { DeviceContext } from '../services/Context'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
@@ -21,6 +21,9 @@ import { RunActions } from '../components/RunActions'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
+import { DeviceSection } from '../components/DeviceSection'
+import { DeviceExitFlows } from './DeviceExitFlowsPage'
+import { setDeviceCarries } from '../hooks/useDeviceCarries'
 
 /* What this device runs (graphql-api docs/PROXY-GROUPS.md §13): at most one exit and one proxy, each with the device's
    state in it — in service, draining, retired, or joining with what it waits for — and a link to it, and the actions on
@@ -44,7 +47,10 @@ export const DeviceRunsPage: React.FC = () => {
   const listening = settings.setting('proxy')
 
   const load = useCallback(async () => {
-    if (device?.id) setRuns(await graphQLDeviceRuns(device.id))
+    if (!device?.id) return
+    const read = await graphQLDeviceRuns(device.id)
+    setRuns(read)
+    if (read !== 'ERROR' && read !== UNSUPPORTED) setDeviceCarries(device.id, read)
   }, [device?.id])
 
   useEffect(() => {
@@ -68,27 +74,27 @@ export const DeviceRunsPage: React.FC = () => {
     if (runs === UNSUPPORTED)
       return (
         <Notice severity="info" fullWidth>
-          {t('deviceRuns.unsupported', 'This server does not have proxies and exits.')}
+          {t('deviceRuns.unsupportedServer', 'This server does not have proxy servers and exits.')}
         </Notice>
       )
     if (runs === 'ERROR')
       return (
         <Notice severity="error" fullWidth>
-          {t('deviceRuns.failed', 'What it runs could not be read.')}
+          {t('deviceRuns.readFailed', "Couldn't read what this device carries. Try again later.")}
         </Notice>
       )
     if (runs === null)
       return (
         <Typography variant="body2" color="textSecondary">
-          {t('deviceRuns.notManaged', 'What a device runs is seen by those who manage it.')}
+          {t('deviceRuns.managersOnly', 'Only people who manage this device see what it carries.')}
         </Typography>
       )
 
     const listeningLine = proxyListeningLine(t, !!runs.proxy, listening)
     return (
       <>
-        <List data-runs>
-          <ListSubheader>{t('deviceRuns.title', 'Runs')}</ListSubheader>
+        <DeviceSection list={false} id="runs" title={t('deviceRuns.carries', 'What this device carries')}>
+        <List data-runs disablePadding>
           {runs.exit?.exit ? (
             <RunListItem
               kind="exit"
@@ -109,7 +115,7 @@ export const DeviceRunsPage: React.FC = () => {
               kind="proxy"
               run={runs.proxy}
               name={runs.proxy.proxy.name}
-              title={t('deviceRuns.proxy', 'Proxy {{name}}', { name: runs.proxy.proxy.name })}
+              title={t('deviceRuns.proxyServer', 'Proxy server {{name}}', { name: runs.proxy.proxy.name })}
               to={
                 runs.proxy.proxy.remoteit
                   ? admin
@@ -126,17 +132,18 @@ export const DeviceRunsPage: React.FC = () => {
           )}
           {listeningLine && <ListItemSetting icon="tower-broadcast" iconColor="warning" label={listeningLine} />}
         </List>
+        </DeviceSection>
         {manage && (runs.exit || runs.proxy) && (
-          <List data-device-actions>
-            <ListSubheader>{t('deviceRuns.actions', 'Everything it runs')}</ListSubheader>
-            <ListItem>
+          <DeviceSection list={false} id="actions" title={t('deviceRuns.everything', 'Everything this device carries')}>
+          <List data-device-actions disablePadding>
+            <ListItem sx={{ paddingLeft: 4 }}>
               <ListItemText
                 secondaryTypographyProps={{ component: 'div' }}
                 secondary={
                   <>
                     {t(
-                      'deviceRuns.actionsHint',
-                      'Drain it for maintenance, put it back, retire it, or take it out of everything it runs: each says first what it does to each.'
+                      'deviceRuns.everythingHint',
+                      'Pause for maintenance, resume, stop now or remove. Each action says what it does first.'
                     )}
                     <RunActions device={named} scope="device" onDone={changed} />
                   </>
@@ -144,13 +151,14 @@ export const DeviceRunsPage: React.FC = () => {
               />
             </ListItem>
           </List>
+          </DeviceSection>
         )}
         {manage && runs.proxy && (
-          <List>
-            <ListSubheader>{t('proxyAccess.title', 'Recent visitors')}</ListSubheader>
+          <DeviceSection list={false} id="visitors" title={t('proxyAccess.title', 'Recent visitors')}>
             <ProxyAccessList scope={{ deviceId: device.id }} showEndpoint />
-          </List>
+          </DeviceSection>
         )}
+        <DeviceExitFlows device={device} />
       </>
     )
   }
@@ -165,7 +173,7 @@ export const DeviceRunsPage: React.FC = () => {
             </Notice>
           </Gutters>
         )}
-        <Gutters size={null}>{body()}</Gutters>
+        {body()}
       </Gutters>
       {making && device.owner && (
         <MakeRunDialog
@@ -180,7 +188,7 @@ export const DeviceRunsPage: React.FC = () => {
 }
 
 // A proxy or an exit the device does not run, and, for whoever manages it, making it one.
-const NotRunning: React.FC<{ kind: 'proxy' | 'exit'; manage: boolean; onMake: () => void }> = ({
+export const NotRunning: React.FC<{ kind: 'proxy' | 'exit'; manage: boolean; onMake: () => void }> = ({
   kind,
   manage,
   onMake,
@@ -192,19 +200,19 @@ const NotRunning: React.FC<{ kind: 'proxy' | 'exit'; manage: boolean; onMake: ()
         <Icon name={kind === 'exit' ? 'door-open' : 'server'} size="md" color="grayDark" />
       </ListItemIcon>
       <ListItemText
-        primary={kind === 'exit' ? t('deviceRuns.noExit', 'No exit') : t('deviceRuns.noProxy', 'No proxy')}
+        primary={kind === 'exit' ? t('deviceRuns.noExit', 'No exit') : t('deviceRuns.noProxyServer', 'No proxy server')}
         secondaryTypographyProps={{ component: 'div' }}
         secondary={
           <>
             {kind === 'exit'
-              ? t('deviceRuns.noExitHint', 'Others could send their traffic out through it')
-              : t('deviceRuns.noProxyHint', 'Endpoints into services could be reached through it')}
+              ? t('deviceRuns.noExitNote', 'Other devices could send their traffic out through this one.')
+              : t('deviceRuns.noProxyNote', 'Public addresses for services could be served from this device.')}
             {manage && (
               <Box marginTop={0.5}>
                 <Button size="small" variant="outlined" data-make={kind} onClick={onMake}>
                   {kind === 'exit'
-                    ? t('deviceRuns.makeExit', 'Make this device an exit')
-                    : t('deviceRuns.makeProxy', 'Make this device a proxy')}
+                    ? t('deviceRuns.setUpExit', 'Set up exit')
+                    : t('deviceRuns.setUpProxy', 'Set up proxy server')}
                 </Button>
               </Box>
             )}

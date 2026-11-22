@@ -95,7 +95,9 @@ describe('an action on a device: what it does, said first', () => {
   it('reads what the action would do to everything it runs and says it, before anything is done', async () => {
     await open()
     expect(effects).toHaveBeenCalledWith(E1.id, 'RETIRE', false)
-    expect(find('h2').textContent).toBe('Retire e1 in everything it runs?')
+    expect(find('h2').textContent).toBe('Stop e1 now in everything it carries?')
+    expect(find('[data-plain-lead]').textContent).toBe('e1 stops now, ending open connections.')
+    expect(confirm().textContent).toBe('Stop now')
     expect(find('[data-effect="proxy"]').textContent).toContain('Proxy remote.it pdx1a: in service → retired')
     expect(find('[data-effect="proxy"]').textContent).toContain(
       'Its 3 endpoints stay on the proxy, served by its other devices in service.'
@@ -207,10 +209,10 @@ describe('an action on a device: what it does, said first', () => {
     expect(onClose).not.toHaveBeenCalled()
   })
 
-  it('undrain asks to put it back in service', async () => {
+  it('undrain asks to resume it, in the exit page’s words', async () => {
     await open({ action: 'UNDRAIN' })
-    expect(find('h2').textContent).toBe('Put e1 back in service in everything it runs?')
-    expect(confirm().textContent).toContain('Undrain')
+    expect(find('h2').textContent).toBe('Resume e1 in everything it carries?')
+    expect(confirm().textContent).toBe('Resume')
   })
 })
 

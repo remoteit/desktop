@@ -33,7 +33,7 @@ export function useNavGates(remoteUI: boolean): NavGates {
     thisDevice: !!(thisDevicePage && thisDevice),
     services: !!serviceShortcuts && serviceShortcuts !== 'ERROR' && serviceShortcuts.available,
     deviceSessions,
-    publicAddresses: false,
+    publicAddresses: deviceSessions,
     partner,
     connectAi: brand.name === 'remoteit',
     agent: chat.show,

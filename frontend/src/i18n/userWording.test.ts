@@ -57,12 +57,12 @@ describe('the words people read', () => {
 
   it("a held device's words are in every catalog, English filled", () => {
     const en = JSON.parse(readFileSync(join(LOCALES, 'en', 'app.json'), 'utf8'))
-    expect(en.deviceAgent.held).toBe("Blocked — held by the device's admin")
+    expect(en.deviceAgent.paused).toBe('Updates are paused on this device')
     expect(en.agentStatus.held).toBe("Blocked — held by the device's admin")
     for (const locale of locales) {
       const app = JSON.parse(readFileSync(join(LOCALES, locale, 'app.json'), 'utf8'))
-      expect(typeof app.deviceAgent.held, locale).toBe('string')
-      expect(typeof app.deviceAgent.heldHint, locale).toBe('string')
+      expect(typeof app.deviceAgent.paused, locale).toBe('string')
+      expect(typeof app.deviceAgent.pausedHint, locale).toBe('string')
       expect(typeof app.agentStatus.held, locale).toBe('string')
     }
   })

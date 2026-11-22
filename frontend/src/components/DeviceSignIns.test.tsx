@@ -48,8 +48,8 @@ describe('who is signed in on a device', () => {
       },
     ])
     expect(await render()).toEqual([
-      'pat@example.com signed in on its account pat — Manages this device: may choose its exit and Protect there · since 2026-11-10',
-      'sam@example.com signed in on its account S-1-5-21-1-2-3-1013 — Does not manage this device: sees its exit, chosen by someone who does',
+      'pat@example.com on account pat — Can change Route through on the device · since 2026-11-10',
+      'sam@example.com on account S-1-5-21-1-2-3-1013 — Sees Route through but cannot change it',
     ])
     expect(signIns).toHaveBeenCalledWith('LAPTOP')
   })
@@ -59,13 +59,13 @@ describe('who is signed in on a device', () => {
       { account: null, name: null, person: { id: 'PAT', email: null }, since: '2026-11-10T20:00:00Z', manages: false },
     ])
     expect(await render()).toEqual([
-      'PAT signed in on it — Does not manage this device: sees its exit, chosen by someone who does · since 2026-11-10',
+      'PAT signed in — Sees Route through but cannot change it · since 2026-11-10',
     ])
   })
 
   it('no one: said; an API without sign-ins per account, or while read: nothing', async () => {
     signIns.mockReturnValue([])
-    expect(await render()).toEqual(['No one is signed in on it'])
+    expect(await render()).toEqual(['No one is signed in on this device'])
     signIns.mockReturnValue(null)
     expect(await render()).toEqual([])
     signIns.mockReturnValue(undefined)

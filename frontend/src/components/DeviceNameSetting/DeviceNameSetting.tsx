@@ -44,7 +44,7 @@ export const DeviceNameSetting: React.FC<InlineTextFieldSettingProps> = props =>
       required
       value={name}
       icon="i-cursor"
-      label={t('deviceNameSetting.label', 'Device Name')}
+      label={t('deviceNameSetting.name', 'Name')}
       disabled={!device.permissions.includes('MANAGE')}
       resetValue={defaultValue}
       maxLength={MAX_NAME_LENGTH}
@@ -62,7 +62,7 @@ export const DeviceNameSetting: React.FC<InlineTextFieldSettingProps> = props =>
                 onChange={event => setAlsoLabel(event.target.checked ? label : undefined)}
               />
             }
-            label={t('deviceNameSetting.alsoSubnet', 'Also change its DNS name to {{name}}', {
+            label={t('deviceNameSetting.alsoAddress', 'Also change the address to {{name}}', {
               name: label + subnet!.rest,
             })}
           />

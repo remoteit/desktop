@@ -1303,15 +1303,12 @@
     "warning": "Eliminar dispositivos no se puede deshacer, por lo que es posible que necesites acceso físico al dispositivo si deseas recuperarlo."
   },
   "deviceAbout": {
-    "accountAdded": "",
     "accountAdmin": "",
     "accountDisabled": "",
     "accountDomain": "",
-    "accountField": "",
     "accountHidden": "",
     "accountLocal": "",
     "accountRemoteit": "",
-    "accountRemoved": "",
     "accounts": "",
     "accountSignedIn": "",
     "accountsMore_one": "",
@@ -1322,7 +1319,6 @@
     "agent": "",
     "arch": "",
     "board": "",
-    "boot": "",
     "build": "",
     "close": "",
     "copy": "",
@@ -1333,19 +1329,10 @@
     "declaredProduct": "",
     "detailsTitle": "",
     "diskSerial": "",
-    "duplicate": "",
-    "duplicateCopy": "",
-    "duplicateCopyOf": "",
-    "duplicateJoinKey": "",
-    "duplicateKept": "",
-    "duplicateKeptFrom": "",
-    "duplicateKey": "",
-    "duplicateOriginal": "",
     "firmware": "",
     "hardwareChanged": "",
     "hardwareRevision": "",
     "hardwareUuid": "",
-    "history": "",
     "identifiers": "",
     "kernel": "",
     "machineId": "",
@@ -1366,66 +1353,81 @@
     "natPortPerDestination": "",
     "natSince": "",
     "natStrict": "",
-    "nothing": "",
     "os": "",
     "package": "",
     "product": "",
     "reported": "",
-    "restored": "",
     "serial": "",
     "software": "",
     "system": "",
-    "updateFailed": "",
-    "updateRefused": "",
-    "upgrade": "",
     "viewDetails": "",
     "virtual": ""
   },
+  "deviceAccess": {
+    "dormant": "",
+    "failed": "",
+    "full": "",
+    "fullHint": "",
+    "fullOther": "",
+    "label": "",
+    "networks": "",
+    "networksHint": "",
+    "off": "",
+    "offHint": ""
+  },
+  "deviceActivity": {
+    "events": ""
+  },
   "deviceAgent": {
     "channel": "",
+    "core": "",
+    "details": "",
     "downloading": "",
-    "error": "",
-    "failed": "",
     "follow": "",
     "followAccount": "",
-    "followAccountHint": "",
-    "held": "Bloqueado — retenido por el administrador del dispositivo",
-    "heldHint": "Un bloqueo de paquete en el dispositivo. Se actualizará cuando se levante el bloqueo.",
-    "hold": "",
-    "holdHint": "",
+    "followAccountNote": "",
+    "hideDetails": "",
     "installed": "",
     "installing": "",
-    "none": "",
-    "noTarget": "",
-    "noTargetHint": "",
+    "noAgent": "",
+    "noTargetRelease": "",
+    "noTargetVersion": "",
     "notReported": "",
-    "notReportedHint": "",
-    "notTaken": "No aplicada aquí: {{version}}",
-    "noUpdate": "",
-    "pending": "",
+    "notReportedOlder": "",
+    "notTakenUpdate": "",
+    "noUpdateReported": "",
+    "paused": "",
+    "pausedHere": "",
+    "pausedHint": "",
+    "pauseNote": "",
+    "pauseUpdates": "",
+    "pendingUpdate": "",
     "pinned": "",
-    "pinnedHint": "",
-    "refused": "",
+    "pinnedNote": "",
+    "readFailed": "",
+    "refusedUpdate": "",
     "release": "",
     "rollback": "",
+    "rollbackBody": "",
     "rollbackConfirm": "",
-    "rollbackConfirmBody": "",
-    "rollbackHint": "",
-    "runs": "",
-    "runsPackage": "",
-    "started": "",
-    "target": "",
-    "targetRollback": "",
-    "unsupported": "",
-    "upgrades": "",
+    "rollbackNote": "",
+    "startedUpdate": "",
+    "targetRolledBack": "",
+    "targetVersion": "",
+    "unsupportedAgent": "",
+    "updateFailed": "",
+    "updates": "",
     "upToDate": "",
     "withApp": "",
-    "withAppHint": "",
+    "withAppNote": "",
     "withPortal": "",
-    "withPortalHint": ""
+    "withPortalNote": ""
+  },
+  "deviceAi": {
+    "heldHow": ""
   },
   "deviceAnyPort": {
-    "placeholder": "",
+    "portsPlaceholder": "",
     "tcp": "",
     "udp": ""
   },
@@ -1502,7 +1504,7 @@
     "transferringCount_other": "Estás transfiriendo {{count}} dispositivos a un nuevo propietario."
   },
   "deviceDescriptionSetting": {
-    "label": "Descripción del dispositivo"
+    "description": ""
   },
   "deviceExit": {
     "byNetwork": "",
@@ -1544,14 +1546,67 @@
     "title": "Gráfico del dispositivo"
   },
   "deviceHeaderMenu": {
-    "agent": "",
-    "configure": "Configurar",
-    "details": "Detalles",
-    "exitFlows": "",
-    "logs": "Registros",
-    "runs": "",
-    "shareAccess": "Compartir acceso",
+    "share": "",
     "unknown": "Desconocido"
+  },
+  "deviceHistory": {
+    "accountAdded": "",
+    "accountChanged": "",
+    "accountRemoved": "",
+    "adminChanged": "",
+    "agentPackage": "",
+    "agentReported": "",
+    "agentStarted": "",
+    "agentUpdated": "",
+    "appChanged": "",
+    "appInstalled": "",
+    "appOff": "",
+    "appRemoved": "",
+    "appRemoving": "",
+    "appStarted": "",
+    "appStarting": "",
+    "appStatus": "",
+    "appStopped": "",
+    "appUpdated": "",
+    "copy": "",
+    "copyOf": "",
+    "duplicate": "",
+    "firmwareUpdated": "",
+    "hardwareChanged": "",
+    "hardwareId": "",
+    "hideRaw": "",
+    "interfaceChanged": "",
+    "ipChanged": "",
+    "joinKeyElsewhere": "",
+    "kept": "",
+    "keptFrom": "",
+    "kernelUpdated": "",
+    "keyElsewhere": "",
+    "labelChanged": "",
+    "natChanged": "",
+    "networkFound": "",
+    "networkMoved": "",
+    "nothing": "",
+    "osChanged": "",
+    "osUpdated": "",
+    "printers": "",
+    "recovered": "",
+    "routerChanged": "",
+    "scriptsChanged": "",
+    "scriptsNotReady": "",
+    "scriptsReady": "",
+    "settingChanged": "",
+    "showRaw": "",
+    "signIns": "",
+    "swapped": "",
+    "terminalApp": "",
+    "terminalChanged": "",
+    "terminalFixed": "",
+    "terminalProblem": "",
+    "title": "",
+    "updateFailed": "",
+    "updateRefused": "",
+    "web": ""
   },
   "deviceHosting": {
     "address": "",
@@ -1586,6 +1641,7 @@
     "expired": "",
     "expires": "",
     "full": "",
+    "heading": "",
     "issue": "",
     "lastBoot": "",
     "neverBooted": "",
@@ -1603,8 +1659,7 @@
     "revokeLastBody": "",
     "revokeTitle": "",
     "stale": "",
-    "staleSuggestion": "",
-    "title": ""
+    "staleSuggestion": ""
   },
   "deviceLabelSetting": {
     "label": "Etiqueta del dispositivo"
@@ -1646,8 +1701,8 @@
     "virtualDevice": ""
   },
   "deviceNameSetting": {
-    "alsoSubnet": "",
-    "label": "Nombre del dispositivo"
+    "alsoAddress": "",
+    "name": ""
   },
   "deviceNetwork": {
     "accountOwner": "",
@@ -1802,6 +1857,25 @@
     "shareAccess": "Compartir acceso",
     "transferDevice": "Transferir dispositivo"
   },
+  "deviceOverview": {
+    "address": "",
+    "allServices": "",
+    "copyAddress": "",
+    "details": "",
+    "disabled": "",
+    "doNow": "",
+    "gateway": "",
+    "hideDetails": "",
+    "lastSeen": "",
+    "offline": "",
+    "online": "",
+    "openService": "",
+    "ownedBy": "",
+    "showDetails": "",
+    "status": "",
+    "unknownPlatform": "",
+    "virtualAddress": ""
+  },
   "devicePackage": {
     "containerName": "",
     "containerNameHint": "",
@@ -1820,17 +1894,15 @@
   },
   "devicePage": {
     "availableServices": "Servicios disponibles",
-    "availableServicesDescription": "Aquí se muestran los servicios (aplicaciones) alojados por el dispositivo.",
+    "availableServicesNote": "",
     "chooseGateway": "",
     "deviceNotFound": "Dispositivo no encontrado.",
     "deviceOffline": "Dispositivo sin conexión",
     "deviceUnlicensed": "Dispositivo sin licencia",
+    "recoverDevice": "",
     "registeringEllipsis": "Registrando...",
-    "restoreDevice": "Restaurar dispositivo",
     "selectServiceInstruction": "Selecciona un servicio para configurarlo o para iniciar una conexión.",
-    "service": "Servicio",
-    "servicesOff": "",
-    "servicesOffHint": ""
+    "services": ""
   },
   "devicePresenceSetting": {
     "label": "Dirección de presencia"
@@ -1838,9 +1910,14 @@
   "deviceProduct": {
     "attach": "",
     "change": "",
+    "copyCode": "",
+    "hideCode": "",
     "none": "",
     "product": "",
-    "registeredWith": ""
+    "registeredCode": "",
+    "registeredHidden": "",
+    "registeredWith": "",
+    "showCode": ""
   },
   "deviceProductNotice": {
     "enforced": "",
@@ -1876,20 +1953,20 @@
     "vpn": ""
   },
   "deviceRuns": {
-    "actions": "",
-    "actionsHint": "",
+    "carries": "",
+    "everything": "",
+    "everythingHint": "",
     "exit": "",
-    "failed": "",
-    "makeExit": "",
-    "makeProxy": "",
+    "managersOnly": "",
     "noExit": "",
-    "noExitHint": "",
-    "noProxy": "",
-    "noProxyHint": "",
-    "notManaged": "",
-    "proxy": "",
-    "title": "",
-    "unsupported": ""
+    "noExitNote": "",
+    "noProxyNote": "",
+    "noProxyServer": "",
+    "proxyServer": "",
+    "readFailed": "",
+    "setUpExit": "",
+    "setUpProxy": "",
+    "unsupportedServer": ""
   },
   "devicesActionMenu": {
     "confirmTitle": "Confirmar eliminación del dispositivo",
@@ -1912,13 +1989,18 @@
     "screenView": "ScreenView"
   },
   "deviceScripts": {
-    "hint": "Cualquiera que pueda ejecutar scripts en este dispositivo puede ejecutar comandos en él — con su propia cuenta en el dispositivo, o como root si no tiene una. Desactivado, aquí no se ejecuta ningún script.",
-    "hintWindows": "Cualquiera que pueda ejecutar scripts en este dispositivo puede ejecutar comandos en él, como SYSTEM. Desactivado, aquí no se ejecuta ningún script.",
-    "label": "Permitir scripts"
+    "note": "",
+    "scripts": "",
+    "windowsNote": ""
   },
   "deviceServices": {
-    "hint": "",
-    "label": ""
+    "none": "",
+    "port": "",
+    "share": "",
+    "shareNote": "",
+    "sharingOff": "",
+    "sharingOffNote": "",
+    "title": ""
   },
   "deviceSetting": {
     "controlFixedTo": "",
@@ -1927,8 +2009,12 @@
     "controlOn": "",
     "deprecated": "",
     "deprecatedWhy": "",
-    "initiators": "",
     "inPortalBy": "",
+    "lockedAdmin": "",
+    "lockedLocal": "",
+    "lockedProduct": "",
+    "off": "",
+    "on": "",
     "onComputerBy": "",
     "onDevice": "",
     "onDeviceBy": "",
@@ -1936,7 +2022,16 @@
     "productEnforced": "",
     "productLocked": "",
     "productSynced": "",
-    "updates": ""
+    "remoteUpdates": ""
+  },
+  "deviceSettings": {
+    "accessTraffic": "",
+    "advanced": "",
+    "agent": "",
+    "notificationDefaults": "",
+    "outgoing": "",
+    "servicesSharing": "",
+    "thisDevice": ""
   },
   "deviceSetupItem": {
     "alreadyCreated": "Ya creado",
@@ -1948,16 +2043,21 @@
     "restoring": "Restaurando dispositivo...",
     "thisSystem": "Este sistema"
   },
+  "deviceShares": {
+    "label": "",
+    "offNote": "",
+    "onNote": "",
+    "open": ""
+  },
   "deviceSignIns": {
-    "doesNotManage": "",
-    "manages": "",
-    "none": "",
-    "signedIn": "",
-    "signedInMachine": "",
+    "canRoute": "",
+    "noOne": "",
+    "onAccount": "",
+    "seesRoute": "",
+    "signedInPerson": "",
     "since": ""
   },
   "deviceSshAccess": {
-    "about": "",
     "add": "",
     "admin": "",
     "anyUser": "",
@@ -1968,7 +2068,6 @@
     "existingAdministrator": "",
     "existingLabel": "",
     "existingNote": "",
-    "fallback": "",
     "handleLabel": "",
     "handleNote": "",
     "login": "",
@@ -1976,21 +2075,29 @@
     "loginOwn": "",
     "name": "",
     "nameFailed": "",
-    "ownAdmin": "",
+    "ownAdministrator": "",
+    "ownerDefault": "",
     "ownExisting": "",
     "renameNote": "",
     "revoke": "",
     "save": "",
-    "title": ""
+    "terminalAccess": "",
+    "terminalNote": ""
   },
-  "deviceSubnet": {
-    "hint": "",
-    "label": ""
-  },
+  "deviceSubnet": {},
   "deviceSubnetLabel": {
+    "address": "",
+    "addressNote": "",
     "hint": "",
-    "label": "",
     "problem": ""
+  },
+  "deviceTabs": {
+    "activity": "",
+    "exit": "",
+    "overview": "",
+    "services": "",
+    "settings": "",
+    "sharing": ""
   },
   "deviceTransferPage": {
     "confirmTransferPrefix": "Estás a punto de transferir la propiedad de",
@@ -2001,24 +2108,21 @@
     "transferringTo": "Estás transfiriendo \"{{name}}\" a un nuevo propietario."
   },
   "deviceUserMode": {
-    "label": "",
-    "off": "",
-    "onOther": "",
-    "onYou": ""
+    "label": ""
   },
   "deviceWebsocket": {
+    "alwaysNote": "",
     "auto": "",
-    "autoHint": "",
-    "label": "",
+    "autoNote": "",
     "off": "",
-    "offConfirm": "",
     "offConfirmAction": "",
-    "offConfirmBody": "",
-    "offConfirmUnknown": "",
-    "offHint": "",
+    "offNote": "",
+    "offRelay": "",
+    "offRelayBody": "",
+    "offRelayUnknown": "",
     "on": "",
-    "onHint": "",
-    "using": ""
+    "relay": "",
+    "usingRelay": ""
   },
   "disabledDevice": {
     "by": "",
@@ -2292,13 +2396,13 @@
     "carried": "",
     "error": "",
     "further": "",
-    "managerHint": "",
+    "heading": "",
+    "managerNote": "",
     "more": "",
     "none": "",
     "noneYet": "",
-    "ownHint": "",
+    "ownNote": "",
     "through": "",
-    "title": "",
     "window": {
       "day": "",
       "days": "",
@@ -2551,7 +2655,7 @@
   },
   "hostedDevices": {
     "add": "",
-    "empty": "",
+    "addVirtual": "",
     "gatewayHint": "",
     "services_one": "",
     "services_many": "",
@@ -3278,10 +3382,10 @@
   },
   "notificationSettings": {
     "custom": "Personalizado",
-    "email": "Correo electrónico",
+    "emailNotifications": "",
     "globalSettings": "Configuración global",
-    "push": "Push móvil",
-    "systemNotification": "Notificación del sistema",
+    "pushNotifications": "",
+    "systemNotifications": "",
     "title": "Notificaciones del dispositivo"
   },
   "onboardScanning": {
@@ -4564,28 +4668,18 @@
     "publicName": "Proxy público"
   },
   "runAction": {
-    "drain": "",
     "drainAll": "",
     "drainEverything": "",
-    "drainIn": "",
     "effectsFailed": "",
     "failed": "",
-    "forceRetire": "",
-    "maxWait": "",
     "nothing": "",
-    "remove": "",
     "removeAll": "",
     "removeEverything": "",
-    "removeFrom": "",
-    "retire": "",
     "retireAll": "",
     "retireEverything": "",
-    "retireIn": "",
     "runs": "",
-    "undrain": "",
     "undrainAll": "",
-    "undrainEverything": "",
-    "undrainIn": ""
+    "undrainEverything": ""
   },
   "runDevicePicker": {
     "add_one": "",
@@ -5569,7 +5663,7 @@
     "dhcpHint": "",
     "gateway": "",
     "noGateway": "",
-    "notHostedNotice": "",
+    "noGatewayNotice": "",
     "platform": ""
   }
 }

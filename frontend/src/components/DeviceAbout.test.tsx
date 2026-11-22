@@ -19,6 +19,7 @@ vi.mock('../selectors/devices', () => ({ getAllDevices: () => devices.current })
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'A1' }))
 vi.mock('../hooks/useDeviceIdentity', () => ({ useKnownCopies: () => copies.current }))
 vi.mock('react-router-dom', () => ({
+  useParams: () => ({}),
   Link: React.forwardRef(({ to, children, ...rest }: any, ref: any) => (
     <a ref={ref} href={to} {...rest}>
       {children}
@@ -31,7 +32,8 @@ vi.mock('react-i18next', () => ({
   }),
 }))
 
-import { DeviceAbout, changeLabel, changeText, fieldLabel, natLabel, otherDevice } from './DeviceAbout'
+import { DeviceAbout, natLabel, otherDevice } from './DeviceAbout'
+import { fieldLabel } from '../helpers/deviceHistory'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 async function render(deviceId = 'A') {
@@ -100,8 +102,9 @@ describe('DeviceAbout', () => {
     expect(text).toContain('H4WJD662TP')
     expect(text).toContain('en0 7c:f3:4d:da:f1:01')
     expect(text).toContain('1.0.1 (pkg)')
-    expect(text).toContain('Package1.0.0 → 1.0.1')
-    expect(text).toContain('Refused the upgrade to 1.0.2 — unsigned')
+    expect(text).toContain('Agent package changed1.0.1')
+    expect(text).toContain('Agent update to 1.0.2 refusedunsigned')
+    expect(text).not.toContain('software.package')
     expect(text).not.toContain('Machine ID') // the hardware UUID again
     expect(text).not.toContain('Virtual') // none
     expect(text).not.toContain('declared by the manufacturer') // no OEM product
@@ -303,10 +306,8 @@ describe('the machine’s accounts', () => {
         entry('1001, local, admin, Jane Smith', null),
       ],
     })
-    const items = [...(await render()).querySelectorAll('li')].map(li => li.textContent).filter(t => t !== 'History')
-    expect(items[0]).toContain('Account jsmithAdded: 1001, local, admin, Jane Smith')
-    expect(items[1]).toContain('Account jsmith1001, local, Jane Smith → 1001, local, admin, Jane Smith')
-    expect(items[2]).toContain('Account jsmithRemoved: 1001, local, admin, Jane Smith')
+    const items = [...(await render()).querySelectorAll('[data-history-text]')].map(el => el.textContent)
+    expect(items).toEqual(['Account jsmith added', 'Account jsmith changed', 'Account jsmith removed'])
   })
 })
 
@@ -331,15 +332,11 @@ describe('history: restores, boots and duplicates', () => {
         entry('duplicate', 'device-join-key', null, 'Austin, TX', 'from 192.0.2.1'),
       ],
     })
-    const items = [...(await render()).querySelectorAll('li')].map(li => li.textContent).filter(t => t !== 'History')
-    expect(items[0]).toContain('BootWith key USB stick, Portland, OR — from 203.0.113.7')
-    expect(items[1]).toContain('RestoredSeattle, WA — from 198.51.100.4')
-    expect(items[2]).toContain(
-      'DuplicateA machine signed in as it, split off as 80:00:00:00:00:00:00:09 — from 203.0.113.8'
-    )
-    expect(items[3]).toContain(
-      'DuplicateIts device join key in use on another machine, refused, Austin, TX — from 192.0.2.1'
-    )
+    const items = [...(await render()).querySelectorAll('[data-device-history] li')].map(li => li.textContent)
+    expect(items[0]).toContain('Agent startedWith key USB stick, Portland, OR, from 203.0.113.7')
+    expect(items[1]).toContain('Device recovered with a codeSeattle, WA, from 198.51.100.4')
+    expect(items[2]).toContain('A copy of this device was split off as 80:00:00:00:00:00:00:09from 203.0.113.8')
+    expect(items[3]).toContain('Join key used on another machine and refusedAustin, TX, from 192.0.2.1')
   })
 
   it('the other device an entry names links to its page, by its name, where the viewer can open it', async () => {
@@ -356,17 +353,17 @@ describe('history: restores, boots and duplicates', () => {
       ],
     })
     const page = await render()
-    const items = [...page.querySelectorAll('li')].filter(li => li.textContent !== 'History')
+    const items = [...page.querySelectorAll('[data-device-history] li')]
     const link = (li: Element) => li.querySelector('a')
     expect(link(items[0])?.getAttribute('href')).toBe('/devices/Y1')
-    expect(items[0].textContent).toContain('A machine signed in as it, split off as Pump (copy) — from 203.0.113.8')
+    expect(items[0].textContent).toContain('A copy of this device was split off as Pump (copy)from 203.0.113.8')
     expect(link(items[1])?.getAttribute('href')).toBe('/devices/X1')
-    expect(items[1].textContent).toContain('Split off from Pump: this machine signed in as it')
+    expect(items[1].textContent).toContain('Split off from Pump')
     // One this viewer cannot open: its ID, as before.
     expect(link(items[2])).toBeNull()
-    expect(items[2].textContent).toContain('Its machine swapped with that of Z9')
+    expect(items[2].textContent).toContain('Machine swapped with Z9')
     expect(link(items[3])?.getAttribute('href')).toBe('/devices/X1')
-    expect(items[3].textContent).toContain('Kept as a device of its own, split off from Pump')
+    expect(items[3].textContent).toContain('Kept as a separate device, split off from Pump')
     // A boot names a key and a place, never another device.
     expect(link(items[4])).toBeNull()
     expect(otherDevice(entry('boot', 'boot', 'X1', 'X1', null) as any)).toBeUndefined()
@@ -374,22 +371,6 @@ describe('history: restores, boots and duplicates', () => {
     copies.current = []
   })
 
-  it('every kind of duplicate entry', () => {
-    const t = (_key: string, text: string, values?: any) =>
-      text.replace(/{{(\w+)}}/g, (_: string, k: string) => values?.[k] ?? '')
-    const text = (field: string, after: string | null = null) =>
-      changeText(t as any, entry('duplicate', field, null, after, null) as any)
-    expect(text('copy-of', 'X1')).toBe('Split off from X1: this machine signed in as it')
-    expect(text('key')).toBe('Another machine with its identity, refused')
-    expect(text('kept')).toBe('Kept as a device of its own')
-    expect(text('kept', 'X1')).toBe('Kept as a device of its own, split off from X1')
-    expect(text('original', 'Y1')).toBe('Its machine swapped with that of Y1')
-    expect(text('something-new', 'Z')).toBe('something-new, Z')
-    expect(changeLabel(t as any, entry('duplicate', 'kept', null, null, null) as any)).toBe('Duplicate')
-    expect(changeText(t as any, entry('boot', 'boot', null, null, null) as any)).toBe('')
-    expect(changeLabel(t as any, entry('field', 'os.version', '14', '15', null) as any)).toBe('OS version')
-    expect(changeText(t as any, entry('field', 'os.version', null, '15', null) as any)).toBe('nothing → 15')
-  })
 })
 
 describe('fieldLabel', () => {

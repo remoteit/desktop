@@ -36,6 +36,9 @@ vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data
 vi.mock('../components/Gutters', () => ({ Gutters: ({ children }: any) => <>{children}</> }))
 vi.mock('../components/Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
 vi.mock('../components/Icon', () => ({ Icon: () => null }))
+vi.mock('./DeviceExitFlowsPage', () => ({ DeviceExitFlows: () => <div data-flows /> }))
+vi.mock('../components/DeviceSection', () => ({ DeviceSection: ({ children }: any) => <>{children}</> }))
+vi.mock('../hooks/useDeviceCarries', () => ({ setDeviceCarries: vi.fn() }))
 // A proxy or exit the device runs: what it was given, and an action on it answering what the device runs after.
 vi.mock('../components/RunListItem', () => ({
   RunListItem: ({ kind, title, to, manage, onChanged, run, lan, lanSetOn, local }: any) => (
@@ -120,7 +123,7 @@ describe('what a device runs', () => {
     expect(deviceRuns).toHaveBeenCalledWith('MAC')
     expect(find('[data-run="exit"]').textContent).toBe('Exit HA Derby')
     expect(find('[data-run="exit"]').getAttribute('data-to')).toBe('/exits/xha')
-    expect(find('[data-run="proxy"]').textContent).toBe('Proxy Remote-Dragon')
+    expect(find('[data-run="proxy"]').textContent).toBe('Proxy server Remote-Dragon')
     expect(find('[data-run="proxy"]').getAttribute('data-to')).toBe('/proxies/P-OWN')
     expect(find('[data-run="exit"]').getAttribute('data-manage')).toBe('yes')
     // Its own exit's LAN is said, closed too, and where it is set: on the exit. remote.it's reach no network of theirs.
@@ -211,15 +214,15 @@ describe('what a device runs', () => {
     // graphql says what a device runs to its managers alone.
     deviceRuns.mockResolvedValue(null)
     expect((await render({ ...MAC, permissions: ['VIEW'] })).textContent).toContain(
-      'What a device runs is seen by those who manage it.'
+      'Only people who manage this device see what it carries.'
     )
   })
 
   it('an API without proxies and exits, or a failed read: said', async () => {
     deviceRuns.mockResolvedValue('UNSUPPORTED')
-    expect((await render()).textContent).toContain('This server does not have proxies and exits.')
+    expect((await render()).textContent).toContain('This server does not have proxy servers and exits.')
     deviceRuns.mockResolvedValue('ERROR')
-    expect((await render()).textContent).toContain('What it runs could not be read.')
+    expect((await render()).textContent).toContain("Couldn't read what this device carries. Try again later.")
   })
 
   it('a proxy that is not listening says why', async () => {

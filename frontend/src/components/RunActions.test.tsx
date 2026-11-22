@@ -11,7 +11,6 @@ vi.mock('./RunActionDialog', () => ({
       onClick={() => onDone('RUNS')}
     />
   ),
-  actionVerb: (_t: any, action: string) => ({ DRAIN: 'Drain', UNDRAIN: 'Undrain', RETIRE: 'Retire', REMOVE: 'Remove' }[action]),
 }))
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (_key: string, text: string) => text }),
@@ -55,7 +54,7 @@ describe('the actions on a device in what it runs', () => {
     expect(buttons()).toEqual(['Resume', 'Remove'])
     document.body.innerHTML = ''
     await render({ scope: 'device' })
-    expect(buttons()).toEqual(['Drain all', 'Undrain all', 'Retire all', 'Remove from all'])
+    expect(buttons()).toEqual(['Pause all', 'Resume all', 'Stop all now', 'Remove from all'])
   })
 
   it('a joining device waits to be approved only where an admin starts new devices', async () => {
