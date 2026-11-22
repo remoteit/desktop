@@ -1815,6 +1815,7 @@
     "deviceLink": "Device link",
     "makeProduct": "Create product",
     "makeVirtualDevice": "Add a virtual device for {{host}}…",
+    "moreActions": "More actions",
     "recoverDevice": "Recover device…",
     "recoverDeviceHint": "Make a reset or reinstalled machine this device again",
     "serviceLink": "Service link",

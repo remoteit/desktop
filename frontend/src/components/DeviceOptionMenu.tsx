@@ -75,7 +75,14 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
   return (
     <>
       <MobileUI hide>{!devicesSection && <InfoButton device={device} service={service} />}</MobileUI>
-      <IconButton onClick={handleClick} name="ellipsis-v" size="md" color="grayDarker" fixedWidth />
+      <IconButton
+        onClick={handleClick}
+        name="ellipsis-v"
+        size="md"
+        color="grayDarker"
+        title={t('deviceOptionMenu.moreActions', 'More actions')}
+        fixedWidth
+      />
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
