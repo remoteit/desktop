@@ -6,6 +6,7 @@ import { selectOrganization } from '../selectors/organizations'
 import { ConfirmButton } from '../buttons/ConfirmButton'
 import { List, ListSubheader, ListItem, TextField } from '@mui/material'
 import { Icon } from '../components/Icon'
+import { spacing } from '../styling'
 
 const CLAIM_CODE_LENGTH = 8
 type Props = { className?: string; compact?: boolean }
@@ -45,10 +46,14 @@ export const ClaimDevice: React.FC<Props> = ({ className, compact }) => {
       {!compact && <ListSubheader disableGutters>{t('claimDevice.title', 'Claim a device')}</ListSubheader>}
       <ListItem sx={{ paddingTop: compact ? 0 : 3 }} disablePadding>
         <form
-          style={{
-            width: 160,
-            textAlign: 'right',
-          }}
+          style={
+            compact
+              ? { display: 'flex', alignItems: 'center', gap: spacing.sm }
+              : {
+                  width: 160,
+                  textAlign: 'right',
+                }
+          }
           onSubmit={e => {
             e.preventDefault()
             buttonRef.current?.click()
@@ -63,9 +68,9 @@ export const ClaimDevice: React.FC<Props> = ({ className, compact }) => {
             sx={{
               width: { xs: 130, sm: 160 },
               display: 'flex',
-              marginBottom: 0.75,
+              marginBottom: compact ? 0 : 0.75,
               justifyContent: 'flex-end',
-              marginLeft: -1.5,
+              marginLeft: compact ? 0 : -1.5,
               '& svg': { marginRight: 2.25 },
               '& .MuiFilledInput-root': { fontSize: 14 },
             }}
@@ -84,9 +89,9 @@ export const ClaimDevice: React.FC<Props> = ({ className, compact }) => {
           />
           <ConfirmButton
             ref={buttonRef}
-            size="chip"
+            size={compact ? 'small' : 'chip'}
             sx={{ marginRight: 0.375 }}
-            variant={valid ? 'contained' : 'text'}
+            variant={valid || compact ? 'contained' : 'text'}
             title={claiming ? t('claimDevice.claiming', 'Claiming') : t('claimDevice.claim', 'Claim')}
             confirm={organization.id !== user.id}
             disabled={claiming || !valid}
