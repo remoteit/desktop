@@ -1,8 +1,8 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { List, ListItemText, Typography } from '@mui/material'
-import { memberCounts } from '../services/graphQLDeviceNetworks'
+import { useHistory } from 'react-router-dom'
+import { Box, Button, List, ListItemText, Typography } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { selectPermissions } from '../selectors/organizations'
 import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
@@ -13,13 +13,16 @@ import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { networkSummary } from '../components/DeviceNetworkWords'
 
 /* Networks, as device networks (docs/superpowers/specs/2026-09-30-device-sessions-ui-design.md §3): each network
-   with its initiators, targets and people. In place of the Networks page while the device-sessions flag is on. */
+   with how many devices and people are in it. */
 export const DeviceNetworksPage: React.FC = () => {
   const { t } = useTranslation()
   const { networks } = useDeviceNetworks()
   const permissions = useSelector(selectPermissions)
+  const history = useHistory()
+  const canAdd = permissions.includes('MANAGE')
 
   const body = () => {
     if (networks === undefined) return <LoadingMessage />
@@ -29,7 +32,7 @@ export const DeviceNetworksPage: React.FC = () => {
           <Notice severity="info" fullWidth>
             {t(
               'deviceNetworks.unsupported',
-              'This API does not serve device networks. Point Test Settings → API Target at a stage that does (local or dev).'
+              'This server doesn’t offer networks of devices. Choose a server that does in Test settings.'
             )}
           </Notice>
         </Gutters>
@@ -38,16 +41,26 @@ export const DeviceNetworksPage: React.FC = () => {
       return (
         <Gutters>
           <Notice severity="error" fullWidth>
-            {t('deviceNetworks.error', 'Could not read the networks.')}
+            {t('deviceNetworks.error', 'Couldn’t load your networks. Check your connection and try again.')}
           </Notice>
         </Gutters>
       )
     if (!networks.length)
       return (
         <Gutters>
-          <Typography variant="body2" color="textSecondary">
-            {t('deviceNetworks.empty', 'No networks yet.')}
-          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1.5 }}>
+            <Typography variant="body2" color="textSecondary">
+              {t(
+                'deviceNetworks.empty',
+                'A network lets your devices reach each other by name, with no connection to start.'
+              )}
+            </Typography>
+            {canAdd && (
+              <Button variant="contained" size="small" onClick={() => history.push('/networks/add')}>
+                {t('deviceNetworks.create', 'Create network')}
+              </Button>
+            )}
+          </Box>
         </Gutters>
       )
 
@@ -62,17 +75,7 @@ export const DeviceNetworksPage: React.FC = () => {
               icon={network.kind === 'LINK' ? 'link' : 'chart-network'}
               dense
             >
-              <ListItemText
-                primary={network.name}
-                secondary={t(
-                  'deviceNetworks.summary',
-                  '{{initiators}} initiating · {{targets}} targets · {{people}} people',
-                  {
-                    ...memberCounts(network),
-                    people: network.access.length + 1,
-                  }
-                )}
-              />
+              <ListItemText primary={network.name} secondary={networkSummary(t, network)} />
             </ListItemLocation>
           ))}
       </List>
@@ -86,8 +89,8 @@ export const DeviceNetworksPage: React.FC = () => {
       header={
         <Typography variant="subtitle1">
           <Title>{t('deviceNetworks.title', 'Networks')}</Title>
-          {permissions.includes('MANAGE') && (
-            <IconButton icon="plus" title={t('deviceNetworks.add', 'Add network')} to="/networks/add" size="md" />
+          {canAdd && (
+            <IconButton icon="plus" title={t('deviceNetworks.add', 'Create network')} to="/networks/add" size="md" />
           )}
         </Typography>
       }

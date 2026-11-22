@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -25,42 +25,45 @@ import { DeviceNetwork, NetworkMember, exposes, initiates } from '../services/gr
 type Props = {
   network: DeviceNetwork
   devices: IDevice[]
-  exposure: (member: NetworkMember) => string
 }
 
-// Where each lane sits, and how far apart its nodes are.
-// Where each group starts, around the network at the origin: devices in user mode in a column to the left, initiators
-// in rows above, targets in a column to the right, devices that are both in rows below. Boxes can be moved from there.
-const BOX = 190 // a device's box width
-const HUB = 150 // the network's box width
-const ROW = 66 // between boxes in a column
-const LEFT = -(BOX + 330)
-const RIGHT = HUB + 330
-const GRID = { across: 3, gapX: BOX + 30, gapY: 70, offset: 130 } // rows above and below
+const BOX = 172 // a device's box width
+const HUB = 172 // the network's box width
+const GAP = 16 // between boxes in a row
+const ROW = 56 // from one row of boxes to the next
+const HEADING = 26 // a band's heading, above its first row
+const BAND = 64 // between bands, room for the lines to curve
 
-// One colour per kind of line: a device initiating, a target, a device that is both. They read in light and dark.
-const COLOR = { initiator: '#1D9E75', target: '#378ADD', both: '#7F77DD' }
+// One colour per kind of line: can reach, can be reached, both. They read in light and dark.
+const COLOR = { reach: '#1D9E75', reached: '#378ADD', both: '#7F77DD' }
 
-/* A network drawn as it is (docs/superpowers/specs/2026-09-30-device-sessions-ui-design.md §3): its devices only. On
-   the left, what reaches it — the devices that initiate, and its people's devices in user mode (a person reaches it
-   through those); the network in the middle; on the right, its targets with what each exposes. A device that both
-   initiates and is a target is one node on the right joined by one two-way line. Devices by tag are drawn like the
-   rest. A line meets each box at the point on its edge nearest the other end, so it slides as boxes move. Read-only:
-   changes are made on the list. A device opens on a click. */
+/* A network drawn as it is, in bands as wide as the panel: at the top what can reach — devices, and people's devices
+   with full access as them (dashed) — then the network beside the devices that both reach and can be reached (one
+   two-way line each), and at the bottom what can be reached and how. A line meets each box at the point on its edge nearest the other end, so it slides as
+   boxes move. Read-only; a device opens on a click. */
 export const DeviceNetworkGraph: React.FC<Props> = props => (
   <ReactFlowProvider>
     <Graph {...props} />
   </ReactFlowProvider>
 )
 
-type Item = { id: string; label: React.ReactNode; sort: string }
+type Item = { id: string; label: React.ReactNode; sort: string; dashed?: boolean }
 
-const Graph: React.FC<Props> = ({ network, devices, exposure }) => {
+const Graph: React.FC<Props> = ({ network, devices }) => {
   const { t } = useTranslation()
   const history = useHistory()
   const dark = useSelector((state: State) => state.ui.themeDark)
+  const frame = useRef<HTMLDivElement>(null)
+  const [width, setWidth] = useState(0)
+  useEffect(() => {
+    if (!frame.current) return
+    const observer = new ResizeObserver(([entry]) => setWidth(Math.round(entry.contentRect.width)))
+    observer.observe(frame.current)
+    return () => observer.disconnect()
+  }, [])
+  const across = Math.max(2, Math.min(5, Math.floor((width - 24 + GAP) / (BOX + GAP)) || 3))
 
-  const { nodes, edges } = useMemo(() => {
+  const { nodes, edges, size } = useMemo(() => {
     const named = new Map<string, string>()
     for (const rule of network.deviceRules || [])
       for (const device of rule.named || []) named.set(device.id, device.name)
@@ -71,24 +74,38 @@ const Graph: React.FC<Props> = ({ network, devices, exposure }) => {
       id
     const label = (name: string, detail?: string) => (
       <>
-        {name}
+        <Box component="span" sx={{ fontWeight: 500, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {name}
+        </Box>
         {detail && (
-          <Typography variant="caption" display="block" color="textSecondary">
+          <Typography variant="caption" display="block" color="textSecondary" sx={{ fontSize: 10, lineHeight: 1.3 }}>
             {detail}
           </Typography>
         )}
       </>
     )
+    const servicesOf = (id: string) =>
+      devices.find(device => device.id === id)?.services?.length ??
+      network.devices.find(member => member.deviceId === id)?.services?.length ??
+      0
+    const how = (member: NetworkMember) => {
+      if (member.anyPort) return t('deviceNetworkGraph.allAnyPort', 'All services and any port')
+      if (member.scope === 'ALL') return t('deviceNetworkGraph.allServices', 'All services')
+      const count = network.connections.filter(c => c.service.device?.id === member.deviceId).length
+      return t('deviceNetworkGraph.chosen', '{{count}} of {{total}} services', {
+        count,
+        total: Math.max(count, servicesOf(member.deviceId)),
+      })
+    }
 
-    // Devices, listed and by tag (a device listed on its own is what its listing says).
     const listedIds = new Set(network.devices.map(member => member.deviceId))
-    const initiators: Item[] = []
+    const reachers: Item[] = []
     const targets: (Item & { both: boolean })[] = []
     for (const member of network.devices) {
       const item = { id: `device:${member.deviceId}`, sort: nameOf(member.deviceId) }
       if (exposes(network, member))
-        targets.push({ ...item, both: initiates(member), label: label(item.sort, exposure(member)) })
-      else if (initiates(member)) initiators.push({ ...item, label: label(item.sort) })
+        targets.push({ ...item, both: initiates(member), label: label(item.sort, how(member)) })
+      else if (initiates(member)) reachers.push({ ...item, label: label(item.sort) })
     }
     const fromTags = new Map<string, { initiator: boolean; all: boolean; anyPort: boolean }>()
     for (const rule of network.deviceRules || []) {
@@ -103,19 +120,17 @@ const Graph: React.FC<Props> = ({ network, devices, exposure }) => {
       }
     }
     const tagged = t('deviceNetworkGraph.byTag', 'by tag')
-    for (const [id, how] of fromTags) {
+    for (const [id, rule] of fromTags) {
       const item = { id: `device:${id}`, sort: nameOf(id) }
-      if (how.all) {
-        const detail = [
-          t('deviceNetworkGraph.allServices', 'All services'),
-          how.anyPort && t('deviceNetworkGraph.anyPort', 'Any port'),
-          tagged,
-        ]
-        targets.push({ ...item, both: how.initiator, label: label(item.sort, detail.filter(Boolean).join(' · ')) })
-      } else if (how.initiator) initiators.push({ ...item, label: label(item.sort, tagged) })
+      if (rule.all) {
+        const detail = rule.anyPort
+          ? t('deviceNetworkGraph.allAnyPort', 'All services and any port')
+          : t('deviceNetworkGraph.allServices', 'All services')
+        targets.push({ ...item, both: rule.initiator, label: label(item.sort, `${detail} · ${tagged}`) })
+      } else if (rule.initiator) reachers.push({ ...item, label: label(item.sort, tagged) })
     }
 
-    // Its people's devices in user mode — each reaches it as its person — unless already drawn as a device on it.
+    // Its people's devices with full access as them, unless already drawn as a device on it.
     const emails = new Map<string, string>([
       [network.owner.id, network.owner.email],
       ...network.access.map(share => [share.user.id, share.user.email] as [string, string]),
@@ -123,62 +138,105 @@ const Graph: React.FC<Props> = ({ network, devices, exposure }) => {
         section.roles.flatMap(role => role.members.map(member => [member.id, member.email] as [string, string]))
       ),
     ])
-    const drawn = new Set([...initiators, ...targets].map(item => item.id))
-    const userMode: Item[] = (network.userModeDevices || [])
+    const drawn = new Set([...reachers, ...targets].map(item => item.id))
+    const people: Item[] = (network.userModeDevices || [])
       .filter(device => !drawn.has(`device:${device.deviceId}`))
       .filter((device, index, all) => all.findIndex(other => other.deviceId === device.deviceId) === index)
       .map(device => ({
         id: `device:${device.deviceId}`,
         sort: device.name,
+        dashed: true,
         label: label(
           device.name,
-          t('deviceNetworkGraph.userMode', 'User mode · {{email}}', { email: emails.get(device.userId) || '' })
+          t('deviceNetworkGraph.fullAccess', 'Full access as {{email}}', { email: emails.get(device.userId) || '' })
         ),
       }))
 
     const byName = (a: Item, b: Item) => a.sort.localeCompare(b.sort)
-    userMode.sort(byName)
-    initiators.sort(byName)
-    targets.sort((a, b) => Number(a.both) - Number(b.both) || byName(a, b))
+    reachers.sort(byName)
+    people.sort(byName)
+    const left = [...reachers, ...people]
+    const right = targets.filter(item => !item.both).sort(byName)
+    const both = targets.filter(item => item.both).sort(byName)
 
-    const box = { fontSize: 12, width: BOX, padding: 6 }
+    const box: React.CSSProperties = {
+      fontSize: 12,
+      width: BOX,
+      padding: '6px 8px',
+      borderRadius: 6,
+      textAlign: 'left',
+    }
     const node = (item: Item, x: number, y: number, style: React.CSSProperties = box): Node => ({
       id: item.id,
       position: { x, y },
       data: { label: item.label },
-      style,
+      style: item.dashed ? { ...style, borderStyle: 'dashed' } : style,
     })
-    // A column centred on the network's height.
-    const column = (count: number, index: number) => -((count - 1) * ROW) / 2 + index * ROW
-    // Rows centred on the network's middle, growing away from it: up (-1) or down (1).
-    const grid = (count: number, index: number, direction: -1 | 1) => {
-      const across = Math.min(count, GRID.across)
-      const row = Math.floor(index / GRID.across)
-      const inRow = Math.min(across, count - row * GRID.across)
-      const x = HUB / 2 - (inRow * GRID.gapX - (GRID.gapX - BOX)) / 2 + (index % GRID.across) * GRID.gapX
-      return { x, y: direction * (GRID.offset + row * GRID.gapY) }
-    }
-    const plain = targets.filter(item => !item.both)
-    const both = targets.filter(item => item.both)
-
-    const nodes: Node[] = [
-      {
-        id: 'network',
-        position: { x: 0, y: 0 },
-        data: { label: network.name },
-        style: { ...box, fontWeight: 600, borderWidth: 2, width: HUB },
+    const heading = (id: string, text: string, x: number, y: number): Node => ({
+      id,
+      position: { x, y },
+      data: { label: text },
+      draggable: false,
+      selectable: false,
+      connectable: false,
+      style: {
+        width: Math.max(BOX, 260),
+        border: 'none',
+        background: 'transparent',
+        boxShadow: 'none',
+        fontSize: 11,
+        fontWeight: 600,
+        letterSpacing: 0.4,
+        textTransform: 'uppercase',
+        opacity: 0.6,
+        padding: 0,
+        textAlign: 'left',
       },
-      ...userMode.map((item, index) => node(item, LEFT, column(userMode.length, index))),
-      ...initiators.map((item, index) => {
-        const at = grid(initiators.length, index, -1)
-        return node(item, at.x, at.y)
-      }),
-      ...plain.map((item, index) => node(item, RIGHT, column(plain.length, index))),
-      ...both.map((item, index) => {
-        const at = grid(both.length, index, 1)
-        return node(item, at.x, at.y, { ...box, borderColor: COLOR.both })
-      }),
-    ]
+    })
+    const rowWidth = (count: number) => count * BOX + (count - 1) * GAP
+    const full = rowWidth(Math.max(1, Math.min(across, Math.max(left.length, right.length, both.length + 1))))
+    const nodes: Node[] = []
+    let y = 0
+    const band = (key: string, title: string, items: Item[], color: string) => {
+      if (!items.length) return
+      nodes.push(heading(`heading:${key}`, title, -full / 2, y))
+      y += HEADING
+      items.forEach((item, index) => {
+        const row = Math.floor(index / across)
+        const inRow = Math.min(across, items.length - row * across)
+        const x = -rowWidth(inRow) / 2 + (index % across) * (BOX + GAP)
+        nodes.push(node(item, x, y + row * ROW, { ...box, borderColor: color }))
+      })
+      y += Math.ceil(items.length / across) * ROW - (ROW - 40) + BAND
+    }
+    band('reach', t('deviceNetworkGraph.reachHeading', 'Can reach'), left, COLOR.reach)
+    if (both.length) {
+      nodes.push(heading('heading:both', t('deviceNetworkGraph.bothHeading', 'Can reach and be reached'), -full / 2, y))
+      y += HEADING
+    }
+    const beside = both.slice(0, across - 1)
+    const hubRow = [...beside.filter((_, i) => i % 2 === 1).reverse(), null, ...beside.filter((_, i) => i % 2 === 0)]
+    hubRow.forEach((item, index) => {
+      const x = -rowWidth(hubRow.length) / 2 + index * (BOX + GAP)
+      if (item) nodes.push(node(item, x, y, { ...box, borderColor: COLOR.both }))
+      else
+        nodes.push({
+          id: 'network',
+          position: { x: x + (BOX - HUB) / 2, y: y - 2 },
+          data: { label: network.name },
+          style: { ...box, fontWeight: 600, borderWidth: 2, width: HUB, textAlign: 'center', padding: '10px 8px' },
+        })
+    })
+    y += ROW
+    const rest = both.slice(beside.length)
+    rest.forEach((item, index) => {
+      const row = Math.floor(index / across)
+      const inRow = Math.min(across, rest.length - row * across)
+      const x = -rowWidth(inRow) / 2 + (index % across) * (BOX + GAP)
+      nodes.push(node(item, x, y + row * ROW, { ...box, borderColor: COLOR.both }))
+    })
+    y += Math.ceil(rest.length / across) * ROW - (ROW - 40) + BAND
+    band('reached', t('deviceNetworkGraph.reachedHeading', 'Can be reached'), right, COLOR.reached)
 
     const marker = (color: string) => ({ type: MarkerType.ArrowClosed, color })
     const line = (color: string, dashed?: boolean) => ({
@@ -187,49 +245,45 @@ const Graph: React.FC<Props> = ({ network, devices, exposure }) => {
       ...(dashed && { strokeDasharray: '5 4' }),
     })
     const edges: Edge[] = [
-      ...userMode.map(item => ({
+      ...left.map(item => ({
         id: `${item.id}->network`,
         source: item.id,
         target: 'network',
         type: 'floating',
-        markerEnd: marker(COLOR.initiator),
-        style: line(COLOR.initiator, true),
+        markerEnd: marker(COLOR.reach),
+        style: line(COLOR.reach, item.dashed),
       })),
-      ...initiators.map(item => ({
-        id: `${item.id}->network`,
-        source: item.id,
-        target: 'network',
-        type: 'floating',
-        markerEnd: marker(COLOR.initiator),
-        style: line(COLOR.initiator),
-      })),
-      // A device that both initiates and is a target: one two-way line.
-      ...targets.map(item => ({
+      ...[...right, ...both].map(item => ({
         id: `network->${item.id}`,
         source: 'network',
         target: item.id,
         type: 'floating',
-        markerEnd: marker(item.both ? COLOR.both : COLOR.target),
+        markerEnd: marker(item.both ? COLOR.both : COLOR.reached),
         markerStart: item.both ? { ...marker(COLOR.both), orient: 'auto-start-reverse' } : undefined,
-        style: line(item.both ? COLOR.both : COLOR.target),
+        style: line(item.both ? COLOR.both : COLOR.reached),
       })),
     ]
-    return { nodes, edges }
-  }, [network, devices, exposure, t])
+    return { nodes, edges, size: { width: full, height: y - BAND } }
+  }, [network, devices, t, across])
 
-  const signature = JSON.stringify([nodes.map(node => node.id), dark])
+  const signature = JSON.stringify([nodes.map(node => node.id), dark, across])
+  // Tall enough to draw it at the scale the panel's width allows, so a small network is not drawn tiny in a tall box.
+  const PAD = 32
+  const scale = width ? Math.min(1, (width - PAD) / size.width) : 1
+  const height = Math.min(760, Math.max(240, Math.round(size.height * scale + PAD * 2 + 48)))
 
   return (
-    <Box sx={{ border: 1, borderColor: 'grayLighter.main', borderRadius: 1 }}>
+    <Box sx={{ border: 1, borderColor: 'grayLighter.main', borderRadius: 1, overflow: 'hidden' }}>
       {/* Lines meet the boxes anywhere on their edges, so the fixed connection points are not shown. */}
-      <Box sx={{ height: 520, '& .react-flow__handle': { opacity: 0 } }}>
-        {/* Uncontrolled, and drawn anew when what it shows changes. */}
+      <Box ref={frame} sx={{ height, '& .react-flow__handle': { opacity: 0 } }}>
         <ReactFlow
-          key={signature}
+          key={`${signature}:${height}`}
           defaultNodes={nodes}
           defaultEdges={edges}
           edgeTypes={EDGE_TYPES}
           fitView
+          fitViewOptions={FIT_VIEW}
+          minZoom={0.2}
           colorMode={dark ? 'dark' : 'light'}
           nodesConnectable={false}
           deleteKeyCode={null}
@@ -237,14 +291,25 @@ const Graph: React.FC<Props> = ({ network, devices, exposure }) => {
           proOptions={{ hideAttribution: true }}
         >
           <Background />
-          <Controls showInteractive={false} />
+          <Controls showInteractive={false} orientation="horizontal" />
         </ReactFlow>
       </Box>
-      <Box sx={{ display: 'flex', gap: 3, paddingX: 2, paddingY: 1, flexWrap: 'wrap' }}>
-        <Legend color={COLOR.initiator} text={t('deviceNetworkGraph.legendInitiator', 'Initiator')} />
-        <Legend color={COLOR.initiator} dashed text={t('deviceNetworkGraph.legendUserMode', 'Device in user mode')} />
-        <Legend color={COLOR.target} text={t('deviceNetworkGraph.legendTarget', 'Target')} />
-        <Legend color={COLOR.both} text={t('deviceNetworkGraph.legendBoth', 'Initiator and target')} />
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2.5,
+          rowGap: 0.75,
+          paddingX: 2,
+          paddingY: 1.25,
+          flexWrap: 'wrap',
+          borderTop: 1,
+          borderColor: 'grayLighter.main',
+        }}
+      >
+        <Legend color={COLOR.reach} text={t('deviceNetworkGraph.legendReach', 'Can reach')} />
+        <Legend color={COLOR.reach} dashed text={t('deviceNetworkGraph.legendFullAccess', 'Full access as a person')} />
+        <Legend color={COLOR.reached} text={t('deviceNetworkGraph.legendReached', 'Can be reached')} />
+        <Legend color={COLOR.both} text={t('deviceNetworkGraph.legendBoth', 'Can reach and be reached')} />
       </Box>
     </Box>
   )
@@ -306,3 +371,4 @@ const FloatingEdge: React.FC<EdgeProps> = ({ id, source, target, markerEnd, mark
 }
 
 const EDGE_TYPES = { floating: FloatingEdge }
+const FIT_VIEW = { padding: 0.08, maxZoom: 1 }

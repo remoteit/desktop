@@ -10,7 +10,7 @@ import { UNSUPPORTED } from '../services/graphQLDaemon'
 type Networks = DeviceNetwork[] | 'ERROR' | typeof UNSUPPORTED
 
 const byAccount = new Map<string, Networks>()
-const reading = new Set<string>()
+const reads = new Map<string, Promise<void>>()
 const listeners = new Set<() => void>()
 
 const subscribe = (listener: () => void) => {
@@ -20,12 +20,17 @@ const subscribe = (listener: () => void) => {
   }
 }
 
-async function read(accountId: string) {
-  if (reading.has(accountId)) return
-  reading.add(accountId)
-  byAccount.set(accountId, await graphQLDeviceNetworks(accountId))
-  reading.delete(accountId)
-  listeners.forEach(listener => listener())
+// Reads run one after another, so a read asked for after a change always starts after it and its answer is the last.
+export function reloadDeviceNetworks(accountId: string) {
+  const read = (reads.get(accountId) ?? Promise.resolve()).then(async () => {
+    byAccount.set(accountId, await graphQLDeviceNetworks(accountId))
+    listeners.forEach(listener => listener())
+  })
+  reads.set(
+    accountId,
+    read.catch(() => undefined)
+  )
+  return read
 }
 
 export const useDeviceNetworks = () => {
@@ -33,9 +38,9 @@ export const useDeviceNetworks = () => {
   const networks = useSyncExternalStore(subscribe, () => byAccount.get(accountId))
 
   useEffect(() => {
-    if (!byAccount.has(accountId)) read(accountId)
+    if (!byAccount.has(accountId) && !reads.has(accountId)) reloadDeviceNetworks(accountId)
   }, [accountId])
 
-  const reload = useCallback(() => read(accountId), [accountId])
+  const reload = useCallback(() => reloadDeviceNetworks(accountId), [accountId])
   return { networks, reload }
 }

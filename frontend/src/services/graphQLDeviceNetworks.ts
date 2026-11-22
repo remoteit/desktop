@@ -105,22 +105,58 @@ export const exposes = (network: Pick<DeviceNetwork, 'connections'>, member: Net
   targeted(member) &&
   (member.scope === 'ALL' || member.anyPort || network.connections.some(c => c.service.device?.id === member.deviceId))
 
-// A network's devices, listed or by tag: how many initiate, and how many are targets exposing something.
-export const memberCounts = (network: DeviceNetwork) => ({
-  initiators:
-    network.devices.filter(initiates).length +
-    (network.deviceRules || []).filter(rule => rule.initiator).reduce((sum, rule) => sum + rule.devices.length, 0),
-  targets:
-    network.devices.filter(member => exposes(network, member)).length +
-    (network.deviceRules || [])
-      .filter(rule => rule.allServices || rule.anyPort)
-      .reduce((sum, rule) => sum + rule.devices.length, 0),
-})
-
 // The role a member's choices make: an initiator when switched on, a target when it exposes something. Neither yet:
 // kept as a target exposing nothing, which reaches nothing and is reached by nothing.
 export const roleFor = (initiator: boolean, exposing: boolean): NetworkDeviceRole =>
   initiator && exposing ? 'BOTH' : initiator ? 'INITIATOR' : 'TARGET'
+
+// The two controls a device has on a network, as the stored membership reads: whether it can reach the devices that can
+// be reached, and how it can be reached. Any port takes all services with it, whatever scope is stored.
+export type Reached = 'NOTHING' | 'ALL' | 'ALL_ANY_PORT' | 'CHOSEN'
+
+export const canReach = (member: { role: NetworkDeviceRole }) => initiates(member)
+
+export const reachedOf = (member: NetworkMember, listedCount: number): Reached => {
+  if (!targeted(member)) return 'NOTHING'
+  if (member.anyPort) return 'ALL_ANY_PORT'
+  if (member.scope === 'ALL') return 'ALL'
+  return listedCount > 0 ? 'CHOSEN' : 'NOTHING'
+}
+
+// What the two controls save. Chosen services expose what the network lists for the device, so CHOSEN with nothing
+// listed is saved as NOTHING by the caller.
+export const membershipFor = (
+  reach: boolean,
+  reached: Reached
+): { role: NetworkDeviceRole; scope: NetworkDeviceScope; anyPort: boolean } => ({
+  role: roleFor(reach, reached !== 'NOTHING'),
+  scope: reached === 'ALL' || reached === 'ALL_ANY_PORT' ? 'ALL' : 'LISTED',
+  anyPort: reached === 'ALL_ANY_PORT',
+})
+
+export const ruleReachedOf = (rule: Pick<NetworkRule, 'allServices' | 'anyPort'>): Reached =>
+  rule.anyPort ? 'ALL_ANY_PORT' : rule.allServices ? 'ALL' : 'NOTHING'
+
+export const ruleChoicesFor = (reached: Exclude<Reached, 'CHOSEN'>): { allServices: boolean; anyPort: boolean } => ({
+  allServices: reached !== 'NOTHING',
+  anyPort: reached === 'ALL_ANY_PORT',
+})
+
+export const deviceCount = (network: Pick<DeviceNetwork, 'devices' | 'deviceRules'>) =>
+  new Set([
+    ...network.devices.map(member => member.deviceId),
+    ...(network.deviceRules || []).flatMap(rule => rule.devices),
+  ]).size
+
+export const peopleCount = (network: Pick<DeviceNetwork, 'owner' | 'access' | 'accountAccess'>) =>
+  new Set([
+    network.owner.id,
+    ...network.access.map(share => share.user.id),
+    ...(network.accountAccess || []).flatMap(section => [
+      section.accountId,
+      ...section.roles.flatMap(role => role.members.map(member => member.id)),
+    ]),
+  ]).size
 
 export async function graphQLDeviceNetworks(
   accountId?: string
