@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { List, ListItem, ListItemText } from '@mui/material'
+import { List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import { ExitFlowList } from '../components/ExitFlowList'
 import { DeviceSection } from '../components/DeviceSection'
 import { useExitFlowsServed } from '../hooks/useExitFlowsServed'
@@ -18,19 +18,28 @@ export const DeviceExitFlows: React.FC<{ device: IDevice }> = ({ device }) => {
   return (
     <DeviceSection id="flows" title={t('exitFlows.heading', 'Connections through exits')} list={false}>
       <List disablePadding>
-      <ListItem sx={{ paddingLeft: 4 }}>
-        <ListItemText
-          secondary={
-            manage
-              ? t('exitFlows.managerNote', 'Every connection through Remote.It exits from or by this device, last {{days}} days.', {
-                  days: LOOK_BACK_DAYS,
-                })
-              : t('exitFlows.ownNote', 'Your own connections from this device through Remote.It exits, last {{days}} days.', {
-                  days: LOOK_BACK_DAYS,
-                })
-          }
-        />
-      </ListItem>
+        <ListItem>
+          <ListItemIcon />
+          <ListItemText
+            secondary={
+              manage
+                ? t(
+                    'exitFlows.managerNote',
+                    'Every connection through Remote.It exits from or by this device, last {{days}} days.',
+                    {
+                      days: LOOK_BACK_DAYS,
+                    }
+                  )
+                : t(
+                    'exitFlows.ownNote',
+                    'Your own connections from this device through Remote.It exits, last {{days}} days.',
+                    {
+                      days: LOOK_BACK_DAYS,
+                    }
+                  )
+            }
+          />
+        </ListItem>
       </List>
       <ExitFlowList scope={{ deviceId: device.id }} carrier={device.id} />
     </DeviceSection>

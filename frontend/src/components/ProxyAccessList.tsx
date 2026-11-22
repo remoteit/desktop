@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Button, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import type { TFunction } from 'i18next'
 import {
   ACCESS_OUTCOMES,
@@ -101,17 +101,24 @@ export const ProxyAccessList: React.FC<Props> = ({ scope, showEndpoint, devices 
           ]}
           onChange={setFilter}
         />
+        {state === 'ERROR' && (
+          <ListItem>
+            <ListItemIcon>
+              <Icon name="exclamation-triangle" size="md" color="danger" />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('proxyAccess.error', 'Could not read the visitors.')}
+              primaryTypographyProps={{ color: 'error' }}
+            />
+          </ListItem>
+        )}
+        {items && !items.length && state === 'ready' && (
+          <ListItem>
+            <ListItemIcon />
+            <ListItemText secondary={t('proxyAccess.none', 'No visitors in the days kept.')} />
+          </ListItem>
+        )}
       </List>
-      {state === 'ERROR' && (
-        <Typography variant="body2" color="error" paddingX={2}>
-          {t('proxyAccess.error', 'Could not read the visitors.')}
-        </Typography>
-      )}
-      {items && !items.length && state === 'ready' && (
-        <Typography variant="body2" color="textSecondary" paddingX={2} paddingBottom={1}>
-          {t('proxyAccess.none', 'No visitors in the days kept.')}
-        </Typography>
-      )}
       {!!items?.length && (
         <List dense disablePadding>
           {items.map(access => (

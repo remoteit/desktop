@@ -112,11 +112,13 @@ export const RunListItem: React.FC<Props> = ({
   )
 
   return to && !actions ? (
-    <ListItemButton data-run={run.id} onClick={() => history.push(to)}>
+    <ListItemButton data-run={run.id} alignItems="flex-start" onClick={() => history.push(to)}>
       {content}
     </ListItemButton>
   ) : (
-    <ListItem data-run={run.id}>{content}</ListItem>
+    <ListItem data-run={run.id} alignItems="flex-start">
+      {content}
+    </ListItem>
   )
 }
 
@@ -148,9 +150,7 @@ export function machineLines(
     if (local && proxy.privateAddress)
       lines.push(t('runs.privateAddress', 'Private address: {{address}}', { address: proxy.privateAddress }))
     if (proxy.certificate === 'pending')
-      lines.push(
-        t('runs.certificatePending', 'remote.it’s certificate is not issued yet: until it is, https names fail')
-      )
+      lines.push(t('runs.certificatePending', 'The certificate isn’t issued yet. HTTPS addresses work once it is.'))
     if (proxy.openConnections?.total)
       lines.push(
         t('runs.open', 'Open: https {{https}} · tcp {{tcp}} · udp {{udp}}', {
@@ -167,7 +167,8 @@ export function machineLines(
       )
   } else {
     const exit = run as ExitDevice
-    if (exit.health && exit.health !== 'healthy') lines.push(t('runs.health', 'Health: {{state}}', { state: exit.health }))
+    if (exit.health && exit.health !== 'healthy')
+      lines.push(t('runs.health', 'Health: {{state}}', { state: exit.health }))
   }
   return lines
 }

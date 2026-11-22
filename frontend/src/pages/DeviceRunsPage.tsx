@@ -80,77 +80,84 @@ export const DeviceRunsPage: React.FC = () => {
     if (runs === 'ERROR')
       return (
         <Notice severity="error" fullWidth>
-          {t('deviceRuns.readFailed', "Couldn't read what this device carries. Try again later.")}
+          {t('deviceRuns.readFailed', "Couldn't load this device's exits and proxy servers. Try again later.")}
         </Notice>
       )
     if (runs === null)
       return (
         <Typography variant="body2" color="textSecondary">
-          {t('deviceRuns.managersOnly', 'Only people who manage this device see what it carries.')}
+          {t('deviceRuns.managersOnly', 'Only people who manage this device see its exits and proxy servers.')}
         </Typography>
       )
 
     const listeningLine = proxyListeningLine(t, !!runs.proxy, listening)
     return (
       <>
-        <DeviceSection list={false} id="runs" title={t('deviceRuns.carries', 'What this device carries')}>
-        <List data-runs disablePadding>
-          {runs.exit?.exit ? (
-            <RunListItem
-              kind="exit"
-              run={runs.exit}
-              name={runs.exit.exit.name}
-              title={t('deviceRuns.exit', 'Exit {{name}}', { name: runs.exit.exit.name })}
-              to={runs.exit.exit.remoteit ? (admin ? '/admin/proxies?view=exits' : undefined) : `/exits/${runs.exit.exit.id}`}
-              manage={manage}
-              lan={!runs.exit.exit.remoteit}
-              lanSetOn={runs.exit.exit.remoteit ? undefined : `/exits/${runs.exit.exit.id}`}
-              onChanged={changed}
-            />
-          ) : (
-            <NotRunning kind="exit" manage={manage} onMake={() => setMaking('exit')} />
-          )}
-          {runs.proxy?.proxy ? (
-            <RunListItem
-              kind="proxy"
-              run={runs.proxy}
-              name={runs.proxy.proxy.name}
-              title={t('deviceRuns.proxyServer', 'Proxy server {{name}}', { name: runs.proxy.proxy.name })}
-              to={
-                runs.proxy.proxy.remoteit
-                  ? admin
-                    ? '/admin/proxies?view=proxies'
-                    : undefined
-                  : `/proxies/${runs.proxy.proxy.id}`
-              }
-              manage={manage}
-              local={runs.proxy.proxy.local}
-              onChanged={changed}
-            />
-          ) : (
-            <NotRunning kind="proxy" manage={manage} onMake={() => setMaking('proxy')} />
-          )}
-          {listeningLine && <ListItemSetting icon="tower-broadcast" iconColor="warning" label={listeningLine} />}
-        </List>
+        <DeviceSection list={false} id="runs" title={t('deviceRuns.carries', 'Exits and proxy servers')}>
+          <List data-runs disablePadding>
+            {runs.exit?.exit ? (
+              <RunListItem
+                kind="exit"
+                run={runs.exit}
+                name={runs.exit.exit.name}
+                title={t('deviceRuns.exit', 'Exit {{name}}', { name: runs.exit.exit.name })}
+                to={
+                  runs.exit.exit.remoteit
+                    ? admin
+                      ? '/admin/proxies?view=exits'
+                      : undefined
+                    : `/exits/${runs.exit.exit.id}`
+                }
+                manage={manage}
+                lan={!runs.exit.exit.remoteit}
+                lanSetOn={runs.exit.exit.remoteit ? undefined : `/exits/${runs.exit.exit.id}`}
+                onChanged={changed}
+              />
+            ) : (
+              <NotRunning kind="exit" manage={manage} onMake={() => setMaking('exit')} />
+            )}
+            {runs.proxy?.proxy ? (
+              <RunListItem
+                kind="proxy"
+                run={runs.proxy}
+                name={runs.proxy.proxy.name}
+                title={t('deviceRuns.proxyServer', 'Proxy server {{name}}', { name: runs.proxy.proxy.name })}
+                to={
+                  runs.proxy.proxy.remoteit
+                    ? admin
+                      ? '/admin/proxies?view=proxies'
+                      : undefined
+                    : `/proxies/${runs.proxy.proxy.id}`
+                }
+                manage={manage}
+                local={runs.proxy.proxy.local}
+                onChanged={changed}
+              />
+            ) : (
+              <NotRunning kind="proxy" manage={manage} onMake={() => setMaking('proxy')} />
+            )}
+            {listeningLine && <ListItemSetting icon="tower-broadcast" iconColor="warning" label={listeningLine} />}
+          </List>
         </DeviceSection>
         {manage && (runs.exit || runs.proxy) && (
-          <DeviceSection list={false} id="actions" title={t('deviceRuns.everything', 'Everything this device carries')}>
-          <List data-device-actions disablePadding>
-            <ListItem sx={{ paddingLeft: 4 }}>
-              <ListItemText
-                secondaryTypographyProps={{ component: 'div' }}
-                secondary={
-                  <>
-                    {t(
-                      'deviceRuns.everythingHint',
-                      'Pause for maintenance, resume, stop now or remove. Each action says what it does first.'
-                    )}
-                    <RunActions device={named} scope="device" onDone={changed} />
-                  </>
-                }
-              />
-            </ListItem>
-          </List>
+          <DeviceSection list={false} id="actions" title={t('deviceRuns.everything', 'All exits and proxy servers')}>
+            <List data-device-actions disablePadding>
+              <ListItem>
+                <ListItemIcon />
+                <ListItemText
+                  secondaryTypographyProps={{ component: 'div' }}
+                  secondary={
+                    <>
+                      {t(
+                        'deviceRuns.everythingHint',
+                        'Pause for maintenance, resume, stop now or remove. Each action says what it does first.'
+                      )}
+                      <RunActions device={named} scope="device" onDone={changed} />
+                    </>
+                  }
+                />
+              </ListItem>
+            </List>
           </DeviceSection>
         )}
         {manage && runs.proxy && (
@@ -195,7 +202,7 @@ export const NotRunning: React.FC<{ kind: 'proxy' | 'exit'; manage: boolean; onM
 }) => {
   const { t } = useTranslation()
   return (
-    <ListItem data-not-running={kind}>
+    <ListItem data-not-running={kind} alignItems="flex-start">
       <ListItemIcon>
         <Icon name={kind === 'exit' ? 'door-open' : 'server'} size="md" color="grayDark" />
       </ListItemIcon>
@@ -240,12 +247,18 @@ export function proxyListeningLine(t: TFunction, proxy: boolean, listening?: Dev
       : t('deviceProxy.notListeningOnDevice', 'Not listening: turned off on the device')
   }
   if (listening.control === 'on')
-    return t('deviceProxy.listeningAdmin', 'Listening, though not a proxy: turned on on the device by its administrator')
+    return t(
+      'deviceProxy.listeningAdmin',
+      'Listening, though not a proxy: turned on on the device by its administrator'
+    )
   if (listening.control === 'local')
     return t('deviceProxy.listeningLocal', 'Listening, though not a proxy: set only on the device, which keeps it on')
   if (!listening.onDevice) return t('deviceProxy.listening', 'Listening, though not a proxy: its proxy setting is on')
   if (listening.by === CONFIGURATION)
-    return t('deviceProxy.listeningConfiguration', "Listening, though not a proxy: turned on in the device's configuration")
+    return t(
+      'deviceProxy.listeningConfiguration',
+      "Listening, though not a proxy: turned on in the device's configuration"
+    )
   return listening.by
     ? t('deviceProxy.listeningBy', 'Listening, though not a proxy: turned on on the device by {{by}}', {
         by: listening.by,
