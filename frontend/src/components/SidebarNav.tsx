@@ -1,25 +1,18 @@
 import React from 'react'
-import brand from '@common/brand/config'
-import { useMobile } from '../hooks/useMobile'
-import browser from '../services/browser'
 import { useTranslation } from 'react-i18next'
 import { selectLimitsLookup } from '../selectors/organizations'
-import { selectDefaultSelectedPage } from '../selectors/ui'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
-import { Box, Badge, List, Divider, Tooltip, Chip, Theme } from '@mui/material'
+import { Box, List, Divider, Tooltip, Chip, Theme } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { UpgradeBanner } from './UpgradeBanner'
 import { ResellerLogo } from './ResellerLogo'
 import { ListItemLink } from './ListItemLink'
-import { isRemoteUI } from '../helpers/uiHelper'
 import { useCounts } from '../hooks/useCounts'
 import { getLocale } from '../helpers/dateHelper'
 import { spacing } from '../styling'
-import { getHasPartner } from '../models/partnerStats'
-import { useThisDevice, useThisDevicePage } from '../hooks/useThisDevice'
-import { useDeviceSessions } from '../hooks/useDeviceSessions'
-import { useServiceShortcutsSupport } from '../hooks/useServiceShortcutsSupport'
+import { useNavSections } from '../hooks/useNavSections'
+import { NAV_PAGES, NavSectionId, sectionMatch } from '../helpers/navSections'
 
 const listSx = (theme: Theme) => ({
   position: 'static',
@@ -39,25 +32,13 @@ const listSx = (theme: Theme) => ({
 export const SidebarNav: React.FC = () => {
   const counts = useCounts()
   const reseller = useSelector((state: State) => state.user.reseller)
-  const defaultSelectedPage = useSelector(selectDefaultSelectedPage)
-  const remoteUI = useSelector(isRemoteUI)
   const limits = useSelector(selectLimitsLookup)
   const insets = useSelector((state: State) => state.ui.layout.insets)
-  const rootPaths = useSelector((state: State) => !browser.isElectron && state.ui.layout.hideSidebar)
-  const mobile = useMobile()
   const dispatch = useDispatch<Dispatch>()
-  const pathname = path => (rootPaths ? path : defaultSelectedPage[path] || path)
   const { t } = useTranslation()
+  const nav = useNavSections()
 
-  const hasPartner = useSelector(getHasPartner)
-  // "This device": only in an app (thisDevice present), and only with its flag (hooks/useThisDevice).
-  const thisDevicePage = useThisDevicePage()
-  const thisDevice = useThisDevice()
-  // Exits and proxies are the device-session API's.
-  const deviceSessions = useDeviceSessions()
-  const serviceShortcuts = useServiceShortcutsSupport(!remoteUI)
-
-  if (remoteUI)
+  if (nav.remoteUI)
     return (
       <List sx={listSx}>
         <ListItemLocation
@@ -71,117 +52,36 @@ export const SidebarNav: React.FC = () => {
       </List>
     )
 
+  const count = (id: NavSectionId) => {
+    const value = id === 'devices' ? counts.devices : id === 'network' ? counts.networks : undefined
+    if (!value) return null
+    const title =
+      id === 'devices' ? t('nav.totalDevices', 'Total Devices') : t('nav.totalNetworks', 'Total Networks')
+    return (
+      <Tooltip title={title} placement="top" arrow>
+        <Chip size="small" label={value.toLocaleString(getLocale())} />
+      </Tooltip>
+    )
+  }
+
   return (
     <List sx={listSx}>
-      {thisDevicePage && thisDevice && (
-        <ListItemLocation title={t('nav.thisDevice', 'This Device')} icon="laptop" to="/this-device" dense />
-      )}
-      {!mobile && (
-        <>
+      {nav.sections.map(section => {
+        const landing = nav.landing(section)
+        return (
           <ListItemLocation
-            title={t('nav.connections', 'Connections')}
-            icon="arrow-right-arrow-left"
-            to={pathname('/connections')}
-            match="/connections"
+            key={section.id}
+            title={section.label(t)}
+            icon={section.icon}
+            to={NAV_PAGES[landing].to && nav.pageTo(landing)}
+            onClick={NAV_PAGES[landing].to ? undefined : () => nav.open(landing)}
+            match={sectionMatch(section)}
             dense
           >
-            {!!counts.active && !counts.memberships ? (
-              <Tooltip
-                title={t('nav.connectionsTooltip', {
-                  connections: counts.connections.toLocaleString(getLocale()),
-                  active: counts.active.toLocaleString(getLocale()),
-                  defaultValue: '{{connections}} Connections - {{active}} Connected',
-                })}
-                placement="top"
-                arrow
-              >
-                <Chip
-                  size="small"
-                  label={counts.active.toLocaleString(getLocale())}
-                  sx={{ fontWeight: 500 }}
-                  variant="filled"
-                  color="primary"
-                />
-              </Tooltip>
-            ) : (
-              !!counts.connections && (
-                <Badge
-                  variant={counts.active && counts.memberships ? 'dot' : undefined}
-                  color="primary"
-                  overlap="circular"
-                >
-                  <Tooltip
-                    title={t('nav.idleConnections', {
-                      connections: counts.connections.toLocaleString(getLocale()),
-                      defaultValue: '{{connections}} Idle Connections',
-                    })}
-                    placement="top"
-                    arrow
-                  >
-                    <Chip size="small" label={counts.connections.toLocaleString(getLocale())} />
-                  </Tooltip>
-                </Badge>
-              )
-            )}
+            {count(section.id)}
           </ListItemLocation>
-          <ListItemLocation title={t('nav.devices', 'Devices')} icon="router" to="/devices" match="/devices" dense>
-            {!!counts.devices && (
-              <Tooltip title={t('nav.totalDevices', 'Total Devices')} placement="top" arrow>
-                <Chip size="small" label={counts.devices.toLocaleString(getLocale())} />
-              </Tooltip>
-            )}
-          </ListItemLocation>
-          <ListItemLocation
-            title={t('nav.networks', 'Networks')}
-            icon="chart-network"
-            to={pathname('/networks')}
-            match="/networks"
-            dense
-          >
-            {!!counts.networks && (
-              <Tooltip title={t('nav.totalNetworks', 'Total Networks')} placement="top" arrow>
-                <Chip size="small" label={counts.networks.toLocaleString(getLocale())} />
-              </Tooltip>
-            )}
-          </ListItemLocation>
-        </>
-      )}
-      {serviceShortcuts && serviceShortcuts !== 'ERROR' && serviceShortcuts.available && (
-        <ListItemLocation
-          title={t('nav.services', 'Services')}
-          icon="network-wired"
-          to="/services"
-          match="/services"
-          dense
-        />
-      )}
-      {/* In both layouts: a phone's bottom menu has Connections, Devices and Networks, and nothing else of these. */}
-      {deviceSessions && (
-        <ListItemLocation title={t('nav.exits', 'Exits')} icon="door-open" to="/exits" match="/exits" dense />
-      )}
-      {deviceSessions && (
-        <ListItemLocation title={t('nav.proxies', 'Proxies')} icon="server" to="/proxies" match="/proxies" dense />
-      )}
-      <ListItemLocation
-        title={t('nav.scripting', 'Scripting')}
-        to={pathname('/scripts')}
-        icon="scripting"
-        match={['/script', '/scripts', '/runs']}
-        dense
-      />
-      <ListItemLocation title={t('nav.apps', 'Apps')} to="/apps" match="/apps" icon="cubes" dense />
-      <ListItemLocation title={t('nav.products', 'Products')} to="/products" match="/products" icon="conveyor-belt-boxes" dense />
-      <ListItemLocation title={t('nav.organization', 'Organization')} to="/organization" icon="industry-alt" dense />
-      {hasPartner && (
-        <ListItemLocation
-          title={t('nav.partnerStats', 'Partner Stats')}
-          to="/partner-stats"
-          icon="chart-pie"
-          dense
-          onClick={() => dispatch.partnerStats.fetchIfEmpty()}
-        />
-      )}
-      <ListItemLocation title={t('nav.logs', 'Logs')} to="/logs" icon="rectangle-history" dense exactMatch />
+        )
+      })}
       <Box
         sx={theme => ({
           width: '100%',
@@ -195,9 +95,6 @@ export const SidebarNav: React.FC = () => {
         <ResellerLogo reseller={reseller} marginLeft={4} size="small">
           <Divider />
         </ResellerLogo>
-        {brand.name === 'remoteit' && (
-          <ListItemLocation title={t('nav.connectAi', 'Connect AI')} to="/connect-ai" icon="remote-ai" dense />
-        )}
         <ListItemLocation
           title={t('nav.announcements', 'Announcements')}
           to="/announcements"

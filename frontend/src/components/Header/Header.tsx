@@ -22,6 +22,7 @@ import { FilterButton } from '../../buttons/FilterButton'
 import { IconButton } from '../../buttons/IconButton'
 import { SidebarMenuButton } from '../../buttons/SidebarMenuButton'
 import { Title } from '../Title'
+import { SectionNav } from '../SectionNav'
 import { Box } from '@mui/material'
 
 type Props = {
@@ -171,6 +172,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
           </>
         )}
       </Box>
+      <SectionNav panels={panels} />
       <UpgradeNotice />
     </>
   )
