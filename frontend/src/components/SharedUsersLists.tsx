@@ -11,6 +11,7 @@ import { ShareButton } from '../buttons/ShareButton'
 import { IconButton } from '../buttons/IconButton'
 import { alphaSort } from '../helpers/utilHelper'
 import { Gutters } from './Gutters'
+import { spacing } from '../styling'
 import { Icon } from './Icon'
 
 interface Props {
@@ -69,7 +70,7 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
     )
 
   return (
-    <>
+    <Box sx={{ '& > .MuiAccordion-root:first-of-type': { paddingTop: `${spacing.xxs}px` } }}>
       <SharedUsersPaginatedList
         title={t('sharedUsersLists.connected', 'Connected')}
         device={device}
@@ -90,7 +91,7 @@ export const SharedUsersLists: React.FC<Props> = ({ device, network, connected =
           members
         />
       )}
-    </>
+    </Box>
   )
 }
 

@@ -15,18 +15,6 @@ export const ColumnsButton: React.FC = () => {
     <Tooltip
       enterDelay={500}
       title={open ? 'Hide Columns' : 'Show Columns'}
-      sx={{
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: open ? 'grayLighter.main' : 'white.main',
-        borderBottomWidth: 0,
-        paddingBottom: 2,
-        marginTop: 0.5,
-        bgcolor: open ? 'white.main' : undefined,
-        borderBottomLeftRadius: open ? 0 : undefined,
-        borderBottomRightRadius: open ? 0 : undefined,
-        '&:hover': { bgcolor: open ? 'white.main' : undefined },
-      }}
       arrow
     >
       <IconButton
@@ -36,7 +24,7 @@ export const ColumnsButton: React.FC = () => {
         }}
         size="large"
       >
-        <Icon name={icon} size="base" type="regular" modified={modified} fixedWidth />
+        <Icon name={icon} size="md" type="regular" modified={modified} fixedWidth />
       </IconButton>
     </Tooltip>
   )

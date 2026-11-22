@@ -44,7 +44,7 @@ export const Drawer: React.FC<{ menu: string; children?: React.ReactNode }> = ({
           transition: 'max-width 200ms',
           paddingTop: radius.lg / 2 + 'px',
           borderStyle: 'solid',
-          borderColor: 'grayLighter.main',
+          borderColor: 'grayLight.main',
           borderWidth: width ? 1 : 0,
           borderRightWidth: 0,
           borderBottomWidth: 0,

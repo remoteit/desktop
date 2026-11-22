@@ -18,7 +18,7 @@ export const PageTabs: React.FC<TabsProps> = ({ sx, children, ...props }) => (
           borderRadius: 0,
           [theme.breakpoints.down('sm')]: { minHeight: 40, marginRight: 2 },
           '&:hover': { backgroundColor: 'transparent', color: theme.palette.black.main },
-          '&.Mui-selected': { backgroundColor: 'transparent', color: theme.palette.black.main },
+          '&.Mui-selected, &.Mui-selected:hover': { backgroundColor: 'transparent', color: theme.palette.black.main },
         },
       }),
       ...(Array.isArray(sx) ? sx : [sx]),

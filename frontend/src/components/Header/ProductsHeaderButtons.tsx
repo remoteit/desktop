@@ -8,9 +8,6 @@ import { selectPermissions } from '../../selectors/organizations'
 import { getHasProducts } from '../../selectors/products'
 import { Icon } from '../Icon'
 
-/* The list's own toolbar holds these now (ProductsPage); the header's slot for them stays empty. */
-export const ProductsHeaderButtons: React.FC = () => null
-
 export const ProductsToolbarButtons: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
