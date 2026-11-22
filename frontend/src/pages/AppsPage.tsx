@@ -11,7 +11,7 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { Title } from '../components/Title'
+import { ListToolbar } from '../components/ListToolbar'
 import { Icon } from '../components/Icon'
 import { platformsLine } from '../helpers/appsHelper'
 
@@ -52,14 +52,8 @@ export const AppsPage: React.FC = () => {
       gutterBottom
       bodyProps={{ verticalOverflow: true }}
       header={
-        <>
-          <Typography variant="h1">
-            <Title>{t('apps.title', 'Apps')}</Title>
-            <Button size="small" variant="contained" onClick={() => history.push('/apps/new')} data-apps-new>
-              {t('apps.newApp', 'New app')}
-            </Button>
-          </Typography>
-          <Gutters top={null} bottom="sm">
+        <ListToolbar
+          left={
             <TextField
               size="small"
               variant="standard"
@@ -76,8 +70,19 @@ export const AppsPage: React.FC = () => {
               }}
               inputProps={{ 'data-apps-search': true }}
             />
-          </Gutters>
-        </>
+          }
+          right={
+            <Button
+              size="small"
+              variant="contained"
+              startIcon={<Icon name="plus" />}
+              onClick={() => history.push('/apps/new')}
+              data-apps-new
+            >
+              {t('apps.newApp', 'New app')}
+            </Button>
+          }
+        />
       }
     >
       {apps === undefined ? (

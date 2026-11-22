@@ -1,4 +1,4 @@
-import { Button, Stack, Tooltip } from '@mui/material'
+import { Button, Tooltip } from '@mui/material'
 import { useMobile } from '../hooks/useMobile'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -9,7 +9,7 @@ import { selectPermissions } from '../selectors/organizations'
 import { ScriptingActionBar } from './ScriptingActionBar'
 import { ScriptingTabBar } from './ScriptingTabBar'
 import { Dispatch, State } from '../store'
-import { ColorChip } from './ColorChip'
+import { ListToolbar } from './ListToolbar'
 import { Container } from './Container'
 import { Icon } from './Icon'
 import { Link } from './Link'
@@ -47,25 +47,26 @@ export const ScriptingHeader: React.FC<Props> = ({ children, subheader }) => {
           >
             <ScriptingActionBar />
           </Route>
-          <Stack flexDirection="row" justifyContent="space-between" alignItems="center" width="100%" paddingRight={4}>
-            <ScriptingTabBar />
-            {!selectedIds.length && (
-              <Route path={['/scripts', '/runs', '/files']} exact>
-                <Stack flexDirection="row" alignItems="center">
+          <ListToolbar
+            left={<ScriptingTabBar />}
+            right={
+              !selectedIds.length && (
+                <Route path={['/scripts', '/runs', '/files']} exact>
                   {!mobile && (
-                    <ColorChip
-                      label={t('scriptingHeader.feedback', 'Feedback')}
+                    <Button
                       size="small"
-                      color="gray"
-                      variant="text"
+                      color="inherit"
+                      sx={{ color: 'grayDarker.main' }}
                       onClick={() => {
                         dispatch.feedback.set({ subject: 'Beta Scripting Feedback' })
                         history.push('/feedback')
                       }}
-                    />
+                    >
+                      {t('scriptingHeader.feedback', 'Feedback')}
+                    </Button>
                   )}
                   <Link href="https://link.remote.it/desktop/help/device-scripting">
-                    <IconButton color="grayDark" icon="question-circle" sx={{ paddingLeft: 0.5 }} />
+                    <IconButton color="grayDarker" icon="question-circle" title={t('scriptingHeader.help', 'Help')} />
                   </Link>
                   <Route path={['/scripts', '/files']} exact>
                     <Tooltip
@@ -88,16 +89,16 @@ export const ScriptingHeader: React.FC<Props> = ({ children, subheader }) => {
                           component={RouteLink}
                         >
                           {location.pathname.startsWith('/files')
-                            ? t('scriptingHeader.upload', 'Upload')
-                            : t('scriptingHeader.add', 'Add')}
+                            ? t('scriptingHeader.upload', 'Upload file')
+                            : t('scriptingHeader.add', 'Add script')}
                         </Button>
                       </span>
                     </Tooltip>
                   </Route>
-                </Stack>
-              </Route>
-            )}
-          </Stack>
+                </Route>
+              )
+            }
+          />
           {subheader}
         </>
       }
