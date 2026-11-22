@@ -35,7 +35,6 @@ const SAVED_ACROSS_LOGOUT = [
   'virtualDevices',
   'localPortsOnPhone',
   'proxyFleet',
-  'navVariant',
   'updateNoticeCleared',
   'deviceTimeSeries',
   'serviceTimeSeries',
@@ -59,8 +58,6 @@ export type UIState = {
   localPortsOnPhone?: boolean
   // Test UI → Experimental: which proxies connections and connect links ask for; none, the API stage's default
   proxyFleet?: 'LEGACY' | 'CONNECTD'
-  // Test UI → Experimental: the sidebar's layout, flat (classic) or in groups (components/SidebarNavGrouped)
-  navVariant: 'classic' | 'grouped'
   apis: {
     switchApi?: boolean
     apiGraphqlURL?: string
@@ -160,7 +157,6 @@ export const defaultState: UIState = {
   virtualDevices: undefined,
   localPortsOnPhone: undefined,
   proxyFleet: undefined,
-  navVariant: 'classic',
   apis: {},
   layout: {
     mobile: false,

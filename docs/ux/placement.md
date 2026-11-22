@@ -1,18 +1,19 @@
 # Where a new feature goes
 
-The sidebar is moving to five groups, plus one AI entry and a footer (a prototype behind a Test setting for now). URLs do not change. A group opens by default when the account has something in it. Place new work by this table.
+The sidebar lists sections. Each section's pages are sub-links at the top of the section's panel, under its title (`frontend/src/helpers/navSections.ts`). URLs do not change: a section is a way in, not a route tree. On a phone the bottom bar has This device (apps only), Devices, Network and More. Place new work by this table.
 
-| Group | Holds | Open by default when |
+| Section | Sub-links | Lands on |
 | --- | --- | --- |
-| This device | This device (apps only) | always, in an app |
-| Devices | Devices, Connections, Services | always |
-| Network | Networks, Exits, Proxies | the account has a network, an exit or a proxy |
-| Fleet | Products, Scripting, Apps | the account has a product, a script, or more than about 10 devices |
-| Team | Organization, Logs, Partner Stats | the account has an organization or members |
-| AI | the Remote.It agent chat | always, one entry |
-| footer | Announcements, Help, Settings | always |
+| This device | none (apps only) | This device |
+| Devices | Devices, Connections, Services | Devices |
+| Network | Networks, Exits, Public addresses, Proxy servers | Networks |
+| Fleet | Products, Scripts, Apps | Products when the account has one, else Scripts |
+| Team | Organization, Logs, Partner stats (partners only) | Organization |
+| AI | Connect AI, Agent | Connect AI |
+| footer | Announcements, Help, Settings | |
 
 ## Rules
 
-1. A new feature joins an existing group and page first. It gets its own sidebar item only when no existing page fits.
-2. Set-once and operator settings go under Settings, Advanced. Keep them away from the controls people use every day.
+1. A new feature joins an existing section and page first. It gets its own sub-link only when no existing page fits, and its own section almost never.
+2. A page a person cannot use (plan, role, platform) is hidden by its gate in `navSections.ts`; a section with no page left is hidden.
+3. Set-once and operator settings go under Settings, Advanced. Keep them away from the controls people use every day.

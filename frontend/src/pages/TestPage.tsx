@@ -98,7 +98,6 @@ export const TestPage: React.FC = () => {
   const virtualDevices = useSelector(selectVirtualDevicesSetting)
   const localPortsOnPhone = useSelector((state: State) => !!state.ui.localPortsOnPhone)
   const proxyFleet = useSelector((state: State) => state.ui.proxyFleet)
-  const navVariant = useSelector((state: State) => state.ui.navVariant)
   const [backgroundEnrolled, setBackgroundEnrolled] = useState<boolean | undefined>(undefined)
   useEffect(() => {
     if (chatEnabled) backgroundStatus().then(setBackgroundEnrolled)
@@ -488,20 +487,6 @@ export const TestPage: React.FC = () => {
             { key: 'CONNECTD', name: t('testPage.proxyFleetConnectd', 'connectd-go proxies') },
           ]}
           onChange={value => dispatch.ui.setPersistent({ proxyFleet: (value || undefined) as UIState['proxyFleet'] })}
-        />
-        <SelectSetting
-          hideIcon
-          label={t('testPage.navVariant', 'Sidebar layout')}
-          helpMessage={t(
-            'testPage.navVariantHint',
-            'Classic lists every page. Grouped puts pages in groups you can open and close.'
-          )}
-          value={navVariant}
-          values={[
-            { key: 'classic', name: t('testPage.navVariantClassic', 'Classic') },
-            { key: 'grouped', name: t('testPage.navVariantGrouped', 'Grouped') },
-          ]}
-          onChange={value => dispatch.ui.setPersistent({ navVariant: value as UIState['navVariant'] })}
         />
       </List>
       <Typography variant="subtitle1">{t('testPage.features', 'Features')}</Typography>

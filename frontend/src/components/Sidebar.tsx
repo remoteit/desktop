@@ -6,7 +6,6 @@ import { OrganizationSidebar } from './OrganizationSidebar'
 import { RemoteManagement } from './RemoteManagement'
 import { RegisterMenu } from './RegisterMenu'
 import { SidebarNav } from './SidebarNav'
-import { SidebarNavGrouped } from './SidebarNavGrouped'
 import { AdminSidebarNav } from './AdminSidebarNav'
 import { AvatarMenu } from './AvatarMenu'
 import { spacing } from '../styling'
@@ -21,7 +20,6 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const location = useLocation()
   const adminMode = useSelector((state: State) => selectIsAdminRouteMode(state, location.pathname))
   const insets = layout.insets
-  const grouped = useSelector((state: State) => state.ui.navVariant === 'grouped')
 
   return (
     <OrganizationSidebar insets={layout.insets} hide={!layout.showOrgs}>
@@ -58,7 +56,7 @@ export const Sidebar: React.FC<{ layout: ILayout }> = ({ layout }) => {
               <AvatarMenu />
               <RegisterMenu buttonSize={38} sidebar type="solid" />
             </Box>
-            {grouped ? <SidebarNavGrouped /> : <SidebarNav />}
+            <SidebarNav />
             <RemoteManagement />
           </>
         )}

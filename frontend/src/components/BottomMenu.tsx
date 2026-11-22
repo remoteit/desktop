@@ -1,36 +1,53 @@
-import React from 'react'
-import { REGEX_FIRST_PATH } from '../constants'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useHistory, useLocation } from 'react-router-dom'
-import { Box, BottomNavigation, BottomNavigationAction, Badge } from '@mui/material'
-import { useChatToggle } from '../hooks/useChatEnabled'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  Box,
+  Badge,
+  BottomNavigation,
+  BottomNavigationAction,
+  Divider,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+} from '@mui/material'
+import { Dispatch } from '../store'
+import { selectLimitsLookup } from '../selectors/organizations'
+import { useNavSections } from '../hooks/useNavSections'
 import { useCounts } from '../hooks/useCounts'
-import { ChatAgentGuide } from './Chat/ChatAgentGuide'
+import { useChatToggle } from '../hooks/useChatEnabled'
+import { NavSectionId } from '../helpers/navSections'
+import { ListItemLocation } from './ListItemLocation'
+import { ListItemLink } from './ListItemLink'
 import { Icon } from './Icon'
 
-const CHAT = 'chat'
+const MORE = 'more'
+const TABS: NavSectionId[] = ['thisDevice', 'devices', 'network']
 
 type Props = {
   layout: ILayout
 }
 
 export const BottomMenu: React.FC<Props> = ({ layout }) => {
-  const location = useLocation()
-  const history = useHistory()
-  const counts = useCounts()
   const { t } = useTranslation()
+  const dispatch = useDispatch<Dispatch>()
+  const counts = useCounts()
+  const limits = useSelector(selectLimitsLookup)
+  const nav = useNavSections()
   const chat = useChatToggle()
+  const [more, setMore] = useState(false)
 
-  const menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || '/devices'
-  const chatTab = chat.show && chat.open
+  const tabs = nav.sections.filter(section => TABS.includes(section.id))
+  const rest = nav.sections.filter(section => !TABS.includes(section.id))
+  const value = nav.section && TABS.includes(nav.section.id) ? nav.section.id : MORE
 
-  const select = (value: string) => {
-    if (value === CHAT) {
-      if (!chatTab) chat.toggle()
-      return
-    }
-    if (chatTab) chat.toggle()
-    if (value !== menu) history.push(value)
+  const select = (id: string) => {
+    if (id === MORE) return setMore(true)
+    if (chat.show && chat.open) chat.toggle()
+    const section = tabs.find(section => section.id === id)
+    if (section && id !== value) nav.openSection(section)
   }
 
   return (
@@ -39,36 +56,68 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
         borderTop: '1px solid',
         borderColor: layout.mobile ? 'transparent' : 'grayLighter.main',
         paddingBottom: layout.insets.bottom ? layout.insets.bottom + 'px' : 0,
-        '& .MuiBadge-badge': {
-          top: -2,
-          right: -10,
-        },
+        '& .MuiBadge-badge': { top: -2, right: -10 },
+        '& .MuiBottomNavigationAction-label.Mui-selected': { fontSize: '0.75rem' },
       }}
     >
-      <BottomNavigation value={chatTab ? CHAT : menu} onChange={(_, value) => select(value)}>
-        {chat.show && (
+      <BottomNavigation showLabels value={value} onChange={(_, id) => select(id)}>
+        {tabs.map(section => (
           <BottomNavigationAction
-            label={t('nav.agent', 'Agent')}
-            icon={
-              <ChatAgentGuide placement="top">
-                <Icon size="lg" name="remote-ai" />
-              </ChatAgentGuide>
-            }
-            value={CHAT}
+            key={section.id}
+            label={section.label(t)}
+            value={section.id}
+            icon={<Icon size="md" name={section.icon} />}
           />
-        )}
+        ))}
         <BottomNavigationAction
-          label={t('nav.connections', 'Connections')}
+          label={t('nav.more', 'More')}
+          value={MORE}
           icon={
-            <Badge badgeContent={counts.active} color="primary">
-              <Icon size="md" name="arrow-right-arrow-left" />
+            <Badge variant="dot" color="error" invisible={!counts.unreadAnnouncements}>
+              <Icon size="md" name="ellipsis-h" />
             </Badge>
           }
-          value="/connections"
         />
-        <BottomNavigationAction label={t('nav.devices', 'Devices')} icon={<Icon size="md" name="router" />} value="/devices" />
-        <BottomNavigationAction label={t('nav.networks', 'Networks')} icon={<Icon size="md" name="chart-network" />} value="/networks" />
       </BottomNavigation>
+      <Drawer
+        anchor="bottom"
+        open={more}
+        onClose={() => setMore(false)}
+        PaperProps={{ sx: { borderTopLeftRadius: 12, borderTopRightRadius: 12, paddingBottom: layout.insets.bottomPx } }}
+      >
+        <List onClick={() => setMore(false)} aria-label={t('nav.more', 'More')}>
+          {rest.map(section => (
+            <ListItemButton
+              key={section.id}
+              selected={nav.section?.id === section.id}
+              onClick={() => nav.openSection(section)}
+            >
+              <ListItemIcon>
+                <Icon size="md" name={section.icon} fixedWidth />
+              </ListItemIcon>
+              <ListItemText primary={section.label(t)} />
+            </ListItemButton>
+          ))}
+          {!!rest.length && <Divider sx={{ marginY: 1 }} />}
+          <ListItemLocation
+            title={t('nav.announcements', 'Announcements')}
+            to="/announcements"
+            icon="bullhorn"
+            badge={counts.unreadAnnouncements}
+          />
+          {limits.support > 10 ? (
+            <ListItemLocation
+              title={t('nav.feedback', 'Feedback')}
+              onClick={() => dispatch.feedback.reset()}
+              to="/feedback"
+              icon="message"
+            />
+          ) : (
+            <ListItemLink title={t('nav.supportForum', 'Support Forum')} href="https://link.remote.it/forum" icon="comments" />
+          )}
+          <ListItemLocation title={t('nav.settings', 'Settings')} icon="sliders-h" to="/settings" match="/settings" />
+        </List>
+      </Drawer>
     </Box>
   )
 }
