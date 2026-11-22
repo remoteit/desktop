@@ -490,7 +490,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
       <Confirm
         open={deleting}
         title={t('exitPage.deleteTitle', 'Delete {{exit}}?', { exit: exit.name })}
-        action={t('exitPage.deleteButton', 'Delete')}
+        action={t('exitPage.delete', 'Delete exit')}
         color="error"
         disabled={busy}
         onConfirm={remove}
