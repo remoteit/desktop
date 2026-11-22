@@ -71,7 +71,13 @@ export const RunListItem: React.FC<Props> = ({
       <ListItemText
         primary={
           <>
-            {to && actions ? <Link to={to}>{heading}</Link> : heading}
+            {to && actions ? (
+              <Link to={to} sx={{ padding: 0 }}>
+                {heading}
+              </Link>
+            ) : (
+              heading
+            )}
             <Typography component="span" variant="caption" color="textSecondary" marginLeft={1} data-run-state>
               {carrierState(t, run)}
             </Typography>

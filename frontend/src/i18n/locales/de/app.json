@@ -4290,6 +4290,7 @@
     "localHint": ""
   },
   "proxyPage": {
+    "activation": "",
     "addressesNone": "",
     "addressesTitle": "",
     "certificate": "",

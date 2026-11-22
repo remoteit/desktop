@@ -211,6 +211,6 @@ describe('after the sign-in', () => {
     expect(graphQLBasicRequest).toHaveBeenCalledTimes(1)
     expect(graphQLBasicRequest.mock.calls[0][0]).toContain('endpointTicket')
     expect(graphQLBasicRequest.mock.calls[0][1]).toEqual({ endpointId: 'EP-1', returnUrl: RETURN })
-    expect(container.textContent).toBe('You do not have access to this endpoint.')
+    expect(container.textContent).toBe('You don’t have access to this public address.')
   })
 })

@@ -312,7 +312,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
             )}
             <SelectSetting
               icon="right-to-bracket"
-              label={t('exitPage.activation', 'New exit devices start')}
+              label={t('proxyPage.activation', 'New devices start')}
               value={proxy.activation}
               values={[
                 { key: 'auto', name: t('exitPage.activationAuto', 'Automatically') },

@@ -4290,6 +4290,7 @@
     "localHint": "Only devices on the same local network can reach it. Good for printers and PCs."
   },
   "proxyPage": {
+    "activation": "New devices start",
     "addressesNone": "No public addresses yet.",
     "addressesTitle": "Public addresses",
     "certificate": "HTTPS certificate",
