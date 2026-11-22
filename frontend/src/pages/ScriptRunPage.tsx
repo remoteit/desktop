@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { Typography } from '@mui/material'
@@ -16,6 +17,7 @@ type Props = {
 }
 
 export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const history = useHistory()
   const { fileID, jobID } = useParams<{ fileID?: string; jobID?: string }>()
@@ -28,6 +30,7 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
   const devices = useSelector(getDevices)
   const allDevices = useSelector(getAllDevices)
   const fetching = useSelector((state: State) => state.files.fetching)
+  const singlePanel = useSelector((state: State) => state.ui.layout.singlePanel)
 
   const [running, setRunning] = useState(false)
   const [unauthorized, setUnauthorized] = useState<IDevice[]>()
@@ -258,7 +261,15 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
     <Container
       integrated
       bodyProps={{ inset: true, verticalOverflow: true, gutterBottom: true }}
-      header={<Typography variant="h1">{isNew ? 'Run Script' : script?.name || 'Run'}</Typography>}
+      header={
+        <Typography variant="h1">
+          {isNew
+            ? t('scriptRunPage.runScript', 'Run script')
+            : singlePanel && script?.name
+            ? script.name
+            : t('scriptPage.newRunTitle', 'New run')}
+        </Typography>
+      }
     >
       <ScriptRunForm
         runForm={runForm}

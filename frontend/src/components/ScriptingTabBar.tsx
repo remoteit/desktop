@@ -1,30 +1,33 @@
 import React from 'react'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { Tabs, Tab } from '@mui/material'
+import { Tab } from '@mui/material'
+import { PageTabs } from './PageTabs'
 
-const tabs = ['scripts', 'runs', 'files']
-const tabTitles = ['Scripts', 'Runs', 'Files']
+const tabs = ['scripts', 'runs', 'files'] as const
+const singular: Record<string, (typeof tabs)[number]> = { script: 'scripts', run: 'runs', file: 'files' }
 
 export const ScriptingTabBar: React.FC = () => {
+  const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
   const active = location.pathname.split('/')[1]
-  const tabIndex = tabs.indexOf(active)
+  const titles = {
+    scripts: t('scriptingTabs.scripts', 'Scripts'),
+    runs: t('scriptingTabs.runs', 'Runs'),
+    files: t('scriptingTabs.files', 'Files'),
+  }
 
   return (
-    <Tabs
-      value={tabIndex === -1 ? 0 : tabIndex}
-      variant="scrollable"
-      TabIndicatorProps={{ sx: { display: 'none' } }}
-      sx={{ marginLeft: -1.5, '& .MuiTab-root': { minHeight: 40 } }}
-    >
-      {tabs.map((tab, index) => (
+    <PageTabs value={tabs.find(tab => tab === active) ?? singular[active] ?? 'scripts'} sx={{ borderBottom: 'none', minHeight: 0 }}>
+      {tabs.map(tab => (
         <Tab
           key={tab}
-          label={tabTitles[index]}
+          value={tab}
+          label={titles[tab]}
           onClick={() => {
             const to = `/${tab}`
             dispatch.ui.setDefaultSelected({ key: '/scripts', value: to })
@@ -32,6 +35,6 @@ export const ScriptingTabBar: React.FC = () => {
           }}
         />
       ))}
-    </Tabs>
+    </PageTabs>
   )
 }
