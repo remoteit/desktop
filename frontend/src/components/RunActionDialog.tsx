@@ -10,6 +10,7 @@ import {
   graphQLRunAction,
 } from '../services/graphQLDeviceRuns'
 import { effectLines } from '../helpers/runsHelper'
+import { PlainAction, plainActionLabel, plainActionOf, plainEffectLines } from '../helpers/exitWords'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { LoadingMessage } from './LoadingMessage'
 import { Confirm } from './Confirm'
@@ -21,6 +22,8 @@ type Props = {
   open: boolean
   device: { id: string; name: string }
   action: RunAction
+  // How the action was offered in one exit or proxy server: its plain words in the title, button and effects.
+  plain?: PlainAction
   // The device as a whole — every proxy and exit it runs —, or one of them alone, by name.
   scope: 'device' | { kind: 'proxy' | 'exit'; name: string }
   onClose: () => void
@@ -31,7 +34,7 @@ type Props = {
    each proxy and exit — or to the one acted on — is read first and said (Device.actionEffects), and only then is it
    taken. A drain says how long it waits for open connections; a retire with connections open is refused unless they
    are ended, which is asked for here; any other refusal is graphql's, said as it stands, and nothing is done. */
-export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, onClose, onDone }) => {
+export const RunActionDialog: React.FC<Props> = ({ open, device, action, plain, scope, onClose, onDone }) => {
   const { t } = useTranslation()
   const [effects, setEffects] = useState<DeviceActionEffect[] | 'ERROR'>()
   const [force, setForce] = useState(false)
@@ -39,6 +42,7 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, 
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<string>()
   const kind = scope === 'device' ? undefined : scope.kind
+  const words = kind ? plain ?? plainActionOf(action) : undefined
 
   useEffect(() => {
     if (!open) return
@@ -88,13 +92,22 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, 
     <Confirm
       open={open}
       maxWidth="sm"
-      title={actionTitle(t, action, device.name, scope === 'device' ? undefined : scope.name)}
-      action={actionVerb(t, action)}
-      color={action === 'UNDRAIN' ? 'primary' : 'error'}
+      title={
+        words && scope !== 'device'
+          ? plainTitle(t, words, device.name, scope.name)
+          : actionTitle(t, action, device.name, scope === 'device' ? undefined : scope.name)
+      }
+      action={words ? plainActionLabel(t, words) : actionVerb(t, action)}
+      color={action === 'UNDRAIN' || words === 'PAUSE' ? 'primary' : 'error'}
       disabled={busy || !Array.isArray(effects) || !effects.length || refused || !waitValid}
       onConfirm={act}
       onDeny={onClose}
     >
+      {words && scope !== 'device' && (
+        <Typography variant="body2" gutterBottom data-plain-lead>
+          {plainLead(t, words, device.name)}
+        </Typography>
+      )}
       {effects === undefined ? (
         <LoadingMessage />
       ) : effects === 'ERROR' ? (
@@ -103,20 +116,29 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, 
         </Notice>
       ) : !effects.length ? (
         <Typography variant="body2">{t('runAction.nothing', 'It runs no proxy or exit.')}</Typography>
+      ) : words ? (
+        <PlainEffects effects={effects} />
       ) : (
         <EffectList effects={effects} />
       )}
       {forcible && (
         <FormControlLabel
           control={<Checkbox checked={force} onChange={event => setForce(event.target.checked)} />}
-          label={t('runAction.forceRetire', 'Retire it now, ending whatever is open through it')}
+          label={
+            words
+              ? t('carry.forceStop', 'End open connections now')
+              : t('runAction.forceRetire', 'Retire it now, ending whatever is open through it')
+          }
         />
       )}
       {action === 'DRAIN' && (
         <TextField
-          size="small"
           type="number"
-          label={t('runAction.maxWait', 'Max wait for its connections (minutes)')}
+          label={
+            words
+              ? t('carry.maxWait', 'Wait for open connections (minutes)')
+              : t('runAction.maxWait', 'Max wait for its connections (minutes)')
+          }
           value={maxWait}
           error={!waitValid}
           onChange={event => setMaxWait(event.target.value)}
@@ -152,6 +174,47 @@ export const EffectList: React.FC<{ effects: DeviceActionEffect[] }> = ({ effect
       })}
     </List>
   )
+}
+
+const PlainEffects: React.FC<{ effects: DeviceActionEffect[] }> = ({ effects }) => {
+  const { t } = useTranslation()
+  return (
+    <div data-effects>
+      {effects.flatMap(effect =>
+        plainEffectLines(t, effect).map(line => (
+          <Typography
+            key={`${effect.kind}:${effect.id}:${line}`}
+            variant="body2"
+            gutterBottom
+            color={effect.refusal && line.includes(effect.refusal) ? 'error' : undefined}
+            data-effect={effect.kind}
+          >
+            {line}
+          </Typography>
+        ))
+      )}
+    </div>
+  )
+}
+
+function plainLead(t: TFunction, action: PlainAction, device: string): string {
+  return {
+    PAUSE: t('carry.pauseLead', '{{device}} stops taking new traffic. Open connections finish first.', { device }),
+    RESUME: t('carry.resumeLead', '{{device}} starts carrying traffic again.', { device }),
+    APPROVE: t('carry.approveLead', '{{device}} starts carrying traffic.', { device }),
+    STOP: t('carry.stopLead', '{{device}} stops now, ending open connections.', { device }),
+    REMOVE: t('carry.removeLead', '{{device}} stops carrying traffic and leaves the list.', { device }),
+  }[action]
+}
+
+function plainTitle(t: TFunction, action: PlainAction, device: string, name: string): string {
+  return {
+    PAUSE: t('carry.pauseTitle', 'Pause {{device}} for {{name}}?', { device, name }),
+    RESUME: t('carry.resumeTitle', 'Resume {{device}} for {{name}}?', { device, name }),
+    APPROVE: t('carry.approveTitle', 'Let {{device}} carry {{name}}?', { device, name }),
+    STOP: t('carry.stopTitle', 'Stop {{device}} now for {{name}}?', { device, name }),
+    REMOVE: t('carry.removeTitle', 'Remove {{device}} from {{name}}?', { device, name }),
+  }[action]
 }
 
 /* What deleting or decommissioning a device does to what it runs, in their own confirmations: nothing where it runs

@@ -220,7 +220,7 @@ describe('making a device a proxy', () => {
   it('a new one is Internet or Local network, chosen there for good; Internet unless chosen', async () => {
     await open('proxy')
     expect(find('[data-proxy-kind]').getAttribute('data-proxy-kind')).toBe('internet')
-    expect(find('[data-proxy-kind]').textContent).toContain('Chosen now: it cannot be changed later.')
+    expect(find('[data-proxy-kind]').textContent).toContain('You can’t change this later.')
     await act(async () => (find('input[value="local"]') as HTMLInputElement).click())
     expect(find('[data-proxy-kind]').getAttribute('data-proxy-kind')).toBe('local')
     await act(async () => confirm().click())

@@ -48,7 +48,7 @@ export const ExitShareDialog: React.FC<Props> = ({ exit, open, onClose, onChange
   const done = async (result: Awaited<ReturnType<typeof graphQLShareExit>>) => {
     setBusy(false)
     const refused = refusalOf(result)
-    if (refused !== undefined) return setRefusal(refused || t('exitShare.failed', 'It could not be changed.'))
+    if (refused !== undefined) return setRefusal(refused || t('exitShare.failed', 'Couldn’t change sharing. Try again.'))
     setRefusal(undefined)
     setEmails([])
     onChanged()
@@ -71,7 +71,7 @@ export const ExitShareDialog: React.FC<Props> = ({ exit, open, onClose, onChange
         <Typography variant="body2" color="textSecondary" gutterBottom>
           {t(
             'exitShare.description',
-            'Those you share it with can send a device of theirs out through it as its exit, whichever of its devices takes the traffic. They get nothing on its devices themselves.'
+            'People you share it with can route their devices through it. They get no access to your devices.'
           )}
         </Typography>
         <ContactSelector contacts={contacts} selected={emails} onSelect={setEmails} />

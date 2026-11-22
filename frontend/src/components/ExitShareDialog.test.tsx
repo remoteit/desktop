@@ -78,7 +78,7 @@ describe('sharing an exit', () => {
     expect(document.body.textContent).toContain('Share Office Mac')
     expect(document.body.querySelector('[data-share="sam@example.com"]')).not.toBeNull()
     expect(document.body.querySelector('[data-contacts]')?.getAttribute('data-contacts')).toBe('sam@example.com')
-    expect(document.body.textContent).toContain('They get nothing on its devices themselves.')
+    expect(document.body.textContent).toContain('They get no access to your devices.')
   })
 
   it('shares with the addresses picked, and stops sharing with one by its Remove', async () => {

@@ -11,12 +11,12 @@ vi.mock('../services/graphQLDeviceRuns', () => ({ graphQLActionEffects: effects,
 vi.mock('../hooks/useDeviceSessions', () => ({ useDeviceSessions: () => sessions.on }))
 // The dialog: its title, what it says, and its action button as the person would press it.
 vi.mock('./Confirm', () => ({
-  Confirm: ({ open, title, action, disabled, children, onConfirm, onDeny }: any) =>
+  Confirm: ({ open, title, action, color, disabled, children, onConfirm, onDeny }: any) =>
     open ? (
       <div data-dialog>
         <h2>{title}</h2>
         {children}
-        <button data-confirm disabled={disabled} onClick={onConfirm}>
+        <button data-confirm data-color={color} disabled={disabled} onClick={onConfirm}>
           {action}
         </button>
         <button data-deny onClick={onDeny}>
@@ -114,11 +114,14 @@ describe('an action on a device: what it does, said first', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
-  it('on one proxy or exit alone: only its effect, and its own mutation', async () => {
-    await open({ action: 'DRAIN', scope: { kind: 'exit', name: 'remote.it pdx1a' } })
-    expect(find('h2').textContent).toBe('Drain e1 in remote.it pdx1a?')
-    expect(find('[data-effect="exit"]')).not.toBeNull()
+  it('on one proxy or exit alone: in plain words, only its effect, and its own mutation', async () => {
+    await open({ action: 'DRAIN', plain: 'PAUSE', scope: { kind: 'exit', name: 'remote.it pdx1a' } })
+    expect(find('h2').textContent).toBe('Pause e1 for remote.it pdx1a?')
+    expect(find('[data-plain-lead]').textContent).toBe('e1 stops taking new traffic. Open connections finish first.')
+    expect(find('[data-effect="exit"]').textContent).toBe('1 device routing through it moves to another exit device.')
     expect(find('[data-effect="proxy"]')).toBeNull()
+    expect(confirm().textContent).toBe('Pause')
+    expect(confirm().getAttribute('data-color')).toBe('primary')
     await act(async () => confirm().click())
     expect(runAction).toHaveBeenCalledWith('exit', E1.id, 'DRAIN', { maxWaitMinutes: 60, force: false })
   })
@@ -208,6 +211,32 @@ describe('an action on a device: what it does, said first', () => {
     await open({ action: 'UNDRAIN' })
     expect(find('h2').textContent).toBe('Put e1 back in service in everything it runs?')
     expect(confirm().textContent).toContain('Undrain')
+  })
+})
+
+describe('plain words in one exit or proxy server', () => {
+  it('names each action as offered: Remove and Stop now in the error colour', async () => {
+    effects.mockResolvedValue([EXIT])
+    await open({ action: 'REMOVE', scope: { kind: 'exit', name: 'Home' } })
+    expect(find('h2').textContent).toBe('Remove e1 from Home?')
+    expect(confirm().textContent).toBe('Remove')
+    expect(confirm().getAttribute('data-color')).toBe('error')
+    document.body.innerHTML = ''
+    await open({ action: 'RETIRE', scope: { kind: 'exit', name: 'Home' } })
+    expect(find('h2').textContent).toBe('Stop e1 now for Home?')
+    expect(confirm().textContent).toBe('Stop now')
+    document.body.innerHTML = ''
+    await open({ action: 'UNDRAIN', plain: 'APPROVE', scope: { kind: 'exit', name: 'Home' } })
+    expect(find('h2').textContent).toBe('Let e1 carry Home?')
+    expect(confirm().textContent).toBe('Approve')
+  })
+
+  it('a refusal and a device left alone are said plainly', async () => {
+    effects.mockResolvedValue([effect({ kind: 'exit', id: 'X', name: 'Home', dormant: true, moved: 0, refusal: 'held' })])
+    await open({ action: 'REMOVE', scope: { kind: 'exit', name: 'Home' } })
+    const text = find('[data-effects]').textContent
+    expect(text).toContain('Can’t do this now: held')
+    expect(text).toContain('Home has no other device ready. Devices routing through it go direct until one is.')
   })
 })
 
