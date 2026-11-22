@@ -1232,6 +1232,8 @@
     "withPortalHint": "This browser's remote.it client loads from the portal: each new client is published there, and nothing here upgrades it"
   },
   "deviceAnyPort": {
+    "disabledByConfiguration": "Disabled in the device configuration",
+    "label": "Any port access (TCP and UDP)",
     "placeholder": "* or 502,20000-20100 — empty for none",
     "tcp": "Any port (TCP)",
     "udp": "Any port (UDP)"

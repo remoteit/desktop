@@ -1217,6 +1217,8 @@
     "withPortalHint": ""
   },
   "deviceAnyPort": {
+    "disabledByConfiguration": "",
+    "label": "",
     "placeholder": "",
     "tcp": "",
     "udp": ""
