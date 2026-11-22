@@ -34,6 +34,7 @@ const FAILED = {
   exitCode: -1,
   ranAs: 'r3s-jamie',
   detail: 'the script could not be started: permission denied',
+  startedAt: '2026-11-20T22:44:57.000Z',
   artifacts: [],
 }
 
@@ -101,6 +102,13 @@ describe('a device’s run, on the run’s page', () => {
     fetchRunOutput.mockResolvedValue({ chunks: [], complete: true, cut: false })
     page = await render(<JobRunResult accountId="A1" jobId="J1" jobDeviceId="JD1" run={FAILED as any} preview />)
     expect(text(page, 'run-output')).toBe('No output')
+    act(() => root.unmount())
+    container.remove()
+    // Refused before it started: no output box at all.
+    const refused = { phase: 'failed', failureReason: 'refused', detail: 'The run could not be queued', artifacts: [] }
+    page = await render(<JobRunResult accountId="A1" jobId="J1" jobDeviceId="JD1" run={refused as any} preview />)
+    expect(text(page, 'run-headline')).toBe('The device refused the run')
+    expect(page.querySelector('[data-run-output]')).toBeNull()
   })
 
   it('without preview, no output read; still going, its phase', async () => {

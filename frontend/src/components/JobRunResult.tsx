@@ -44,7 +44,9 @@ export const JobRunResult: React.FC<Props> = ({ accountId, jobId, jobDeviceId, r
   const failure = runFailureWords(t, run)
   const reason = failure ? runReason(run) : undefined
   const facts = runFacts(t, run)
-  const lines = output ? outputLines(output.chunks, output.cut) : undefined
+  const read = output ? outputLines(output.chunks, output.cut) : undefined
+  // A run refused or lost before it started has no output to speak of: nothing said.
+  const lines = read && (read.lines.length || run.startedAt) ? read : undefined
 
   return (
     <Box component="span" display="block" data-run-result>
