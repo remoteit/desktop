@@ -28,18 +28,14 @@ export const DeviceScriptsSetting: React.FC<{ settings: DeviceSettings; canManag
     <DeviceSettingRow
       setting={scripts}
       icon="scroll"
-      label={t('deviceScripts.label', 'Allow scripts')}
+      label={t('deviceScripts.scripts', 'Scripts')}
       subLabel={
         platform !== undefined && WINDOWS_PLATFORMS.includes(platform)
-          ? t(
-              'deviceScripts.hintWindows',
-              'Anyone who may script this device can run commands on it, as SYSTEM. Off, no script runs here.'
-            )
-          : t(
-              'deviceScripts.hint',
-              'Anyone who may script this device can run commands on it — as their own account on it, or as root if they have none. Off, no script runs here.'
-            )
+          ? t('deviceScripts.windowsNote', 'People allowed to script this device run commands as SYSTEM.')
+          : t('deviceScripts.note', 'People allowed to script this device can run commands on it.')
       }
+      explain
+      stateText
       disabled={saving || !canManage}
       onChange={async on => {
         setSaving(true)

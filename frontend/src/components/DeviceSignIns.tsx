@@ -13,7 +13,7 @@ export const DeviceSignIns: React.FC<{ deviceId: string }> = ({ deviceId }) => {
 
   if (!signIns) return null
   if (!signIns.length)
-    return <ListItemSetting icon="user" label={t('deviceSignIns.none', 'No one is signed in on it')} />
+    return <ListItemSetting icon="user" label={t('deviceSignIns.noOne', 'No one is signed in on this device')} />
 
   return (
     <>
@@ -26,17 +26,14 @@ export const DeviceSignIns: React.FC<{ deviceId: string }> = ({ deviceId }) => {
             icon="user"
             label={
               account
-                ? t('deviceSignIns.signedIn', '{{person}} signed in on its account {{account}}', { person, account })
-                : t('deviceSignIns.signedInMachine', '{{person}} signed in on it', { person })
+                ? t('deviceSignIns.onAccount', '{{person}} on account {{account}}', { person, account })
+                : t('deviceSignIns.signedInPerson', '{{person}} signed in', { person })
             }
             subLabel={
               <>
                 {signIn.manages
-                  ? t('deviceSignIns.manages', 'Manages this device: may choose its exit and Protect there')
-                  : t(
-                      'deviceSignIns.doesNotManage',
-                      'Does not manage this device: sees its exit, chosen by someone who does'
-                    )}
+                  ? t('deviceSignIns.canRoute', 'Can change Route through on the device')
+                  : t('deviceSignIns.seesRoute', 'Sees Route through but cannot change it')}
                 {signIn.since && (
                   <>
                     {' · '}

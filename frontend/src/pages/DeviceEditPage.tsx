@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { DeviceDescriptionSetting } from '../components/DeviceDescriptionSetting'
 import { DevicePresenceSetting } from '../components/DevicePresenceSetting'
-import { DeviceUserModeSetting } from '../components/DeviceUserModeSetting'
+import { DeviceAccessSetting } from '../components/DeviceAccessSetting'
 import { DeviceAnyPortSetting } from '../components/DeviceAnyPortSetting'
-import { DeviceSubnetSetting } from '../components/DeviceSubnetSetting'
 import { DeviceWebsocketSetting } from '../components/DeviceWebsocketSetting'
 import { DeviceServicesSetting } from '../components/DeviceServicesSetting'
 import { DeviceScriptsSetting } from '../components/DeviceScriptsSetting'
+import { DeviceAiCommandsSetting } from '../components/DeviceAiCommandsSetting'
+import { DeviceSharesConnection } from '../components/DeviceSharesConnection'
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { DeviceExitChoice } from '../components/DeviceExitSection'
 import { DevicePolicyRow } from '../components/DeviceSettingRow'
@@ -17,12 +18,14 @@ import { NotificationSettings } from '../components/NotificationSettings'
 import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceSubnetLabelSetting } from '../components/DeviceSubnetLabelSetting'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
+import { DeviceSection } from '../components/DeviceSection'
 import { DeviceSshAccess } from '../components/DeviceSshAccess'
-import { DeviceApps } from '../components/DeviceApps'
+import { DeviceSignIns } from '../components/DeviceSignIns'
 import { DeviceJoinKeys } from '../components/DeviceJoinKeys'
+import { DeviceAgentSection } from './DeviceAgentPage'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
+import { IconButton } from '../buttons/IconButton'
 import { Gutters } from '../components/Gutters'
-import { List } from '@mui/material'
 import { VirtualDeviceSettings } from '../components/VirtualDeviceSettings'
 import { DeviceProductSetting } from '../components/DeviceProductSetting'
 
@@ -32,72 +35,89 @@ export const DeviceEditPage: React.FC = () => {
   const deviceSessions = useSelector(selectDeviceSessions)
   const settings = useDeviceSettings(device?.id)
 
-  // A virtual device keeps Name, Description, Platform, Address, Hosted by and Notifications: the rest are a
-  // daemon's settings, set on its gateway.
-  if (device?.virtual)
+  if (!device) return null
+  const manage = device.permissions.includes('MANAGE')
+
+  const notificationDefaults = (
+    <IconButton
+      title={t('deviceSettings.notificationDefaults', 'Notification defaults')}
+      to="/settings/notifications"
+      icon="sliders-h"
+      color="grayDark"
+      size="sm"
+      shiftDown
+    />
+  )
+
+  const thisDevice = (
+    <DeviceSection id="device" title={t('deviceSettings.thisDevice', 'This device')} action={notificationDefaults}>
+      {manage && (
+        <>
+          <DeviceNameSetting />
+          <DeviceDescriptionSetting />
+          {device.virtual ? <VirtualDeviceSettings device={device} /> : <DeviceSubnetLabelSetting />}
+        </>
+      )}
+      <NotificationSettings embedded />
+    </DeviceSection>
+  )
+
+  if (device.virtual)
     return (
       <DeviceHeaderMenu>
-        {device.permissions.includes('MANAGE') && (
-          <Gutters size={null}>
-            <List>
-              <DeviceNameSetting />
-              <DeviceDescriptionSetting />
-              <VirtualDeviceSettings device={device} />
-            </List>
-          </Gutters>
-        )}
-        <NotificationSettings />
+        <Gutters size={null} top={null}>
+          {thisDevice}
+        </Gutters>
       </DeviceHeaderMenu>
     )
 
   return (
     <DeviceHeaderMenu>
-      {device?.permissions.includes('MANAGE') && (
-        <Gutters size={null}>
-          <List>
-            <DeviceNameSetting />
-            {deviceSessions && <DeviceProductSetting device={device} />}
-            <DeviceSubnetLabelSetting />
-            <DeviceDescriptionSetting />
-            <DevicePresenceSetting />
-            <DeviceUserModeSetting />
-            <DeviceSubnetSetting />
-            {deviceSessions && <DeviceExitChoice device={device} />}
-            <DeviceAnyPortSetting />
-            <DeviceWebsocketSetting />
-            <DeviceServicesSetting settings={settings} canManage={!!device?.permissions.includes('MANAGE')} />
-            <DeviceScriptsSetting
-              settings={settings}
-              canManage={!!device?.permissions.includes('MANAGE')}
-              platform={device?.targetPlatform}
-            />
-            {deviceSessions && (
+      <Gutters size={null} top={null}>
+        {thisDevice}
+        {manage && deviceSessions && (
+          <>
+            <DeviceSection id="access" title={t('deviceSettings.accessTraffic', 'Access and traffic')}>
+              <DeviceAccessSetting />
+              <DeviceExitChoice device={device} />
+              <DeviceAnyPortSetting />
+              <DeviceWebsocketSetting />
+            </DeviceSection>
+            <DeviceSection id="services" title={t('deviceSettings.servicesSharing', 'Services and sharing')}>
+              <DeviceServicesSetting settings={settings} canManage={manage} />
+              <DeviceScriptsSetting settings={settings} canManage={manage} platform={device.targetPlatform} />
+              <DeviceAiCommandsSetting device={device} />
+            </DeviceSection>
+            <DeviceSection id="terminal" title={t('deviceSshAccess.terminalAccess', 'Terminal access')} list={false}>
+              <Gutters top={null} bottom={null}>
+                <DeviceSshAccess deviceId={device.id} untitled />
+              </Gutters>
+            </DeviceSection>
+            <DeviceSection id="agent" title={t('deviceSettings.agent', 'Agent')}>
+              <DeviceAgentSection />
+            </DeviceSection>
+            <DeviceSection id="advanced" title={t('deviceSettings.advanced', 'Advanced')}>
+              <DeviceProductSetting device={device} />
+              <DeviceSharesConnection device={device} />
+              <DeviceSignIns deviceId={device.id} />
               <DevicePolicyRow
                 deviceId={device.id}
                 name="initiators"
-                label={t('deviceSetting.initiators', 'Control Link connections from this device')}
+                label={t('deviceSettings.outgoing', 'Connections from this device')}
               />
-            )}
-          </List>
-        </Gutters>
-      )}
-      {device && !device.permissions.includes('MANAGE') && (
-        <Gutters size={null}>
-          <List>
-            <DeviceUserModeSetting />
-          </List>
-        </Gutters>
-      )}
-      {/* The device's apps, who may log in through its console and the keys that bring it back at boot: what is set
-          on it, so with its settings. */}
-      {deviceSessions && device && (
-        <Gutters>
-          <DeviceApps device={device} />
-          <DeviceSshAccess deviceId={device.id} />
-          <DeviceJoinKeys device={device} />
-        </Gutters>
-      )}
-      <NotificationSettings />
+              <DevicePresenceSetting />
+            </DeviceSection>
+            <Gutters top={null}>
+              <DeviceJoinKeys device={device} />
+            </Gutters>
+          </>
+        )}
+        {!manage && deviceSessions && (
+          <DeviceSection id="access" title={t('deviceSettings.accessTraffic', 'Access and traffic')}>
+            <DeviceAccessSetting />
+          </DeviceSection>
+        )}
+      </Gutters>
     </DeviceHeaderMenu>
   )
 }

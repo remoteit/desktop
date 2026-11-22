@@ -23,11 +23,10 @@ export const DeviceServicesSetting: React.FC<{ settings: DeviceSettings; canMana
     <DeviceSettingRow
       setting={services}
       icon="network-wired"
-      label={t('deviceServices.label', 'Allow remote access to services')}
-      subLabel={t(
-        'deviceServices.hint',
-        'People you share with can reach the services defined on this device, through it. Off, none are served — nor its ports beyond them or its console.'
-      )}
+      label={t('deviceServices.share', 'Share this device')}
+      subLabel={t('deviceServices.shareNote', "People you share with can reach this device's services.")}
+      explain
+      stateText
       disabled={saving || !canManage}
       onChange={async on => {
         setSaving(true)

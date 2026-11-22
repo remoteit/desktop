@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { List, ListSubheader } from '@mui/material'
+import { Collapse, List, ListSubheader } from '@mui/material'
 import { DeviceContext } from '../services/Context'
 import {
   DAEMON_CHANNELS,
@@ -15,12 +15,10 @@ import {
   runningVersion,
   updating,
 } from '../services/graphQLDaemon'
-import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
 import { DevicePolicyRow } from '../components/DeviceSettingRow'
 import { ListItemSetting } from '../components/ListItemSetting'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { SelectSetting } from '../components/SelectSetting'
-import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { BROWSER_PLATFORM } from '../services/browserClients'
 import { belowMinimumText, upkeepText, withAvailable } from '../services/upkeepText'
@@ -29,15 +27,14 @@ import { useInterval } from '../hooks/useInterval'
 // How often an upgrade under way is looked at again: its states pass in seconds.
 const WATCH_INTERVAL = 3000
 
-/* The device agent (device-package's connectd-go daemon): what it runs, what it should, where an upgrade stands, and
-   the device's own upgrade settings — a channel other than its account's, or held at what it runs. Behind the
-   device-sessions flag (the route and the tab), and it says so where the API does not serve device sessions. Where the
-   machine's administrator allows no remote upgrades (the updates policy), that is said with them. */
-export const DeviceAgentPage: React.FC = () => {
+/* The device agent (device-package's connectd-go daemon) in the device's Settings: one line with the version it runs
+   and where its updates stand, and the rest — what it should run, its channel, rollback and pausing — under Details. */
+export const DeviceAgentSection: React.FC = () => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
   const [daemon, setDaemon] = useState<DeviceDaemon | null | 'ERROR' | typeof UNSUPPORTED>()
   const [saving, setSaving] = useState(false)
+  const [open, setOpen] = useState(false)
 
   const load = useCallback(async () => {
     if (device?.id) setDaemon(await graphQLDeviceDaemon(device.id))
@@ -64,9 +61,9 @@ export const DeviceAgentPage: React.FC = () => {
     const version = update.version
     switch (update.state) {
       case 'pending':
-        return t('deviceAgent.pending', 'Waiting its turn to upgrade to {{version}}', { version })
+        return t('deviceAgent.pendingUpdate', 'Waiting to update to {{version}}', { version })
       case 'started':
-        return t('deviceAgent.started', 'Upgrade to {{version}} started', { version })
+        return t('deviceAgent.startedUpdate', 'Updating to {{version}}', { version })
       case 'downloading':
         return t('deviceAgent.downloading', 'Downloading {{version}}', { version })
       case 'installing':
@@ -74,13 +71,13 @@ export const DeviceAgentPage: React.FC = () => {
       case 'installed':
         return t('deviceAgent.installed', 'Installed {{version}}', { version })
       case 'failed':
-        return t('deviceAgent.failed', 'Upgrade to {{version}} failed', { version })
+        return t('deviceAgent.updateFailed', 'Update to {{version}} failed', { version })
       case 'refused':
-        return t('deviceAgent.refused', 'Refused {{version}}', { version })
+        return t('deviceAgent.refusedUpdate', 'Update to {{version}} refused', { version })
       case 'held':
         return held({ update })
-          ? t('deviceAgent.held', "Blocked — held by the device's admin")
-          : t('deviceAgent.notTaken', 'Not taken here: {{version}}', { version })
+          ? t('deviceAgent.paused', 'Updates are paused on this device')
+          : t('deviceAgent.notTakenUpdate', '{{version}} not taken here', { version })
       default:
         return `${update.state} ${version}`
     }
@@ -92,21 +89,22 @@ export const DeviceAgentPage: React.FC = () => {
       return (
         <Notice severity="info" fullWidth>
           {t(
-            'deviceAgent.unsupported',
-            'This API does not serve Control Link devices. Point Test Settings → API Target at a stage that does (local or dev).'
+            'deviceAgent.unsupportedAgent',
+            "This server can't show the agent."
+
           )}
         </Notice>
       )
     if (daemon === 'ERROR')
       return (
         <Notice severity="error" fullWidth>
-          {t('deviceAgent.error', 'Could not read the device agent.')}
+          {t('deviceAgent.readFailed', "Couldn't read the agent. Try again later.")}
         </Notice>
       )
     if (!daemon)
       return (
         <Notice severity="info" fullWidth>
-          {t('deviceAgent.none', 'No device agent to show for this device.')}
+          {t('deviceAgent.noAgent', 'This device has no agent to show.')}
         </Notice>
       )
 
@@ -126,6 +124,21 @@ export const DeviceAgentPage: React.FC = () => {
     // Below the oldest build its kind may run: what the cloud no longer speaks may fail for it — said first, whoever
     // updates it.
     const tooOld = belowMinimum(daemon) && belowMinimumText(t, daemon.supported!, elsewhere, daemon.package?.format)
+    const summary = elsewhere
+      ? withAvailable(t, upkeepText(t, elsewhere, daemon.package?.format).label, daemon.available)
+      : packageless
+      ? browser
+        ? t('deviceAgent.withPortal', 'Updates with the portal')
+        : t('deviceAgent.withApp', 'Updated by the app that carries it')
+      : blocked
+      ? t('deviceAgent.paused', 'Updates are paused on this device')
+      : daemon.update
+      ? stateLabel(daemon.update)
+      : daemon.hold
+      ? t('deviceAgent.pausedHere', 'Updates paused')
+      : upToDate
+      ? t('deviceAgent.upToDate', 'Up to date')
+      : t('deviceAgent.noUpdateReported', 'No update reported')
 
     return (
       <>
@@ -135,23 +148,23 @@ export const DeviceAgentPage: React.FC = () => {
             <em>{tooOld.hint}</em>
           </Notice>
         )}
-        <List>
+        <List disablePadding>
           <ListItemSetting
             icon="microchip"
             label={running || t('deviceAgent.notReported', 'Not reported')}
-            subLabel={
-              running
-                ? daemon.package?.version
-                  ? t('deviceAgent.runsPackage', 'The version it runs — connectd {{connectd}}', {
-                      connectd: daemonVersion(daemon),
-                    })
-                  : t('deviceAgent.runs', 'The version it runs')
-                : t(
-                    'deviceAgent.notReportedHint',
-                    'A legacy agent — it upgrades by reinstalling — or a device agent that has not signed in'
-                  )
-            }
+            subLabel={running ? summary : t('deviceAgent.notReportedOlder', 'An older agent updates by reinstalling. A newer one reports after it signs in.')}
+            button={open ? t('deviceAgent.hideDetails', 'Hide details') : t('deviceAgent.details', 'Details')}
+            onButtonClick={() => setOpen(!open)}
           />
+        </List>
+        <Collapse in={open}>
+        <List disablePadding>
+          {!!daemon.package?.version && (
+            <ListItemSetting
+              icon="code"
+              label={t('deviceAgent.core', 'Core {{connectd}}', { connectd: daemonVersion(daemon) })}
+            />
+          )}
           {elsewhere ? (
             (() => {
               const upkeep = upkeepText(t, elsewhere, daemon.package?.format)
@@ -175,10 +188,10 @@ export const DeviceAgentPage: React.FC = () => {
               subLabel={
                 browser
                   ? t(
-                      'deviceAgent.withPortalHint',
-                      "This browser's remote.it client loads from the portal: each new client is published there, and nothing here upgrades it"
+                      'deviceAgent.withPortalNote',
+                      'This browser loads the newest client each time.'
                     )
-                  : t('deviceAgent.withAppHint', 'It has no package of its own: nothing here upgrades it')
+                  : t('deviceAgent.withAppNote', 'Update the app to update the agent.')
               }
             />
           ) : (
@@ -188,24 +201,24 @@ export const DeviceAgentPage: React.FC = () => {
               label={
                 daemon.target
                   ? daemon.target.rollback
-                    ? t('deviceAgent.targetRollback', '{{version}} (a rollback)', { version: daemon.target.version })
+                    ? t('deviceAgent.targetRolledBack', '{{version}} (rolled back)', { version: daemon.target.version })
                     : daemon.target.version
-                  : t('deviceAgent.noTarget', 'What it runs')
+                  : t('deviceAgent.noTargetVersion', 'The version running now')
               }
               subLabel={
                 daemon.target
-                  ? t('deviceAgent.target', 'The version it should run')
-                  : t('deviceAgent.noTargetHint', 'Its channel names no release')
+                  ? t('deviceAgent.targetVersion', 'Version it should run')
+                  : t('deviceAgent.noTargetRelease', 'Its channel has no release')
               }
             />
             {blocked ? (
               <ListItemSetting
                 icon="lock"
                 iconColor="warning"
-                label={t('deviceAgent.held', "Blocked — held by the device's admin")}
+                label={t('deviceAgent.paused', 'Updates are paused on this device')}
                 subLabel={
                   daemon.update?.detail ||
-                  t('deviceAgent.heldHint', 'A package hold or lock on the device. It upgrades once the hold is lifted.')
+                  t('deviceAgent.pausedHint', 'A package hold on the device. It updates once the hold is lifted.')
                 }
               />
             ) : (
@@ -217,7 +230,7 @@ export const DeviceAgentPage: React.FC = () => {
                     ? stateLabel(daemon.update)
                     : upToDate
                     ? t('deviceAgent.upToDate', 'Up to date')
-                    : t('deviceAgent.noUpdate', 'No upgrade reported')
+                    : t('deviceAgent.noUpdateReported', 'No update reported')
                 }
                 subLabel={daemon.update?.detail || undefined}
               />
@@ -227,8 +240,8 @@ export const DeviceAgentPage: React.FC = () => {
         </List>
         {(elsewhere ? elsewhere === 'POLICY' : !packageless) && (
           <List>
-            <ListSubheader>{t('deviceAgent.upgrades', 'Upgrades')}</ListSubheader>
-            <DevicePolicyRow deviceId={device.id} name="updates" label={t('deviceSetting.updates', 'Remote upgrades')} />
+            <ListSubheader>{t('deviceAgent.updates', 'Updates')}</ListSubheader>
+            <DevicePolicyRow deviceId={device.id} name="updates" label={t('deviceSetting.remoteUpdates', 'Remote updates')} />
             <SelectSetting
               icon="code-branch"
               label={t('deviceAgent.channel', 'Channel')}
@@ -240,7 +253,7 @@ export const DeviceAgentPage: React.FC = () => {
             <ListItemSetting
               icon="building"
               label={t('deviceAgent.followAccount', "Follow the account's channel")}
-              subLabel={t('deviceAgent.followAccountHint', 'Drop a channel set for this device alone')}
+              subLabel={t('deviceAgent.followAccountNote', 'Use the same channel as your other devices.')}
               button={t('deviceAgent.follow', 'Follow')}
               disabled={!manage || saving}
               onButtonClick={() => save({ channel: '' })}
@@ -249,7 +262,7 @@ export const DeviceAgentPage: React.FC = () => {
               <ListItemSetting
                 icon="clock-rotate-left"
                 label={t('deviceAgent.pinned', 'Rolled back to {{version}}', { version: daemon.pinned.version })}
-                subLabel={t('deviceAgent.pinnedHint', 'It stays there, whatever its channel says, until released')}
+                subLabel={t('deviceAgent.pinnedNote', 'Stays on this version until you release it.')}
                 button={t('deviceAgent.release', 'Release')}
                 disabled={!manage || saving}
                 onButtonClick={() => save({ rollback: false })}
@@ -259,7 +272,7 @@ export const DeviceAgentPage: React.FC = () => {
                 <ListItemSetting
                   icon="clock-rotate-left"
                   label={t('deviceAgent.rollback', 'Roll back to {{version}}', { version: daemon.rollbackTo.version })}
-                  subLabel={t('deviceAgent.rollbackHint', 'The release before the one its channel gives it')}
+                  subLabel={t('deviceAgent.rollbackNote', 'The release before the current one.')}
                   disabled={!manage || saving}
                   confirm
                   confirmProps={{
@@ -267,8 +280,8 @@ export const DeviceAgentPage: React.FC = () => {
                       version: daemon.rollbackTo.version,
                     }),
                     children: t(
-                      'deviceAgent.rollbackConfirmBody',
-                      'The device goes back to {{version}} by a handover, and stays there until you release it.',
+                      'deviceAgent.rollbackBody',
+                      'The device goes back to {{version}} and stays there until you release it.',
                       { version: daemon.rollbackTo.version }
                     ),
                   }}
@@ -278,21 +291,18 @@ export const DeviceAgentPage: React.FC = () => {
             )}
             <ListItemSetting
               icon="pause"
-              label={t('deviceAgent.hold', 'Hold at this version')}
-              subLabel={t('deviceAgent.holdHint', 'It takes no upgrades until released')}
+              label={t('deviceAgent.pauseUpdates', 'Pause updates')}
+              subLabel={t('deviceAgent.pauseNote', 'Keeps this version until you turn this off.')}
               toggle={daemon.hold}
               disabled={!manage || saving}
               onClick={() => save({ hold: !daemon.hold })}
             />
           </List>
         )}
+        </Collapse>
       </>
     )
   }
 
-  return (
-    <DeviceHeaderMenu>
-      <Gutters size={null}>{body()}</Gutters>
-    </DeviceHeaderMenu>
-  )
+  return body()
 }

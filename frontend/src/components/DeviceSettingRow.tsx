@@ -1,5 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { Typography } from '@mui/material'
 import type { TFunction } from 'i18next'
 import {
   DeviceSettingName,
@@ -23,6 +24,8 @@ type Props = {
   on?: boolean // a part of the setting's value (exit_node's lan); else whether the setting is on, as its control fixes
   disabled?: boolean // the caller's: not one who manages the device, or a change under way
   quiet?: boolean // a part of a setting whose row above already says who set it, or why it is fixed
+  explain?: boolean // a locked setting says who holds it and how to change it, in place of its note
+  stateText?: boolean // its state in a word beside the switch
   confirm?: boolean
   disableGutters?: boolean // in a list whose rows have none, as the console's
   confirmProps?: React.ComponentProps<typeof ListItemSetting>['confirmProps']
@@ -42,6 +45,8 @@ export const DeviceSettingRow: React.FC<Props> = ({
   on,
   disabled,
   quiet,
+  explain,
+  stateText,
   confirm,
   disableGutters,
   confirmProps,
@@ -49,7 +54,7 @@ export const DeviceSettingRow: React.FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const checked = on ?? settingOn(setting)
-  const said = (!quiet && settingNote(t, setting)) || subLabel
+  const said = (!quiet && ((explain && lockedLine(t, setting)) || settingNote(t, setting))) || subLabel
   const why = deprecatedLine(t, deprecated)
 
   return (
@@ -69,6 +74,8 @@ export const DeviceSettingRow: React.FC<Props> = ({
         )
       }
       toggle={checked}
+      secondaryContent={stateText ? <StateWord on={checked} /> : undefined}
+      secondaryContentWidth={stateText ? '110px' : undefined}
       disabled={disabled || settingLocked(setting)}
       confirm={confirm}
       disableGutters={disableGutters}
@@ -119,6 +126,24 @@ export const DeviceSettingChoice: React.FC<{
       onChange={next => next !== value && onChange(next)}
     />
   )
+}
+
+export const StateWord: React.FC<{ on: boolean; children?: React.ReactNode }> = ({ on, children }) => {
+  const { t } = useTranslation()
+  return (
+    <Typography component="span" variant="caption" color={on ? 'primary' : 'grayDark.main'} sx={{ marginRight: 1 }}>
+      {children ?? (on ? t('deviceSetting.on', 'On') : t('deviceSetting.off', 'Off'))}
+    </Typography>
+  )
+}
+
+// A locked setting, said plainly with how to change it: the device's administrator, the device alone, or its product.
+export function lockedLine(t: TFunction, setting?: SettingState): string | undefined {
+  if (!setting || !settingLocked(setting)) return undefined
+  if (setting.control === 'local') return t('deviceSetting.lockedLocal', 'Set only on the device. Change it there.')
+  if (setting.locked)
+    return `${productLockNote(t, setting.locked)}. ${t('deviceSetting.lockedProduct', 'Change it on the product.')}`
+  return t('deviceSetting.lockedAdmin', "Locked by the device's administrator. They can change it on the device.")
 }
 
 // Who set a value the device took from its configuration file: not a person.

@@ -29,7 +29,7 @@ import {
    set, its owner as their own account (admin) or any user — the starting point, kept as grants of their own when someone
    is added. Whoever manages the device may name a person's own account there (OwnAccountName): by a handle, or as an
    account the device already has (presence-server docs/ssh-account-names.md). */
-export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) => {
+export const DeviceSshAccess: React.FC<{ deviceId: string; untitled?: boolean }> = ({ deviceId, untitled }) => {
   const { t } = useTranslation()
   const [read, setRead] = useState<DeviceSshRead | null>()
   const [login, setLogin] = useState('')
@@ -69,7 +69,7 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
       ? t('deviceSshAccess.ownExisting', 'as {{account}}, an account already on the device', { account: grant.account })
       : grant.login === ''
       ? grant.admin
-        ? t('deviceSshAccess.ownAdmin', 'as {{account}}, admin', { account: grant.account })
+        ? t('deviceSshAccess.ownAdministrator', 'as {{account}}, administrator', { account: grant.account })
         : t('deviceSshAccess.asUser', 'as {{login}}', { login: grant.account })
       : grant.login === '*'
       ? t('deviceSshAccess.anyUser', 'as any user')
@@ -77,12 +77,14 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
 
   return (
     <List dense sx={{ paddingBottom: 1 }}>
-      <ListSubheader disableGutters>{t('deviceSshAccess.title', 'SSH access')}</ListSubheader>
+      {!untitled && (
+        <ListSubheader disableGutters>{t('deviceSshAccess.terminalAccess', 'Terminal access')}</ListSubheader>
+      )}
       <ListItem disableGutters>
         <Typography variant="body2" color="textSecondary">
           {t(
-            'deviceSshAccess.about',
-            'Who may log in through the console, as whom — by certificate, signed for minutes when they connect.'
+            'deviceSshAccess.terminalNote',
+            'Who can sign in through the terminal, and as which account.'
           )}
         </Typography>
       </ListItem>
@@ -97,7 +99,7 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
               {read.fallback && (
                 <Box component="span" sx={{ color: 'grayDark.main' }}>
                   {' '}
-                  — {t('deviceSshAccess.fallback', 'its owner, the starting point')}
+                  — {t('deviceSshAccess.ownerDefault', 'the owner, by default')}
                 </Box>
               )}
             </Box>
@@ -135,13 +137,13 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
           )}
         </React.Fragment>
       ))}
-      <ListItem disableGutters sx={{ gap: 1, alignItems: 'flex-start' }}>
+      <ListItem disableGutters sx={{ gap: 1, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <TextField
           size="small"
           label={t('deviceSshAccess.email', 'Email')}
           value={email}
           onChange={e => setEmail(e.target.value)}
-          sx={{ flex: 2 }}
+          sx={{ flex: 2, minWidth: 200 }}
         />
         <TextField
           size="small"
@@ -150,7 +152,7 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
           helperText={t('deviceSshAccess.loginHelp', 'Empty: their own. Or a user there, * for any')}
           value={login}
           onChange={e => setLogin(e.target.value)}
-          sx={{ flex: 1 }}
+          sx={{ flex: 1, minWidth: 160 }}
         />
         <FormControlLabel
           control={

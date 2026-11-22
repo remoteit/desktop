@@ -64,7 +64,7 @@ describe('DeviceSubnetLabelSetting', () => {
     expect(field.props.validate('Garage')).toBeUndefined() // graphql lower-cases it
     for (const bad of ['garage-pi', 'garage pi', 'x'.repeat(30), ''])
       expect(field.props.validate(bad)).toMatch('no dashes')
-    expect(field.props.helper('Garage')).toBe('garage-acme.on.remote.it — the old name keeps working for 30 days')
+    expect(field.props.helper('Garage')).toBe('garage-acme.on.remote.it. The old address keeps working for 30 days.')
   })
 
   it('saves a changed name through setDeviceSubnetLabel, and nothing when it is the same', async () => {

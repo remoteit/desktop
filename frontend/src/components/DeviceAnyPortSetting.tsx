@@ -8,7 +8,7 @@ import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { settingLocked } from '../services/graphQLDeviceSettings'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { ListItemSetting } from './ListItemSetting'
-import { settingNote } from './DeviceSettingRow'
+import { lockedLine, settingNote } from './DeviceSettingRow'
 
 type Ports = { tcp: string | null; udp: string | null }
 
@@ -55,14 +55,14 @@ export const DeviceAnyPortSetting: React.FC = () => {
     if (result !== 'ERROR') setPorts(result.data?.data?.setDeviceAnyPort ?? null)
   }
   const disabled = !device.permissions.includes('MANAGE') || settingLocked(anyPort)
-  const note = settingNote(t, anyPort)
+  const note = lockedLine(t, anyPort) || settingNote(t, anyPort)
 
   return (
     <>
       <InlineTextFieldSetting
         icon="ethernet"
         label={t('deviceAnyPort.tcp', 'Any port (TCP)')}
-        placeholder={t('deviceAnyPort.placeholder', '* or 502,20000-20100 — empty for none')}
+        placeholder={t('deviceAnyPort.portsPlaceholder', '* or 502,20000-20100. Empty for none.')}
         value={shown?.tcp || ''}
         resetValue={shown?.tcp || ''}
         disabled={disabled}
@@ -71,7 +71,7 @@ export const DeviceAnyPortSetting: React.FC = () => {
       <InlineTextFieldSetting
         icon="ethernet"
         label={t('deviceAnyPort.udp', 'Any port (UDP)')}
-        placeholder={t('deviceAnyPort.placeholder', '* or 502,20000-20100 — empty for none')}
+        placeholder={t('deviceAnyPort.portsPlaceholder', '* or 502,20000-20100. Empty for none.')}
         value={shown?.udp || ''}
         resetValue={shown?.udp || ''}
         disabled={disabled}

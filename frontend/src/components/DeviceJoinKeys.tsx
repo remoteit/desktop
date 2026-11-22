@@ -94,7 +94,7 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
     <Box sx={{ paddingBottom: 2 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Typography variant="subtitle2" color="textSecondary">
-          {t('deviceJoinKeys.title', 'Device Join Keys')}
+          {t('deviceJoinKeys.heading', 'Device join keys')}
         </Typography>
         <Stack direction="row" spacing={1} alignItems="center">
           {!!inForce && (

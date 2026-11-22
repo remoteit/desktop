@@ -24,7 +24,7 @@ export const DeviceSubnetLabelSetting: React.FC = () => {
     <InlineTextFieldSetting
       required
       icon="globe"
-      label={t('deviceSubnetLabel.label', 'DNS Name')}
+      label={t('deviceSubnetLabel.address', 'Address')}
       value={label}
       displayValue={info.subnetName}
       maxLength={NAME_MAX}
@@ -35,7 +35,7 @@ export const DeviceSubnetLabelSetting: React.FC = () => {
           : undefined
       }
       helper={value =>
-        t('deviceSubnetLabel.hint', '{{name}} — the old name keeps working for 30 days', {
+        t('deviceSubnetLabel.addressNote', '{{name}}. The old address keeps working for 30 days.', {
           name: value.trim().toLowerCase() + rest,
         })
       }

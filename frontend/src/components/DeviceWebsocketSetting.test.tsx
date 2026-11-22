@@ -107,12 +107,10 @@ describe('the reflector (websocket) setting', () => {
     settings.list = [websocket({ value: null })]
     const page = await render()
     expect(select(page)!.dataset.value).toBe('auto')
-    expect(page.textContent).toContain('Reflector (websocket)')
-    expect(page.textContent).toContain('Automatic — Used only when this device’s UDP is blocked')
-    expect(page.textContent).toContain(
-      'Always — All traffic through remote.it’s reflector — for networks that block UDP'
-    )
-    expect(page.textContent).toContain('Off — Never; with UDP blocked the device goes offline')
+    expect(page.textContent).toContain('Relay')
+    expect(page.textContent).toContain('Automatic — Used only when UDP is blocked')
+    expect(page.textContent).toContain('Always — All traffic goes through the relay')
+    expect(page.textContent).toContain('Off — Never. With UDP blocked, this device goes offline.')
   })
 
   it('Always: written through setDeviceSetting, no question', async () => {
@@ -132,11 +130,11 @@ describe('the reflector (websocket) setting', () => {
   it('through the reflector: said, and Off asked first — written only once confirmed', async () => {
     readWebsocket.mockResolvedValue(using(true))
     const page = await render()
-    expect(note(page)).toBe('Reaching remote.it through the reflector')
+    expect(note(page)).toBe('Connected through the relay now')
     await choose(page, 'off')
     expect(settings.set).not.toHaveBeenCalled()
     expect(page.querySelector('[data-confirm]')!.textContent).toContain(
-      'This device reaches remote.it through the reflector now. Turning it off disconnects it until someone changes it on the device.'
+      'This device connects through the relay now. Turning the relay off disconnects this device.'
     )
     await act(async () => (page.querySelector('[data-confirm-ok]') as HTMLButtonElement).click())
     expect(settings.set).toHaveBeenCalledWith('websocket', 'off')
@@ -145,7 +143,7 @@ describe('the reflector (websocket) setting', () => {
 
   it('the state unknown (not reported, null, or the read failed): Off asked too, more softly', async () => {
     const soft =
-      "remote.it can't tell whether this device needs the reflector right now. If its UDP is blocked, turning it off disconnects it until someone changes it on the device."
+      "Remote.It can't tell if this device needs the relay. If UDP is blocked, this device disconnects."
     for (const answer of [null, { mode: null, using: null, since: null }, 'ERROR']) {
       readWebsocket.mockResolvedValue(answer)
       settings.set = vi.fn(async () => true)
@@ -154,9 +152,9 @@ describe('the reflector (websocket) setting', () => {
       await choose(page, 'off')
       expect(settings.set).not.toHaveBeenCalled()
       const dialog = page.querySelector('[data-confirm]')!.textContent
-      expect(dialog).toContain('Turn the reflector off?')
+      expect(dialog).toContain('Turn the relay off?')
       expect(dialog).toContain(soft)
-      expect(dialog).not.toContain('reaches remote.it through the reflector now')
+      expect(dialog).not.toContain('connects through the relay now')
       await act(async () => (page.querySelector('[data-confirm-ok]') as HTMLButtonElement).click())
       expect(settings.set).toHaveBeenCalledWith('websocket', 'off')
     }

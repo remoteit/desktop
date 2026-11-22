@@ -16,7 +16,7 @@ export const DeviceDescriptionSetting: React.FC = () => {
   return (
     <InlineTextFieldSetting
       icon="paragraph"
-      label={t('deviceDescriptionSetting.label', 'Device Description')}
+      label={t('deviceDescriptionSetting.description', 'Description')}
       value={device.attributes.description}
       disabled={!device.permissions.includes('MANAGE')}
       resetValue={device.attributes.description}

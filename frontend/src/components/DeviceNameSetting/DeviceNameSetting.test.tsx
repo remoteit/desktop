@@ -71,7 +71,7 @@ beforeEach(() => {
 describe('renaming a device whose DNS name is still the one its name made', () => {
   it('offers, unchecked, to change the DNS name too — and does not unless checked', async () => {
     const container = await render('Garage Pi')
-    expect(container.textContent).toContain('Also change its DNS name to garagepi-acme.on.remote.it')
+    expect(container.textContent).toContain('Also change the address to garagepi-acme.on.remote.it')
     const box = container.querySelector('input[type=checkbox]') as HTMLInputElement
     expect(box.checked).toBe(false)
 
