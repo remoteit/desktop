@@ -214,6 +214,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontSize: fontSizes.xxs,
             padding: `${spacing.xs}px ${spacing.md}px`,
             minWidth: spacing.xxl,
+            '@media (pointer: coarse)': { minHeight: 40 },
           },
         },
       },
@@ -301,6 +302,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
             fontSize: fontSizes.xs,
             padding: `${spacing.xs}px ${spacing.sm}px`,
             color: palette.grayDark.main,
+            '@media (pointer: coarse)': { minHeight: 40 },
             '&:hover': { backgroundColor: palette.grayLighter.main, color: palette.grayDarkest.main },
             '&.Mui-selected': {
               backgroundColor: palette.primaryHighlight.main,
