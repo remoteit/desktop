@@ -446,7 +446,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
           color="primary"
           disabled={disabled || !!error || !!portsError || !changed /*  || fieldError */}
         >
-          {saving ? t('common.saving', 'Saving...') : changed ? t('common.save', 'Save') : t('common.saved', 'Saved')}
+          {saving ? t('common.saving', 'Saving') : changed ? t('common.save', 'Save') : t('common.saved', 'Saved')}
         </Button>
         <Button onClick={onCancel}>{t('common.cancel', 'Cancel')}</Button>
         {/* <Pre form={form} /> */}

@@ -428,7 +428,7 @@ const OwnNameMoveDialog: React.FC<
         <LoadingMessage />
       ) : 'reason' in said ? (
         <Notice severity="error" fullWidth>
-          {said.reason || t('proxyPage.namesUnsaid', 'What it would do could not be said: try again.')}
+          {said.reason || t('proxyPage.namesUnsaid', 'Couldn’t check what would change. Try again.')}
         </Notice>
       ) : (
         <>
@@ -444,7 +444,7 @@ const OwnNameMoveDialog: React.FC<
               ))}
             </List>
           ) : (
-            <Typography variant="body2">{t('proxyPage.namesNoAddresses', 'No public address moves.')}</Typography>
+            <Typography variant="body2">{t('proxyPage.namesNoAddresses', 'No public address changes.')}</Typography>
           )}
         </>
       )}

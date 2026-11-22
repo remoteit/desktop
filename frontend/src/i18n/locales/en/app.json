@@ -1020,7 +1020,7 @@
     "service": "Service",
     "signInOnly": "Sign-in only — it can confirm your identity, but was granted nothing else.",
     "signInScopes": "Sign-in scopes",
-    "signOutBefore": "will be signed out. New access is blocked immediately; any session already in progress ends within",
+    "signOutBefore": "will be signed out and can no longer get new access.",
     "title": "Connected app",
     "willAdd": "This gives the app access it does not have yet: {{list}}"
   },

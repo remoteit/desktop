@@ -422,7 +422,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
                 ) : null}
                 <ConfirmButton
                   confirm={adding.length > 0}
-                  title={saving ? t('common.saving', 'Saving…') : t('connectedAppDetailPage.save', 'Save changes')}
+                  title={saving ? t('common.saving', 'Saving') : t('connectedAppDetailPage.save', 'Save changes')}
                   color="primary"
                   size="small"
                   disabled={saving}
