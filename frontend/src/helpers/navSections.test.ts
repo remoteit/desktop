@@ -24,19 +24,21 @@ const none: NavGates = {
 
 const shapes: Record<string, NavGates> = {
   'an empty account in a browser': { ...none, connectAi: true },
-  'a fleet operator': { ...none, connectAi: true, services: true, deviceSessions: true, agent: true },
+  'a fleet operator': { ...none, connectAi: true, services: true, deviceSessions: true, publicAddresses: true, agent: true },
   'a partner': { ...none, connectAi: true, partner: true },
-  'an app with This device': { ...none, connectAi: true, thisDevice: true, deviceSessions: true },
+  'an app with This device': { ...none, connectAi: true, thisDevice: true, deviceSessions: true, publicAddresses: true },
   'another brand, nothing extra': none,
 }
 
-/* What the flat sidebar (before sections) listed by the same gates, outside Remote UI: the pages to keep reachable. */
+/* What the flat sidebar (before sections) listed by the same gates, outside Remote UI: the pages to keep reachable,
+   plus Public addresses, new with the sections. */
 function oldSidebar(g: NavGates): NavPageId[] {
   const items: NavPageId[] = []
   if (g.thisDevice) items.push('thisDevice')
   items.push('connections', 'devices', 'networks')
   if (g.services) items.push('services')
   if (g.deviceSessions) items.push('exits', 'proxies')
+  if (g.publicAddresses) items.push('publicAddresses')
   items.push('scripting', 'apps', 'products', 'organization')
   if (g.partner) items.push('partnerStats')
   items.push('logs')
@@ -52,7 +54,7 @@ const LINKS: Record<NavPageId, string[]> = {
   services: ['/services'],
   networks: ['/networks', '/networks/net', '/networks/add', '/networks/net/svc/lan'],
   exits: ['/exits', '/exits/new', '/exits/e1'],
-  publicAddresses: ['/public-addresses'],
+  publicAddresses: ['/public-addresses', '/public-addresses/new'],
   proxies: ['/proxies', '/proxies/base', '/proxies/p1'],
   products: ['/products', '/products/select', '/products/add', '/products/p1/details'],
   scripting: ['/scripts', '/scripts/add', '/script/f1/latest/run', '/runs', '/runs/job/j1', '/files', '/file/f1'],
@@ -112,9 +114,11 @@ describe('navSections', () => {
     expect(navSectionAt(navSections(none), '/partner-stats')).toBeUndefined()
   })
 
-  it('keeps a place for public addresses between exits and proxy servers', () => {
+  it('lists public addresses between exits and proxy servers, pointing at /public-addresses', () => {
     const network = navSections({ ...none, deviceSessions: true, publicAddresses: true }).find(s => s.id === 'network')!
     expect(network.pages).toEqual(['networks', 'exits', 'publicAddresses', 'proxies'])
+    expect(NAV_PAGES.publicAddresses.to).toBe('/public-addresses')
+    expect(navPageAt([network], '/public-addresses/new')).toBe('publicAddresses')
     expect(navSections({ ...none, deviceSessions: true }).find(s => s.id === 'network')!.pages).toEqual([
       'networks',
       'exits',
