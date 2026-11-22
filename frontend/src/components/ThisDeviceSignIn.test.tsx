@@ -42,7 +42,7 @@ describe('This device’s sign-in', () => {
   it('offers the sign-in, which goes to the app', async () => {
     const c = await render()
     expect(c.querySelector('[data-sign-in]')!.getAttribute('data-sign-in')).toBe('signedOut')
-    expect(c.textContent).toContain('Not signed in')
+    expect(c.textContent).toContain('Sign in to see your devices')
     expect(c.textContent).toContain('work without signing in')
     await act(async () => button(c, 'signIn')!.click())
     expect(auth.signIn).toHaveBeenCalledTimes(1)

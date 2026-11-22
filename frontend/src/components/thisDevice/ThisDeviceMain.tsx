@@ -1,5 +1,15 @@
-import React from 'react'
-import { Box, Button, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, MenuItem, Switch, TextField } from '@mui/material'
+import React, { useState } from 'react'
+import {
+  Box,
+  Button,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  MenuItem,
+  Switch,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { ExitRef, ThisDevice } from '../../services/thisDevice'
 import { servingLine } from '../../helpers/exitServingHelper'
 import { Icon } from '../Icon'
@@ -8,26 +18,26 @@ import { CloudExits, ReadCloudExits, useCloudExits } from './cloudExits'
 import {
   T,
   Card,
-  ICON_COLUMN_SX,
+  CARD_SX,
+  ICON_COLUMN,
   Note,
   RowIcon,
   SettingRow,
-  SWITCH_TEXT,
   accessLine,
   engineLine,
   exitLabel,
   lockedLine,
-  protectLine,
   rangeLines,
+  routeState,
   servicesLine,
   servicesProblems,
-  vpnLine,
   when,
 } from './shared'
 
-/* This device's page itself (pages/ThisDevicePage.tsx): what is used most, at once — the device's name and whether
-   remote.it runs here, the three switches (Access remote devices, remote.it Protect, Allow remote access to services;
-   a 1.0 shell's VPN and exit in their place), and the way to Details and Advanced. */
+/* This device's home (pages/ThisDevicePage.tsx), top to bottom: the device's name and its state in a word or two; "Your
+   devices", what this machine can reach (the page's, signed in) or the sign-in (signed out); the three controls, each
+   one row whose state is in words — Access, Route through, Share this <machine>; and Settings, the way to Details and
+   Advanced. */
 
 export const ThisDeviceMain: React.FC<{
   device: ThisDevice
@@ -35,121 +45,69 @@ export const ThisDeviceMain: React.FC<{
   signedIn: boolean
   // The device's name, editable — the page's, signed in (it renames the device in the account); plain text without.
   nameEditor?: React.ReactNode
-  // The account's public-exit transfer, under the exit picker — the page's, signed in. shown: the exit chosen is one of
-  // remote.it's, the only ones charged. Called whether shown or not, so what it renders keeps what it read.
+  // The account's public-exit transfer, under Route through — the page's, signed in. shown: the exit chosen is one of
+  // Remote.It's, the only ones charged. Called whether shown or not, so what it renders keeps what it read.
   renderExitUsage?: (shown: boolean) => React.ReactNode
   // What the account knows of the engine's exits — each one's devices counted, the device of the exit in use — the
   // page's, signed in (components/thisDevice/cloudExits). The engine's list alone without it.
   readExits?: ReadCloudExits
-}> = ({ device, m, signedIn, nameEditor, renderExitUsage, readExits }) => {
+  // "Your devices": the page's — the devices this machine reaches signed in, the sign-in signed out.
+  devices?: React.ReactNode
+}> = ({ device, m, nameEditor, renderExitUsage, readExits, devices }) => {
   const { t, has, status, kind } = m
-  const d = status?.device
-  const advanced =
-    (has('settings') && m.listed.length > 0) ||
-    has('permissions') ||
-    (has('logging') && !!m.logging) ||
-    has('diagnostics') ||
-    (has('app') && !!m.app?.openAtLogin) ||
-    (has('remove') && !!d?.removal) ||
-    (has('ssh') && !!m.status?.ssh) ||
-    (has('exitNode') && !!m.status?.exitNode)
+  const route = has('protect') || has('exit') || has('vpn')
+  const controls = has('access') || route || !!m.servicesVia
 
   return (
     <>
-      {has('status') && status && (
-        <List data-section="device">
-          {nameEditor ?? (
-            <ListItem>
-              {/* The machine's kind in the first column, where the name's editor keeps its icon signed in: a phone by its permissions, as the services' line says. */}
-              <RowIcon name={m.phoneServices ? 'mobile' : 'laptop'} />
-              <ListItemText
-                primary={d?.name || t('thisDevice.unnamed', 'This device')}
-                primaryTypographyProps={{ variant: 'h2' }}
-                data-name
-              />
-            </ListItem>
-          )}
-          <ListItem>
-            <ListItemIcon sx={ICON_COLUMN_SX}>
-              <Icon name="circle" type="solid" size="xs" color={m.off ? 'grayLight' : ENGINE_COLOR[status.engine] ?? 'grayLight'} />
-            </ListItemIcon>
-            <ListItemText
-              primary={m.off ? t('thisDevice.offTitle', 'Off') : engineLine(status, t)}
-              primaryTypographyProps={{ fontWeight: 500 }}
-              secondary={
-                status.engine === 'online' && d?.since
-                  ? t('thisDevice.since', 'Since {{when}}', { when: when(d.since) })
-                  : m.off
-                  ? t('thisDevice.offLine', 'Turn on Access, Protect or remote access to services to start it')
-                  : m.stopped
-                  ? t(
-                      'thisDevice.stoppedLine',
-                      'This {{kind}} is offline — no one can reach its services, and Protect and Access are off',
-                      { kind }
-                    )
-                  : undefined
-              }
-              data-engine={status.engine}
-            />
-          </ListItem>
-          {m.stopped && (
-            <ListItem>
-              <Button
-                size="small"
-                variant="contained"
-                disabled={m.busy}
-                data-control="start"
-                onClick={() => m.act(async () => m.setStatus(await device.call('device.start', {})))}
-              >
-                {t('thisDevice.start', 'Start remote.it')}
-              </Button>
-            </ListItem>
-          )}
-        </List>
+      {has('status') && status && <DeviceHeader device={device} m={m} nameEditor={nameEditor} />}
+
+      {devices && (
+        <Section id="devices" title={t('thisDevice.yourDevices', 'Your devices')}>
+          <Box sx={CARD_SX}>{devices}</Box>
+        </Section>
       )}
 
-      {has('access') && <AccessPart device={device} m={m} />}
-      {has('protect') && (
-        <ProtectPart device={device} m={m} renderExitUsage={renderExitUsage} readExits={readExits} />
-      )}
-      {m.servicesVia && <ServicesPart device={device} m={m} />}
-      {!m.switches && (has('vpn') || has('exit')) && (
-        <VpnPart device={device} m={m} renderExitUsage={renderExitUsage} readExits={readExits} />
+      {controls && (
+        <Section id="controls" title={t('thisDevice.onThis', 'On this {{kind}}', { kind })}>
+          <Card section="controls">
+            {has('access') && <AccessRow device={device} m={m} />}
+            {route && <RouteRow device={device} m={m} renderExitUsage={renderExitUsage} readExits={readExits} />}
+            {m.servicesVia && <ShareRow device={device} m={m} />}
+          </Card>
+        </Section>
       )}
 
       {has('status') && status && (
         <Card section="more">
           <LinkRow
-            link="details"
-            href="#/this-device/details"
-            primary={t('thisDevice.details', 'Details')}
-            secondary={t('thisDevice.detailsLine', 'Its address, UID, versions and services')}
+            link="settings"
+            href="#/this-device/settings"
+            icon="sliders-h"
+            primary={t('thisDevice.settings', 'Settings')}
+            secondary={t('thisDevice.settingsLine', 'Details, relay, permissions and diagnostics')}
           />
-          {advanced && <Divider component="li" />}
-          {advanced && (
-            <LinkRow
-              link="advanced"
-              href="#/this-device/advanced"
-              primary={t('thisDevice.advanced', 'Advanced')}
-              secondary={t('thisDevice.advancedLine', 'Features, relay, permissions and diagnostics')}
-            />
-          )}
-          {signedIn && d?.uid && <Divider component="li" />}
-          {signedIn && d?.uid && (
-            <LinkRow
-              link="device-page"
-              href={`#/devices/${d.uid}`}
-              primary={t('thisDevice.devicePage', 'Its page in remote.it')}
-              secondary={t('thisDevice.devicePageLine', 'Its services, sharing and logs')}
-            />
-          )}
         </Card>
       )}
     </>
   )
 }
 
-// The status dot's color: green while it runs, amber while it starts, red when it can't reach remote.it.
+// A part of the page under its heading.
+const Section: React.FC<{ id: string; title: string; children: React.ReactNode }> = ({ id, title, children }) => (
+  <Box component="section" data-block={id} marginBottom={3}>
+    <Typography
+      variant="subtitle1"
+      component="h2"
+      sx={{ marginX: { xs: 1, sm: 2 }, marginBottom: 1, fontWeight: 500, color: 'text.secondary' }}
+    >
+      {title}
+    </Typography>
+    {children}
+  </Box>
+)
+
+// The status dot's color: green while it runs, amber while it starts, red when it can't reach Remote.It.
 const ENGINE_COLOR: { [engine: string]: string } = {
   online: 'success',
   starting: 'warning',
@@ -158,214 +116,346 @@ const ENGINE_COLOR: { [engine: string]: string } = {
   stopped: 'grayLight',
 }
 
-const servicesCount = (n: number, t: T) =>
-  n === 1 ? t('thisDevice.servicesOne', '1 service') : t('thisDevice.servicesCount', '{{n}} services', { n })
-
-const connectionsCount = (n: number, t: T) =>
-  n === 1 ? t('thisDevice.connectionsOne', '1 connection') : t('thisDevice.connectionsCount', '{{n}} connections', { n })
+const DeviceHeader: React.FC<{ device: ThisDevice; m: ThisDeviceModel; nameEditor?: React.ReactNode }> = ({
+  device,
+  m,
+  nameEditor,
+}) => {
+  const { t, status, kind } = m
+  if (!status) return null
+  const d = status.device
+  const word = m.off ? t('thisDevice.offTitle', 'Off') : engineLine(status, t)
+  const line =
+    status.engine === 'online' && d?.since
+      ? t('thisDevice.since', 'Since {{when}}', { when: when(d.since) })
+      : m.off
+      ? t('thisDevice.offLine', 'Turn on Access, Route through or Share to start Remote.It.')
+      : m.stopped
+      ? t('thisDevice.stoppedLine', 'No one can reach this {{kind}}, and Access and Route through are off.', { kind })
+      : undefined
+  return (
+    <Box component="section" data-section="device" marginBottom={3}>
+      {nameEditor ?? (
+        <Box display="flex" alignItems="center" gap={1.5} paddingX={{ xs: 1, sm: 2 }} paddingTop={1}>
+          {/* A phone by its permissions, as the services' line says. */}
+          <Icon name={m.phoneServices ? 'mobile' : 'laptop'} size="lg" color="grayDarker" fixedWidth />
+          <Typography variant="h2" component="p" data-name sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+            {d?.name || t('thisDevice.unnamed', 'This device')}
+          </Typography>
+        </Box>
+      )}
+      <Box
+        display="flex"
+        alignItems="center"
+        flexWrap="wrap"
+        columnGap={1}
+        paddingX={{ xs: 1, sm: 2 }}
+        paddingTop={1}
+        sx={{ paddingLeft: { xs: `calc(${ICON_COLUMN.xs} - 8px)`, sm: `calc(${ICON_COLUMN.sm} - 12px)` } }}
+        data-engine={status.engine}
+      >
+        <Icon name="circle" type="solid" size="xxs" color={m.off ? 'grayLight' : ENGINE_COLOR[status.engine] ?? 'grayLight'} />
+        <Typography variant="body2" fontWeight={500} data-state>
+          {word}
+        </Typography>
+        {line && (
+          <Typography variant="caption" color="textSecondary">
+            {line}
+          </Typography>
+        )}
+      </Box>
+      {m.stopped && (
+        <Box paddingX={{ xs: 1, sm: 2 }} paddingTop={1.5}>
+          <Button
+            size="small"
+            variant="contained"
+            disabled={m.busy}
+            data-control="start"
+            onClick={() => m.act(async () => m.setStatus(await device.call('device.start', {})))}
+          >
+            {t('thisDevice.start', 'Start Remote.It')}
+          </Button>
+        </Box>
+      )}
+    </Box>
+  )
+}
 
 // A row that goes to another page, said so by the chevron at its end.
-const LinkRow: React.FC<{ link: string; href: string; primary: string; secondary: string }> = ({
+export const LinkRow: React.FC<{ link: string; href: string; primary: string; secondary: string; icon?: string }> = ({
   link,
   href,
   primary,
   secondary,
+  icon,
 }) => (
   <ListItemButton component="a" href={href} data-link={link}>
+    {icon && <RowIcon name={icon} />}
     <ListItemText primary={primary} secondary={secondary} primaryTypographyProps={{ fontWeight: 500 }} />
     <Icon name="chevron-right" size="md" color="grayDark" />
   </ListItemButton>
 )
 
-// A card's title: a little heavier than the lines under it.
-const TITLE = { fontWeight: 500, fontSize: '1.05rem' }
-
-const AccessPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {
-  const { t, status, kind } = m
-  const access = status?.access
-  return (
-    <Card inset section="access">
-      <ListItem
-        secondaryAction={
-          <Switch
-            edge="end"
-            checked={!!access?.on}
-            disabled={m.held || !access || access.changing || access.locked}
-            inputProps={{ 'aria-label': t('thisDevice.access', 'Access remote devices') }}
-            data-control="access"
-            onChange={() => m.act(async () => m.setStatus(await device.call('access.set', { on: !access?.on })))}
-          />
+/* One control: its icon, its name and a line of what it does now, and its state in words beside the switch or picker
+   at the row's end — under the words at a phone's width for a picker, which needs the room. What follows it (notes,
+   options) lines up with its name. */
+const ControlRow: React.FC<{
+  id: string
+  icon: string
+  on: boolean
+  title: string
+  line?: React.ReactNode
+  warn?: boolean
+  control: React.ReactNode
+  wide?: boolean
+  state?: string
+  children?: React.ReactNode
+}> = ({ id, icon, on, title, line, warn, control, wide, state, children }) => (
+  <Box component="li" data-section={id} sx={{ '& + li': { borderTop: 1, borderColor: 'grayLighter.main' } }}>
+    <Box
+      display="flex"
+      alignItems="center"
+      flexWrap={wide ? { xs: 'wrap', sm: 'nowrap' } : 'nowrap'}
+      columnGap={1}
+      paddingY={1.5}
+      paddingLeft={2}
+      paddingRight={2}
+    >
+      <RowIcon name={icon} on={on} />
+      <Box flex={1} minWidth={0}>
+        <Typography variant="body1" fontWeight={500}>
+          {title}
+        </Typography>
+        {line && (
+          <Typography
+            variant="body2"
+            color={warn ? 'warning.main' : 'textSecondary'}
+            data-line={id}
+            sx={{ overflowWrap: 'anywhere' }}
+          >
+            {line}
+          </Typography>
+        )}
+      </Box>
+      <Box
+        display="flex"
+        alignItems="center"
+        gap={0.5}
+        flexShrink={0}
+        sx={
+          wide
+            ? {
+                flexBasis: { xs: '100%', sm: 260 },
+                paddingLeft: { xs: ICON_COLUMN.xs, sm: 0 },
+                paddingTop: { xs: 1, sm: 0 },
+              }
+            : undefined
         }
       >
-        <RowIcon name="chart-network" on={!!access?.on} />
-        <ListItemText
-          primary={t('thisDevice.access', 'Access remote devices')}
-          primaryTypographyProps={TITLE}
-          secondary={accessLine(status, kind, t)}
-          sx={SWITCH_TEXT}
-          data-access={access?.on ? 'on' : 'off'}
+        {state && (
+          <Typography variant="body2" color={on ? 'primary' : 'textSecondary'} fontWeight={500} data-state={id}>
+            {state}
+          </Typography>
+        )}
+        {control}
+      </Box>
+    </Box>
+    {children && (
+      <Box component="ul" sx={{ listStyle: 'none', padding: 0, margin: 0, marginTop: -1, paddingBottom: 1, paddingLeft: { xs: ICON_COLUMN.xs, sm: ICON_COLUMN.sm } }}>
+        {children}
+      </Box>
+    )}
+  </Box>
+)
+
+const onOff = (on: boolean, t: T) => (on ? t('thisDevice.on', 'On') : t('thisDevice.off', 'Off'))
+
+const AccessRow: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {
+  const { t, status, kind } = m
+  const access = status?.access
+  const on = !!access?.on
+  return (
+    <ControlRow
+      id="access"
+      icon="chart-network"
+      on={on}
+      title={t('thisDevice.access', 'Access')}
+      line={<span data-access={on ? 'on' : 'off'}>{accessLine(status, kind, t)}</span>}
+      state={onOff(on, t)}
+      control={
+        <Switch
+          edge="end"
+          checked={on}
+          disabled={m.held || !access || access.changing || access.locked}
+          inputProps={{ 'aria-label': t('thisDevice.access', 'Access') }}
+          data-control="access"
+          onChange={() => m.act(async () => m.setStatus(await device.call('access.set', { on: !on })))}
         />
-      </ListItem>
+      }
+    >
       {access?.locked && <Note id="access.locked" text={access.lockedWhy || lockedLine(t)} />}
       {rangeLines(status, t).map(line => (
         <Note key={line.key} id={`range.${line.key}`} text={line.text} title={line.title} warn />
       ))}
       {/* An option of Access's: the printers are announced at the subnet's names, so there is nothing to show while it is off. */}
-      {m.printers && access?.on && (
+      {m.printers && on && (
         <SettingRow
           setting={m.printers}
           title={t('thisDevice.printers', 'Show remote printers on this {{kind}}', { kind })}
-          indent
           disabled={m.busy}
           onSet={value => m.setSetting('printers', value)}
         />
       )}
-    </Card>
+    </ControlRow>
   )
 }
 
-type PartProps = {
+/* Route through, one control: Off, or one of the exits. Choosing an exit routes all of this machine's traffic through
+   it, Off stops — one call, exit.set, which every shell offers (the menu's, a phone's); a shell with Protect alone does
+   it as protect.route then protect.set. A refusal is said under the control, which then shows the machine's state as
+   the shell reads it again. Who may not choose the exit here (1.10.0's chooseRefusal) may still choose Off. The exit
+   names no device: Remote.It picks which of its devices carries each new connection, so each exit is listed with its
+   devices counted, and the device in use is said, where the account says (readExits). */
+const RouteRow: React.FC<{
   device: ThisDevice
   m: ThisDeviceModel
   renderExitUsage?: (shown: boolean) => React.ReactNode
   readExits?: ReadCloudExits
-}
-
-// The exit is the machine's (graphql-api docs/PROXY-GROUPS.md §15): an exit names no device — remote.it picks which of
-// its devices carries each new connection — so each is listed with its devices counted, and the device in use is said,
-// where the account says (readExits). Who may not choose it here (1.10.0's chooseRefusal: not signed in, not a manager)
-// sees it read-only, with why; turning Protect off stays theirs.
-const ProtectPart: React.FC<PartProps> = ({ device, m, renderExitUsage, readExits }) => {
-  const { t, status, kind, exits } = m
+}> = ({ device, m, renderExitUsage, readExits }) => {
+  const { t, has, status, kind, exits } = m
+  const [refusal, setRefusal] = useState<string>()
+  const [choosing, setChoosing] = useState(false)
+  const state = routeState(status, kind, t, exits.length)
   const protect = status?.protect
-  const protectOn = !!protect?.on
-  const routeValue = protect?.route?.id ?? ''
-  const refusal = protect?.chooseRefusal
-  const cloud = useCloudExits(readExits, status?.device?.uid, `${routeValue}|${protectOn}`)
-  const through = protectOn ? throughOf(cloud, routeValue) : null
-  const listed = protect?.route && !exits.some(x => x.id === protect.route!.id) ? [protect.route, ...exits] : exits
+  const locked = !!protect?.locked
+  const mayChoose = !protect?.chooseRefusal
+  const on = state.value !== ''
+  const cloud = useCloudExits(readExits, status?.device?.uid, `${state.value}|${on}`)
+  const through = on ? throughOf(cloud, state.value) : null
+  const listed = state.exit && !exits.some(x => x.id === state.exit!.id) ? [state.exit, ...exits] : exits
+  const picker = has('exit') || has('protect')
+
+  const choose = async (id: string) => {
+    if (id === state.value || choosing) return
+    setChoosing(true)
+    setRefusal(undefined)
+    try {
+      if (has('exit')) m.setStatus(await device.call('exit.set', { id: id || null }))
+      else if (id) {
+        await device.call('protect.route', { id })
+        m.setStatus(await device.call('protect.set', { on: true }))
+      } else m.setStatus(await device.call('protect.set', { on: false }))
+    } catch (e: any) {
+      if (e?.code !== 'cancelled') setRefusal(e?.message || String(e))
+      if (has('status')) await device.call('status', {}).then(m.setStatus, () => {})
+    } finally {
+      setChoosing(false)
+    }
+  }
+
+  const control = picker ? (
+    <TextField
+      select
+      fullWidth
+      size="small"
+      value={state.value}
+      disabled={m.held || choosing || !status || locked || (!on && (!mayChoose || listed.length === 0))}
+      sx={{ '&& .MuiInputBase-sizeSmall': { height: 'auto', marginY: 0 } }}
+      SelectProps={{
+        displayEmpty: true,
+        renderValue: value => {
+          const x = listed.find(each => each.id === value)
+          return x ? exitLabel(x) : t('thisDevice.off', 'Off')
+        },
+      }}
+      inputProps={{ 'aria-label': t('thisDevice.route', 'Route through'), 'data-control': 'route' }}
+      onChange={e => choose(e.target.value)}
+    >
+      <MenuItem value="" data-exit="">
+        <ListItemText primary={t('thisDevice.off', 'Off')} />
+      </MenuItem>
+      {listed.map(x => exitItem(x, cloud, t, !mayChoose))}
+    </TextField>
+  ) : (
+    <Switch
+      edge="end"
+      checked={on || !!status?.vpn.on}
+      disabled={m.held || choosing || status?.vpn.changing}
+      inputProps={{ 'aria-label': t('thisDevice.route', 'Route through') }}
+      data-control="vpn"
+      onChange={() => m.act(async () => m.setStatus(await device.call('vpn.set', { on: !status?.vpn.on })))}
+    />
+  )
+
   return (
-    <Card inset section="protect">
-      <ListItem
-        secondaryAction={
-          <Switch
-            edge="end"
-            checked={protectOn}
-            disabled={
-              m.held ||
-              !protect ||
-              protect.changing ||
-              protect.locked ||
-              (!protectOn && (!!refusal || (!protect.route && exits.length !== 1)))
-            }
-            inputProps={{ 'aria-label': t('thisDevice.protect', 'remote.it Protect') }}
-            data-control="protect"
-            onChange={() => m.act(async () => m.setStatus(await device.call('protect.set', { on: !protectOn })))}
-          />
-        }
-      >
-        <RowIcon name="shield" on={protectOn} />
-        <ListItemText
-          primary={t('thisDevice.protect', 'remote.it Protect')}
-          primaryTypographyProps={TITLE}
-          secondary={protectLine(status, kind, t)}
-          sx={SWITCH_TEXT}
-          data-protect={protectOn ? 'on' : 'off'}
-        />
-      </ListItem>
-      {protect?.locked && <Note id="protect.locked" text={protect.lockedWhy || lockedLine(t)} />}
-      {protect?.on && (protect.error || protect.changing) && (
-        <ListItem>
+    <ControlRow
+      id="route"
+      icon="route"
+      on={on && state.key === 'up'}
+      title={t('thisDevice.route', 'Route through')}
+      line={<span data-route={state.key}>{state.line}</span>}
+      warn={state.warn}
+      wide={picker}
+      state={picker ? undefined : onOff(!!status?.vpn.on, t)}
+      control={control}
+    >
+      {refusal && (
+        <ListItem data-note="route.refused">
           <ListItemText
-            secondary={protect.error || t('thisDevice.connecting', 'Connecting to {{name}}…', { name: protect.route?.name })}
-            data-protect-state
+            secondary={t('thisDevice.routeRefused', 'Couldn’t change Route through. {{why}}', { why: refusal })}
+            secondaryTypographyProps={{ color: 'error' }}
           />
         </ListItem>
       )}
-      {/* The device it goes through, always shown, on or off (Evan, 2026-10-25). */}
-      <ListItem>
-        <Box width="100%">
-          <TextField
-            select
-            fullWidth
-            size="small"
-            label={t('thisDevice.route', 'Route through')}
-            value={routeValue}
-            disabled={m.held || !protect || protect.locked || !!refusal}
-            InputLabelProps={{ shrink: true }}
-            SelectProps={{
-              displayEmpty: true,
-              // The exit's name alone in the field; its devices are counted in the list.
-              renderValue: value =>
-                listed.find(x => x.id === value)
-                  ? exitLabel(listed.find(x => x.id === value)!)
-                  : t('thisDevice.chooseRoute', 'Choose an exit'),
-            }}
-            inputProps={{ 'data-control': 'route' }}
-            onChange={e =>
-              e.target.value &&
-              m.act(async () => m.setStatus(await device.call('protect.route', { id: e.target.value })))
-            }
-          >
-            {!routeValue && (
-              <MenuItem value="" disabled>
-                {t('thisDevice.chooseRoute', 'Choose an exit')}
-              </MenuItem>
-            )}
-            {listed.map(x => exitItem(x, cloud, t))}
-          </TextField>
-          <ExitUsage render={renderExitUsage} exit={protect?.route} />
+      {locked && <Note id="route.locked" text={protect?.lockedWhy || lockedLine(t)} />}
+      {protect?.chooseRefusal && <Note id="route.choose" text={protect.chooseRefusal} />}
+      {through && <Note id="route.through" text={throughText(t, through)} />}
+      {renderExitUsage && (
+        <Box component="li" marginX={2} sx={{ '&:empty': { display: 'none' } }}>
+          {renderExitUsage(on && state.exit?.kind === 'remoteit')}
         </Box>
-      </ListItem>
-      {through && <Note id="protect.through" text={throughText(t, through)} />}
-      {refusal && <Note id="protect.choose" text={refusal} />}
-    </Card>
+      )}
+    </ControlRow>
   )
 }
 
-const ServicesPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {
+const ShareRow: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device, m }) => {
   const { t, has, status, kind, lan, servicesVia } = m
   const served = status?.served
+  const on = !!lan?.on
   return (
-    <Card inset section="services">
-      <ListItem
-        secondaryAction={
-          <Switch
-            edge="end"
-            checked={!!lan?.on}
-            disabled={m.held || !lan || lan.changing || lan.locked}
-            inputProps={{ 'aria-label': t('thisDevice.services', 'Allow remote access to services') }}
-            data-control="services"
-            onChange={() =>
-              m.act(async () => {
-                m.setStatus(await device.call(`${servicesVia!}.set`, { on: !lan?.on }))
-                // Turning it on may have asked for the Local Network permission.
-                if (has('permissions')) m.setPermissions(await device.call('permissions.get', {}))
-              })
-            }
-          />
-        }
-      >
-        <RowIcon name="server" on={!!lan?.on} />
-        <ListItemText
-          primary={t('thisDevice.services', 'Allow remote access to services')}
-          primaryTypographyProps={TITLE}
-          secondary={
-            lan?.locked
-              ? `${servicesLine(kind, m.phoneServices, t)} ${lan.lockedWhy || lockedLine(t)}`
-              : servicesLine(kind, m.phoneServices, t)
+    <ControlRow
+      id="services"
+      icon="server"
+      on={on}
+      title={t('thisDevice.share', 'Share this {{kind}}', { kind })}
+      line={<span data-services={on ? 'on' : 'off'}>{servicesLine(kind, m.phoneServices, t)}</span>}
+      state={onOff(on, t)}
+      control={
+        <Switch
+          edge="end"
+          checked={on}
+          disabled={m.held || !lan || lan.changing || lan.locked}
+          inputProps={{ 'aria-label': t('thisDevice.share', 'Share this {{kind}}', { kind }) }}
+          data-control="services"
+          onChange={() =>
+            m.act(async () => {
+              m.setStatus(await device.call(`${servicesVia!}.set`, { on: !on }))
+              // Turning it on may have asked for the Local Network permission.
+              if (has('permissions')) m.setPermissions(await device.call('permissions.get', {}))
+            })
           }
-          sx={SWITCH_TEXT}
-          data-services={lan?.on ? 'on' : 'off'}
         />
-      </ListItem>
-      {lan?.on &&
-        servicesProblems(lan, kind, t).map(line => (
+      }
+    >
+      {lan?.locked && <Note id="services.locked" text={lan.lockedWhy || lockedLine(t)} />}
+      {on &&
+        servicesProblems(lan!, kind, t).map(line => (
           <ListItem key={line.key} data-services-state={line.key}>
             <ListItemText secondary={line.text} secondaryTypographyProps={{ color: 'warning.main' }} />
           </ListItem>
         ))}
-      {lan?.on && has('permissions') && ['notAsked', 'unknown'].includes(lan.localNetworkPermission ?? '') && (
+      {on && has('permissions') && ['notAsked', 'unknown'].includes(lan!.localNetworkPermission ?? '') && (
         <ListItem>
           <Button
             size="small"
@@ -384,92 +474,41 @@ const ServicesPart: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ de
         </ListItem>
       )}
       {/* What it serves, counted here and listed in Details. */}
-      {lan?.on && served && served.length > 0 && (
+      {on && served && served.length > 0 && (
         <ListItemButton component="a" href="#/this-device/details" data-served-summary>
           <ListItemText
-            secondary={t('thisDevice.servedSummary', '{{services}} · {{connections}} — see them in Details', {
+            secondary={t('thisDevice.servedSummary', '{{services}} · {{connections}}. See them in Details.', {
               services: servicesCount(served.length, t),
               connections: connectionsCount(served.reduce((n, s) => n + (s.sessions || 0), 0), t),
             })}
           />
         </ListItemButton>
       )}
-      {lan?.on && served?.length === 0 && (
+      {on && served?.length === 0 && (
         <ListItem>
           <ListItemText
-            secondary={t('thisDevice.servedNone', 'No services on this {{kind}} yet: add them on its page in remote.it.', {
+            secondary={t('thisDevice.servedNone', 'Nothing shared yet. Add services on this {{kind}}’s device page.', {
               kind,
             })}
           />
         </ListItem>
       )}
-    </Card>
+    </ControlRow>
   )
 }
 
-const VpnPart: React.FC<PartProps> = ({ device, m, renderExitUsage, readExits }) => {
-  const { t, has, status, exits } = m
-  const vpnOn = !!status?.vpn.on
-  const exitValue = status?.exit?.id ?? ''
-  const cloud = useCloudExits(readExits, status?.device?.uid, `${exitValue}|${vpnOn}`)
-  const through = vpnOn ? throughOf(cloud, exitValue) : null
-  return (
-    <List data-section="vpn">
-      {has('vpn') && (
-        <ListItem
-          secondaryAction={
-            <Switch
-              edge="end"
-              checked={vpnOn}
-              disabled={m.held || status?.vpn.changing}
-              inputProps={{ 'aria-label': t('thisDevice.vpn', 'VPN') }}
-              data-control="vpn"
-              onChange={() => m.act(async () => m.setStatus(await device.call('vpn.set', { on: !vpnOn })))}
-            />
-          }
-        >
-          <ListItemText primary={t('thisDevice.vpn', 'VPN')} secondary={vpnLine(status, t)} sx={SWITCH_TEXT} data-vpn={vpnOn ? 'on' : 'off'} />
-        </ListItem>
-      )}
-      {has('exit') && (
-        <ListItem>
-          <Box width="100%">
-            <TextField
-              select
-              fullWidth
-              size="small"
-              label={t('thisDevice.exit', 'Exit')}
-              value={exitValue}
-              disabled={m.busy}
-              // "None" is a choice like the others: shown, and the label kept above it, in every engine
-              InputLabelProps={{ shrink: true }}
-              SelectProps={{
-                displayEmpty: true,
-                renderValue: value => {
-                  const x = exits.find(each => each.id === value)
-                  return x ? exitLabel(x) : t('thisDevice.exitNone', 'None — the usual way out')
-                },
-              }}
-              inputProps={{ 'data-control': 'exit' }}
-              onChange={e => m.act(async () => m.setStatus(await device.call('exit.set', { id: e.target.value || null })))}
-            >
-              <MenuItem value="">{t('thisDevice.exitNone', 'None — the usual way out')}</MenuItem>
-              {exits.map(x => exitItem(x, cloud, t))}
-            </TextField>
-            <ExitUsage render={renderExitUsage} exit={status?.exit} />
-          </Box>
-        </ListItem>
-      )}
-      {has('exit') && through && <Note id="exit.through" text={throughText(t, through)} />}
-    </List>
-  )
-}
+const servicesCount = (n: number, t: T) =>
+  n === 1 ? t('thisDevice.servicesOne', '1 service') : t('thisDevice.servicesCount', '{{n}} services', { n })
 
-// An exit in a picker: its name, and under it its devices counted where the account says.
-const exitItem = (x: ExitRef, cloud: CloudExits | null, t: T) => {
+const connectionsCount = (n: number, t: T) =>
+  n === 1 ? t('thisDevice.connectionsOne', '1 connection') : t('thisDevice.connectionsCount', '{{n}} connections', { n })
+
+// An exit in the picker: its name, and under it its devices counted where the account says. Not chosen by one who may
+// not choose the exit here.
+const exitItem = (x: ExitRef, cloud: CloudExits | null, t: T, disabled: boolean) => {
   const counted = servingLine(t, cloud?.serving.get(x.id))
   return (
-    <MenuItem key={x.id} value={x.id} data-exit={x.id}>
+    <MenuItem key={x.id} value={x.id} data-exit={x.id} disabled={disabled}>
       <ListItemText primary={exitLabel(x)} secondary={counted} data-serving={counted ?? undefined} />
     </MenuItem>
   )
@@ -484,11 +523,3 @@ const throughText = (t: T, inUse: NonNullable<CloudExits['inUse']>) => {
   const counted = servingLine(t, inUse.serving)
   return counted ? `${now} · ${t('thisDevice.throughOf', 'one of {{counted}}', { counted })}` : now
 }
-
-// Under an exit picker, set in from the field's edge as its helper text is.
-const ExitUsage: React.FC<{ render?: (shown: boolean) => React.ReactNode; exit?: ExitRef }> = ({ render, exit }) =>
-  render ? (
-    <Box marginX={1.75} marginTop={0.5} sx={{ '&:empty': { display: 'none' } }}>
-      {render(exit?.kind === 'remoteit')}
-    </Box>
-  ) : null

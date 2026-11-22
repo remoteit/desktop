@@ -12,10 +12,10 @@ export type T = (k: string, d: string, v?: any) => string
 
 // The device's own settings' titles. An app's are its own (appSettings).
 export const SETTING_TITLES: { [name: string]: string } = {
-  subnet: 'Access remote devices',
-  exit_node: 'Exit node',
+  subnet: 'Access',
+  exit_node: 'Exit',
   printers: 'Show remote printers',
-  services: 'Allow remote access to services',
+  services: 'Share this device',
   websocket: 'Relay',
   any_port: 'Connections to any port',
   proxy: 'Proxy',
@@ -27,20 +27,17 @@ export const relayChoices = (t: T): { value: string; title: string; line: string
   {
     value: 'auto',
     title: t('thisDevice.relayAuto', 'Automatic'),
-    line: t('thisDevice.relayAutoLine', 'Through remote.it’s relay only while this device’s UDP to remote.it fails'),
+    line: t('thisDevice.relayAutoLine', 'Uses the relay only when a direct connection fails'),
   },
   {
     value: 'on',
     title: t('thisDevice.relayOn', 'Always'),
-    line: t('thisDevice.relayOnLine', 'Everything through remote.it’s relay: for a network known to block UDP'),
+    line: t('thisDevice.relayOnLine', 'For a network known to block UDP'),
   },
   {
     value: 'off',
     title: t('thisDevice.relayOff', 'Never'),
-    line: t(
-      'thisDevice.relayOffLine',
-      'Never through remote.it’s relay: on a network that blocks UDP, this device stays offline'
-    ),
+    line: t('thisDevice.relayOffLine', 'On a network that blocks UDP, this device stays offline'),
   },
 ]
 
@@ -100,12 +97,24 @@ export const Note: React.FC<{ id: string; text: string; title?: string; warn?: b
 )
 
 // The icon column's width: narrower at a phone's width, so the words keep their room.
-const ICON_COLUMN = { xs: '40px', sm: '56px' }
+export const ICON_COLUMN = { xs: '40px', sm: '56px' }
 export const ICON_COLUMN_SX = { minWidth: { xs: ICON_COLUMN.xs, sm: ICON_COLUMN.sm } }
 
 // A part of the main page set apart, so each of its switches reads as its own thing: a rounded box, the same on or off
 // (its icon says which; Evan, 2026-10-25).
 // inset: what follows the first row (notes, options, the route) lines up with its title, past the icon.
+export const CARD_SX = {
+  listStyle: 'none',
+  padding: 0,
+  marginX: { xs: 1, sm: 2 },
+  marginTop: 0,
+  marginBottom: 2,
+  border: 1,
+  borderColor: 'grayLighter.main',
+  borderRadius: 2,
+  overflow: 'hidden',
+}
+
 export const Card: React.FC<{ section: string; inset?: boolean; children: React.ReactNode }> = ({
   section,
   inset,
@@ -115,15 +124,7 @@ export const Card: React.FC<{ section: string; inset?: boolean; children: React.
     component="ul"
     data-section={section}
     sx={{
-      listStyle: 'none',
-      padding: 0,
-      marginX: { xs: 1, sm: 2 },
-      marginTop: 0,
-      marginBottom: 2,
-      border: 1,
-      borderColor: 'grayLighter.main',
-      borderRadius: 2,
-      overflow: 'hidden',
+      ...CARD_SX,
       ...(inset && { '& > li + li': { paddingLeft: { xs: ICON_COLUMN.xs, sm: ICON_COLUMN.sm } } }),
     }}
   >
@@ -138,7 +139,7 @@ export const RowIcon: React.FC<{ name: string; on?: boolean }> = ({ name, on }) 
   </ListItemIcon>
 )
 
-export const lockedLine = (t: T) => t('thisDevice.locked', 'Set by this machine’s administrator')
+export const lockedLine = (t: T) => t('thisDevice.locked', 'Set by this computer’s administrator')
 
 // What is said of the subnet's range, as the menu's Settings says it: off for want of a free range, a range shared with
 // another network, a move within the hour (the shell says only those).
@@ -149,7 +150,7 @@ export const rangeLines = (s: DeviceStatus | undefined, t: T) => {
   if (r.noRange)
     lines.push({
       key: 'norange',
-      text: t('thisDevice.noRange', 'Subnet off: no free address range on this machine'),
+      text: t('thisDevice.noRange', 'Access is off. No free address range on this computer.'),
       title: r.noRange,
     })
   else if (r.warning)
@@ -161,7 +162,7 @@ export const rangeLines = (s: DeviceStatus | undefined, t: T) => {
   if (r.moved)
     lines.push({
       key: 'moved',
-      text: t('thisDevice.rangeMoved', 'Moved to {{to}}: another network took {{from}} ({{when}})', {
+      text: t('thisDevice.rangeMoved', 'Moved to {{to}} because another network took {{from}} ({{when}})', {
         to: r.moved.to,
         from: r.moved.from,
         when: when(r.moved.at),
@@ -197,7 +198,7 @@ export const SettingRow: React.FC<{
   const locked = !!setting.locked
   const from =
     setting.source === 'cloud'
-      ? t('thisDevice.fromCloud', 'Set in the portal')
+      ? t('thisDevice.fromCloud', 'Set in Remote.It')
       : setting.source === 'machine'
       ? t('thisDevice.fromMachine', 'Set on this device')
       : t('thisDevice.fromDefault', 'Default')
@@ -209,7 +210,7 @@ export const SettingRow: React.FC<{
         .join(' '),
     locked ? setting.lockedWhy || lockedLine(t) : from,
     setting.overridden,
-    on && notServed && t('thisDevice.notServed', 'Not served: remote access to services is off'),
+    on && notServed && t('thisDevice.notServed', 'Not shared while sharing is off'),
   ]
     .filter(Boolean)
     .join(' · ')
@@ -261,7 +262,7 @@ export const SettingRow: React.FC<{
         <ListItemText
           primary={title}
           secondary={[
-            t('thisDevice.relayLine', 'Use remote.it’s relay when a direct peer-to-peer connection is not possible.'),
+            t('thisDevice.relayLine', 'Use the relay when a direct connection is not possible.'),
             relayUsing && t('thisDevice.relayInUse', 'In use now'),
             secondary,
           ]
@@ -287,57 +288,91 @@ export const engineLine = (s: DeviceStatus, t: T) =>
     stopped: t('thisDevice.stopped', 'Not running'),
   }[s.engine] ?? s.engine)
 
-// remote.it's said so, once: graphql names its exits "remote.it pdx1a" already (docs/PROXY-GROUPS.md §13).
+// Remote.It's exits said so, once: graphql names them "remote.it pdx1a" already (docs/PROXY-GROUPS.md §13).
 export const exitLabel = (x: ExitRef) =>
-  x.kind === 'remoteit' && !/^remote\.it\b/i.test(x.name) ? `${x.name} (remote.it)` : x.name
+  x.kind === 'remoteit' && !/^remote\.it\b/i.test(x.name) ? `${x.name} (Remote.It)` : x.name
 
-// Access's line: what it does, and the name this machine is reached by while on.
+// Access's line: what it gives, and this machine's own address while on.
 export const accessLine = (s: DeviceStatus | undefined, kind: string, t: T) => {
   if (!s?.access) return ''
   if (s.access.error) return s.access.error
   const what = t('thisDevice.accessLine', 'Reach your devices by name from this {{kind}}.', { kind })
   if (!s.access.on) return what
   const name = s.device?.dnsName || s.subnet?.domain
-  return name ? `${what} ${t('thisDevice.reachedAs', 'This {{kind}} is {{name}}.', { kind, name })}` : what
+  return name ? `${what} ${t('thisDevice.reachedAs', 'This {{kind}}’s address is {{name}}.', { kind, name })}` : what
 }
 
-// Protect's line, said plainly: everything through the exit, and what happens when it cannot be reached (the kill
-// switch) — the same sentence on and off, so the switch says what it will do.
-export const protectLine = (s: DeviceStatus | undefined, kind: string, t: T) => {
+// The words the menu's bridge says for an exit that cannot be reached while traffic is held
+// (connectd-source golang/cmd/remoteit-menu/bridge.go); a phone's shell says the state alone.
+const BRIDGE_BLOCKED = 'Exit unreachable — traffic blocked'
+
+export type RouteState = {
+  key: 'off' | 'none' | 'connecting' | 'up' | 'blocked' | 'refused'
+  // The select's value: '' for Off, else the exit's id.
+  value: string
+  exit?: ExitRef
+  line: string
+  warn?: boolean
+}
+
+/* Route through, one control: Off, or the exit all of this machine's traffic goes through, and what is happening to it,
+   in words that follow the state. From Protect where the shell has it (1.2.0), else the 1.0 VPN and exit. */
+export function routeState(s: DeviceStatus | undefined, kind: string, t: T, exitsListed: number): RouteState {
   const p = s?.protect
-  if (!p) return ''
-  const exit = p.route?.name
-  if (!exit)
-    return t('thisDevice.protectChoose', 'Send all of this {{kind}}’s internet traffic through an exit you choose.', {
-      kind,
-    })
-  const through = t('thisDevice.protectThrough', 'All traffic from this {{kind}} goes through {{exit}}.', {
-    kind,
+  const on = p ? p.on : !!s?.vpn.on
+  const exit: ExitRef | undefined = p ? p.route : s?.exit
+  const error = p ? p.error : s?.vpn.error || s?.exit?.error
+  const changing = p ? p.changing : s?.vpn.changing
+  const name = exit?.name
+  if (!on) {
+    if (error) return { key: 'refused', value: '', exit, line: error, warn: true }
+    if (!exitsListed && !exit)
+      return { key: 'none', value: '', line: t('thisDevice.routeNone', 'No exits to route through yet.') }
+    return {
+      key: 'off',
+      value: '',
+      exit,
+      line: t('thisDevice.routeOff', 'Send all of this {{kind}}’s internet traffic through one of your exits.', {
+        kind,
+      }),
+    }
+  }
+  const value = exit?.id ?? ''
+  if (changing || s?.exit?.state === 'connecting')
+    return { key: 'connecting', value, exit, line: t('thisDevice.connecting', 'Connecting to {{name}}…', { name }) }
+  if (error === BRIDGE_BLOCKED || (!error && s?.exit?.state === 'down'))
+    return {
+      key: 'blocked',
+      value,
+      exit,
+      warn: true,
+      line:
+        p?.killSwitch === false
+          ? t('thisDevice.routeDownOpen', '{{name}} can’t be reached. Traffic goes out directly until it can.', {
+              name,
+            })
+          : t('thisDevice.routeBlocked', '{{name}} can’t be reached. Traffic is blocked until it can.', { name }),
+    }
+  if (error) return { key: 'refused', value, exit, line: error, warn: true }
+  return {
+    key: 'up',
+    value,
     exit,
-  })
-  const stops =
-    p.killSwitch === false
-      ? t('thisDevice.protectFallsBack', 'If {{exit}} can’t be reached, traffic goes out the usual way meanwhile.', {
-          exit,
-        })
-      : t('thisDevice.protectStops', 'If {{exit}} can’t be reached, traffic stops rather than going out unprotected.', {
-          exit,
-        })
-  return `${through} ${stops}`
+    line: name
+      ? t('thisDevice.routeUp', 'All traffic from this {{kind}} goes through {{name}}.', { kind, name })
+      : t('thisDevice.on', 'On'),
+  }
 }
 
-// The services switch's line: who can reach what, through this machine — a phone's services are hosts on the network
-// it is on.
+// Share's line: who can reach what. A phone's services are hosts on the network it is on.
 export const servicesLine = (kind: string, phone: boolean, t: T) =>
   phone
-    ? t(
-        'thisDevice.servicesLinePhone',
-        'People you share with can reach devices on the network this {{kind}} is on, through it.',
-        { kind }
-      )
+    ? t('thisDevice.servicesLinePhone', 'People you share with can reach devices on the network this {{kind}} is on.', {
+        kind,
+      })
     : t('thisDevice.servicesLine', 'People you share with can reach this {{kind}}’s services.', { kind })
 
-// What keeps this machine's services from being reached while it is on, a line each, with how to fix it.
+// What keeps this machine's services from being reached while sharing is on, a line each, with how to fix it.
 export const servicesProblems = (lan: NonNullable<DeviceStatus['services']>, kind: string, t: T) => {
   const lines: { key: string; text: string }[] = []
   if (lan.error) lines.push({ key: 'error', text: lan.error })
@@ -346,7 +381,7 @@ export const servicesProblems = (lan: NonNullable<DeviceStatus['services']>, kin
       key: 'permission',
       text: t(
         'thisDevice.servicesPermission',
-        'Needs Local Network access: turn on Local Network for remote.it in this {{kind}}’s Settings.',
+        'Sharing needs Local Network access. Turn on Local Network for Remote.It in this {{kind}}’s Settings.',
         { kind }
       ),
     })
@@ -355,20 +390,9 @@ export const servicesProblems = (lan: NonNullable<DeviceStatus['services']>, kin
       key: 'network',
       text: t(
         'thisDevice.servicesNoNetwork',
-        'Not on a local network: this {{kind}} is on cellular or offline, so its services can’t be reached.',
+        'This {{kind}} is on cellular or offline. No one can reach what you share until it is on a local network.',
         { kind }
       ),
     })
   return lines
-}
-
-export const vpnLine = (s: DeviceStatus | undefined, t: T) => {
-  if (!s) return ''
-  if (s.vpn.error) return s.vpn.error
-  if (!s.vpn.on) return t('thisDevice.vpnOff', 'Off — traffic goes out the usual way')
-  if (!s.exit) return t('thisDevice.vpnOn', 'On')
-  if (s.exit.error) return s.exit.error
-  if (s.exit.state === 'connecting') return t('thisDevice.connecting', 'Connecting to {{name}}…', { name: s.exit.name })
-  if (s.exit.state === 'down') return t('thisDevice.exitDown', 'Exit unreachable — traffic blocked')
-  return t('thisDevice.through', 'Connected through {{name}}', { name: s.exit.name })
 }

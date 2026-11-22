@@ -168,7 +168,7 @@ export const ThisDeviceAdvanced: React.FC<{
                 app.openAtLogin.error ||
                 (app.openAtLogin.pending
                   ? t('thisDevice.openAtLoginPending', 'Waiting for you to allow it in System Settings → General → Login Items')
-                  : t('thisDevice.openAtLoginLine', 'remote.it opens when you log in; quitting it leaves connections on.'))
+                  : t('thisDevice.openAtLoginLine', 'Remote.It opens when you log in. Quitting it leaves connections on.'))
               }
               sx={SWITCH_TEXT}
               data-open-at-login={app.openAtLogin.on ? 'on' : 'off'}
@@ -198,7 +198,7 @@ export const ThisDeviceAdvanced: React.FC<{
                 primary={t('thisDevice.detailedLogging', 'Detailed connection logging')}
                 secondary={
                   logging.error ||
-                  t('thisDevice.detailedLoggingLine', 'A line a second for each connection in the log, until remote.it restarts.')
+                  t('thisDevice.detailedLoggingLine', 'Logs a line a second for each connection, until Remote.It restarts.')
                 }
                 sx={SWITCH_TEXT}
                 data-logging={logging.detailed ? 'on' : 'off'}
@@ -234,13 +234,13 @@ export const ThisDeviceAdvanced: React.FC<{
               <ListItemText
                 primary={
                   d.removal === 'uninstall'
-                    ? t('thisDevice.uninstallTitle', 'Uninstall remote.it')
-                    : t('thisDevice.removeTitle', 'Remove remote.it')
+                    ? t('thisDevice.uninstallTitle', 'Uninstall Remote.It')
+                    : t('thisDevice.removeTitle', 'Remove Remote.It')
                 }
                 secondary={
                   d.removal === 'uninstall'
-                    ? t('thisDevice.uninstallLine', 'The remote.it app and this device come off this {{kind}}.', { kind })
-                    : t('thisDevice.removeLine', 'This device comes off this {{kind}}; the remote.it app stays.', { kind })
+                    ? t('thisDevice.uninstallLine', 'Removes the Remote.It app and this device from this {{kind}}.', { kind })
+                    : t('thisDevice.removeLine', 'Removes this device from this {{kind}}. The Remote.It app stays.', { kind })
                 }
               />
             </ListItem>
@@ -259,7 +259,7 @@ export const ThisDeviceAdvanced: React.FC<{
                 }
               >
                 {d.removal === 'uninstall'
-                  ? t('thisDevice.uninstall', 'Uninstall remote.it from this {{kind}}…', { kind })
+                  ? t('thisDevice.uninstall', 'Uninstall Remote.It from this {{kind}}…', { kind })
                   : t('thisDevice.remove', 'Remove from this {{kind}}…', { kind })}
               </Button>
             </ListItem>
