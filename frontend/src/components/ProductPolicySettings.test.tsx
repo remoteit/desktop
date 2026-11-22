@@ -70,26 +70,26 @@ describe('the settings a product sets', () => {
       { name: 'websocket', value: 'off' },
       { name: 'services', value: false },
     ])
-    expect(row(page, 'Device subnet').dataset.value).toBe('on')
-    expect(row(page, 'Allow remote access to services').dataset.value).toBe('off')
-    expect(row(page, 'Reflector (websocket)').dataset.value).toBe('off')
+    expect(row(page, 'Access').dataset.value).toBe('on')
+    expect(row(page, 'Share this device').dataset.value).toBe('off')
+    expect(row(page, 'Relay').dataset.value).toBe('off')
     expect(row(page, 'Allow scripts').dataset.value).toBe('')
     expect(row(page, 'Allow scripts').textContent).toBe('Each device’s ownOnOff')
     // Apps are not device settings: a product's apps are its Apps block's.
     expect(page.textContent).not.toMatch(/Console|AI commands/)
-    expect(row(page, 'Reflector (websocket)').textContent).toBe('Each device’s ownAutomaticAlwaysOff')
+    expect(row(page, 'Relay').textContent).toBe('Each device’s ownAutomaticAlwaysOff')
   })
 
   it('set to a value, or unset; the product read again', async () => {
     const page = await render([{ name: 'subnet', value: true }])
     await pick(page, 'Allow scripts', 'on')
     expect(setSetting).toHaveBeenLastCalledWith('P1', 'scripts', true)
-    await pick(page, 'Reflector (websocket)', 'auto')
+    await pick(page, 'Relay', 'auto')
     expect(setSetting).toHaveBeenLastCalledWith('P1', 'websocket', 'auto')
-    await pick(page, 'Device subnet', '')
+    await pick(page, 'Access', '')
     expect(setSetting).toHaveBeenLastCalledWith('P1', 'subnet', null)
     expect(onChanged).toHaveBeenCalledTimes(3)
-    await pick(page, 'Device subnet', 'on')
+    await pick(page, 'Access', 'on')
     expect(setSetting).toHaveBeenCalledTimes(3)
   })
 
@@ -110,16 +110,16 @@ describe('the settings a product sets', () => {
   it('a refusal in graphql’s words, or that it was not changed', async () => {
     setSetting.mockResolvedValue({ reason: 'Subnet needs a newer daemon on 3 devices' })
     const page = await render([])
-    await pick(page, 'Device subnet', 'on')
+    await pick(page, 'Access', 'on')
     expect(page.querySelector('[data-notice]')?.textContent).toBe('Subnet needs a newer daemon on 3 devices')
     setSetting.mockResolvedValue('ERROR')
-    await pick(page, 'Device subnet', 'off')
+    await pick(page, 'Access', 'off')
     expect(page.querySelector('[data-notice]')?.textContent).toBe('The setting was not changed.')
   })
 
   it('only its managers may change them', async () => {
     const page = await render([{ name: 'any_port', value: null }], false)
-    expect(row(page, 'Device subnet').dataset.disabled).toBe('true')
+    expect(row(page, 'Access').dataset.disabled).toBe('true')
     expect(page.querySelector('[data-unset]')).toBeNull()
   })
 })

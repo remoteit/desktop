@@ -56,7 +56,7 @@ export function useCreateLabels(): CreateRequest['labels'] {
   return {
     intro: t(
       'signer.createIntro',
-      'Choose a passphrase for your new key. The key is made here, in your browser, and saved to a file encrypted with this passphrase. remote.it never sees the key or the passphrase, and cannot recover either.'
+      'Choose a passphrase for your new key. Your browser makes and encrypts the key. Remote.It never sees either, so it cannot recover them.'
     ),
     passphrase: t('signer.passphrase', 'Passphrase (at least 12 characters)'),
     again: t('signer.again', 'Passphrase again'),
@@ -85,7 +85,7 @@ export function useSignLabels(): SignRequest['labels'] {
   return {
     intro: t(
       'signer.signIntro',
-      'Choose your key file and type its passphrase. They are used here, in your browser, and never sent to remote.it.'
+      'Choose your key file and type its passphrase. They are used here, in your browser, and never sent to Remote.It.'
     ),
     keyFile: t('signer.keyFile', 'Key file'),
     passphrase: t('signer.signPassphrase', 'Passphrase'),

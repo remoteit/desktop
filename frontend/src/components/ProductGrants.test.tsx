@@ -114,7 +114,7 @@ describe('what a product grants its devices', () => {
   it('its networks, each with its devices’ role; one taken off after the question', async () => {
     const page = await render()
     const network = page.querySelector('[data-network="N1"]') as HTMLElement
-    expect(network.textContent).toBe('PlantInitiator')
+    expect(network.textContent).toBe('PlantCan reach')
     expect(network.querySelector('[data-remove]')?.getAttribute('title')).toBe('Take Pumps off Plant?')
     await click(network.querySelector('[data-remove]'))
     expect(removeNetwork).toHaveBeenCalledWith('P1', 'N1')

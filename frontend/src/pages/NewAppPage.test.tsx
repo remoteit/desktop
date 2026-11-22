@@ -330,7 +330,7 @@ describe('New app, files to Done', () => {
     build.mockRejectedValue(new ReleaseRefused('tooBig', { platform: 'any', mb: '18.4', most: '16' }))
     await act(async () => (page.querySelector('[data-new-app-pack]') as HTMLElement).click())
     expect(page.querySelector('[data-pack-refusal]')?.textContent).toBe(
-      'any: the archive is 18.4 MB; remote.it takes at most 16 MB a file'
+      'any: the archive is 18.4 MB. Remote.It takes at most 16 MB a file.'
     )
   })
 })

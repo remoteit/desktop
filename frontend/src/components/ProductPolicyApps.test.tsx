@@ -256,7 +256,7 @@ describe('a product’s Apps block', () => {
     )
     const body = confirm.querySelector('[data-root-consent]')!.textContent
     expect(body).toContain('Console, published by remote.it')
-    expect(body).toContain('full control of this device')
+    expect(body).toContain('full control of every device in this product')
     expect(body).toContain('every device in this product, now and later')
     expect(confirm.textContent).toContain('Turn it on only if you trust remote.it with every device in this product.')
     // What else it asks of remote.it is part of the consent.
@@ -522,10 +522,10 @@ describe('root, and a release that newly asks for it', () => {
     await click(row(page, 'remoteit.console').querySelector('[data-product-app-consent-action]'))
     const confirm = page.querySelector('[data-confirm]')!
     expect(confirm.querySelector('[data-root-consent-update]')?.textContent).toBe(
-      'Console 1.5.0 needs to run as root. Its devices stay on the version they run until you consent.'
+      'Console 1.5.0 needs full control. Its devices stay on the version they run until you agree.'
     )
     expect(catalog).toHaveBeenCalledWith('remoteit.console', { accountId: 'A1', releases: 100 })
-    expect(confirm.textContent).toContain('on every device in this product, now and later')
+    expect(confirm.textContent).toContain('of every device in this product, now and later')
     await click(confirm.querySelector('[data-confirm-ok]'))
     expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', {
       channel: 'stable',
@@ -544,7 +544,7 @@ describe('a removed setting the product still sets', () => {
     ])
     const item = row(page, 'remoteit.console').querySelector('[data-product-app-removed="colour"]')!
     expect(item.textContent).toContain('colour: true')
-    expect(item.textContent).toContain('Removed in 1.5.0: no effect on devices that run it')
+    expect(item.textContent).toContain('Removed in 1.5.0. No effect on devices that run it')
     expect(row(page, 'remoteit.console').querySelector('[data-product-app-removed="quiet"]')?.textContent).toContain(
       'Removed. No effect on its devices'
     )

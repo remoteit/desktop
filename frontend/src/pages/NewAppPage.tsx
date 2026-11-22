@@ -254,7 +254,7 @@ const NewAppFlow: React.FC<{ account?: string }> = ({ account }) => {
                   </Notice>
                 ) : (
                   <Notice severity="success">
-                    <span data-manifest-ok>{t('newApp.valid', 'remote.it takes this manifest.')}</span>
+                    <span data-manifest-ok>{t('newApp.valid', 'Remote.It takes this manifest.')}</span>
                   </Notice>
                 )}
               </Gutters>
@@ -396,7 +396,7 @@ function refusalWords(t: (key: string, text: string, values?: any) => string, er
     case 'tooBig':
       return t(
         'newApp.refusedTooBig',
-        '{{platform}}: the archive is {{mb}} MB; remote.it takes at most {{most}} MB a file',
+        '{{platform}}: the archive is {{mb}} MB. Remote.It takes at most {{most}} MB a file.',
         v
       )
     case 'badIcon':

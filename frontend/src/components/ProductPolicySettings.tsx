@@ -25,12 +25,12 @@ function offered(t: TFunction): Offered[] {
     { key: 'off', name: t('productSettings.off', 'Off'), value: false },
   ]
   return [
-    { name: 'services', label: t('productSettings.services', 'Allow remote access to services'), choices: onOff },
-    { name: 'subnet', label: t('productSettings.subnet', 'Device subnet'), choices: onOff },
+    { name: 'services', label: t('productSettings.services', 'Share this device'), choices: onOff },
+    { name: 'subnet', label: t('productSettings.subnet', 'Access'), choices: onOff },
     { name: 'scripts', label: t('productSettings.scripts', 'Allow scripts'), choices: onOff },
     {
       name: 'websocket',
-      label: t('productSettings.websocket', 'Reflector (websocket)'),
+      label: t('productSettings.websocket', 'Relay'),
       choices: [
         { key: 'auto', name: t('productSettings.websocketAuto', 'Automatic'), value: 'auto' },
         { key: 'on', name: t('productSettings.websocketOn', 'Always'), value: 'on' },

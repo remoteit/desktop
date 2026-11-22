@@ -130,10 +130,13 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, accountId, apps,
               'productApps.hintEnforcedStates',
               'An app set here is locked on its devices. One not listed is removed from them, as the product is enforced.'
             )
-          : t(
+          : `${t(
               'productApps.hintStates',
-              'Enabled adds and runs it on the product’s devices, Disabled adds it stopped, Removed takes it off them. One left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.'
-            )}
+              'Enabled adds and runs it on the product’s devices. Disabled adds it stopped. Removed takes it off them.'
+            )} ${t(
+              'productApps.hintUnset',
+              'One left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.'
+            )}`}
       </Typography>
       <List dense disablePadding>
         {apps.map(app => {
