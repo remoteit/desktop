@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { ListItem, ListItemIcon, ListItemText, ListSubheader, MenuItem, TextField } from '@mui/material'
+import { Box, Button, ListItem, ListItemIcon, ListItemText, ListSubheader, MenuItem, TextField } from '@mui/material'
 import type { DeviceNetwork } from '../services/graphQLDeviceNetworks'
 import { refusalOf } from '../services/graphQL'
 import {
@@ -16,10 +16,9 @@ import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 import { Notice } from './Notice'
 
-/* A network's exits (graphql-api docs/PROXY-GROUPS.md §13): the own exits it makes available to its devices — each one
-   initiating on it may send its traffic out through one, whichever of the exit's devices takes it, while it is offered.
-   Its managers make one of the account's own exits available, and stop one; one another account made available says
-   whose it is. A refusal is said in graphql's words. Shown where the API serves it, never on a link. */
+/* A network's exits (graphql-api docs/PROXY-GROUPS.md §13): the exits its devices that can reach may route through,
+   whichever of the exit's devices takes the traffic. Its managers add one of the account's own exits, and remove one;
+   one another account added says whose it is. A refusal is said in graphql's words. Never on a link. */
 export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string }> = ({ network, accountId }) => {
   const { t } = useTranslation()
   const [exits, setExits] = useState<NetworkExit[] | null>(null)
@@ -50,7 +49,9 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
     setBusy(true)
     setAdding(false)
     const reason = refusalOf(await graphQLSetNetworkExit(network.id, exit, on))
-    setRefusal(reason === undefined ? undefined : reason || t('networkExits.failed', 'Not changed: try again'))
+    setRefusal(
+      reason === undefined ? undefined : reason || t('networkExits.failed', 'Couldn’t change the exits. Try again.')
+    )
     await load()
     setBusy(false)
   }
@@ -58,18 +59,23 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
   // Under the network's devices, in their list.
   return (
     <>
-      <ListSubheader>
-        {t('networkExits.title', 'Exits')}
+      <ListSubheader
+        sx={{ display: 'flex', alignItems: 'center', marginTop: 2, borderTop: 1, borderColor: 'grayLight.main' }}
+      >
+        {t('networkExits.title', 'Route through')}
         {manage && !!addable.length && (
-          <IconButton
-            icon="plus"
-            title={t('networkExits.add', 'Make an exit available')}
-            size="sm"
-            disabled={busy}
-            onClick={() => setAdding(!adding)}
-          />
+          <Box sx={{ marginLeft: 'auto' }}>
+            <Button size="small" data-add-exit disabled={busy} onClick={() => setAdding(!adding)}>
+              {t('networkExits.add', 'Add exit')}
+            </Button>
+          </Box>
         )}
       </ListSubheader>
+      {!!exits.length && (
+        <ListItem dense>
+          <ListItemText secondary={t('networkExits.intro', 'Devices in this network can route through these exits.')} />
+        </ListItem>
+      )}
       {adding && (
         <Gutters>
           <TextField
@@ -83,7 +89,7 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
             {addable.map(exit => (
               <MenuItem key={exit.id} value={exit.id}>
                 {exit.dormant
-                  ? t('networkExits.chooseDormant', '{{exit}} · no device available', { exit: exit.name })
+                  ? t('networkExits.chooseDormant', '{{exit}} · waiting for exit device', { exit: exit.name })
                   : exit.name}
               </MenuItem>
             ))}
@@ -99,7 +105,7 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
             manage && (
               <IconButton
                 icon="times"
-                title={t('networkExits.remove', 'Stop making it available')}
+                title={t('networkExits.remove', 'Remove {{exit}}', { exit: exit.name })}
                 size="sm"
                 disabled={busy}
                 onClick={() => set(exit.id, false)}
@@ -116,10 +122,7 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
       {!exits.length && (
         <ListItem dense>
           <ListItemText
-            secondary={t(
-              'networkExits.none',
-              'No exit: its devices send their traffic out through an exit only by their own choice. Make one of your exits available, and each device initiating here may choose it.'
-            )}
+            secondary={t('networkExits.none', 'No exits yet. Add one so devices in this network can route through it.')}
           />
         </ListItem>
       )}
@@ -134,15 +137,14 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
   )
 }
 
-// What an exit made available is now, for the devices initiating on the network — and whose it is, when not the
-// network's account's.
+// What an exit is now, for the network's devices — and whose it is, when not the network's account's.
 export function exitLine(t: TFunction, exit: NetworkExit, networkOwner: string): string {
   const state = exit.offered
-    ? t('networkExits.offered', 'Its devices may choose it now')
+    ? t('networkExits.offered', 'Ready')
     : exit.dormant
-    ? t('networkExits.dormant', 'No device available: it cannot be chosen until one of its devices carries its traffic')
-    : t('networkExits.notOffered', 'None of its devices takes traffic now')
+    ? t('networkExits.dormant', 'Waiting for exit device')
+    : t('networkExits.notOffered', 'Not available now')
   return exit.owner && exit.owner.id !== networkOwner && exit.owner.email
-    ? t('networkExits.whose', '{{state}} · {{email}}’s', { state, email: exit.owner.email })
+    ? t('networkExits.whose', '{{state}} · from {{email}}', { state, email: exit.owner.email })
     : state
 }

@@ -83,25 +83,26 @@ describe('a network’s exits', () => {
   it('lists the exits it makes available, each with what its devices may do with it now', async () => {
     const page = await render()
     expect(networkExits).toHaveBeenCalledWith('PAT')
-    expect(page.textContent).toContain('Exits')
-    expect(page.querySelector('[data-network-exit="xmac"]')?.textContent).toContain('Its devices may choose it now')
+    expect(page.textContent).toContain('Devices in this network can route through these exits.')
+    expect(page.querySelector('[data-network-exit="xmac"]')?.textContent).toContain('Ready')
   })
 
-  it('its managers make one of the account’s own exits available — not one already —, one with no device available said so', async () => {
+  it('its managers add one of the account’s own exits — not one already —, one with no device available said so', async () => {
     const page = await render()
-    await click(page.querySelector('[data-icon="plus"]')!)
+    expect(page.querySelector('[data-add-exit]')?.textContent).toBe('Add exit')
+    await click(page.querySelector('[data-add-exit]')!)
     expect([...page.querySelectorAll('[data-pick]')].map(b => b.getAttribute('data-pick'))).toEqual([
       'xrouter',
       'xspare',
     ])
-    expect(page.querySelector('[data-pick="xspare"]')?.textContent).toBe('Spare · no device available')
+    expect(page.querySelector('[data-pick="xspare"]')?.textContent).toBe('Spare · waiting for exit device')
     networkExits.mockResolvedValue(new Map([['N1', [mac, router]]]))
     await click(page.querySelector('[data-pick="xrouter"]')!)
     expect(setNetworkExit).toHaveBeenCalledWith('N1', 'xrouter', true)
     expect(page.querySelector('[data-network-exit="xrouter"]')).not.toBeNull()
   })
 
-  it('and stop making one available; a refusal is said in graphql’s words', async () => {
+  it('and remove one; a refusal is said in graphql’s words', async () => {
     const page = await render()
     setNetworkExit.mockResolvedValue({ reason: 'Not yours to give' })
     await click(page.querySelector('[data-icon="times"]')!)
@@ -112,14 +113,16 @@ describe('a network’s exits', () => {
   it('one who sees it without managing it: the exits, neither add nor remove, and the account’s exits not asked', async () => {
     const page = await render({ permissions: ['VIEW', 'CONNECT'] })
     expect(page.textContent).toContain('Office Mac')
-    expect(page.querySelector('[data-icon="plus"]')).toBeNull()
+    expect(page.querySelector('[data-add-exit]')).toBeNull()
     expect(page.querySelector('[data-icon="times"]')).toBeNull()
     expect(accountExits).not.toHaveBeenCalled()
   })
 
   it('none made available yet: says what one would do', async () => {
     networkExits.mockResolvedValue(new Map([['N1', []]]))
-    expect((await render()).textContent).toContain('No exit: its devices send their traffic out through an exit only')
+    expect((await render()).textContent).toContain(
+      'No exits yet. Add one so devices in this network can route through it.'
+    )
   })
 
   it('nothing on a link, or where the API has no network exits', async () => {
@@ -129,12 +132,10 @@ describe('a network’s exits', () => {
   })
 
   it('says an exit with no device available, or none of its devices taking traffic, and whose it is when another account’s', () => {
-    expect(exitLine(t, { ...mac, offered: false, dormant: true }, 'PAT')).toBe(
-      'No device available: it cannot be chosen until one of its devices carries its traffic'
-    )
-    expect(exitLine(t, { ...mac, offered: false }, 'PAT')).toBe('None of its devices takes traffic now')
+    expect(exitLine(t, { ...mac, offered: false, dormant: true }, 'PAT')).toBe('Waiting for exit device')
+    expect(exitLine(t, { ...mac, offered: false }, 'PAT')).toBe('Not available now')
     expect(exitLine(t, { ...mac, owner: { id: 'NED', email: 'ned@example.com' } }, 'PAT')).toBe(
-      'Its devices may choose it now · ned@example.com’s'
+      'Ready · from ned@example.com'
     )
   })
 })
