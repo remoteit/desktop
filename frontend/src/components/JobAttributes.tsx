@@ -9,6 +9,7 @@ import { Attribute } from './Attributes'
 import { Duration } from './Duration'
 import { DAY_MS } from '../models/logs'
 import { Icon } from './Icon'
+import { JobFailureNote } from './JobRunResult'
 
 const MAX_ROWS = 2
 
@@ -110,23 +111,25 @@ export const jobAttributes: JobAttribute[] = [
     value: ({ job, accountId }) => {
       const privateScript = !!job?.file?.owner?.id && job.file.owner.id !== accountId
       const name = jobName(job)
-      if (name) {
-        return (
-          <Typography>
-            {name}
-            {privateScript && (
-              <Typography component="span" variant="caption" color="textSecondary">
-                {' '}
-                ({i18n.t('jobAttributes.guestScript', 'guest script')})
-              </Typography>
-            )}
-          </Typography>
-        )
-      }
       return (
-        <Typography variant="body2" fontStyle="italic">
-          {i18n.t('jobAttributes.fileDeleted', 'File Deleted')}&nbsp;
-        </Typography>
+        <Box sx={{ minWidth: 0 }}>
+          {name ? (
+            <Typography noWrap>
+              {name}
+              {privateScript && (
+                <Typography component="span" variant="caption" color="textSecondary">
+                  {' '}
+                  ({i18n.t('jobAttributes.guestScript', 'guest script')})
+                </Typography>
+              )}
+            </Typography>
+          ) : (
+            <Typography variant="body2" fontStyle="italic">
+              {i18n.t('jobAttributes.scriptDeleted', 'Script deleted')}&nbsp;
+            </Typography>
+          )}
+          {job && <JobFailureNote job={job} />}
+        </Box>
       )
     },
   }),

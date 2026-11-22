@@ -8,6 +8,9 @@ import { List, Typography, Chip, Button } from '@mui/material'
 import { LinearProgress } from '../components/LinearProgress'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { JobStatusIcon } from '../components/JobStatusIcon'
+import { JobFailureNote } from '../components/JobRunResult'
+import { LoadingMessage } from '../components/LoadingMessage'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { ReactiveTagNames } from '../components/ReactiveTagNames'
 import { Duration } from '../components/Duration'
 import { Container } from '../components/Container'
@@ -28,13 +31,15 @@ export const ScriptPage: React.FC = () => {
   const file = useSelector((state: State) => selectFile(state, undefined, fileID))
   const jobs = useSelector(selectJobs).filter(j => j.file?.id === fileID)
   const fetching = useSelector((state: State) => state.files.fetching)
+  // The account's files are read once the app has signed in: until then a script's address is not known to be wrong.
+  const loaded = useSelector((state: State) => !!state.files.all[selectActiveAccountId(state)])
 
   // Load jobs if not already loaded
   useEffect(() => {
     if (!jobs.length && !fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
   }, [file])
 
-  if (!file) return <Redirect to={{ pathname: '/scripts', state: { isRedirect: true } }} />
+  if (!file) return loaded && !fetching ? <Redirect to={{ pathname: '/scripts', state: { isRedirect: true } }} /> : <LoadingMessage />
 
   // Split jobs into groups
   const readyJobs = jobs.filter(j => j.status === 'READY')
@@ -66,6 +71,7 @@ export const ScriptPage: React.FC = () => {
         match={matchPath}
         icon={<JobStatusIcon status={job.status} padding={0.5} />}
         title={deviceLabel}
+        subtitle={job.status === 'FAILED' ? <JobFailureNote job={job} /> : undefined}
       >
         {tagNames.length > 0 && <ReactiveTagNames tags={tagNames} small max={1} />}
         <Typography variant="caption" color="grayDarkest.main" noWrap sx={{ flexShrink: 0, ml: 0.5, mr: 2 }}>
@@ -141,7 +147,7 @@ export const ScriptPage: React.FC = () => {
             <Title>{t('scriptPage.ready', 'Ready')}</Title>
             <IconButton
               icon="plus"
-              title={t('scriptPage.newRun', 'New Run')}
+              title={t('scriptPage.newRunTitle', 'New run')}
               size="md"
               onClick={() => history.push(`/script/${fileID}/run`)}
             />
@@ -166,7 +172,7 @@ export const ScriptPage: React.FC = () => {
         {!readyJobs.length && (
           <IconButton
             icon="plus"
-            title={t('scriptPage.newRun', 'New Run')}
+            title={t('scriptPage.newRunTitle', 'New run')}
             size="md"
             onClick={() => {
               history.push(`/script/${fileID}/run`)

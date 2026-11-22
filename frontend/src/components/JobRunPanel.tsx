@@ -18,6 +18,7 @@ import {
 } from '../services/jobRuns'
 import { watchJobRun } from '../services/jobOutputSocket'
 import { jobChangeKey } from '../hooks/useJobDevices'
+import { runFacts, runFailureWords, runReason } from '../helpers/runSummary'
 
 /* A job's runs on the job runner (device-package docs/scripting-plan.md, "As built (phase 4)"): each run's phase, its
    progress and why it failed, read on their own beside the job; and for the run shown, the account it ran as, its exit,
@@ -146,7 +147,7 @@ export const JobRunStatus: React.FC<{ run: JobRun | null | undefined }> = ({ run
     <Stack direction="row" spacing={1} alignItems="center" component="span">
       <Typography component="span" variant="caption" color="grayDarker.main">
         {phaseLabel(t, run.phase)}
-        {run.failureReason ? ` · ${reasonLabel(t, run.failureReason)}` : ''}
+        {run.failureReason ? ` · ${runFailureWords(t, run) ?? reasonLabel(t, run.failureReason)}` : ''}
         {run.progressPercent != null && !ENDED_PHASES.includes(run.phase) ? ` · ${run.progressPercent}%` : ''}
         {run.progressMessage && !ENDED_PHASES.includes(run.phase) ? ` · ${run.progressMessage}` : ''}
       </Typography>
@@ -191,47 +192,33 @@ export const JobRunPanel: React.FC<PanelProps> = ({ accountId, jobId, jobDeviceI
 
   if (!run) return null
 
-  const seconds =
-    run.startedAt && (run.endedAt || !ended)
-      ? Math.max(0, Math.round(((run.endedAt ? Date.parse(run.endedAt) : Date.now()) - Date.parse(run.startedAt)) / 1000))
-      : undefined
+  const failure = runFailureWords(t, run)
+  const reason = runReason(run)
+  const facts = runFacts(t, run)
 
   return (
     <Box sx={{ mb: 2 }} data-testid="job-run-panel">
-      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" sx={{ mb: 1 }}>
+      <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" sx={{ mb: 0.5 }}>
         <ColorChip
           size="small"
           label={phaseLabel(t, run.phase)}
           color={PHASE_COLOR[run.phase] || 'gray'}
           data-testid="job-run-phase"
         />
-        {run.failureReason && (
-          <ColorChip
-            size="small"
-            color="danger"
-            label={reasonLabel(t, run.failureReason)}
-          />
-        )}
-        {run.ranAs && (
-          <Typography variant="caption" color="grayDarker.main">
-            {t('jobRun.ranAs', { account: run.ranAs, defaultValue: 'as {{account}}' })}
-          </Typography>
-        )}
-        {run.exitCode != null && (
-          <Typography variant="caption" color="grayDarker.main">
-            {t('jobRun.exitCode', { code: run.exitCode, defaultValue: 'exit {{code}}' })}
-            {run.signal ? ` (${run.signal})` : ''}
-          </Typography>
-        )}
-        {seconds !== undefined && (
-          <Typography variant="caption" color="grayDarker.main">
-            {t('jobRun.seconds', { count: seconds, defaultValue: '{{count}} s' })}
+        {failure && (
+          <Typography variant="body2" fontWeight={500} color="error" data-testid="job-run-failure">
+            {failure}
           </Typography>
         )}
       </Stack>
-      {run.detail && (
-        <Typography variant="caption" component="p" color="grayDarker.main" sx={{ mb: 1 }}>
-          {run.detail}
+      {reason && (
+        <Typography variant="body2" component="p" color="grayDarkest.main" sx={{ mb: 0.5 }} data-testid="job-run-reason">
+          {reason}
+        </Typography>
+      )}
+      {!!facts.length && (
+        <Typography variant="caption" component="p" color="grayDarker.main" sx={{ mb: 1 }} data-testid="job-run-facts">
+          {facts.join(' · ')}
         </Typography>
       )}
       {run.progressPercent != null && !ended && (
@@ -258,15 +245,15 @@ export const JobRunPanel: React.FC<PanelProps> = ({ accountId, jobId, jobDeviceI
         {run.outputBytes != null && (
           <Typography variant="caption" color="grayDarker.main">
             {formatBytes(run.outputBytes)}
-            {run.truncated ? ` · ${t('jobRun.truncated', 'cut at its limit')}` : ''}
+            {run.truncated ? ` · ${t('jobRun.truncatedPlain', 'cut at the size limit')}` : ''}
           </Typography>
         )}
       </Stack>
       {(read?.cut || (!read?.complete && live.skipped > 0)) && (
         <Typography variant="caption" component="p" color="grayDarker.main">
           {read?.complete
-            ? t('jobRun.outputCut', 'Showing the end of the output; the logs download has all of it.')
-            : t('jobRun.outputSkipped', 'Some output is not shown live; the logs have all of it once the run ends.')}
+            ? t('jobRun.outputCutPlain', 'Showing the end of the output. Download the logs for all of it.')
+            : t('jobRun.outputSkippedPlain', 'Some output isn’t shown live. The logs have all of it once the run ends.')}
         </Typography>
       )}
       <Box
