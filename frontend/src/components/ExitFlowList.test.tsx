@@ -105,10 +105,14 @@ describe('ExitFlowList', () => {
     expect(testId(c, 'exit-flows-none')!.textContent).toBe('No connections through an exit in this time.')
   })
 
-  it("a refusal in graphql's words; nothing on an API without exitFlows", async () => {
-    flows.mockResolvedValueOnce({ reason: 'This stage keeps no exit flow log' })
+  it("a refusal in graphql's words; no flow log kept is said plainly; nothing on an API without exitFlows", async () => {
+    flows.mockResolvedValueOnce({ reason: 'That exit is not there' })
     let c = await render()
-    expect(testId(c, 'exit-flows-error')!.textContent).toBe('This stage keeps no exit flow log')
+    expect(testId(c, 'exit-flows-error')!.textContent).toBe('That exit is not there')
+    flows.mockResolvedValueOnce({ reason: 'This stage keeps no exit flow log' })
+    c = await render()
+    expect(testId(c, 'exit-flows-error')).toBeNull()
+    expect(testId(c, 'exit-flows-none')!.textContent).toBe('No connection log is kept for this account.')
     flows.mockResolvedValueOnce('UNSUPPORTED')
     c = await render()
     expect(c.textContent).toBe('')

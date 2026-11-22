@@ -2344,6 +2344,7 @@
     "heading": "Connections through exits",
     "managerNote": "Every connection through Remote.It exits from or by this device, last {{days}} days.",
     "more": "More",
+    "noLog": "No connection log is kept for this account.",
     "none": "No connections through an exit in this time.",
     "noneYet": "None found so far: there is more to look through.",
     "ownNote": "Your own connections from this device through Remote.It exits, last {{days}} days.",

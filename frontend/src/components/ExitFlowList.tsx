@@ -18,6 +18,9 @@ import { SelectSetting } from './SelectSetting'
 import { Timestamp } from './Timestamp'
 import { Icon } from './Icon'
 
+// The API refuses with this when the back end keeps no flow log at all: not an error the person can act on.
+const NO_LOG = /keeps no (exit )?flow log/i
+
 // carrier: the device whose page this is — a flow it carried as an exit says so, rather than the exit's name.
 type Props = { scope: ExitFlowsScope; carrier?: string }
 
@@ -70,6 +73,8 @@ export const ExitFlowList: React.FC<Props> = ({ scope, carrier }) => {
 
   if (state === UNSUPPORTED) return null
 
+  const noLog = state === 'ERROR' && !!reason && NO_LOG.test(reason)
+
   return (
     <>
       <List disablePadding>
@@ -80,7 +85,16 @@ export const ExitFlowList: React.FC<Props> = ({ scope, carrier }) => {
           values={WINDOWS.map(h => ({ key: String(h), name: windowLabel(t, h) }))}
           onChange={value => setHours(Number(value))}
         />
-        {state === 'ERROR' && (
+        {noLog && (
+          <ListItem>
+            <ListItemIcon />
+            <ListItemText
+              secondary={t('exitFlows.noLog', 'No connection log is kept for this account.')}
+              secondaryTypographyProps={{ 'data-testid': 'exit-flows-none' } as any}
+            />
+          </ListItem>
+        )}
+        {state === 'ERROR' && !noLog && (
           <ListItem>
             <ListItemIcon>
               <Icon name="exclamation-triangle" size="md" color="danger" />
