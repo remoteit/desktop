@@ -1,16 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import {
-  Box,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material'
+import { Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { endpointAddress, graphQLRemoveEndpoint } from '../services/graphQLProxy'
@@ -147,9 +138,8 @@ const AddressRow: React.FC<{ address: PublicAddress; busy: boolean; onRemove: ()
 }) => {
   const { t } = useTranslation()
   const shown = endpointAddress(address)
-  const narrow = useMediaQuery(useTheme().breakpoints.down('sm'))
   const actions = (
-    <Box display="flex" marginLeft={narrow ? -1 : 0} marginTop={narrow ? 0.5 : 0} data-actions>
+    <Box display="flex" marginLeft={-1} marginTop={0.5} data-actions>
       <CopyIconButton value={shown} title={t('publicAddresses.copy', 'Copy address')} />
       {openable(address) && (
         <IconButton
@@ -176,12 +166,7 @@ const AddressRow: React.FC<{ address: PublicAddress; busy: boolean; onRemove: ()
     </Box>
   )
   return (
-    <ListItem
-      data-address={address.id}
-      alignItems="flex-start"
-      sx={{ paddingRight: narrow ? undefined : 17, paddingY: 1.5 }}
-      secondaryAction={narrow ? undefined : actions}
-    >
+    <ListItem data-address={address.id} alignItems="flex-start" sx={{ paddingY: 1.5 }}>
       <ListItemIcon sx={{ marginTop: 0.75 }}>
         <Icon name={KIND_ICON[address.kind]} size="md" color="primary" fixedWidth />
       </ListItemIcon>
@@ -192,9 +177,13 @@ const AddressRow: React.FC<{ address: PublicAddress; busy: boolean; onRemove: ()
         secondary={
           <>
             <Typography variant="caption" component="div" color="textSecondary">
-              <Link to={`/devices/${address.device.id}/${address.service.id}`} sx={{ padding: 0 }}>{address.service.name}</Link>
+              <Link to={`/devices/${address.device.id}/${address.service.id}`} sx={{ padding: 0 }}>
+                {address.service.name}
+              </Link>
               {' · '}
-              <Link to={`/devices/${address.device.id}`} sx={{ padding: 0 }}>{address.device.name}</Link>
+              <Link to={`/devices/${address.device.id}`} sx={{ padding: 0 }}>
+                {address.device.name}
+              </Link>
               {' · '}
               {kindLabel(t, address.kind)}
             </Typography>
@@ -209,7 +198,7 @@ const AddressRow: React.FC<{ address: PublicAddress; busy: boolean; onRemove: ()
                 .filter(Boolean)
                 .join(' · ')}
             </Typography>
-            {narrow && actions}
+            {actions}
           </>
         }
       />
