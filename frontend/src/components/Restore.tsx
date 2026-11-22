@@ -35,7 +35,7 @@ export const Restore: React.FC<Props> = ({ deviceId, restore, onComplete }) => {
 
   return platform === 'pi' ? (
     <Dialog open={open} fullWidth>
-      <Notice fullWidth>{t('restore.restoringDevice', 'Restoring device...')}</Notice>
+      <Notice fullWidth>{t('restore.recoveringDevice', 'Recovering device…')}</Notice>
     </Dialog>
   ) : (
     <Confirm
@@ -49,11 +49,11 @@ export const Restore: React.FC<Props> = ({ deviceId, restore, onComplete }) => {
         setOpen(false)
         onComplete()
       }}
-      title={t('restore.title', 'Restore device from Cloud')}
+      title={t('restore.recoverTitle', 'Recover this device?')}
     >
       {t(
-        'restore.body',
-        "We will attempt to restore this device's configuration. Please note this may not completely restore services that have custom host information."
+        'restore.recoverBody',
+        'Remote.It sets this machine up again as the device it was. Services with a custom host may need adding again.'
       )}
     </Confirm>
   )

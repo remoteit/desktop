@@ -41,7 +41,7 @@ export function disabledDescription(
   return t('disabledDevice.disabled', 'Disabled')
 }
 
-// A disabled device's page: what it is, and Restore — Decommission… for its owner or an org admin.
+// A disabled device's page: what it is, and Restore — Delete permanently… for its owner or an org admin.
 export const DisabledDeviceNotice: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   const history = useHistory()
@@ -72,7 +72,7 @@ export const DisabledDeviceNotice: React.FC<{ device: IDevice }> = ({ device }) 
               )}
               {canDecommission && (
                 <Button size="small" color="error" disabled={destroying} onClick={() => setDecommission(true)}>
-                  {t('disabledDevice.decommission', 'Decommission…')}
+                  {t('disabledDevice.deletePermanently', 'Delete permanently…')}
                 </Button>
               )}
             </Stack>

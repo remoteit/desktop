@@ -80,8 +80,8 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick,
         <Typography variant="body2" sx={{ marginTop: 2 }}>
           {t('deleteDevice.hosts', {
             count: device.hosts,
-            defaultValue_one: 'It hosts {{count}} virtual device.',
-            defaultValue_other: 'It hosts {{count}} virtual devices.',
+            defaultValue_one: 'This device is the gateway for {{count}} virtual device.',
+            defaultValue_other: 'This device is the gateway for {{count}} virtual devices.',
           })}
         </Typography>
         <RadioGroup
@@ -140,8 +140,8 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick,
         </Notice>
         <Typography variant="body2">
           {t(
-            'deleteDevice.unregisterDisabled',
-            'The device itself is disabled and listed in Disabled devices, where it can be decommissioned. Restoring it brings back neither its services nor this machine: to use this machine again, set it up again.'
+            'deleteDevice.unregisterDisabledPlain',
+            'The device is disabled and listed in Disabled devices, where you can delete it permanently. To use this machine again, set it up again.'
           )}
         </Typography>
       </>

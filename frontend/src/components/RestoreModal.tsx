@@ -36,18 +36,18 @@ export const RestoreModal: React.FC<Props> = ({ device }) => {
 
   return (
     <Dialog open={showRestoreModal} onClose={onClose} maxWidth="lg">
-      <DialogTitle>{t('restoreModal.title', { name: device.name, defaultValue: 'Restore "{{name}}"' })}</DialogTitle>
+      <DialogTitle>{t('restoreModal.recoverTitle', { name: device.name, defaultValue: 'Recover "{{name}}"' })}</DialogTitle>
       <DialogContent sx={{ maxWidth: 620 }}>
         <Typography variant="body1" gutterBottom>
           {t(
-            'restoreModal.instructions',
-            'If you lost or deleted this device you can restore it by running the following command on the device.'
+            'restoreModal.recoverInstructions',
+            'Reset or reinstalled the machine? Run this command on it to make it this device again.'
           )}
         </Typography>
         <CopyRegistrationCode
           code={result.restoreCode}
-          value={result.restoreCommand ? result.restoreCommand : t('restoreModal.generatingCommand', 'generating command...')}
-          label={t('restoreModal.restoreCodeLabel', 'Restore Code')}
+          value={result.restoreCommand ? result.restoreCommand : t('restoreModal.creatingCommand', 'Creating command…')}
+          label={t('restoreModal.recoveryCodeLabel', 'Recovery code')}
         />
       </DialogContent>
       <DialogActions>

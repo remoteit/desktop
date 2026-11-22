@@ -45,7 +45,7 @@ export const HostedDevices: React.FC<Props> = ({ device }) => {
   return (
     <>
       <Typography variant="subtitle1">
-        <Title>{t('hostedDevices.title', 'Hosted devices')}</Title>
+        <Title>{t('hostedDevices.virtualDevices', 'Virtual devices')}</Title>
         {manage && (
           <IconButton
             icon="plus"
@@ -85,8 +85,8 @@ export const HostedDevices: React.FC<Props> = ({ device }) => {
             <ListItemText
               primary={t('hostedDevices.empty', 'Add a virtual device')}
               secondary={t(
-                'hostedDevices.emptyHint',
-                'A NAS, printer or PLC on this network that runs nothing itself: its own device, reached through this one.'
+                'hostedDevices.gatewayHint',
+                'Add a printer, NAS or PLC on this network as its own device. This device is its gateway.'
               )}
             />
           </ListItemLocation>

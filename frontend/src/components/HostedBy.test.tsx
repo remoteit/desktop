@@ -49,8 +49,8 @@ describe('a virtual device says where it lives', () => {
     expect(view.querySelector('a')).toBeNull()
   })
 
-  it('"not hosted" once its gateway is gone, and nothing for a device with a daemon', async () => {
-    expect((await render({ virtual: true, hostedBy: null })).textContent).toBe('not hosted')
+  it('"no gateway" once its gateway is gone, and nothing for a device with a daemon', async () => {
+    expect((await render({ virtual: true, hostedBy: null })).textContent).toBe('no gateway')
     expect((await render({ virtual: false })).textContent).toBe('')
   })
 

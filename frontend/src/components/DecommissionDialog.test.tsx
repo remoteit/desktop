@@ -30,7 +30,7 @@ import { DecommissionDialog } from './DecommissionDialog'
 
 const input = () => document.body.querySelector('input[aria-label="decommission-confirm"]') as HTMLInputElement
 const confirmButton = () =>
-  [...document.body.querySelectorAll('button')].find(b => b.textContent?.includes('Decommission')) as HTMLButtonElement
+  [...document.body.querySelectorAll('button')].find(b => b.textContent?.includes('Delete permanently')) as HTMLButtonElement
 
 async function type(text: string) {
   const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
@@ -54,13 +54,15 @@ beforeEach(() => {
 })
 
 describe('DecommissionDialog', () => {
-  it('says what is lost and that a legacy device keeps checking in, refused quietly', async () => {
+  it('“Delete permanently”: says what is lost and that an older agent keeps checking in, refused', async () => {
     await render([{ id: 'd1', name: 'Kitchen Pi' }])
     const text = document.body.textContent
-    expect(text).toMatch(/history/)
-    expect(text).toMatch(/shares/)
+    expect(text).toContain('Delete "Kitchen Pi" permanently?')
+    expect(text).toMatch(/History/)
+    expect(text).toMatch(/Shares/)
     expect(text).toMatch(/settings/)
-    expect(text).toMatch(/keeps checking in until that software is removed, and is refused quietly/)
+    expect(text).toMatch(/An older agent keeps checking in and is refused until you uninstall it/)
+    expect(text).not.toMatch(/[Dd]ecommission/)
   })
 
   it('one device: says what it runs, taken out of each; several: not', async () => {

@@ -41,7 +41,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
 
   if (!device) return null
 
-  // A disabled device offers Restore and Decommission… in place of what it can't do while disabled.
+  // A disabled device offers Restore and Delete permanently… in place of what it can't do while disabled.
   const disabled = !!device.disabled
   const manage = device.permissions.includes('MANAGE') && !disabled
 
@@ -68,7 +68,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
       <ListItemIcon>
         <Icon name="conveyor-belt-boxes" size="md" />
       </ListItemIcon>
-      <ListItemText primary={t('deviceOptionMenu.makeProduct', 'Make Product')} />
+      <ListItemText primary={t('deviceOptionMenu.makeProduct', 'Create product')} />
     </MenuItem>
   )
 
@@ -103,7 +103,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
         </MobileUI>
         {(!devicesSection || service) && (
           <ListItemLocation
-            title={t('deviceOptionMenu.deviceDetails', 'Device Details')}
+            title={t('deviceOptionMenu.deviceDetails', 'Device details')}
             icon="router"
             to={`/devices/${device.id}/details`}
             menuItem
@@ -114,7 +114,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
           <CopyMenuItem
             key="link"
             icon="link"
-            title={t('deviceOptionMenu.serviceLink', 'Service Link')}
+            title={t('deviceOptionMenu.serviceLink', 'Service link')}
             value={`${DESKTOP_PROTOCOL}devices/${device.id}/${service.id}`}
             onCopied={handleClose}
           />
@@ -123,7 +123,7 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
           <CopyMenuItem
             key="link"
             icon="link"
-            title={t('deviceOptionMenu.deviceLink', 'Device Link')}
+            title={t('deviceOptionMenu.deviceLink', 'Device link')}
             value={`${DESKTOP_PROTOCOL}devices/${device.id}`}
             onCopied={handleClose}
           />
@@ -134,23 +134,28 @@ export const DeviceOptionMenu: React.FC<Props> = ({ device, service }) => {
             !device.virtual && (
               <MenuItem
                 dense
-                key="restore"
+                key="recover"
                 onClick={() => {
                   handleClose()
                   dispatch.ui.set({ showRestoreModal: true })
                 }}
+                data-recover-device
               >
                 <ListItemIcon>
                   <Icon name="wave-pulse" size="md" />
                 </ListItemIcon>
-                <ListItemText primary={t('deviceOptionMenu.restoreDevice', 'Restore Device')} />
+                <ListItemText
+                  primary={t('deviceOptionMenu.recoverDevice', 'Recover device…')}
+                  secondary={t('deviceOptionMenu.recoverDeviceHint', 'Make a reset or reinstalled machine this device again')}
+                  secondaryTypographyProps={{ sx: { whiteSpace: 'normal', maxWidth: 240 } }}
+                />
               </MenuItem>
             ),
             <MenuItem dense key="transfer" to={`/devices/${device.id}/transfer`} component={Link} onClick={handleClose}>
               <ListItemIcon>
                 <Icon name="arrow-turn-down-right" size="md" />
               </ListItemIcon>
-              <ListItemText primary={t('deviceOptionMenu.transferDevice', 'Transfer Device')} />
+              <ListItemText primary={t('deviceOptionMenu.transferDevice', 'Transfer device')} />
             </MenuItem>,
             device.virtual ? null : admin ? (
               makeProductItem
@@ -240,7 +245,7 @@ const MakeVirtualDeviceItem: React.FC<{ device: IDevice; service: IService; onCl
         <Icon name="arrow-turn-down" rotate={270} size="md" />
       </ListItemIcon>
       <ListItemText
-        primary={t('deviceOptionMenu.makeVirtualDevice', { host, defaultValue: 'Make a virtual device for {{host}}…' })}
+        primary={t('deviceOptionMenu.makeVirtualDevice', { host, defaultValue: 'Add a virtual device for {{host}}…' })}
       />
     </MenuItem>
   )
