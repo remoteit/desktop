@@ -55,8 +55,7 @@ function AccountServices({ accountId }: { accountId: string }) {
     <Container
       bodyProps={{ verticalOverflow: true }}
       header={
-        <Gutters sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h1">{t('nav.services', 'Services')}</Typography>
+        <Gutters top={null} bottom={null} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <IconButton icon="sync" title={t('serviceShortcuts.refresh', 'Refresh services')} onClick={refresh} />
         </Gutters>
       }
