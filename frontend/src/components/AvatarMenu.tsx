@@ -129,7 +129,7 @@ export const AvatarMenu: React.FC = () => {
         <ListItemLink title={t('nav.support', 'Support')} icon="life-ring" href={DESKTOP_HELP_LINK} dense />
         <ListItemLink title={t('nav.apis', 'APIs')} icon="books" href="https://link.remote.it/docs/api" dense />
         <ListItemLocation
-          title={t('nav.bugReport', 'Bug Report')}
+          title={t('nav.bugReport', 'Bug report')}
           icon="spider"
           iconType="solid"
           to="/feedback"

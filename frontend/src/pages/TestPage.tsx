@@ -222,7 +222,7 @@ export const TestPage: React.FC = () => {
     <Container
       header={
         <Typography variant="h1">
-          <Title>{t('testPage.title', 'Test Settings')}</Title>
+          <Title>{t('testPage.title', 'Test settings')}</Title>
         </Typography>
       }
     >
@@ -484,7 +484,7 @@ export const TestPage: React.FC = () => {
           values={[
             { key: '', name: t('testPage.proxyFleetDefault', "The API stage's default") },
             { key: 'LEGACY', name: t('testPage.proxyFleetLegacy', 'Legacy fleet') },
-            { key: 'CONNECTD', name: t('testPage.proxyFleetConnectd', 'connectd-go proxies') },
+            { key: 'CONNECTD', name: t('testPage.proxyFleetConnectd', 'Go agent proxies') },
           ]}
           onChange={value => dispatch.ui.setPersistent({ proxyFleet: (value || undefined) as UIState['proxyFleet'] })}
         />

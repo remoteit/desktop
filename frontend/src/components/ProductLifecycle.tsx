@@ -31,7 +31,7 @@ export const ProductLifecycleSetting: React.FC<SettingProps> = ({ name, lifecycl
   const ephemeral = lifecycle === 'ephemeral'
   const meaning = t(
     'productLifecycle.ephemeralMeaning',
-    'Ephemeral devices keep their identity in memory: a daemon restart keeps it, but after a reboot or on a new machine each is a new device, which registers again with a join key. A device is removed when it deregisters, or after 10 minutes offline.'
+    'Ephemeral devices keep their identity in memory: an agent restart keeps it, but after a reboot or on a new machine each is a new device, which registers again with a join key. A device is removed when it deregisters, or after 10 minutes offline.'
   )
 
   const change = async () => {
@@ -45,7 +45,7 @@ export const ProductLifecycleSetting: React.FC<SettingProps> = ({ name, lifecycl
   return (
     <Box marginTop={3} data-lifecycle={lifecycle}>
       <Typography variant="subtitle2" color="textSecondary">
-        {t('productLifecycle.title', 'Device Lifecycle')}
+        {t('productLifecycle.title', 'Device lifecycle')}
       </Typography>
       <List disablePadding>
         <ListItemSetting
@@ -68,8 +68,8 @@ export const ProductLifecycleSetting: React.FC<SettingProps> = ({ name, lifecycl
               ? t('productLifecycle.toPersistentTitle', { name, defaultValue: 'Make {{name}}’s devices persistent?' })
               : t('productLifecycle.toEphemeralTitle', { name, defaultValue: 'Make {{name}}’s devices ephemeral?' }),
             action: ephemeral
-              ? t('productLifecycle.toPersistent', 'Make Persistent')
-              : t('productLifecycle.toEphemeral', 'Make Ephemeral'),
+              ? t('productLifecycle.toPersistent', 'Keep devices')
+              : t('productLifecycle.toEphemeral', 'Switch to ephemeral'),
             color: ephemeral ? 'primary' : 'warning',
             children: ephemeral ? (
               <Typography variant="body2">

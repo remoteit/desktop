@@ -192,7 +192,7 @@ export const ScriptRunSummary: React.FC<Props> = ({
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
         <Typography variant="subtitle2" color="textSecondary" sx={{ flexGrow: 1, mb: 0 }}>
-          {t('scriptRunSummary.runConfiguration', 'Run Configuration')}
+          {t('scriptRunSummary.runConfiguration', 'Run configuration')}
         </Typography>
         {runConfigAction}
       </Box>

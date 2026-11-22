@@ -60,7 +60,7 @@ export const ScriptRunForm: React.FC<Props> = ({
         </Notice>
       )}
 
-      <Typography variant="subtitle2">{t('scriptRunForm.targetDevices', 'Target Devices')}</Typography>
+      <Typography variant="subtitle2">{t('scriptRunForm.targetDevices', 'Target devices')}</Typography>
       <List disablePadding>
         <TagFilter
           form={runForm}
@@ -143,7 +143,7 @@ export const ScriptRunForm: React.FC<Props> = ({
               onClick={onRun}
               sx={{ flexGrow: 1 }}
             >
-              {running ? t('scriptRunForm.running', 'Running...') : t('scriptRunForm.runNow', 'Run Now')}
+              {running ? t('scriptRunForm.running', 'Running...') : t('scriptRunForm.runNow', 'Run now')}
             </Button>
             <Button
               variant="contained"

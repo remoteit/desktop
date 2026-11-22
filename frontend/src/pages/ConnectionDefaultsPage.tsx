@@ -99,7 +99,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>{t('connectionDefaultsPage.title', 'Connection Defaults')}</Title>
+            <Title>{t('connectionDefaultsPage.title', 'Connection defaults')}</Title>
           </Typography>
           <Gutters bottom="lg" top={null}>
             <Typography variant="caption">

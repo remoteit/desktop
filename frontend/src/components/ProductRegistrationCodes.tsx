@@ -87,7 +87,7 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
       confirmProps={{
         color: 'error',
         disabled: busy,
-        action: t('productRegistrationCodes.revokeAction', 'Revoke Code'),
+        action: t('productRegistrationCodes.revokeAction', 'Revoke code'),
         title: t('productRegistrationCodes.revokeTitle', 'Revoke registration code?'),
         children: (
           <>
@@ -116,7 +116,7 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
         code === current && locked
           ? t('productRegistrationCodes.revokeLastCredential', 'Rotate the code or create a join key first: this is the only code in force')
           : modern
-            ? t('productRegistrationCodes.revokeAction', 'Revoke Code')
+            ? t('productRegistrationCodes.revokeAction', 'Revoke code')
             : t('productRegistrationCodes.revoke', 'Revoke')
       }
       loading={revoking === code.code}
@@ -144,8 +144,8 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
         color: 'error',
         disabled: busy,
         action: revokePrevious
-          ? t('productRegistrationCodes.replaceAndRevokeAction', 'Replace and Revoke')
-          : t('productRegistrationCodes.replaceAction', 'Replace Code'),
+          ? t('productRegistrationCodes.replaceAndRevokeAction', 'Replace and revoke')
+          : t('productRegistrationCodes.replaceAction', 'Replace code'),
         title: t('productRegistrationCodes.replaceTitle', 'Replace registration code?'),
         children: (
           <>
@@ -200,7 +200,7 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
     <Box sx={{ marginTop: 3 }}>
       <Typography variant="subtitle2" color="textSecondary">
         {modern
-          ? t('productRegistrationCodes.reusableTitle', 'Reusable Codes')
+          ? t('productRegistrationCodes.reusableTitle', 'Reusable codes')
           : t('productRegistrationCodes.title', 'Codes in use')}
       </Typography>
       {modern && !current && replaceButton}

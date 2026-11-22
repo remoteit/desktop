@@ -170,8 +170,8 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       {!!editForm?.script && !loading && (
         <IconButton
           name={copied ? 'check' : 'copy'}
-          label={t('scriptEditPage.copyScript', 'Copy Script')} // the name stays the action while the tooltip flashes the status
-          title={copied ? t('scriptEditPage.copied', 'Copied!') : t('scriptEditPage.copyScript', 'Copy Script')}
+          label={t('scriptEditPage.copyScript', 'Copy script')} // the name stays the action while the tooltip flashes the status
+          title={copied ? t('scriptEditPage.copied', 'Copied!') : t('scriptEditPage.copyScript', 'Copy script')}
           color={copied ? 'success' : 'grayDark'}
           size="sm"
           onClick={() => {
@@ -184,7 +184,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       )}
       <IconButton
         name="terminal"
-        title={t('scriptEditPage.addDemoScript', 'Add Demo Script')}
+        title={t('scriptEditPage.addDemoScript', 'Add demo script')}
         color="grayDark"
         size="sm"
         onClick={async () => {
@@ -204,7 +204,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       bodyProps={{ inset: true, verticalOverflow: true, gutterBottom: true }}
       header={
         <Typography variant="h1">
-          <Box sx={{ flex: 1 }}>{isNew ? t('scriptEditPage.addScript', 'Add Script') : script?.name}</Box>
+          <Box sx={{ flex: 1 }}>{isNew ? t('scriptEditPage.addScript', 'Add script') : script?.name}</Box>
           {!isNew && <ScriptDeleteButton />}
         </Typography>
       }
@@ -243,7 +243,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
                   onClick={handleNext}
                   sx={{ flexGrow: 1 }}
                 >
-                  {t('scriptEditPage.newRun', 'New Run')}
+                  {t('scriptEditPage.newRun', 'New run')}
                 </Button>
                 {manager && (
                   <Button
@@ -270,7 +270,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       }
     >
       <Typography variant="subtitle2">
-        <Title>{t('scriptEditPage.editScript', 'Edit Script')}</Title>
+        <Title>{t('scriptEditPage.editScript', 'Edit script')}</Title>
       </Typography>
       {editForm && (
         <>

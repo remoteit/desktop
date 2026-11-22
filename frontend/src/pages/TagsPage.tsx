@@ -62,7 +62,7 @@ export const TagsPage: React.FC = () => {
                 createOnly
                 button="plus"
                 tags={tags}
-                buttonProps={{ title: t('tagsPage.addTag', 'Add Tag'), loading: creating, disabled: creating }}
+                buttonProps={{ title: t('tagsPage.addTag', 'Add tag'), loading: creating, disabled: creating }}
                 onCreate={async tag => await dispatch.tags.create({ tag, accountId })}
               />
             )}

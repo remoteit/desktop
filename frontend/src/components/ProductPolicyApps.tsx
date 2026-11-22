@@ -154,7 +154,7 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, accountId, apps,
                       {app.description && <Line data="description">{app.description}</Line>}
                       {app.root && (
                         <Line data="root" color="warning.main">
-                          {t('deviceApps.runsAsRoot', 'Full control of this device')}
+                          {t('deviceApps.runsAsRoot', 'Has full control of this device')}
                         </Line>
                       )}
                       {!!app.capabilities.length && (

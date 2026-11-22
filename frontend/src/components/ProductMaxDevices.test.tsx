@@ -65,9 +65,9 @@ describe('ProductMaxDevicesSetting', () => {
     await render(
       <ProductMaxDevicesSetting value={{ maxDevices: null, devicesCounted: 4 }} manage onChange={onChange} />
     )
-    expect(body()).toContain('Device Limit')
+    expect(body()).toContain('Device limit')
     expect(body()).toContain('No maximum')
-    expect(body()).toContain('4 device(s) count against it; disabled ones do not')
+    expect(body()).toContain('Devices that count toward the limit: 4. Disabled devices do not count.')
     expect(body()).not.toContain('over')
   })
 
@@ -94,7 +94,7 @@ describe('ProductMaxDevices', () => {
     await render(<ProductMaxDevices product={product} />)
     expect(read).toHaveBeenCalledWith('p1', 'ACCOUNT')
     expect(body()).toContain('Maximum devices')
-    expect(body()).toContain('1 device(s) count against it')
+    expect(body()).toContain('Devices that count toward the limit: 1.')
   })
 
   it('shows nothing where the API has no maximum, or the read failed', async () => {

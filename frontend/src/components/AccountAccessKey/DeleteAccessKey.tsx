@@ -37,7 +37,7 @@ export const DeleteAccessKey: React.FC<{ deleteKey: IAccessKey }> = ({ deleteKey
         />
       )}
       <Dialog onClose={handleClose} open={open} fullWidth>
-        <DialogTitle>{t('deleteAccessKey.title', 'Delete Access Key')}</DialogTitle>
+        <DialogTitle>{t('deleteAccessKey.title', 'Delete access key')}</DialogTitle>
         <form onSubmit={confirmDelete}>
           <DialogContent>
             <Notice severity="error" fullWidth gutterBottom>

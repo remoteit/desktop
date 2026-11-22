@@ -41,7 +41,7 @@ export const AccountAccessKey: React.FC = () => {
         <Typography variant="body2" gutterBottom>
           {t(
             'accountAccessKey.description',
-            "Access keys are necessary for authenticating with our API. You have the option to create a new key, delete an existing one, or temporarily disable a key. It's advisable to download and save your keys in the .remoteit directory of your home folder:"
+            'Use an access key to sign in to the Remote.It API. You can create, turn off or delete a key. Save your keys in this file in your home folder.'
           )}
         </Typography>
         <CodeBlock>~/.remoteit/credentials</CodeBlock>
@@ -56,7 +56,7 @@ export const AccountAccessKey: React.FC = () => {
               if (!(await dispatch.keys.createAccessKey())) setShowDialog(false)
             }}
           >
-            {t('accountAccessKey.generateCredentials', 'Generate Credentials')}
+            {t('accountAccessKey.generateCredentials', 'Generate credentials')}
           </Button>
         </Box>
       </Gutters>
@@ -65,7 +65,7 @@ export const AccountAccessKey: React.FC = () => {
           {accessKeys?.map((k, index) => (
             <Box marginBottom={4}>
               <CopyCodeBlock
-                label={t('accountAccessKey.publicKey', 'Public Key')}
+                label={t('accountAccessKey.publicKey', 'Public key')}
                 value={k.key}
                 hideCopyLabel
                 sx={{ '& .MuiTypography-root': { opacity: k.enabled ? 1 : 0.5 } }}

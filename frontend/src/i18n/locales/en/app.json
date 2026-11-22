@@ -11,16 +11,19 @@
     "description": "This is your unique Developer API key to use and access Remote.It APIs.",
     "developer": "Developer",
     "doNotShare": "Do not share it with anyone.",
-    "title": "Access Keys"
+    "title": "Access keys"
+  },
+  "account": {
+    "title": "Account"
   },
   "accountAccessKey": {
     "created": "Created",
-    "description": "Access keys are necessary for authenticating with our API. You have the option to create a new key, delete an existing one, or temporarily disable a key. It's advisable to download and save your keys in the .remoteit directory of your home folder:",
-    "generateCredentials": "Generate Credentials",
+    "description": "Use an access key to sign in to the Remote.It API. You can create, turn off or delete a key. Save your keys in this file in your home folder.",
+    "generateCredentials": "Generate credentials",
     "keyLimit": "There is a limit of 2 access keys. Keep your keys safe.",
     "lastUsed": "Last used",
     "neverUsed": "Never used",
-    "publicKey": "Public Key",
+    "publicKey": "Public key",
     "secretKeyWarning": "If you lose or forget your secret key, you cannot retrieve it.",
     "title": "Authentication"
   },
@@ -267,8 +270,8 @@
     "asksUnknown": "What this version asks could not be read, so it cannot be consented to here. Try again later.",
     "cancel": "Cancel",
     "candidate": "Candidate {{version}} to {{share}}% of devices",
-    "capabilitiesAlso": "It also asks of remote.it:",
-    "capabilitiesAsks": "It asks of remote.it:",
+    "capabilitiesAlso": "It also asks of Remote.It:",
+    "capabilitiesAsks": "It asks of Remote.It:",
     "capabilitiesAsksFor": "It also asks for",
     "capabilityPersonAccounts": "Keeps accounts for the people you share with",
     "capabilityPersonCertificates": "Signs people in with their Remote.It certificate",
@@ -306,7 +309,7 @@
     "fleetUpToDate": "{{number}} up to date",
     "fullControl": "Full control",
     "heldBack": "Not updated: {{reason}}",
-    "heldConsent": "A new version needs to run as root",
+    "heldConsent": "A new version needs full control",
     "heldConsentAsks": "A new version asks for more access",
     "heldPending": "Given, and the device has not said it runs it yet",
     "heldPinned": "Pinned",
@@ -381,9 +384,9 @@
     "removeTitle": "Remove {{app}} from {{device}}?",
     "removing": "Removing…",
     "restricted": "Restricted",
-    "rootDevices": "{{app}} runs as root: full control of each device.",
-    "rootProduct": "{{app}} runs as root: full control of every device in this product, now and later.",
-    "runsAsRoot": "Runs as root",
+    "rootDevices": "{{app}} gets full control of each device.",
+    "rootProduct": "{{app}} gets full control of every device in this product, now and later.",
+    "runsAsRoot": "Full control",
     "search": "Search apps",
     "searchDevices": "Search devices…",
     "service": "Service",
@@ -427,7 +430,7 @@
     "updateNow": "Update now…",
     "updateRootAction": "Consent and update",
     "updateRootBody": "A new version of {{app}}, published by {{publisher}}, runs as root: it gets full control of each device selected — every file, account and program on it. Update only if you trust {{publisher}} with them.",
-    "updateRootTitle": "Update {{app}} to run as root?",
+    "updateRootTitle": "Update {{app}} and give it full control?",
     "updateSelected": "Update selected",
     "upToDateWord": "Up to date",
     "version": "Version",
@@ -444,10 +447,10 @@
     "yours": "Yours"
   },
   "appTerminal": {
-    "disabled": "{{app}} is disabled. Enable it to open it in a terminal.",
+    "disabled": "{{app}} is off. Turn it on to open the terminal.",
     "enable": "Enable it",
-    "open": "Open in terminal",
-    "openInBrowser": "Open in a terminal in your browser",
+    "open": "Open terminal",
+    "openInBrowser": "Open terminal in your browser",
     "starting": "{{app}} is starting. The terminal opens once it runs."
   },
   "appType": {
@@ -726,14 +729,14 @@
     "updating": "Updating..."
   },
   "changePassword": {
-    "currentPassword": "Current Password",
+    "currentPassword": "Current password",
     "newPassword": "New Password",
     "noticeAfter": "automatically sign you out of other sessions.",
     "noticeBefore": "Changing your password will",
     "noticeEmphasis": "NOT",
     "noticeSignOut": "You can manually sign out from all sessions below.",
     "noticeTitle": "Notice",
-    "title": "Change Password"
+    "title": "Change password"
   },
   "chat": {
     "approve": "Approve",
@@ -1017,7 +1020,7 @@
     "signInOnly": "Sign-in only — it can confirm your identity, but was granted nothing else.",
     "signInScopes": "Sign-in scopes",
     "signOutBefore": "will be signed out. New access is blocked immediately; any session already in progress ends within",
-    "title": "Connected App",
+    "title": "Connected app",
     "willAdd": "This gives the app access it does not have yet: {{list}}"
   },
   "connectedApps": {
@@ -1029,7 +1032,7 @@
   },
   "connectedAppsPage": {
     "description": "Apps and AI agents you have signed in to your Remote.It account. Select one to limit which devices it can reach, or to revoke its access.",
-    "title": "Connected Apps"
+    "title": "Connected apps"
   },
   "connectionDefaultsForm": {
     "saved": "Saved"
@@ -1042,7 +1045,7 @@
     "reset": "Reset",
     "service": "service",
     "serviceType": "Service Type",
-    "title": "Connection Defaults"
+    "title": "Connection defaults"
   },
   "connectionDetails": {
     "cannotLaunch": "To launch, change your launch type to URL or download the desktop app",
@@ -1154,7 +1157,7 @@
   },
   "createJoinKey": {
     "create": "Create",
-    "createdTitle": "Join Key Created",
+    "createdTitle": "Join key created",
     "creating": "Creating...",
     "description": "A machine holding the key creates new devices of {{product}}, and nothing else. The key is shown once, when it is created.",
     "download": "Download",
@@ -1169,10 +1172,10 @@
     "nameHelp": "Where it is used, such as a fleet, a site or a CI pipeline",
     "nameRequired": "A name is required",
     "nameTooLong": "At most {{max}} characters",
-    "onceBody": "It will not be shown again: remote.it keeps only its public half. If it is lost, revoke it and create another.",
+    "onceBody": "You will not see it again. Remote.It keeps only its public half. If you lose it, revoke it and create another.",
     "onceTitle": "Copy or download this key now",
-    "title": "Create Join Key",
-    "use": "Give it to the machine as {{env}}, or save it in a file only the daemon can read and name the file in {{file}}.",
+    "title": "Create join key",
+    "use": "Give it to the machine as {{env}}, or save it in a file only the agent can read and name the file in {{file}}.",
     "wholeNumber": "A whole number of 1 or more"
   },
   "createOrganization": {
@@ -1199,13 +1202,13 @@
     "noticePrefix": "New customers will be added to your reseller account and given a free plan.",
     "noticeSuffix": "You can upgrade them to a paid plan afterwards.",
     "subtitle": "Add a user to your reseller account.",
-    "title": "Add Customers"
+    "title": "Add customers"
   },
   "customerPage": {
     "license": "License",
     "removeWarning": "You are removing the customer ”{{email}}” from {{orgName}}.",
-    "salesRep": "Sales Rep",
-    "updatePlan": "Update Plan"
+    "salesRep": "Sales rep",
+    "updatePlan": "Update plan"
   },
   "customerPlansPage": {
     "selectPlanFor": "Select a plan for"
@@ -1235,7 +1238,7 @@
   "deleteAccessKey": {
     "confirmLabel": "Type DELETE to confirm",
     "confirmText": "Do you wish to delete key",
-    "title": "Delete Access Key",
+    "title": "Delete access key",
     "warning": "This action is permanent and cannot be undone."
   },
   "deleteAccountSection": {
@@ -1419,12 +1422,12 @@
     "between": "From {{min}} to {{max}}",
     "clearDeprecated": "Clear: back to its default",
     "connect": "Connect",
-    "consented": "Full control, allowed by {{by}}, {{when}}",
-    "consentedCarried": "Full control, as it had before consents were kept",
-    "consentedConverted": "Full control, as its old install had. Switched to the app by Remote.It, {{when}}",
-    "consentedDevice": "Full control, turned on at the device by {{by}}, {{when}}",
-    "consentedProduct": "Full control, allowed for its product by {{by}}, {{when}}",
-    "consentedRegistration": "Full control since this device registered, {{when}}",
+    "consented": "Given full control by {{by}}, {{when}}",
+    "consentedCarried": "Has full control, as it did before consents were kept",
+    "consentedConverted": "Has full control, as its old install did. Switched to the app by Remote.It, {{when}}",
+    "consentedDevice": "Given full control on the device by {{by}}, {{when}}",
+    "consentedProduct": "Has full control by its product’s consent: {{by}}, {{when}}",
+    "consentedRegistration": "Has full control since this device registered, {{when}}",
     "converting": "Converting from the old install",
     "needsNewer": "Needs a newer agent on this device",
     "needsNewerAgentAdd": "Needs a newer agent on this device. Add it now and it starts once the agent is updated.",
@@ -1437,13 +1440,13 @@
     "rootAction": "Turn on with full control",
     "rootBody": "{{app}}, published by {{publisher}}, gets full control of this device. That is every file, account and program on it.",
     "rootRefused": "Not allowed here. This device’s administrator doesn’t allow apps with full control.",
-    "rootTitle": "Give {{app}} full control?",
+    "rootTitle": "Give {{app}} full control of this device?",
     "rootTrust": "Turn it on only if you trust {{publisher}} with this device.",
     "rootUpdate": "{{app}} {{version}} needs full control. This device stays on the version it runs until you agree.",
     "rootUpdateAction": "Consent and update",
     "running": "Running",
     "runningDetail": "Running — {{detail}}",
-    "runsAsRoot": "Full control of this device",
+    "runsAsRoot": "Has full control of this device",
     "runsRestricted": "Runs restricted: an account of its own on this device",
     "screenviewNotConverted": "It keeps running as it is, not switched to the app: {{why}}",
     "screenviewNotConvertedNoWhy": "It keeps running as it is, not switched to the app",
@@ -2489,7 +2492,7 @@
     "emailUsAt": "You can also email us at",
     "featureRequestHint": "If you have a feature request, please include why it’s important to you.",
     "includedData": "Included data",
-    "intro": "Get support or provide feedback on how can we improve Remote.It.",
+    "intro": "Get support, or tell us how we can improve Remote.It.",
     "message": "Message",
     "send": "Send",
     "subject": "Subject",
@@ -2497,21 +2500,21 @@
   },
   "fileAddPage": {
     "noPermission": "You do not have permission to upload files",
-    "uploadFile": "Upload File",
+    "uploadFile": "Upload file",
     "uploading": "Uploading..."
   },
   "fileDeleteButton": {
-    "title": "Delete File",
+    "title": "Delete file",
     "warning": "This can not be undone."
   },
   "fileMetadataForm": {
     "description": "Description",
     "name": "Name",
-    "uploadFile": "Upload File"
+    "uploadFile": "Upload file"
   },
   "filesPage": {
     "demoDescription": "See how easy it is to run a script with our demo script.",
-    "demoScript": "Demo Script",
+    "demoScript": "Demo script",
     "demoScriptDescription": "Demo script to illustrate how to get data and add it to a device",
     "demoScriptName": "Get Hostname",
     "moreExamples": "For more examples and detailed guidance,",
@@ -2535,7 +2538,7 @@
     "readError": "File reading has failed",
     "scriptLabel": "Script",
     "selected": "selected",
-    "selectFile": "Select File",
+    "selectFile": "Select file",
     "upload": "Upload"
   },
   "fileUploadProgress": {
@@ -2754,7 +2757,7 @@
     "selfUpdate": "Keep it updated automatically",
     "selfUpdateNoVolume": "Needs a volume to keep each release in, which this container has none of: it is updated by pulling the image again.",
     "selfUpdateOff": "It is updated by pulling the image again and recreating the container.",
-    "selfUpdateOn": "It takes each remote.it release as it comes out, kept in its volume; pulling a newer image still wins.",
+    "selfUpdateOn": "It takes each Remote.It release as it comes out, kept in its volume. Pulling a newer image still wins.",
     "title": "Run it in a container"
   },
   "lanSharePage": {
@@ -2983,7 +2986,7 @@
     "storeUnavailable": "The service that holds your password could not be reached. Try again soon.",
     "suggest": "Protect your account with an authenticator app or text messages. The first one is confirmed by a code we email you.",
     "textMe": "Text me a code",
-    "title": "Two-Factor Authentication",
+    "title": "Two-factor authentication",
     "unavailable": "Your sign-in methods could not be loaded. Reload the page to try again.",
     "usePasskey": "Use a passkey",
     "useRecovery": "Use a recovery code",
@@ -3065,7 +3068,7 @@
     "announcements": "Announcements",
     "apis": "APIs",
     "apps": "Apps",
-    "bugReport": "Bug Report",
+    "bugReport": "Bug report",
     "connectAi": "Connect AI",
     "connections": "Connections",
     "devices": "Devices",
@@ -3428,8 +3431,8 @@
   "organizationAddPage": {
     "add": "Add",
     "purchaseLicensesHint": "Purchase additional licenses to grant this user full access.",
-    "roleAssignment": "Role Assignment",
-    "title": "Add Organization Members",
+    "roleAssignment": "Role assignment",
+    "title": "Add organization members",
     "upgrade": "Upgrade"
   },
   "organizationColor": {
@@ -3448,7 +3451,7 @@
   },
   "organizationGuestDetails": {
     "devices": "Devices",
-    "guestAccess": "Guest Access",
+    "guestAccess": "Guest access",
     "loading": "loading...",
     "loadingFailed": "Loading failed ({{id}})",
     "networks": "Networks"
@@ -3471,14 +3474,14 @@
     "cannotBeUndone": "This action cannot be undone.",
     "contactAdminHint": "Contact an organization Admin to rejoin.",
     "contactOwnerHint": "You would need to contact the Organization owner to be re-added.",
-    "editOrganization": "Edit Organization",
+    "editOrganization": "Edit organization",
     "joined": "Joined",
-    "leaveAccount": "Leave Account",
-    "leaveOrganization": "Leave Organization",
-    "noMemberships": "No Organization Memberships",
+    "leaveAccount": "Leave account",
+    "leaveOrganization": "Leave organization",
+    "noMemberships": "No organization memberships",
     "noMembershipsHint": "Organizations can add you to their account to provide access to the devices they own.",
     "owner": "Owner",
-    "title": "Organization Memberships",
+    "title": "Organization memberships",
     "yourOrganization": "Your organization"
   },
   "organizationMembersPage": {
@@ -3504,12 +3507,12 @@
     "deleteWarningBefore": "You will be permanently deleting the role",
     "deviceNetworkPermissions": "Device and Network Permissions",
     "name": "Name",
-    "newRole": "New Role",
+    "newRole": "New role",
     "save": "Save",
     "saved": "Saved",
     "saving": "Saving...",
     "systemRoleNotice": "System roles cannot be modified.",
-    "userPermissions": "User Permissions"
+    "userPermissions": "User permissions"
   },
   "organizationRolesPage": {
     "addRole": "Add role",
@@ -3526,11 +3529,11 @@
     "checking": "checking...",
     "clientIdFieldLabel": "Client ID",
     "clientIdLabel": "Client ID",
-    "clientSecretFieldLabel": "Client Secret",
+    "clientSecretFieldLabel": "Client secret",
     "dnsInstructions": "Add the following CNAME and Value to your DNS records to validate your domain:",
     "domainLabel": "Domain",
-    "enterDomain": "Enter your Organization's domain name.",
-    "identityProvider": "Identity Provider",
+    "enterDomain": "Enter your organization's domain name.",
+    "identityProvider": "Identity provider",
     "instructionsLink": "Instructions.",
     "issuerFieldLabel": "Issuer",
     "issuerLabel": "issuer",
@@ -3538,13 +3541,13 @@
     "providerTypeLabel": "Provider type",
     "requireLogin": "Require login with {{type}}",
     "requireLoginSubLabel": "All organization members will not be able to login with email/password or Google.",
-    "samlOidcSupported": "SAML and ODIC are both supported",
+    "samlOidcSupported": "SAML and OIDC are both supported.",
     "setup": "Setup",
     "updating": "Updating...",
     "uploadMetadata": "Upload your metadata file to enable SAML",
-    "validateDomainNotice": "Validate your domain name to use an Identity Provider",
+    "validateDomainNotice": "Validate your domain name to use an identity provider.",
     "verificationCNAME": "Verification CNAME",
-    "verificationValue": "Verification Value",
+    "verificationValue": "Verification value",
     "verified": "Verified"
   },
   "organizationSamlUpload": {
@@ -3559,18 +3562,18 @@
     "memberLabel": "{{name}} - {{role}}",
     "organizations": "Organizations",
     "ownerLabel": "{{name}} - Owner",
-    "personalAccount": "Personal Account"
+    "personalAccount": "Personal account"
   },
   "organizationSelectList": {
-    "membershipSettings": "Membership Settings",
+    "membershipSettings": "Membership settings",
     "organizations": "Organizations",
     "owner": "Owner",
-    "personalAccount": "Personal Account"
+    "personalAccount": "Personal account"
   },
   "organizationSettingsPage": {
-    "deleteOrganization": "Delete Organization",
+    "deleteOrganization": "Delete organization",
     "general": "General",
-    "organizationName": "Organization Name",
+    "organizationName": "Organization name",
     "permanentlyDeleting": "You will be permanently deleting",
     "removeMembersWarning": "This will remove all your members and their access to your devices.",
     "settings": "Settings"
@@ -3638,23 +3641,23 @@
     "cancel": "Cancel",
     "childPartners_one": "Child Partners ({{count}})",
     "childPartners_other": "Child Partners ({{count}})",
-    "currentlyOnline": "Currently Online",
+    "currentlyOnline": "Currently online",
     "devicesCount_one": "{{count}} device",
     "devicesCount_other": "{{count}} devices",
     "devicesReportedOnce_one": "{{count}} devices have reported at least once",
     "devicesReportedOnce_other": "{{count}} devices have reported at least once",
-    "deviceSummary": "Device Summary",
+    "deviceSummary": "Device summary",
     "exportFailed": "Failed to export devices.",
     "exportToCsv": "Export devices to CSV",
     "loadingPartner": "Loading partner...",
-    "parentPartner": "Parent Partner",
+    "parentPartner": "Parent partner",
     "partnerNotFound": "Partner not found",
     "partnerSummary": "{{total}} total • {{online}} online • {{active}} active",
     "registrants_one": "Registrants ({{count}})",
     "registrants_other": "Registrants ({{count}})",
     "renamePartner": "Rename partner",
     "save": "Save",
-    "totalDevices": "Total Devices",
+    "totalDevices": "Total devices",
     "updateNameFailed": "Failed to update partner name."
   },
   "partnerStatsListPage": {
@@ -3720,14 +3723,19 @@
     "total": "Total",
     "users": "Users"
   },
+  "planEnterprise": {
+    "caption": "Large-scale solutions for unique and custom use cases.",
+    "changeCaption": "To change your plan, contact your administrator or us.",
+    "contact": "Contact us"
+  },
   "plans": {
     "billedMonthly": "billed monthly",
     "continue": "Continue",
-    "currentPlan": "Current Plan",
+    "currentPlan": "Current plan",
     "downgradeNotice": "This plan will downgrade your service.",
     "downgradeNoticeDetail": "You will lose access to some features and may lose access to some devices.",
     "downgradePlanTitle": "Downgrade Plan?",
-    "freePlan": "Free Plan",
+    "freePlan": "Free plan",
     "licenseCount_one": "{{count}} license",
     "licenseCount_other": "{{count}} licenses",
     "perMonthPerLicense": "per month / per license",
@@ -3742,7 +3750,7 @@
     "removingResellerPrefix": "You are removing",
     "removingResellerSuffix": "as your reseller. This will remove your current plan and return you to the free plan.",
     "severWarning": "This will sever your reseller relationship!",
-    "title": "Subscriptions"
+    "title": "Subscription"
   },
   "platformAddPage": {
     "managePermissionRequired": "You must have the Manage permission to add a device to this organization.",
@@ -3815,7 +3823,7 @@
     "removed": "Removed: no effect on its devices",
     "removedIn": "Removed in {{version}}: no effect on devices that run it",
     "rootBody": "{{app}}, published by {{publisher}}, runs as root: it gets full control of this device — every file, account and program on it — on every device in this product, now and later.",
-    "rootTitle": "Run {{app}} as root on this product’s devices?",
+    "rootTitle": "Give {{app}} full control of this product’s devices?",
     "rootTrust": "Turn it on only if you trust {{publisher}} with every device in this product.",
     "rootUpdate": "{{app}} {{version}} needs to run as root. Its devices stay on the version they run until you consent.",
     "stateDisabled": "Disabled",
@@ -3824,6 +3832,10 @@
     "title": "Apps",
     "unset": "Unset: each device’s own",
     "unsetRemoved": "Removed (not listed)"
+  },
+  "productAttributes": {
+    "deviceCount_one": "{{count}} device",
+    "deviceCount_other": "{{count}} devices"
   },
   "productDevices": {
     "more_one": "and {{count}} more",
@@ -3853,11 +3865,16 @@
     "title": "Grants",
     "warningTitle": "Register its devices with join keys"
   },
+  "productIntake": {
+    "accepting": "Accepting",
+    "closed": "Not accepting",
+    "full": "Full"
+  },
   "productJoinKeys": {
     "by": "by {{email}}",
-    "create": "Create Join Key",
+    "create": "Create join key",
     "created": "Created",
-    "description": "For automation: give a key to the machine as {{env}}, or in a file named by {{file}}. A key creates new devices of this product and nothing else, and is shown only when it is created.",
+    "description": "Put a key on each machine as {{env}}, or in a file named by {{file}}. A key only creates devices of this product. You see it once, when you create it.",
     "expired": "Expired",
     "expires": "Expires",
     "full": "All joins used",
@@ -3867,29 +3884,29 @@
     "neverUsed": "Never used",
     "noExpiry": "No expiry",
     "none": "No join keys yet.",
-    "revoke": "Revoke Key",
-    "revokeAction": "Revoke Key",
-    "revokeBody": "No device can join with this key from now on. The devices it created are not affected: remove them separately if the key leaked. This cannot be undone.",
+    "revoke": "Revoke key",
+    "revokeAction": "Revoke key",
+    "revokeBody": "No device can join with this key from now on. Devices that already joined stay. If the key leaked, delete them separately. You cannot undo this.",
     "revoked": "Revoked",
     "revokeTitle": "Revoke join key \"{{name}}\"?",
-    "title": "Join Keys",
+    "title": "Join keys",
     "unused": "Unused"
   },
   "productLifecycle": {
-    "ephemeralMeaning": "Ephemeral devices keep their identity in memory: a daemon restart keeps it, but after a reboot or on a new machine each is a new device, which registers again with a join key. A device is removed when it deregisters, or after 10 minutes offline.",
+    "ephemeralMeaning": "Ephemeral devices keep their identity in memory: an agent restart keeps it, but after a reboot or on a new machine each is a new device, which registers again with a join key. A device is removed when it deregisters, or after 10 minutes offline.",
     "label": "Ephemeral devices",
     "notChanged": "The lifecycle was not changed.",
     "persistentMeaning": "Off: each device keeps its identity on disk, through restarts and reboots, until it is removed.",
-    "title": "Device Lifecycle",
-    "toEphemeral": "Make Ephemeral",
+    "title": "Device lifecycle",
+    "toEphemeral": "Switch to ephemeral",
     "toEphemeralTitle": "Make {{name}}’s devices ephemeral?",
     "toEphemeralWarning": "Its devices are removed at their next reboot, or after 10 minutes offline, unless the machine can register itself again with a join key.",
-    "toPersistent": "Make Persistent",
+    "toPersistent": "Keep devices",
     "toPersistentBody": "Its devices keep their identity on disk from now on, through reboots, and are no longer removed after 10 minutes offline.",
     "toPersistentTitle": "Make {{name}}’s devices persistent?"
   },
   "productMaxDevices": {
-    "aboutLive": "{{counted}} device(s) count against it; disabled ones do not, and removing or disabling one frees its place. At the maximum, a device that registers is refused and tries again later, and a disabled one stays disabled. You are emailed the first time it refuses one, then once a day at most while it keeps refusing.",
+    "aboutLive": "Devices that count toward the limit: {{counted}}. Disabled devices do not count. At the limit, a new device waits and tries again later. We email you the first time, then at most once a day.",
     "below": "It has {{counted}}: none is removed, but no device joins or comes back on until {{over}} are removed or disabled.",
     "label": "Maximum devices",
     "none": "No maximum",
@@ -3897,7 +3914,7 @@
     "overLive": "{{over}} over: no device joins or comes back on until {{over}} are removed or disabled.",
     "placeholder": "No maximum",
     "problem": "A whole number from 0 to {{ceiling}}, or empty for no maximum",
-    "title": "Device Limit",
+    "title": "Device limit",
     "zero": "No device can register or be added to this product while it is 0."
   },
   "productMove": {
@@ -3918,23 +3935,23 @@
     "tooMany": "At most {{max}} devices are moved at once: select fewer."
   },
   "productOneTimeCodes": {
-    "add": "Add One Device",
-    "codeLabel": "One-time Code",
+    "add": "Add one device",
+    "codeLabel": "One-time code",
     "copy": "Copy code",
-    "description": "For adding one device by hand: each code registers a single device, within {{hours}} hours.",
-    "dialogTitle": "Add One Device",
+    "description": "Use a one-time code to add a single device by hand. Each code works once, within {{hours}} hours.",
+    "dialogTitle": "Add one device",
     "expired": "Expired",
     "expires": "Expires",
     "giveCode": "Give this code to the device's installer as its registration code ({{env}}). It registers one device.",
     "issued": "Issued",
     "none": "No one-time codes yet.",
-    "revoke": "Revoke Code",
-    "revokeAction": "Revoke Code",
+    "revoke": "Revoke code",
+    "revokeAction": "Revoke code",
     "revokeBody": "No device can register with this code from now on. This cannot be undone.",
     "revoked": "Revoked",
     "revokeTitle": "Revoke one-time code?",
     "runCommand": "Run this command on the device. The code in it registers one device.",
-    "title": "One-time Codes",
+    "title": "One-time codes",
     "used": "Used",
     "usedAt": "Used",
     "validFor": "{{hours}} hours after it was made"
@@ -3942,19 +3959,39 @@
   "productOptionMenu": {
     "adminRequired": "Admin permissions required",
     "cannotBeUndone": "This action cannot be undone.",
+    "deleteConfirm": "Delete {{name}} and all its services permanently?",
     "deleteConfirmPrefix": "Are you sure you want to permanently delete the product",
     "deleteConfirmSuffix": "and all its services?",
-    "deleteProduct": "Delete Product",
-    "transferProduct": "Transfer Product"
+    "deleteProduct": "Delete product",
+    "deleteTitle": "Delete product?",
+    "transferProduct": "Transfer product"
   },
   "productPage": {
-    "addService": "Add Service",
+    "addDevices": "Add devices",
+    "addDevicesHelp": "Put a join key on each device you install. Every device that joins becomes a device of this product.",
+    "addService": "Add service",
+    "createJoinKey": "Create join key",
+    "deviceCount_one": "{{count}} device belongs to this product.",
+    "deviceCount_other": "{{count}} devices belong to this product.",
+    "devices": "Devices",
+    "keysAndLimits": "Join keys, device limit and lifecycle",
+    "keyShownOnce": "A key is shown only once, when you create it.",
+    "keysInForce_one": "{{count}} join key in force.",
+    "keysInForce_other": "{{count}} join keys in force.",
     "loadingProduct": "Loading product...",
-    "noServicesDefined": "No services defined. Add at least one service to this product.",
+    "manageKeys": "Join keys and one-time codes",
+    "noDevices": "No devices yet. Devices appear here once they join.",
+    "noServicesDefined": "No services yet. Add the services each device of this product has.",
+    "ownership": "Transfer or delete",
+    "platformDevices_one": "{{platform}} · {{count}} device",
+    "platformDevices_other": "{{platform}} · {{count}} devices",
     "platformId": "Platform {{id}}",
     "productNotFound": "Product not found",
     "productNotFoundHint": "The product may have been deleted or you don't have access to it.",
+    "registrationCommand": "Install command",
     "service": "Service",
+    "services": "Services",
+    "settings": "Settings",
     "unknown": "Unknown"
   },
   "productPolicy": {
@@ -4035,14 +4072,14 @@
     "noUse": "No use recorded",
     "previous": "Previous",
     "replace": "Replace",
-    "replaceAction": "Replace Code",
-    "replaceAndRevokeAction": "Replace and Revoke",
+    "replaceAction": "Replace code",
+    "replaceAndRevokeAction": "Replace and revoke",
     "replaceBody": "The new code goes in the registration command. The current code keeps registering devices until you revoke it.",
     "replaceBodyRevoke": "The new code goes in the registration command, and the current code stops registering devices now.",
     "replaceTitle": "Replace registration code?",
-    "reusableTitle": "Reusable Codes",
+    "reusableTitle": "Reusable codes",
     "revoke": "Revoke",
-    "revokeAction": "Revoke Code",
+    "revokeAction": "Revoke code",
     "revokeBody": "Devices can no longer register with this code. Devices already registered aren't affected. This can't be undone.",
     "revoked": "Revoked",
     "revokedHistory": "Revoked codes ({{total}})",
@@ -4100,15 +4137,26 @@
     "websocketOn": "Always"
   },
   "productSettingsPage": {
+    "details": "Details",
+    "registrationCode": "Older registration code",
+    "registrationCodeHelp": "Devices installed with this code join this product.",
+    "registrationCommand": "Older registration command",
+    "registrationCommandHelp": "Devices installed with this command join this product.",
+    "title": "Join keys and settings",
     "warningTitle": "Move this product to join keys"
   },
   "productsHeaderButtons": {
     "adminRequired": "Admin permissions required"
   },
   "productsPage": {
+    "count_one": "{{count}} product",
+    "count_other": "{{count}} products",
+    "create": "Create product",
     "createFirst": "Create your first product",
-    "emptyHelp": "Products are used for bulk device registration and management.",
+    "emptyHelp": "A product describes one kind of device. Register many devices of it with one join key.",
+    "emptyHelpAdmin": "Ask an admin of this organization to create one.",
     "emptyHelpReadOnly": "Products are used for bulk device registration and management. You must have the admin permission to create one.",
+    "emptyTitle": "No products yet",
     "loading": "Loading products..."
   },
   "productSync": {
@@ -4125,8 +4173,8 @@
     "confirmPrefix": "You are about to transfer ownership of",
     "loseAccessWarning": "You will lose all access and control of this product upon transfer.",
     "notFound": "Product not found",
-    "title": "Transfer Product",
-    "transfer": "Transfer",
+    "title": "Transfer product",
+    "transfer": "Transfer product",
     "transferDescription": "Product transfer typically takes a few seconds to complete. The new owner will gain full access to the product and all its services.",
     "transferring": "Transferring...",
     "transferringTo": "You are transferring \"{{name}}\" to a new owner."
@@ -4444,7 +4492,7 @@
     "revokeWithdraws": "It is never taken again, and the {{count}} release(s) it signed are withdrawn: devices on them move to another release, or turn the app off where there is none.",
     "revokeWithdraws_one": "It is never taken again, and the {{count}} release(s) it signed are withdrawn: devices on them move to another release, or turn the app off where there is none.",
     "revokeWithdraws_other": "It is never taken again, and the {{count}} release(s) it signed are withdrawn: devices on them move to another release, or turn the app off where there is none.",
-    "root": "runs as root",
+    "root": "full control",
     "save": "Save",
     "signedBy": "signed by {{key}}",
     "title": "App publisher",
@@ -4701,18 +4749,18 @@
     "title": "Network Scan"
   },
   "scriptDeleteButton": {
-    "title": "Delete Script",
+    "title": "Delete script",
     "warning": "This can not be undone."
   },
   "scriptEditPage": {
-    "addDemoScript": "Add Demo Script",
-    "addScript": "Add Script",
+    "addDemoScript": "Add demo script",
+    "addScript": "Add script",
     "copied": "Copied!",
-    "copyScript": "Copy Script",
+    "copyScript": "Copy script",
     "description": "Description",
-    "editScript": "Edit Script",
+    "editScript": "Edit script",
     "name": "Name",
-    "newRun": "New Run",
+    "newRun": "New run",
     "save": "Save",
     "saveAndRun": "Save and Run",
     "saving": "Saving...",
@@ -4725,10 +4773,13 @@
     "devicesSelected_other": "devices selected"
   },
   "scriptingHeader": {
-    "add": "Add",
+    "add": "Add script",
+    "addShort": "Add",
     "adminRequired": "Admin permissions required to upload",
     "feedback": "Feedback",
-    "upload": "Upload"
+    "help": "Help",
+    "upload": "Upload file",
+    "uploadShort": "Upload"
   },
   "scriptPage": {
     "created": "Created",
@@ -4753,9 +4804,9 @@
     "removeDeviceCount_one": "Remove Device",
     "removeDeviceCount_other": "Remove Devices",
     "running": "Running...",
-    "runNow": "Run Now",
+    "runNow": "Run now",
     "saveHint": "Save creates a prepared run with the selected devices, tag, and argument values.",
-    "targetDevices": "Target Devices"
+    "targetDevices": "Target devices"
   },
   "scriptRunSummary": {
     "all": "ALL",
@@ -4765,7 +4816,7 @@
     "missingFile": "Missing file ({{value}})",
     "noDevices": "No devices",
     "notSet": "Not set",
-    "runConfiguration": "Run Configuration",
+    "runConfiguration": "Run configuration",
     "showLess": "Show less",
     "showMore": "Show more",
     "showMoreCount_one": "Show {{count}} more",
@@ -4959,16 +5010,16 @@
     "serviceAccess": "Service access"
   },
   "settings": {
-    "accessKeys": "Access Keys",
+    "accessKeys": "Access keys",
     "accountDeletion": "Account deletion",
     "application": "Application",
     "appPublisher": "App publisher",
     "billing": "Billing",
-    "connectedApps": "Connected Apps",
-    "connectionDefaults": "Connection Defaults",
+    "connectedApps": "Connected apps",
+    "connectionDefaults": "Connection defaults",
     "docs": "Docs",
     "email": "Email",
-    "emailLanguage": "Email Language",
+    "emailLanguage": "Email language",
     "graphs": "Graphs",
     "invalidUrl": "Please provide a valid URL",
     "license": "License",
@@ -4993,16 +5044,16 @@
     "removePicture": "Remove",
     "security": "Security",
     "signOutEverywhere": "Sign out everywhere",
-    "signOutEverywhereButton": "Sign Out Everywhere",
+    "signOutEverywhereButton": "Sign out everywhere",
     "signOutEverywhereDescription": "This logs you out of Remote.It everywhere you're logged in.",
     "subscription": "Subscription",
     "tags": "Tags",
-    "testSettings": "Test Settings",
+    "testSettings": "Test settings",
     "title": "Settings",
     "uploadPicture": "Upload picture",
-    "urlEndpoint": "URL endpoint",
+    "urlEndpoint": "Webhook URL",
     "visitWeb": "Visit Remote.It on the web",
-    "webhookHelp": "Use a public HTTPS URL. Endpoint must accept POST and return 200 within 5 seconds."
+    "webhookHelp": "Use a public HTTPS URL. Your server must accept a POST and answer 200 within 5 seconds."
   },
   "settingsDisableNetworkItem": {
     "description": "This will allow network access to the desktop UI on ports 29999 and 29998 in addition to sharing through Remote.It",
@@ -5056,7 +5107,7 @@
     "platforms": "Platforms",
     "registering": "Registering the key…",
     "restricted": "restricted",
-    "root": "as root: full control of the device",
+    "root": "with full control of the device",
     "runs": "Runs",
     "saved": "I saved the file",
     "saveIntro": "Download the key file and keep it somewhere safe. The key is registered only once you say the file is saved; close this without saving and the key is gone.",
@@ -5158,7 +5209,7 @@
     "withdraw": "Withdraw"
   },
   "tagsPage": {
-    "addTag": "Add Tag",
+    "addTag": "Add tag",
     "allDevicesTagRemoved": "All devices will have this tag removed from them.",
     "cannotBeUndone": "This cannot be undone.",
     "deletingTag": "You are deleting the tag",
@@ -5212,7 +5263,7 @@
     "overrideDefaultAPIs": "Override default APIs",
     "overrideLicensesAndLimits": "Override licenses and limits",
     "proxyFleet": "Proxy fleet",
-    "proxyFleetConnectd": "connectd-go proxies",
+    "proxyFleetConnectd": "Go agent proxies",
     "proxyFleetDefault": "The API stage's default",
     "proxyFleetHint": "Which proxies new connections and connect links ask for. A link keeps the fleet it was set on. Needs an API that takes it (local).",
     "proxyFleetLegacy": "Legacy fleet",
@@ -5228,7 +5279,7 @@
     "switchStageMessage": "You will be signed out and asked to sign in again at {{issuer}}. Other accounts saved in this app are removed.",
     "switchStageTitle": "Switch to the {{name}} stage?",
     "testOptions": "Test Options",
-    "title": "Test Settings",
+    "title": "Test settings",
     "virtualDevices": "Virtual devices",
     "virtualDevicesHint": "Devices with no daemon, hosted by a gateway. Shows sample devices where the API does not serve them yet.",
     "webSocketURL": "WebSocket URL"

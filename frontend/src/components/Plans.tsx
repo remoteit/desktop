@@ -157,8 +157,8 @@ const PlanSelection: React.FC<Props> = ({ license, includeLicenseId, plan, plans
           name={t('plans.personal', 'Personal')}
           description={planDetails[PERSONAL_PLAN_ID].description}
           price="$0"
-          caption={t('plans.freePlan', 'Free Plan')}
-          button={personal ? t('plans.currentPlan', 'Current Plan') : t('plans.select', 'Select')}
+          caption={t('plans.freePlan', 'Free plan')}
+          button={personal ? t('plans.currentPlan', 'Current plan') : t('plans.select', 'Select')}
           selected={personal}
           disabled={personal}
           onSelect={() =>

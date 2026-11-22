@@ -27,8 +27,8 @@ function open(app: DeviceApp, serviceId: string, name: string, port: number) {
 
 const label = (t: TFunction) =>
   browser.isNative
-    ? t('appTerminal.openInBrowser', 'Open in a terminal in your browser')
-    : t('appTerminal.open', 'Open in terminal')
+    ? t('appTerminal.openInBrowser', 'Open terminal in your browser')
+    : t('appTerminal.open', 'Open terminal')
 
 const servicePort = (device: IDevice | undefined, serviceId: string | null) =>
   device?.services?.find(service => service.id === serviceId)?.port
@@ -114,7 +114,7 @@ export const AppTerminalOption: React.FC<{ device?: IDevice; service?: IService;
     ? t('appTerminal.starting', '{{app}} is starting. The terminal opens once it runs.', { app: app.name })
     : app.state === 'unavailable'
     ? t('deviceApps.unavailable', 'Not available here: {{detail}}', { detail: app.detail })
-    : t('appTerminal.disabled', '{{app}} is disabled. Enable it to open it in a terminal.', { app: app.name })
+    : t('appTerminal.disabled', '{{app}} is off. Turn it on to open the terminal.', { app: app.name })
 
   return (
     <Typography

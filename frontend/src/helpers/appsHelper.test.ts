@@ -253,7 +253,7 @@ describe('consent, as graphql asks it (app-catalog.ts consentAsked, coversRootAm
 
   it('held for consent, in words for what the release waiting asks, as graphql says it', () => {
     expect(heldBackReason(t, { reason: 'consent', detail: 'A new version needs to run as root' })).toBe(
-      'A new version needs to run as root'
+      'A new version needs full control'
     )
     expect(heldBackReason(t, { reason: 'consent', detail: 'A new version asks for ssh-exec' })).toBe(
       'A new version asks for more access'

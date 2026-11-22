@@ -116,7 +116,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
                 />
                 <ListItemCopy
                   value={organization.verificationValue}
-                  label={t('organizationSAMLSettings.verificationValue', 'Verification Value')}
+                  label={t('organizationSAMLSettings.verificationValue', 'Verification value')}
                   showBackground
                   fullWidth
                 />
@@ -144,7 +144,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
           <ListItem dense>
             <ListItemIcon />
             <Typography variant="caption" gutterBottom>
-              {t('organizationSAMLSettings.enterDomain', "Enter your Organization's domain name.")}
+              {t('organizationSAMLSettings.enterDomain', "Enter your organization's domain name.")}
               <Link href="https://link.remote.it/support/setup-domain">
                 {t('organizationSAMLSettings.instructionsLink', 'Instructions.')}
               </Link>
@@ -152,7 +152,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
           </ListItem>
         )}
       </List>
-      <Typography variant="subtitle1">{t('organizationSAMLSettings.identityProvider', 'Identity Provider')}</Typography>
+      <Typography variant="subtitle1">{t('organizationSAMLSettings.identityProvider', 'Identity provider')}</Typography>
       <List disablePadding>
         {organization.verified ? (
           organization.identityProvider ? (
@@ -243,7 +243,7 @@ export const OrganizationSAMLSettings: React.FC = () => {
                     <TextField
                       required
                       fullWidth
-                      label={t('organizationSAMLSettings.clientSecretFieldLabel', 'Client Secret')}
+                      label={t('organizationSAMLSettings.clientSecretFieldLabel', 'Client secret')}
                       value={form.clientSecret || ''}
                       variant="filled"
                       onChange={event => setForm({ ...form, clientSecret: event.target.value })}
@@ -270,8 +270,8 @@ export const OrganizationSAMLSettings: React.FC = () => {
         ) : (
           <ListItem dense>
             <Notice severity="info" gutterTop>
-              {t('organizationSAMLSettings.validateDomainNotice', 'Validate your domain name to use an Identity Provider')}
-              <em>{t('organizationSAMLSettings.samlOidcSupported', 'SAML and ODIC are both supported')}</em>
+              {t('organizationSAMLSettings.validateDomainNotice', 'Validate your domain name to use an identity provider.')}
+              <em>{t('organizationSAMLSettings.samlOidcSupported', 'SAML and OIDC are both supported.')}</em>
             </Notice>
           </ListItem>
         )}

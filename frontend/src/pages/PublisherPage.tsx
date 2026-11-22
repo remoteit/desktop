@@ -402,7 +402,7 @@ export const PublisherPage: React.FC = () => {
                   >
                     {[
                       release.version,
-                      release.root ? t('publisherPage.root', 'runs as root') : t('publisherPage.restricted', 'restricted'),
+                      release.root ? t('publisherPage.root', 'full control') : t('publisherPage.restricted', 'restricted'),
                       release.keyId && t('publisherPage.signedBy', 'signed by {{key}}', { key: release.keyId }),
                       release.withdrawn && t('publisherPage.withdrawn', 'withdrawn'),
                     ]

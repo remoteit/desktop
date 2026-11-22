@@ -38,7 +38,7 @@ export const CustomerAddPage = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>{t('customerAddPage.title', 'Add Customers')}</Title>
+            <Title>{t('customerAddPage.title', 'Add customers')}</Title>
           </Typography>
           <Gutters top={null}>
             <ContactSelector contacts={contacts} selected={emails} onSelect={setEmails} />

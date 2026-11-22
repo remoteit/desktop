@@ -13,6 +13,9 @@
     "doNotShare": "誰にも共有しないでください。",
     "title": "アクセスキー"
   },
+  "account": {
+    "title": ""
+  },
   "accountAccessKey": {
     "created": "作成日",
     "description": "アクセスキーは、当社のAPIで認証するために必要です。新しいキーの作成、既存のキーの削除、キーの一時的な無効化を行うことができます。キーはホームフォルダの.remoteitディレクトリにダウンロードして保存することをお勧めします。",
@@ -3657,6 +3660,11 @@
     "total": "合計",
     "users": "ユーザー"
   },
+  "planEnterprise": {
+    "caption": "",
+    "changeCaption": "",
+    "contact": ""
+  },
   "plans": {
     "billedMonthly": "月払い",
     "continue": "続ける",
@@ -3761,6 +3769,9 @@
     "unset": "",
     "unsetRemoved": ""
   },
+  "productAttributes": {
+    "deviceCount_other": ""
+  },
   "productDevices": {
     "more_other": "",
     "none": "",
@@ -3786,6 +3797,11 @@
     "target": "",
     "title": "",
     "warningTitle": ""
+  },
+  "productIntake": {
+    "accepting": "",
+    "closed": "",
+    "full": ""
   },
   "productJoinKeys": {
     "by": "作成者: {{email}}",
@@ -3875,19 +3891,36 @@
   "productOptionMenu": {
     "adminRequired": "管理者権限が必要です",
     "cannotBeUndone": "この操作は元に戻せません。",
+    "deleteConfirm": "",
     "deleteConfirmPrefix": "次のプロダクト",
     "deleteConfirmSuffix": "とそのすべてのサービスを完全に削除してもよろしいですか？",
     "deleteProduct": "プロダクトを削除",
+    "deleteTitle": "",
     "transferProduct": "プロダクトを譲渡"
   },
   "productPage": {
+    "addDevices": "",
+    "addDevicesHelp": "",
     "addService": "サービスを追加",
+    "createJoinKey": "",
+    "deviceCount_other": "",
+    "devices": "",
+    "keysAndLimits": "",
+    "keyShownOnce": "",
+    "keysInForce_other": "",
     "loadingProduct": "プロダクトを読み込み中...",
+    "manageKeys": "",
+    "noDevices": "",
     "noServicesDefined": "サービスが定義されていません。このプロダクトに少なくとも1つのサービスを追加してください。",
+    "ownership": "",
+    "platformDevices_other": "",
     "platformId": "プラットフォーム {{id}}",
     "productNotFound": "プロダクトが見つかりません",
     "productNotFoundHint": "プロダクトが削除されたか、アクセス権がない可能性があります。",
+    "registrationCommand": "",
     "service": "サービス",
+    "services": "",
+    "settings": "",
     "unknown": "不明"
   },
   "productPolicy": {
@@ -4019,15 +4052,25 @@
     "websocketOn": ""
   },
   "productSettingsPage": {
+    "details": "",
+    "registrationCode": "",
+    "registrationCodeHelp": "",
+    "registrationCommand": "",
+    "registrationCommandHelp": "",
+    "title": "",
     "warningTitle": "このプロダクトを参加キーに移行してください"
   },
   "productsHeaderButtons": {
     "adminRequired": "管理者権限が必要です"
   },
   "productsPage": {
+    "count_other": "",
+    "create": "",
     "createFirst": "最初のプロダクトを作成",
     "emptyHelp": "プロダクトは、デバイスの一括登録と管理に使用します。",
+    "emptyHelpAdmin": "",
     "emptyHelpReadOnly": "プロダクトは、デバイスの一括登録と管理に使用します。作成するには管理者権限が必要です。",
+    "emptyTitle": "",
     "loading": "プロダクトを読み込み中..."
   },
   "productSync": {
@@ -4625,9 +4668,12 @@
   },
   "scriptingHeader": {
     "add": "追加",
+    "addShort": "",
     "adminRequired": "アップロードには管理者権限が必要です",
     "feedback": "フィードバック",
-    "upload": "アップロード"
+    "help": "",
+    "upload": "アップロード",
+    "uploadShort": ""
   },
   "scriptPage": {
     "created": "作成日",

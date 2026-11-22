@@ -58,12 +58,12 @@ export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, on
     <Box>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Typography variant="subtitle2" color="textSecondary">
-          {t('productJoinKeys.title', 'Join Keys')}
+          {t('productJoinKeys.title', 'Join keys')}
         </Typography>
         <DynamicButton
           size="small"
           icon="plus"
-          title={t('productJoinKeys.create', 'Create Join Key')}
+          title={t('productJoinKeys.create', 'Create join key')}
           disabled={!admin || !!revoking}
           onClick={() => setCreating(true)}
         />
@@ -73,7 +73,7 @@ export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, on
           env: JOIN_KEY_ENV,
           file: JOIN_KEY_FILE_ENV,
           defaultValue:
-            'For automation: give a key to the machine as {{env}}, or in a file named by {{file}}. A key creates new devices of this product and nothing else, and is shown only when it is created.',
+            'Put a key on each machine as {{env}}, or in a file named by {{file}}. A key only creates devices of this product. You see it once, when you create it.',
         })}
       </Typography>
       {keys.length ? (
@@ -92,7 +92,7 @@ export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, on
                       confirm
                       confirmProps={{
                         color: 'error',
-                        action: t('productJoinKeys.revokeAction', 'Revoke Key'),
+                        action: t('productJoinKeys.revokeAction', 'Revoke key'),
                         title: t('productJoinKeys.revokeTitle', {
                           name: key.name,
                           defaultValue: 'Revoke join key "{{name}}"?',
@@ -101,13 +101,13 @@ export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, on
                           <Notice severity="error" gutterBottom fullWidth>
                             {t(
                               'productJoinKeys.revokeBody',
-                              'No device can join with this key from now on. The devices it created are not affected: remove them separately if the key leaked. This cannot be undone.'
+                              'No device can join with this key from now on. Devices that already joined stay. If the key leaked, delete them separately. You cannot undo this.'
                             )}
                           </Notice>
                         ),
                       }}
                       name="ban"
-                      title={t('productJoinKeys.revoke', 'Revoke Key')}
+                      title={t('productJoinKeys.revoke', 'Revoke key')}
                       loading={revoking === key.id}
                       disabled={!admin || !!revoking}
                       onClick={() => revoke(key.id)}

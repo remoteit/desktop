@@ -48,7 +48,7 @@ export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => 
   return (
     <>
       <Gutters top="xl">
-        <Typography variant="h2">{t('organizationGuestDetails.guestAccess', 'Guest Access')}</Typography>
+        <Typography variant="h2">{t('organizationGuestDetails.guestAccess', 'Guest access')}</Typography>
       </Gutters>
       {!!guest?.deviceIds.length && (
         <>

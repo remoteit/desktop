@@ -70,7 +70,7 @@ export const PasswordStep: React.FC<{
         autoFocus={!children}
         variant="filled"
         type="password"
-        label={label ?? t('changePassword.currentPassword', 'Current Password')}
+        label={label ?? t('changePassword.currentPassword', 'Current password')}
         inputProps={{ autoComplete: autoComplete ?? 'current-password' }}
         value={password}
         onChange={e => onPassword(e.target.value)}

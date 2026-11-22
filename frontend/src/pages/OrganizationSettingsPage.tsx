@@ -41,7 +41,7 @@ export const OrganizationSettingsPage: React.FC = () => {
           <Title>{t('organizationSettingsPage.settings', 'Settings')}</Title>
           {isOrgOwner && (
             <DeleteButton
-              title={t('organizationSettingsPage.deleteOrganization', 'Delete Organization')}
+              title={t('organizationSettingsPage.deleteOrganization', 'Delete organization')}
               warning={
                 <>
                   <Notice severity="error" fullWidth gutterBottom>
@@ -66,7 +66,7 @@ export const OrganizationSettingsPage: React.FC = () => {
         <InlineTextFieldSetting
           icon="industry-alt"
           value={organization.name}
-          label={t('organizationSettingsPage.organizationName', 'Organization Name')}
+          label={t('organizationSettingsPage.organizationName', 'Organization name')}
           resetValue={organization.name}
           onSave={name => dispatch.organization.setOrganization({ name: name.toString() })}
         />

@@ -19,7 +19,7 @@ export const ScriptingTabBar: React.FC = () => {
       value={tabIndex === -1 ? 0 : tabIndex}
       variant="scrollable"
       TabIndicatorProps={{ sx: { display: 'none' } }}
-      sx={{ marginX: 3, marginY: 1 }}
+      sx={{ marginLeft: -1.5, '& .MuiTab-root': { minHeight: 40 } }}
     >
       {tabs.map((tab, index) => (
         <Tab

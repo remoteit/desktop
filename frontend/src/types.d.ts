@@ -263,6 +263,7 @@ declare global {
     instance?: IInstance
     service?: IService
     product?: IDeviceProduct
+    productOverview?: import('./helpers/productStatus').ProductOverview
     productService?: IProductService
     session?: ISession
     connection?: IConnection

@@ -52,7 +52,7 @@ const OneTimeCodeDialog: React.FC<{ product: IDeviceProduct; code: IDeviceProduc
 
   return (
     <Dialog open onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{t('productOneTimeCodes.dialogTitle', 'Add One Device')}</DialogTitle>
+      <DialogTitle>{t('productOneTimeCodes.dialogTitle', 'Add one device')}</DialogTitle>
       <DialogContent>
         <Typography variant="body2" gutterBottom>
           {command && command !== code.code
@@ -69,7 +69,7 @@ const OneTimeCodeDialog: React.FC<{ product: IDeviceProduct; code: IDeviceProduc
         <CopyCodeBlock
           value={command || code.code}
           code={code.code}
-          label={t('productOneTimeCodes.codeLabel', 'One-time Code')}
+          label={t('productOneTimeCodes.codeLabel', 'One-time code')}
           sx={{ marginBottom: 2 }}
         />
         {code.expires && (
@@ -126,12 +126,12 @@ export const ProductOneTimeCodes: React.FC<Props> = ({ product }) => {
     <Box sx={{ marginTop: 3 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Typography variant="subtitle2" color="textSecondary">
-          {t('productOneTimeCodes.title', 'One-time Codes')}
+          {t('productOneTimeCodes.title', 'One-time codes')}
         </Typography>
         <DynamicButton
           size="small"
           icon="plus"
-          title={t('productOneTimeCodes.add', 'Add One Device')}
+          title={t('productOneTimeCodes.add', 'Add one device')}
           loading={minting}
           disabled={!admin || busy}
           onClick={mint}
@@ -140,7 +140,7 @@ export const ProductOneTimeCodes: React.FC<Props> = ({ product }) => {
       <Typography variant="body2" color="textSecondary" gutterBottom>
         {t('productOneTimeCodes.description', {
           hours: REGISTRATION_CODE_EXPIRATION_HOURS,
-          defaultValue: 'For adding one device by hand: each code registers a single device, within {{hours}} hours.',
+          defaultValue: 'Use a one-time code to add a single device by hand. Each code works once, within {{hours}} hours.',
         })}
       </Typography>
       {codes.length ? (
@@ -159,7 +159,7 @@ export const ProductOneTimeCodes: React.FC<Props> = ({ product }) => {
                       confirm
                       confirmProps={{
                         color: 'error',
-                        action: t('productOneTimeCodes.revokeAction', 'Revoke Code'),
+                        action: t('productOneTimeCodes.revokeAction', 'Revoke code'),
                         title: t('productOneTimeCodes.revokeTitle', 'Revoke one-time code?'),
                         children: (
                           <Notice severity="error" gutterBottom fullWidth>
@@ -171,7 +171,7 @@ export const ProductOneTimeCodes: React.FC<Props> = ({ product }) => {
                         ),
                       }}
                       name="ban"
-                      title={t('productOneTimeCodes.revoke', 'Revoke Code')}
+                      title={t('productOneTimeCodes.revoke', 'Revoke code')}
                       loading={revoking === code.code}
                       disabled={!admin || busy}
                       onClick={() => revoke(code.code)}

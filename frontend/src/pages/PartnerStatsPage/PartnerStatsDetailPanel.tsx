@@ -199,7 +199,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
       {partner.parent && (
         <>
           <Typography variant="subtitle1" sx={{ marginTop: 2 }}>
-            <Title>{t('partnerStatsDetailPanel.parentPartner', 'Parent Partner')}</Title>
+            <Title>{t('partnerStatsDetailPanel.parentPartner', 'Parent partner')}</Title>
           </Typography>
           <List disablePadding>
             <ListItemButton onClick={() => handleNavigateToPartner(partner.parent!.id)}>
@@ -223,12 +223,12 @@ export const PartnerStatsDetailPanel: React.FC = () => {
 
       {/* Device Counts */}
       <Typography variant="subtitle1" sx={{ marginTop: 2 }}>
-        <Title>{t('partnerStatsDetailPanel.deviceSummary', 'Device Summary')}</Title>
+        <Title>{t('partnerStatsDetailPanel.deviceSummary', 'Device summary')}</Title>
       </Typography>
       <List disablePadding>
         <ListItem>
           <ListItemText
-            primary={t('partnerStatsDetailPanel.totalDevices', 'Total Devices')}
+            primary={t('partnerStatsDetailPanel.totalDevices', 'Total devices')}
             secondary={partner.deviceCount || 0}
           />
         </ListItem>
@@ -256,7 +256,7 @@ export const PartnerStatsDetailPanel: React.FC = () => {
         <Divider component="li" />
         <ListItem>
           <ListItemText
-            primary={t('partnerStatsDetailPanel.currentlyOnline', 'Currently Online')}
+            primary={t('partnerStatsDetailPanel.currentlyOnline', 'Currently online')}
             secondary={t('partnerStatsDetailPanel.devicesCount', {
               count: partner.online || 0,
               defaultValue_one: '{{count}} device',

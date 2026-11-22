@@ -48,7 +48,7 @@ export const ProductPolicyPage: React.FC = () => {
   }
 
   return (
-    <ProductHeaderMenu product={product}>
+    <ProductHeaderMenu product={product} title={t('productPolicyLink.title', 'Policy')}>
       <Gutters>
         {!served || policy === undefined ? (
           <LoadingMessage message={t('productPolicyPage.loading', 'Loading its policy...')} />

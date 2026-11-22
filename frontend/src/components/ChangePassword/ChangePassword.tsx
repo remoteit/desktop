@@ -36,14 +36,14 @@ export const ChangePassword = () => {
   return (
     <>
       <Typography variant="subtitle1" gutterBottom>
-        {t('changePassword.title', 'Change Password')}
+        {t('changePassword.title', 'Change password')}
       </Typography>
       <Gutters key={key} sx={{ '.MuiTextField-root': { marginBottom: 2 } }}>
         <TextField
           fullWidth
           variant="filled"
           type="password"
-          label={t('changePassword.currentPassword', 'Current Password')}
+          label={t('changePassword.currentPassword', 'Current password')}
           onChange={e => evaluateCurrentPassword(e)}
         />
         <PasswordStrengthInput

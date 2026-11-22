@@ -40,7 +40,7 @@ export const OrganizationSelectList: React.FC = () => {
           size="sm"
           icon="ellipsis-v"
           color="grayDark"
-          title={t('organizationSelectList.membershipSettings', 'Membership Settings')}
+          title={t('organizationSelectList.membershipSettings', 'Membership settings')}
           to="/organization/memberships"
           buttonBaseSize="small"
         />
@@ -54,7 +54,7 @@ export const OrganizationSelectList: React.FC = () => {
         <ListItemIcon>
           <Avatar size={AVATAR_SIZE} email={user.email} />
         </ListItemIcon>
-        <ListItemText primary={ownOrg?.id ? ownOrg.name : t('organizationSelectList.personalAccount', 'Personal Account')} />
+        <ListItemText primary={ownOrg?.id ? ownOrg.name : t('organizationSelectList.personalAccount', 'Personal account')} />
         <Chip label={t('organizationSelectList.owner', 'Owner')} size="small" />
       </ListItemButton>
       {options.map(option => (

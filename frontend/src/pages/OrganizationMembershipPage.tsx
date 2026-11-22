@@ -42,7 +42,7 @@ export const OrganizationMembershipPage: React.FC = () => {
     <Container
       header={
         <Typography variant="h1">
-          <Title>{t('organizationMembershipPage.title', 'Organization Memberships')}</Title>
+          <Title>{t('organizationMembershipPage.title', 'Organization memberships')}</Title>
         </Typography>
       }
     >
@@ -65,7 +65,7 @@ export const OrganizationMembershipPage: React.FC = () => {
                   </Box>
                   <IconButton
                     icon="pencil"
-                    title={t('organizationMembershipPage.editOrganization', 'Edit Organization')}
+                    title={t('organizationMembershipPage.editOrganization', 'Edit organization')}
                     to="/organization"
                   />
                 </ListItemSecondaryAction>
@@ -101,10 +101,10 @@ export const OrganizationMembershipPage: React.FC = () => {
                 <ConfirmIconButton
                   confirm
                   icon="sign-out"
-                  title={t('organizationMembershipPage.leaveAccount', 'Leave Account')}
+                  title={t('organizationMembershipPage.leaveAccount', 'Leave account')}
                   confirmProps={{
                     color: 'error',
-                    action: t('organizationMembershipPage.leaveOrganization', 'Leave Organization'),
+                    action: t('organizationMembershipPage.leaveOrganization', 'Leave organization'),
                     title: t('common.areYouSure', 'Are you sure?'),
                     children: (
                       <Notice severity="error" gutterBottom fullWidth>
@@ -129,7 +129,7 @@ export const OrganizationMembershipPage: React.FC = () => {
       ) : (
         <Body center>
           <Typography variant="h2" gutterBottom>
-            {t('organizationMembershipPage.noMemberships', 'No Organization Memberships')}
+            {t('organizationMembershipPage.noMemberships', 'No organization memberships')}
           </Typography>
           <Typography variant="body2" color="textSecondary">
             {t(

@@ -152,16 +152,16 @@ describe('ProductJoinKeys', () => {
         })}
       />
     )
-    expect([...document.body.querySelectorAll('button[aria-label="Revoke Key"]')]).toHaveLength(1)
+    expect([...document.body.querySelectorAll('button[aria-label="Revoke key"]')]).toHaveLength(1)
     expect(body()).toContain('Revoked')
     expect(body()).toContain('Expired')
     expect(body()).toContain('All joins used')
 
-    await act(async () => button('Revoke Key')!.click())
+    await act(async () => button('Revoke key')!.click())
     expect(products.revokeJoinKey).not.toHaveBeenCalled()
     expect(body()).toContain('Revoke join key "Live"?')
     const confirm = [...document.body.querySelectorAll('[role="dialog"] button')].find(b =>
-      b.textContent?.includes('Revoke Key')
+      b.textContent?.includes('Revoke key')
     ) as HTMLButtonElement
     await act(async () => confirm.click())
     expect(products.revokeJoinKey).toHaveBeenCalledWith({ productId: 'p1', id: 'K1' })
@@ -170,8 +170,8 @@ describe('ProductJoinKeys', () => {
   it('creates nothing without admin permission', async () => {
     permissions.current = ['VIEW']
     await render(<ProductJoinKeys product={product({ joinKeys: [key({})] })} />)
-    expect(button('Create Join Key')!.disabled).toBe(true)
-    expect(button('Revoke Key')!.disabled).toBe(true)
+    expect(button('Create join key')!.disabled).toBe(true)
+    expect(button('Revoke key')!.disabled).toBe(true)
   })
 
   it('a product outside the store — remote.it’s proxy product —: managed as it is told, revoked by its own change', async () => {
@@ -184,10 +184,10 @@ describe('ProductJoinKeys', () => {
         onRevoke={onRevoke}
       />
     )
-    expect(button('Create Join Key')!.disabled).toBe(false)
-    await act(async () => button('Revoke Key')!.click())
+    expect(button('Create join key')!.disabled).toBe(false)
+    await act(async () => button('Revoke key')!.click())
     const confirm = [...document.body.querySelectorAll('[role="dialog"] button')].find(b =>
-      b.textContent?.includes('Revoke Key')
+      b.textContent?.includes('Revoke key')
     ) as HTMLButtonElement
     await act(async () => confirm.click())
     expect(onRevoke).toHaveBeenCalledWith('K1')
@@ -201,10 +201,10 @@ describe('ProductJoinKeys', () => {
 })
 
 describe('ProductOneTimeCodes', () => {
-  it('mints a code on "Add One Device" and shows it with its expiry', async () => {
+  it('mints a code on "Add one device" and shows it with its expiry', async () => {
     products.createOneTimeCode.mockResolvedValue({ code: 'OTC-NEW', created: at(0), expires: at(24 * HOUR), used: 0 })
     await render(<ProductOneTimeCodes product={product({})} />)
-    await act(async () => button('Add One Device')!.click())
+    await act(async () => button('Add one device')!.click())
     expect(products.createOneTimeCode).toHaveBeenCalledWith('p1')
     const block = document.body.querySelector('[data-block]')!
     // No template for the product's platform: the code alone, and where it goes.
@@ -216,7 +216,7 @@ describe('ProductOneTimeCodes', () => {
   it("gives the install command where the product's platform has a template", async () => {
     products.createOneTimeCode.mockResolvedValue({ code: 'OTC-NEW', created: at(0), expires: at(24 * HOUR), used: 0 })
     await render(<ProductOneTimeCodes product={product({ platform: { id: 1219, name: 'Docker' } })} />)
-    await act(async () => button('Add One Device')!.click())
+    await act(async () => button('Add one device')!.click())
     const block = document.body.querySelector('[data-block]')!
     expect(block.getAttribute('data-block')).toBe('docker run -e R3_REGISTRATION_CODE="OTC-NEW"')
     expect(block.getAttribute('data-code')).toBe('OTC-NEW')
@@ -242,10 +242,10 @@ describe('ProductOneTimeCodes', () => {
     expect([...document.body.querySelectorAll('[data-copy]')].map(b => b.getAttribute('data-copy'))).toEqual([
       'OTC-LIVE',
     ])
-    expect([...document.body.querySelectorAll('button[aria-label="Revoke Code"]')]).toHaveLength(1)
-    await act(async () => button('Revoke Code')!.click())
+    expect([...document.body.querySelectorAll('button[aria-label="Revoke code"]')]).toHaveLength(1)
+    await act(async () => button('Revoke code')!.click())
     const confirm = [...document.body.querySelectorAll('[role="dialog"] button')].find(b =>
-      b.textContent?.includes('Revoke Code')
+      b.textContent?.includes('Revoke code')
     ) as HTMLButtonElement
     await act(async () => confirm.click())
     expect(products.revokeCode).toHaveBeenCalledWith({ productId: 'p1', code: 'OTC-LIVE' })
@@ -275,7 +275,7 @@ describe('ProductRegistrationCodes', () => {
 
   it('lets the last code go once a join key is in force, saying the command stops', async () => {
     await render(<ProductRegistrationCodes product={product({ registrationCodes: codes, joinKeys: [key({})] })} />)
-    const revoke = button('Revoke Code')!
+    const revoke = button('Revoke code')!
     expect(revoke.disabled).toBe(false)
     await act(async () => revoke.click())
     expect(body()).toContain("It is the product's last reusable code")

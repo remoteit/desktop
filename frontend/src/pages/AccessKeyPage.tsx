@@ -21,7 +21,7 @@ export const AccessKeyPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>{t('accessKeyPage.title', 'Access Keys')}</Title>
+            <Title>{t('accessKeyPage.title', 'Access keys')}</Title>
           </Typography>
         </>
       }

@@ -172,7 +172,7 @@ export const FileUpload: React.FC<Props> = props => {
   const showActions = !!props.topActions || canClear
 
   const uploadLabel =
-    props.label || (isTextMode ? t('fileUpload.selectFile', 'Select File') : t('fileUpload.upload', 'Upload'))
+    props.label || (isTextMode ? t('fileUpload.selectFile', 'Select file') : t('fileUpload.upload', 'Upload'))
   const uploadSubLabel = props.subLabel || t('fileUpload.dragAndDrop', 'Drag and drop or click')
   const selectionStatusLabel = props.selectionStatusLabel || t('fileUpload.selected', 'selected')
 

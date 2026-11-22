@@ -91,7 +91,7 @@ export const ConnectedAppDetailPage: React.FC = () => {
         gutterBottom
         header={
           <Typography variant="h1">
-            <Title>{t('connectedAppDetailPage.title', 'Connected App')}</Title>
+            <Title>{t('connectedAppDetailPage.title', 'Connected app')}</Title>
           </Typography>
         }
       >

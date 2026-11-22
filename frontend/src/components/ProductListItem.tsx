@@ -7,9 +7,11 @@ import { Dispatch } from '../store'
 import { GridListItem } from './GridListItem'
 import { Icon } from './Icon'
 import { ProductAttribute } from './ProductAttributes'
+import { ProductOverview } from '../helpers/productStatus'
 
 interface Props {
   product: IDeviceProduct
+  overview?: ProductOverview
   required?: ProductAttribute
   attributes: ProductAttribute[]
   mobile?: boolean
@@ -21,6 +23,7 @@ interface Props {
 
 export const ProductListItem: React.FC<Props> = ({
   product,
+  overview,
   required,
   attributes,
   mobile,
@@ -59,11 +62,11 @@ export const ProductListItem: React.FC<Props> = ({
           <Icon platform={product.platform?.id} platformIcon size="md" />
         )
       }
-      required={required?.value({ product })}
+      required={required?.value({ product, productOverview: overview, mobile })}
     >
       {attributes.map(attribute => (
         <Box key={attribute.id} className="attribute">
-          {attribute.value({ product } as IDataOptions)}
+          {attribute.value({ product, productOverview: overview })}
         </Box>
       ))}
     </GridListItem>

@@ -343,7 +343,7 @@ export const FactorSettings: React.FC<{ readOnly?: boolean }> = ({ readOnly }) =
     return (
       <>
         <Typography variant="subtitle1" gutterBottom>
-          {t('mfa.title', 'Two-Factor Authentication')}
+          {t('mfa.title', 'Two-factor authentication')}
         </Typography>
         <Gutters bottom="xl">
           <Typography variant="body2" color="textSecondary">
@@ -634,7 +634,7 @@ export const FactorSettings: React.FC<{ readOnly?: boolean }> = ({ readOnly }) =
   return (
     <>
       <Typography variant="subtitle1" gutterBottom>
-        {t('mfa.title', 'Two-Factor Authentication')}
+        {t('mfa.title', 'Two-factor authentication')}
       </Typography>
       <Gutters bottom="xl">
         {storeDown && (

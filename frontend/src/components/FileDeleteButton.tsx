@@ -18,7 +18,7 @@ export const FileDeleteButton: React.FC = () => {
 
   return (
     <DeleteButton
-      title={t('fileDeleteButton.title', 'Delete File')}
+      title={t('fileDeleteButton.title', 'Delete file')}
       warning={
         <Notice severity="error" fullWidth>
           {t('fileDeleteButton.warning', 'This can not be undone.')}

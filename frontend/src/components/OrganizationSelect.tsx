@@ -184,7 +184,7 @@ export const OrganizationSelect: React.FC = () => {
                   primary={
                     ownOrg?.id
                       ? t('organizationSelect.ownerLabel', { name: ownOrg.name, defaultValue: '{{name}} - Owner' })
-                      : t('organizationSelect.personalAccount', 'Personal Account')
+                      : t('organizationSelect.personalAccount', 'Personal account')
                   }
                   count={mySessions}
                 />

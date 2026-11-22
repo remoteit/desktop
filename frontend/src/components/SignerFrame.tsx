@@ -94,7 +94,7 @@ export function useSignLabels(): SignRequest['labels'] {
     app: t('signer.app', 'App'),
     version: t('signer.version', 'Version'),
     runs: t('signer.runs', 'Runs'),
-    root: t('signer.root', 'as root: full control of the device'),
+    root: t('signer.root', 'with full control of the device'),
     restricted: t('signer.restricted', 'restricted'),
     platforms: t('signer.platforms', 'Platforms'),
     sha256: t('signer.sha256', 'SHA-256'),

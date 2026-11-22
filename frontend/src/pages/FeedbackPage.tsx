@@ -32,7 +32,7 @@ export const FeedbackPage: React.FC<{}> = () => {
     <Container gutterBottom header={<Typography variant="h1">{t('feedbackPage.title', 'Feedback')}</Typography>}>
       <Gutters>
         <Typography variant="body1">
-          {t('feedbackPage.intro', 'Get support or provide feedback on how can we improve Remote.It.')}
+          {t('feedbackPage.intro', 'Get support, or tell us how we can improve Remote.It.')}
         </Typography>
         <Typography variant="body2" color="GrayText">
           {t('feedbackPage.featureRequestHint', 'If you have a feature request, please include why it’s important to you.')}

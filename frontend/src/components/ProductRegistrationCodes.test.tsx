@@ -87,7 +87,7 @@ describe('ProductRegistrationCodes', () => {
     ) as HTMLElement
     act(() => stopNow.click())
     expect(document.body.textContent).toContain('2 codes will be revoked')
-    await act(async () => button('Replace and Revoke').click())
+    await act(async () => button('Replace and revoke').click())
 
     expect(rotateCode).toHaveBeenCalledWith({ productId: 'P1', revokePrevious: true })
   })
@@ -103,7 +103,7 @@ describe('ProductRegistrationCodes', () => {
     act(() => button('Cancel').click())
 
     act(() => button('Replace').click())
-    await act(async () => button('Replace Code', true).click())
+    await act(async () => button('Replace code', true).click())
 
     expect(rotateCode).toHaveBeenCalledWith({ productId: 'P1', revokePrevious: false })
   })
@@ -111,7 +111,7 @@ describe('ProductRegistrationCodes', () => {
   it('replaces once when the confirm is clicked twice before the first replace returns', () => {
     rotateCode.mockReturnValue(new Promise(() => {}))
     act(() => button('Replace').click())
-    const confirm = button('Replace Code', true)
+    const confirm = button('Replace code', true)
     act(() => confirm.click())
     act(() => confirm.click())
 

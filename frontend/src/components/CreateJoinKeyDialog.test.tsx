@@ -107,7 +107,7 @@ describe('CreateJoinKeyDialog', () => {
     })
     expect(document.body.querySelector('[data-block]')!.getAttribute('data-block')).toBe(SECRET)
     expect(body()).toContain('Copy or download this key now')
-    expect(body()).toContain('It will not be shown again')
+    expect(body()).toContain('You will not see it again')
     expect(body()).toContain('REMOTEIT_JOIN_KEY')
 
     const clicked: HTMLAnchorElement[] = []
@@ -165,7 +165,7 @@ describe('CreateJoinKeyDialog', () => {
     })
     expect(createJoinKey).not.toHaveBeenCalled()
     expect(document.body.querySelector('[data-block]')!.getAttribute('data-block')).toBe(SECRET)
-    expect(body()).toContain('It will not be shown again')
+    expect(body()).toContain('You will not see it again')
   })
 
   it('says how to run it in a container: the downloaded file mounted, the device kept in a volume', async () => {
