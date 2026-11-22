@@ -11,6 +11,7 @@ import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 
 export const NetworkSharePage = () => {
   const { t } = useTranslation()
@@ -28,7 +29,8 @@ export const NetworkSharePage = () => {
   const location = useLocation()
   const history = useHistory()
 
-  const exit = () => history.push(location.pathname.replace('/share', '/users'))
+  const deviceSessions = useDeviceSessions()
+  const exit = () => history.push(location.pathname.replace('/share', deviceSessions ? '' : '/users'))
   const add = async () => {
     setLoading(true)
     await dispatch.networks.shareNetwork({ id: network.id, emails })

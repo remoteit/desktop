@@ -247,14 +247,14 @@ function exitLine(runs: ExitNodeRuns | null | undefined, kind: string, t: T) {
   if (runs.joining)
     return t(
       'thisDevice.exitJoiningLine',
-      'This {{kind}} is joining {{exit}}. It goes into service once its checks pass.',
+      'This {{kind}} is joining {{exit}}. It turns on once its checks pass.',
       v
     )
   return (
     {
-      active: t('thisDevice.exitActiveLine', 'This {{kind}} carries traffic for {{exit}}.', v),
+      active: t('thisDevice.exitActiveLine', 'This {{kind}} is an exit device for {{exit}}.', v),
       draining: t('thisDevice.exitDrainingLine', '{{exit}} sends this {{kind}} no new traffic.', v),
-      retired: t('thisDevice.exitRetiredLine', 'This {{kind}} carries no traffic for {{exit}}.', v),
+      retired: t('thisDevice.exitRetiredLine', 'This {{kind}} is paused as an exit device for {{exit}}.', v),
     }[runs.state] ?? runs.name
   )
 }

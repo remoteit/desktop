@@ -154,7 +154,7 @@ describe('what a device runs', () => {
     deviceRuns.mockResolvedValue(AFTER)
     await act(async () => find('[data-act="exit"]').click())
     expect(find('[data-notice]').textContent).toBe(
-      'Office Mac runs the proxy Remote-Dragon (in service) and the exit HA Derby (draining).'
+      'Office Mac runs the proxy server Remote-Dragon (on) and is an exit device for HA Derby (pausing).'
     )
     expect(deviceRuns).toHaveBeenCalledTimes(2)
     // Its proxy's listening follows what it runs.
@@ -164,7 +164,7 @@ describe('what a device runs', () => {
   it('the device’s actions on everything it runs say what is left after', async () => {
     await render()
     await act(async () => find('[data-everything]').click())
-    expect(find('[data-notice]').textContent).toBe('Office Mac runs no proxy or exit now.')
+    expect(find('[data-notice]').textContent).toBe('Office Mac is no longer an exit device or proxy server.')
   })
 
   it('one it does not run: "Make this device an exit", in its own account, saying what it runs after', async () => {
@@ -179,7 +179,7 @@ describe('what a device runs', () => {
     expect(find('[data-make-dialog]').getAttribute('data-make-dialog')).toBe('exit')
     expect(find('[data-make-dialog]').getAttribute('data-owner')).toBe('ACCOUNT')
     await act(async () => find('[data-make-dialog]').click())
-    expect(find('[data-notice]').textContent).toBe('Office Mac runs the exit HA Derby (joining).')
+    expect(find('[data-notice]').textContent).toBe('Office Mac is an exit device for HA Derby (starting).')
   })
 
   it('"Make this device a proxy" too', async () => {
@@ -214,7 +214,7 @@ describe('what a device runs', () => {
     // graphql says what a device runs to its managers alone.
     deviceRuns.mockResolvedValue(null)
     expect((await render({ ...MAC, permissions: ['VIEW'] })).textContent).toContain(
-      'Only people who manage this device see what it carries.'
+      'Only people who manage this device see its exits and proxy servers.'
     )
   })
 
@@ -222,7 +222,7 @@ describe('what a device runs', () => {
     deviceRuns.mockResolvedValue('UNSUPPORTED')
     expect((await render()).textContent).toContain('This server does not have proxy servers and exits.')
     deviceRuns.mockResolvedValue('ERROR')
-    expect((await render()).textContent).toContain("Couldn't read what this device carries. Try again later.")
+    expect((await render()).textContent).toContain("Couldn't load this device's exits and proxy servers. Try again later.")
   })
 
   it('a proxy that is not listening says why', async () => {

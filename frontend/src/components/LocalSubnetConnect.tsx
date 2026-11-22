@@ -163,7 +163,7 @@ export const LocalSubnetConnect: React.FC<Props> = ({
         >
           {t(
             'localSubnetConnect.loop',
-            'This service redirects to HTTPS, so its page would keep sending the browser back to itself. Switch it to port {{port}} (HTTPS) in its configuration to open it.',
+            'This service redirects to HTTPS, so its page would loop. Switch it to port {{port}} (HTTPS) in its configuration to open it.',
             { port: loopPort }
           )}
         </Confirm>

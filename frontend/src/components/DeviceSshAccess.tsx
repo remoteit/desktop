@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
+import { spacing } from '../styling'
 import {
   DeviceSshGrant,
   DeviceSshRead,
@@ -82,10 +83,7 @@ export const DeviceSshAccess: React.FC<{ deviceId: string; untitled?: boolean }>
       )}
       <ListItem disableGutters>
         <Typography variant="body2" color="textSecondary">
-          {t(
-            'deviceSshAccess.terminalNote',
-            'Who can sign in through the terminal, and as which account.'
-          )}
+          {t('deviceSshAccess.terminalNote', 'Who can sign in through the terminal, and as which account.')}
         </Typography>
       </ListItem>
       {read.grants.map(grant => (
@@ -140,6 +138,7 @@ export const DeviceSshAccess: React.FC<{ deviceId: string; untitled?: boolean }>
       <ListItem disableGutters sx={{ gap: 1, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <TextField
           size="small"
+          variant="filled"
           label={t('deviceSshAccess.email', 'Email')}
           value={email}
           onChange={e => setEmail(e.target.value)}
@@ -147,6 +146,7 @@ export const DeviceSshAccess: React.FC<{ deviceId: string; untitled?: boolean }>
         />
         <TextField
           size="small"
+          variant="filled"
           label={t('deviceSshAccess.login', 'Local user')}
           placeholder={t('deviceSshAccess.loginOwn', 'their own account')}
           helperText={t('deviceSshAccess.loginHelp', 'Empty: their own. Or a user there, * for any')}
@@ -164,15 +164,17 @@ export const DeviceSshAccess: React.FC<{ deviceId: string; untitled?: boolean }>
             />
           }
           label={t('deviceSshAccess.admin', 'Admin')}
-          sx={{ marginRight: 0, height: 40 }}
+          sx={{ ...besideField, marginRight: 0 }}
         />
-        <Button variant="contained" size="small" disabled={busy || !email.trim()} onClick={add} sx={{ height: 40 }}>
+        <Button variant="contained" size="small" disabled={busy || !email.trim()} onClick={add} sx={besideField}>
           {t('deviceSshAccess.add', 'Add')}
         </Button>
       </ListItem>
     </List>
   )
 }
+
+const besideField = { marginTop: `${spacing.xxs}px`, height: 42 }
 
 // The names that reach the machine's administrator: allowed, with a warning (a * grant reaches them already).
 const ADMINISTRATORS = ['root', 'administrator', 'admin']
@@ -212,7 +214,7 @@ const OwnAccountName: React.FC<{
         )
       : t(
           'deviceSshAccess.existingNote',
-          'remote.it will not lock this account or end what it runs when their access is removed — that stops new logins only — and it has whatever sudo the machine gives it.'
+          'Removing their access stops new logins only. Remote.It won’t lock this account or end what it runs. It keeps whatever sudo the machine gives it.'
         )
     : grant.account && !grant.existing
     ? t(
@@ -226,6 +228,7 @@ const OwnAccountName: React.FC<{
     <ListItem disableGutters sx={{ gap: 1, alignItems: 'flex-start', flexWrap: 'wrap', paddingLeft: 2 }}>
       <TextField
         size="small"
+        variant="filled"
         autoFocus
         label={
           existing
@@ -253,12 +256,12 @@ const OwnAccountName: React.FC<{
           />
         }
         label={t('deviceSshAccess.existing', 'Already on the device')}
-        sx={{ marginRight: 0, height: 40 }}
+        sx={{ ...besideField, marginRight: 0 }}
       />
-      <Button variant="contained" size="small" disabled={busy || invalid} onClick={save} sx={{ height: 40 }}>
+      <Button variant="contained" size="small" disabled={busy || invalid} onClick={save} sx={besideField}>
         {t('deviceSshAccess.save', 'Save')}
       </Button>
-      <Button size="small" disabled={busy} onClick={onCancel} sx={{ height: 40 }}>
+      <Button size="small" disabled={busy} onClick={onCancel} sx={besideField}>
         {t('deviceSshAccess.cancel', 'Cancel')}
       </Button>
     </ListItem>

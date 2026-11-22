@@ -249,7 +249,7 @@ const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}
 
 const NAME = 'Name'
 const LABEL = 'Address'
-const ACTIVATION = 'New exit devices start'
+const ACTIVATION = 'New devices start'
 
 const run = (id: string, name: string | null, extra: any = {}) => ({
   id,

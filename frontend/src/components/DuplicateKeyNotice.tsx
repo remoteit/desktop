@@ -47,7 +47,7 @@ export const DuplicateKeyNotice: React.FC<{ device: IDevice }> = ({ device }) =>
           {seen}{' '}
           {t(
             'duplicateKey.keyBody',
-            'It was refused: its daemon cannot take an identity of its own. Update the daemon on that machine, and it is split off as a copy you can keep or remove.'
+            'Refused. Its agent can’t take an identity of its own. Update the agent on that machine to keep or remove it as a copy.'
           )}
         </em>
       </Notice>

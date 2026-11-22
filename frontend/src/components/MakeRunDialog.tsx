@@ -157,11 +157,11 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
         {kind === 'exit'
           ? t(
               'makeRun.exitHint',
-              'It joins out of service and goes into service once its checks pass: online, and its machine allowing exits. Its exit node is turned on.'
+              'It turns on once its checks pass. The device must be online and allow exits.'
             )
           : t(
               'makeRun.proxyHint',
-              'It joins out of service and goes into service once its checks pass, serving every endpoint on the proxy. Its proxy setting is turned on.'
+              'It turns on once its checks pass, and then serves every public address on the proxy server.'
             )}
       </Typography>
       {opensLan && (

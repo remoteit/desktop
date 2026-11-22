@@ -135,7 +135,7 @@ export const DeviceAgentSection: React.FC = () => {
       : packageless
       ? browser
         ? t('deviceAgent.withPortal', 'Updates with the portal')
-        : t('deviceAgent.withApp', 'Updated by the app that carries it')
+        : t('deviceAgent.withApp', 'Updated by the app it came with')
       : blocked
       ? t('deviceAgent.paused', 'Updates are paused on this device')
       : daemon.update
@@ -189,7 +189,7 @@ export const DeviceAgentSection: React.FC = () => {
               label={
                 browser
                   ? t('deviceAgent.withPortal', 'Updates with the portal')
-                  : t('deviceAgent.withApp', 'Updated by the app that carries it')
+                  : t('deviceAgent.withApp', 'Updated by the app it came with')
               }
               subLabel={
                 browser

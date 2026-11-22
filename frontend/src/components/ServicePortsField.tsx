@@ -35,7 +35,7 @@ export const ServicePortsField: React.FC<Props> = ({ value, error, more, disable
         {more
           ? t(
               'multiPort.morePortsHelp',
-              "Ports and ranges the application also uses beside the URL's, like 5004-5005, reached through Access. Optional."
+              "Other ports and ranges the application uses, like 5004-5005. Access reaches them by address. Optional."
             )
           : t(
               'multiPort.portsHelp',

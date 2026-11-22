@@ -79,7 +79,7 @@ describe("DeviceSshAccess: naming a person's own account", () => {
     const container = await render()
     await click(container.querySelector('[data-icon="pen"]'))
     await click(container.querySelector('input[type="checkbox"]'))
-    expect(container.textContent).toContain('remote.it will not lock this account')
+    expect(container.textContent).toContain('Remote.It won’t lock this account')
     const input = [...container.querySelectorAll('input')].find(i => i.type !== 'checkbox')!
     await type(input, 'root')
     expect(container.textContent).toContain("This is the machine's administrator")

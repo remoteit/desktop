@@ -79,7 +79,7 @@ describe('ExitFlowList', () => {
     expect(rows(c)).toHaveLength(2)
     expect(rows(c)[0].textContent).toContain('93.184.216.34:443 · tcp · pat@example.com on account 501')
     expect(rows(c)[0].textContent).toContain('through remote.it pdx1a')
-    expect(rows(c)[1].textContent).toContain('carried as an exit')
+    expect(rows(c)[1].textContent).toContain('as an exit device')
     expect(testId(c, 'exit-flows-more')).toBeNull()
   })
 

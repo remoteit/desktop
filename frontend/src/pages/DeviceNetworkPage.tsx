@@ -9,6 +9,7 @@ import {
   List,
   ListSubheader,
   MenuItem,
+  Tab,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -52,6 +53,7 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { IconButton } from '../buttons/IconButton'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Container } from '../components/Container'
+import { PageTabs } from '../components/PageTabs'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -235,14 +237,14 @@ export const DeviceNetworkPage: React.FC = () => {
   }
 
   const tabLabel = (text: string, count?: number) => (
-    <>
+    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75 }}>
       {text}
       {count !== undefined && (
-        <Box component="span" sx={{ marginLeft: 0.75, opacity: 0.6 }}>
+        <Box component="span" sx={{ opacity: 0.6 }}>
           {count}
         </Box>
       )}
-    </>
+    </Box>
   )
 
   const addButton = (
@@ -287,23 +289,11 @@ export const DeviceNetworkPage: React.FC = () => {
               />
             )}
           </Typography>
-          <Box sx={{ paddingX: `${spacing.xl}px`, paddingBottom: 1.5 }}>
-            <ToggleButtonGroup
-              size="small"
-              exclusive
-              value={view}
-              onChange={(_, value) => value && setView(value)}
-              sx={{ '& .MuiToggleButton-root': { paddingX: 2 } }}
-            >
-              <ToggleButton value="map">{tabLabel(t('deviceNetwork.mapTab', 'Map'))}</ToggleButton>
-              <ToggleButton value="devices">
-                {tabLabel(t('deviceNetwork.devicesTab', 'Devices'), deviceCount(network))}
-              </ToggleButton>
-              <ToggleButton value="people">
-                {tabLabel(t('deviceNetwork.peopleTab', 'People'), peopleCount(network))}
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
+          <PageTabs value={view} onChange={(_, value) => setView(value)} sx={{ marginX: 4.5, marginTop: 1 }}>
+            <Tab value="map" label={tabLabel(t('deviceNetwork.mapTab', 'Map'))} />
+            <Tab value="devices" label={tabLabel(t('deviceNetwork.devicesTab', 'Devices'), deviceCount(network))} />
+            <Tab value="people" label={tabLabel(t('deviceNetwork.peopleTab', 'People'), peopleCount(network))} />
+          </PageTabs>
         </>
       }
     >
@@ -511,9 +501,8 @@ export const DeviceNetworkPage: React.FC = () => {
         </List>
       ) : (
         <List disablePadding>
-          <ListSubheader sx={{ display: 'flex', alignItems: 'center' }}>
-            {t('deviceNetwork.people', 'People')}
-            {admin && (
+          {admin && (
+            <ListSubheader sx={{ display: 'flex', alignItems: 'center' }}>
               <Button
                 size="small"
                 sx={{ marginLeft: 'auto' }}
@@ -522,8 +511,8 @@ export const DeviceNetworkPage: React.FC = () => {
               >
                 {t('deviceNetwork.share', 'Add person')}
               </Button>
-            )}
-          </ListSubheader>
+            </ListSubheader>
+          )}
           {(network.accountAccess || []).map(section => (
             <AccountPeople
               key={section.accountId}
@@ -819,14 +808,14 @@ export const MemberRow: React.FC<{
       sx={{
         position: 'relative',
         paddingLeft: ROW_INDENT,
-        paddingRight: 6,
+        paddingRight: 9,
         paddingY: 1.5,
         borderTop: 1,
         borderColor: 'grayLighter.main',
       }}
     >
       {membership && (
-        <Box sx={{ position: 'absolute', right: 8, top: 14 }}>
+        <Box sx={{ position: 'absolute', right: 28, top: 14 }}>
           <IconButton
             icon="times"
             title={t('deviceNetwork.remove', 'Remove {{name}} from this network', { name })}
@@ -1229,7 +1218,8 @@ const AccountHeadingBand: React.FC<{
       alignItems: 'center',
       flexWrap: 'wrap',
       columnGap: 1,
-      paddingX: 2,
+      paddingLeft: 2,
+      paddingRight: 3.5,
       paddingY: 1,
       borderTop: 1,
       borderColor: 'grayLight.main',

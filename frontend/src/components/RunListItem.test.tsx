@@ -112,7 +112,7 @@ describe('what its machine says of it', () => {
       )
     ).toEqual([
       'Health: unhealthy — its NAT keepalive failed',
-      'remote.it’s certificate is not issued yet: until it is, https names fail',
+      'The certificate isn’t issued yet. HTTPS addresses work once it is.',
       'Open: https 2 · tcp 1 · udp 0',
       'Not safe to stop yet: 3 connections open',
     ])
@@ -197,7 +197,7 @@ describe('a disabled device', () => {
   it('says so, whatever its state there, and serves nothing until restored', async () => {
     const row = await render({ kind: 'exit', run: exitRun({ disabled: true }), name: 'HA Derby' })
     expect(row.querySelector('[data-run-state]')?.textContent).toBe('Disabled')
-    expect(row.textContent).toContain('Its device is disabled: it serves nothing until it is restored')
+    expect(row.textContent).toContain('This device is disabled. Restore it to carry traffic again.')
   })
 })
 

@@ -68,10 +68,15 @@ export function exitSummary(t: TFunction, exit: Pick<Exit, 'devices' | 'offered'
   if (!devices) return exit.offered ? t('carry.ready', 'Ready') : t('carry.notReadyShort', 'Not ready')
   if (!devices.length) return t('carry.noDevice', 'No device yet')
   const carriers = devices.filter(carrying)
-  if (carriers.length || exit.offered)
-    return t('carry.readyCarried', 'Ready · carried by {{names}}', {
-      names: (carriers.length ? carriers : devices).map(nameOf).join(', '),
+  if (carriers.length || exit.offered) {
+    const shown = carriers.length ? carriers : devices
+    return t('carry.readyExitDevices', {
+      count: shown.length,
+      names: shown.map(nameOf).join(', '),
+      defaultValue_one: 'Ready · exit device: {{names}}',
+      defaultValue_other: 'Ready · exit devices: {{names}}',
     })
+  }
   const names = devices.map(nameOf).join(', ')
   if (devices.some(device => device.joining)) return t('carry.startingOn', 'Starting · {{names}}', { names })
   if (devices.every(device => device.state !== 'ACTIVE')) return t('carry.pausedOn', 'Paused · {{names}}', { names })
@@ -175,7 +180,7 @@ export function refusalWhy(t: TFunction, kind: 'proxy' | 'exit', refusal: string
       reason:
         kind === 'proxy'
           ? t('carry.busyProxy', 'This device runs {{name}} for others. Pause it there first.', { name: other })
-          : t('carry.busyExit', 'This device carries {{name}} for others. Pause it there first.', { name: other }),
+          : t('carry.busyExit', 'This device is an exit device for {{name}}. Pause it there first.', { name: other }),
     }
   return {
     reason: refusal
@@ -190,7 +195,7 @@ export function candidateFitLine(t: TFunction, kind: 'proxy' | 'exit', candidate
   if (!other) return ''
   return kind === 'proxy'
     ? t('carry.leavesProxy', 'Leaves {{name}} when added', { name: other })
-    : t('carry.leavesExit', 'Stops carrying {{name}} when added', { name: other })
+    : t('carry.leavesExit', 'Stops being an exit device for {{name}} when added', { name: other })
 }
 
 // What an action on one device of an exit or proxy server changes, in a person's words.

@@ -296,7 +296,7 @@ const Account: React.FC<{ account: DeviceAboutAccount; signIns?: DeviceSignIn[] 
     account.admin && t('deviceAbout.accountAdmin', 'Administrator'),
     account.hidden && t('deviceAbout.accountHidden', 'Hidden'),
     account.disabled && t('deviceAbout.accountDisabled', 'Disabled'),
-    account.remoteit && t('deviceAbout.accountRemoteit', "remote.it's own"),
+    account.remoteit && t('deviceAbout.accountRemoteit', "Remote.It's own"),
   ].filter(Boolean)
   const signedIn = (signIns ?? []).filter(signIn => signIn.account === account.account)
   return (

@@ -37,19 +37,19 @@ export function runStateLabel(
   t: TFunction,
   run: Pick<Run, 'state' | 'joining' | 'disabled' | 'reachable'> & { checks?: RunCheck[] }
 ): string {
-  if (run.disabled) return t('runs.disabledLabel', 'Disabled')
-  if (run.joining) return t('runs.joining', 'Joining')
-  if (run.state === 'ACTIVE')
-    return outOfService(run) ? t('runs.outOfService', 'Out of service') : t('runs.active', 'In service')
-  if (run.state === 'DRAINING') return t('runs.draining', 'Draining')
-  return t('runs.retired', 'Retired')
+  if (run.disabled) return t('carry.disabled', 'Disabled')
+  if (run.joining)
+    return failing(run.checks ?? []).length ? t('carry.notReady', 'Not ready') : t('carry.starting', 'Starting')
+  if (run.state === 'ACTIVE') return outOfService(run) ? t('carry.notWorking', 'Not working') : t('carry.on', 'On')
+  if (run.state === 'DRAINING') return t('carry.pausing', 'Pausing')
+  return t('carry.paused', 'Paused')
 }
 
 // What its state means now: a disabled device serves nothing; what a joining one waits for — its checks, failed or
 // pending, or an admin —, the checks a device in service fails, what a draining or retired one does, and why a device
 // in an exit takes no flows.
 export function runDetail(t: TFunction, run: Run & { refusal?: string | null }, activation?: string): string {
-  if (run.disabled) return t('runs.disabled', 'Its device is disabled: it serves nothing until it is restored')
+  if (run.disabled) return t('runs.disabled', 'This device is disabled. Restore it to carry traffic again.')
   const failed = failing(run.checks)
   const checksFail = () =>
     t('runs.checksFail', 'Its checks fail: {{reasons}}', { reasons: failed.map(check => check.reason).join('; ') })
@@ -65,21 +65,14 @@ export function runDetail(t: TFunction, run: Run & { refusal?: string | null }, 
         .filter(Boolean)
         .join(' · ')
     return activation === 'admin'
-      ? t('runs.waitsForAdmin', 'Its checks pass: it waits for an admin to put it in service')
-      : t('runs.goesIntoService', 'Its checks pass: it goes into service by itself')
+      ? t('runs.waitsForAdmin', 'Checks pass. Waiting for an admin to turn it on.')
+      : t('runs.goesIntoService', 'Checks pass. It turns on by itself.')
   }
   if (run.state === 'ACTIVE' && failed.length) return checksFail()
-  if (run.state === 'DRAINING') return t('runs.drainingHint', 'Takes nothing new, and serves what it has')
-  if (run.state === 'RETIRED') return t('runs.retiredHint', 'Serves nothing')
+  if (run.state === 'DRAINING') return t('runs.drainingHint', 'Takes no new traffic. Open connections finish first.')
+  if (run.state === 'RETIRED') return t('runs.retiredHint', 'Carries no traffic')
   if (run.refusal) return t('runs.refusal', 'Takes no traffic now: {{refusal}}', { refusal: run.refusal })
   return ''
-}
-
-// The devices an exit or a proxy runs on, by name.
-export function runsOnLine(t: TFunction, devices: { id: string; name: string | null }[] | null): string {
-  if (!devices) return ''
-  if (!devices.length) return t('runs.onNone', 'Runs on no device')
-  return t('runs.on', 'Runs on {{names}}', { names: devices.map(device => device.name || device.id).join(', ') })
 }
 
 // The devices using an exit as theirs.
@@ -106,7 +99,7 @@ export function availabilityLine(t: TFunction, exit: Pick<Exit, 'offered' | 'dor
   if (exit.dormant)
     return t(
       'exits.noDeviceAvailable',
-      'No device available: none of its devices carries its traffic, so the devices using it go their usual way until one does.'
+      'No exit device is on. Devices routing through it go direct until one is.'
     )
   if (!exit.offered) return t('exits.notOffered', 'None of its devices takes traffic now.')
   return ''
@@ -174,7 +167,7 @@ export function endpointsLine(t: TFunction, endpoints: number | null | undefined
 // place, serving nothing while it is disabled —, the connections it ends or keeps, a proxy's endpoints and an exit's
 // users, whether an exit is left with no device available, and a refusal.
 export function effectLines(t: TFunction, effect: DeviceActionEffect): string[] {
-  const kind = effect.kind === 'proxy' ? t('runs.proxy', 'Proxy') : t('runs.exit', 'Exit')
+  const kind = effect.kind === 'proxy' ? t('runs.proxy', 'Proxy server') : t('runs.exit', 'Exit')
   const carrying = (state: string) =>
     state === 'ACTIVE'
       ? t('carry.on', 'On')
@@ -244,11 +237,11 @@ export function effectLines(t: TFunction, effect: DeviceActionEffect): string[] 
         ? t('runEffect.dormantUsers', {
             count: effect.users,
             defaultValue_one:
-              'No device available after: the {{count}} device using it goes its usual way until one of its devices carries traffic again.',
+              'No exit device is left on. The {{count}} device routing through it goes direct until one is.',
             defaultValue_other:
-              'No device available after: the {{count}} devices using it go their usual way until one of its devices carries traffic again.',
+              'No exit device is left on. The {{count}} devices routing through it go direct until one is.',
           })
-        : t('runEffect.dormant', 'No device available after, until one of its devices carries traffic again.')
+        : t('runEffect.dormant', 'No exit device is left on after this.')
     )
   if (effect.kind === 'exit' && effect.lanCloses)
     lines.push(t('runEffect.lanCloses', 'Its users no longer reach this machine’s network (LAN): it closes as the machine leaves.'))
@@ -263,16 +256,16 @@ export function stillRunsLine(t: TFunction, device: string, runs: DeviceRuns): s
   const proxyState = runs.proxy ? runStateLabel(t, runs.proxy).toLowerCase() : ''
   const exitState = runs.exit ? runStateLabel(t, runs.exit).toLowerCase() : ''
   if (proxy && exit)
-    return t('runs.stillBoth', '{{device}} runs the proxy {{proxy}} ({{proxyState}}) and the exit {{exit}} ({{exitState}}).', {
+    return t('runs.stillBoth', '{{device}} runs the proxy server {{proxy}} ({{proxyState}}) and is an exit device for {{exit}} ({{exitState}}).', {
       device,
       proxy,
       proxyState,
       exit,
       exitState,
     })
-  if (proxy) return t('runs.stillProxy', '{{device}} runs the proxy {{proxy}} ({{proxyState}}).', { device, proxy, proxyState })
-  if (exit) return t('runs.stillExit', '{{device}} runs the exit {{exit}} ({{exitState}}).', { device, exit, exitState })
-  return t('runs.stillNothing', '{{device}} runs no proxy or exit now.', { device })
+  if (proxy) return t('runs.stillProxy', '{{device}} runs the proxy server {{proxy}} ({{proxyState}}).', { device, proxy, proxyState })
+  if (exit) return t('runs.stillExit', '{{device}} is an exit device for {{exit}} ({{exitState}}).', { device, exit, exitState })
+  return t('runs.stillNothing', '{{device}} is no longer an exit device or proxy server.', { device })
 }
 
 // What deleting an own exit takes away: the exit of the devices using it, its shares, its offers on networks.

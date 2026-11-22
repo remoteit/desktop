@@ -30,10 +30,10 @@ export const LocalSignInNotice: React.FC<{ signIn: LocalSignIn }> = ({ signIn })
   }, [asked])
 
   const where = browser.isMac
-    ? t('localSignIn.whereMac', 'Open remote.it from the menu bar and choose Sign in.')
+    ? t('localSignIn.whereMac', 'Open Remote.It from the menu bar and choose Sign in.')
     : browser.isWindows
-    ? t('localSignIn.whereWindows', 'Open remote.it from the notification area and choose Sign in.')
-    : t('localSignIn.whereOther', 'Open remote.it from the top bar or the app grid and choose Sign in.')
+    ? t('localSignIn.whereWindows', 'Open Remote.It from the notification area and choose Sign in.')
+    : t('localSignIn.whereOther', 'Open Remote.It from the top bar or the app grid and choose Sign in.')
 
   const signInHere = () => {
     if (signIn.link) openSignInLink(signIn.link)
@@ -58,10 +58,10 @@ export const LocalSignInNotice: React.FC<{ signIn: LocalSignIn }> = ({ signIn })
         ) : undefined
       }
     >
-      <strong>{t('localSignIn.title', "remote.it on this computer isn't signed in")}</strong>
+      <strong>{t('localSignIn.title', "Remote.It on this computer isn't signed in")}</strong>
       <em>
         {asked && signIn.link
-          ? t('localSignIn.asked', 'Finish signing in where remote.it opened it; Connect uses it once you have.')
+          ? t('localSignIn.asked', 'Finish signing in where Remote.It opened it. Then Connect uses it.')
           : t(
               'localSignIn.body',
               'Until you sign in there, Connect goes through this browser. Signing in lets this computer reach your devices by name.'

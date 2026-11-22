@@ -13,7 +13,6 @@ import {
   proxyKindLabel,
   runDetail,
   runStateLabel,
-  runsOnLine,
   stillRunsLine,
   usersLine,
 } from './runsHelper'
@@ -45,10 +44,10 @@ const effect = (fields: Partial<DeviceActionEffect> = {}): DeviceActionEffect =>
 
 describe('a device’s state in what it runs', () => {
   it('in a word: disabled before anything else, then joining, in service, draining or retired', () => {
-    expect(runStateLabel(t, run())).toBe('In service')
-    expect(runStateLabel(t, run({ state: 'DRAINING' }))).toBe('Draining')
-    expect(runStateLabel(t, run({ state: 'RETIRED' }))).toBe('Retired')
-    expect(runStateLabel(t, run({ state: 'RETIRED', joining: true }))).toBe('Joining')
+    expect(runStateLabel(t, run())).toBe('On')
+    expect(runStateLabel(t, run({ state: 'DRAINING' }))).toBe('Pausing')
+    expect(runStateLabel(t, run({ state: 'RETIRED' }))).toBe('Paused')
+    expect(runStateLabel(t, run({ state: 'RETIRED', joining: true }))).toBe('Starting')
     expect(runStateLabel(t, run({ joining: true, disabled: true }))).toBe('Disabled')
   })
 
@@ -68,18 +67,18 @@ describe('a device’s state in what it runs', () => {
       'Its checks fail: its NAT rewrites ports'
     )
     expect(runDetail(t, run({ joining: true, checks: [checks[0]] }), 'admin')).toBe(
-      'Its checks pass: it waits for an admin to put it in service'
+      'Checks pass. Waiting for an admin to turn it on.'
     )
-    expect(runDetail(t, run({ joining: true }), 'auto')).toBe('Its checks pass: it goes into service by itself')
+    expect(runDetail(t, run({ joining: true }), 'auto')).toBe('Checks pass. It turns on by itself.')
   })
 
   it('a disabled device serves nothing, whatever its state there', () => {
-    expect(runDetail(t, run({ disabled: true }))).toBe('Its device is disabled: it serves nothing until it is restored')
+    expect(runDetail(t, run({ disabled: true }))).toBe('This device is disabled. Restore it to carry traffic again.')
   })
 
   it('what a draining or retired device does, and why a device in service takes no traffic', () => {
-    expect(runDetail(t, run({ state: 'DRAINING' }))).toBe('Takes nothing new, and serves what it has')
-    expect(runDetail(t, run({ state: 'RETIRED' }))).toBe('Serves nothing')
+    expect(runDetail(t, run({ state: 'DRAINING' }))).toBe('Takes no new traffic. Open connections finish first.')
+    expect(runDetail(t, run({ state: 'RETIRED' }))).toBe('Carries no traffic')
     expect(runDetail(t, run({ refusal: 'nat-rewrites-ports' }))).toBe('Takes no traffic now: nat-rewrites-ports')
     expect(runDetail(t, run())).toBe('')
   })
@@ -107,8 +106,8 @@ describe('a device in service in an own proxy, out of it', () => {
   })
 
   it('in a word: out of service; said why as a joining device’s checks are', () => {
-    expect(runStateLabel(t, run({ checks: [offNetwork] }))).toBe('Out of service')
-    expect(runStateLabel(t, run({ reachable: false }))).toBe('Out of service')
+    expect(runStateLabel(t, run({ checks: [offNetwork] }))).toBe('Not working')
+    expect(runStateLabel(t, run({ reachable: false }))).toBe('Not working')
     expect(runStateLabel(t, run({ reachable: false, disabled: true }))).toBe('Disabled')
     expect(runDetail(t, run({ checks: [offNetwork] }))).toBe(
       'Its checks fail: Laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)'
@@ -121,7 +120,7 @@ describe('a device in service in an own proxy, out of it', () => {
       proxy: { ...run({ reachable: false }), proxy: { name: 'Gateway' } },
       exit: null,
     } as unknown as DeviceRuns
-    expect(stillRunsLine(t, 'Pi', runs)).toBe('Pi runs the proxy Gateway (out of service).')
+    expect(stillRunsLine(t, 'Pi', runs)).toBe('Pi runs the proxy server Gateway (not working).')
   })
 })
 
@@ -136,12 +135,6 @@ describe('an own proxy’s kind', () => {
 })
 
 describe('an exit or a proxy in a line', () => {
-  it('the devices it runs on, by name; none for one the reader does not manage', () => {
-    expect(runsOnLine(t, [{ id: 'A', name: 'Office Mac' }, { id: 'B', name: null }])).toBe('Runs on Office Mac, B')
-    expect(runsOnLine(t, [])).toBe('Runs on no device')
-    expect(runsOnLine(t, null)).toBe('')
-  })
-
   it('an exit’s users and a proxy’s endpoints, counted', () => {
     expect(usersLine(t, 1)).toBe('1 device uses it as its exit')
     expect(usersLine(t, 3)).toBe('3 devices use it as their exit')
@@ -154,7 +147,7 @@ describe('an exit or a proxy in a line', () => {
   it('no device available for an exit none of whose devices carries its traffic; nothing to say of one offered', () => {
     expect(availabilityLabel(t, { offered: false, dormant: true })).toBe('No device available')
     expect(availabilityLine(t, { offered: false, dormant: true })).toBe(
-      'No device available: none of its devices carries its traffic, so the devices using it go their usual way until one does.'
+      'No exit device is on. Devices routing through it go direct until one is.'
     )
     expect(availabilityLabel(t, { offered: false, dormant: false })).toBe('Not taking traffic now')
     expect(availabilityLabel(t, { offered: true, dormant: false })).toBe('')
@@ -186,7 +179,7 @@ describe('what an action does to each proxy and exit, said first', () => {
   it('a proxy’s endpoints stay on it, served by its other devices in service, or by none until one is', () => {
     const proxy = effect({ kind: 'proxy', name: 'remote.it pdx1a', endpoints: 4 })
     expect(effectLines(t, proxy)).toEqual([
-      'Proxy remote.it pdx1a: on → paused',
+      'Proxy server remote.it pdx1a: on → paused',
       'Its 4 public addresses stay on the proxy server, served by its other devices.',
     ])
     expect(effectLines(t, { ...proxy, inService: 0 })[1]).toBe(
@@ -194,7 +187,7 @@ describe('what an action does to each proxy and exit, said first', () => {
     )
     // Undrained, it serves them itself.
     expect(effectLines(t, { ...proxy, state: 'DRAINING', after: 'active' })).toEqual([
-      'Proxy remote.it pdx1a: pausing → on',
+      'Proxy server remote.it pdx1a: pausing → on',
     ])
   })
 
@@ -205,10 +198,10 @@ describe('what an action does to each proxy and exit, said first', () => {
     const last = effectLines(t, effect({ users: 5, moved: 2, inService: 0, dormant: true }))
     expect(last[1]).toBe('2 devices going out through it now wait for another of its devices.')
     expect(last[2]).toBe(
-      'No device available after: the 5 devices using it go their usual way until one of its devices carries traffic again.'
+      'No exit device is left on. The 5 devices routing through it go direct until one is.'
     )
     expect(effectLines(t, effect({ inService: 0, dormant: true }))[1]).toBe(
-      'No device available after, until one of its devices carries traffic again.'
+      'No exit device is left on after this.'
     )
   })
 
@@ -238,11 +231,11 @@ describe('what the device runs after an action', () => {
 
   it('each it runs with its state there, or nothing', () => {
     expect(stillRunsLine(t, 'e1', runs('remote.it pdx1a', 'remote.it pdx1a'))).toBe(
-      'e1 runs the proxy remote.it pdx1a (draining) and the exit remote.it pdx1a (in service).'
+      'e1 runs the proxy server remote.it pdx1a (pausing) and is an exit device for remote.it pdx1a (on).'
     )
-    expect(stillRunsLine(t, 'e1', runs('remote.it pdx1a'))).toBe('e1 runs the proxy remote.it pdx1a (draining).')
-    expect(stillRunsLine(t, 'Mac', runs(undefined, 'Office'))).toBe('Mac runs the exit Office (in service).')
-    expect(stillRunsLine(t, 'Mac', runs())).toBe('Mac runs no proxy or exit now.')
+    expect(stillRunsLine(t, 'e1', runs('remote.it pdx1a'))).toBe('e1 runs the proxy server remote.it pdx1a (pausing).')
+    expect(stillRunsLine(t, 'Mac', runs(undefined, 'Office'))).toBe('Mac is an exit device for Office (on).')
+    expect(stillRunsLine(t, 'Mac', runs())).toBe('Mac is no longer an exit device or proxy server.')
   })
 })
 

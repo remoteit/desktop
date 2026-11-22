@@ -111,7 +111,7 @@ describe('DuplicateKeyNotice', () => {
     await render(flagged({ duplicate: { kind: 'key', address: '198.51.100.4' } }))
     expect(text()).toContain('Another machine signed in as Kiosk while it was online')
     expect(text()).toContain('From 198.51.100.4.')
-    expect(text()).toContain('Update the daemon on that machine')
+    expect(text()).toContain('Update the agent on that machine')
     expect(buttons()).toEqual([])
   })
 

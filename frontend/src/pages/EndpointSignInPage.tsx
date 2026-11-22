@@ -29,7 +29,7 @@ export const EndpointSignInPage: React.FC = () => {
       const url = result === 'ERROR' ? null : result?.data?.data?.endpointTicket
       if (url) window.location.replace(url)
       else if (lost) setProblem(t('endpointSignIn.lost', 'You no longer have access to this public address.'))
-      else setProblem(t('endpointSignIn.refused', 'You do not have access to this public address.'))
+      else setProblem(t('endpointSignIn.refused', 'You don’t have access to this public address.'))
     })
   }, [endpoint, back])
 

@@ -261,7 +261,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
                       {confirmation.enable.name === null
                         ? t(
                             'portalUserMode.confirmWhole',
-                            'People and processes on this device can use your Remote.It access wherever an account has no sign-in of its own. This also applies to accounts added later.'
+                            'People and processes on this device can use your Remote.It access when their account has no sign-in. Accounts added later are included.'
                           )
                         : t(
                             'portalUserMode.confirmAccount',

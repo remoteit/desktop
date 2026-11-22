@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
-import { ListItemText, Typography } from '@mui/material'
+import { List, ListItemText, Typography } from '@mui/material'
 import { Dispatch } from '../store'
 import { DeviceContext } from '../services/Context'
 import { servicesClosed } from '../services/graphQLDeviceSettings'
@@ -10,7 +10,7 @@ import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
 import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { DeviceHeaderMenu } from '../components/DeviceHeaderMenu'
-import { DeviceSection } from '../components/DeviceSection'
+import { ListToolbar } from '../components/ListToolbar'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { ServiceMiniState } from '../components/ServiceMiniState'
 import { AppTerminalButton } from '../components/AppTerminal'
@@ -42,10 +42,19 @@ export const DeviceServicesPage: React.FC = () => {
   return (
     <DeviceHeaderMenu>
       <Gutters size={null} top={null}>
-        <DeviceSection
-          id="services"
-          title={t('deviceServices.title', 'Services')}
-          action={
+        <ListToolbar
+          left={
+            !!services.length && (
+              <Typography variant="caption" color="textSecondary" noWrap>
+                {t('deviceServices.count', {
+                  count: services.length,
+                  defaultValue_one: '{{count}} service',
+                  defaultValue_other: '{{count}} services',
+                })}
+              </Typography>
+            )
+          }
+          right={
             <>
               {!device.virtual && (
                 <AddFromNetwork allowScanning={device.thisDevice} discover={sessionDevice && manage} button />
@@ -57,7 +66,8 @@ export const DeviceServicesPage: React.FC = () => {
               />
             </>
           }
-        >
+        />
+        <List disablePadding>
           {editable && closed && (
             <ListItemLocation to={`/devices/${device.id}/settings/services`} icon="network-wired" dense>
               <ListItemText
@@ -112,7 +122,7 @@ export const DeviceServicesPage: React.FC = () => {
             />
           )}
           {virtualDevices && !device.hostedDevices?.length && <AddVirtualDeviceRow device={device} />}
-        </DeviceSection>
+        </List>
         {deviceSessions && !device.virtual && (
           <Gutters>
             <DeviceApps device={device} />

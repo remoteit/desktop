@@ -7,13 +7,11 @@ import { useTranslation } from 'react-i18next'
 import useNavigationUp from '../../hooks/useNavigationUp'
 import browser from '../../services/browser'
 import { State } from '../../store'
-import { Typography } from '@mui/material'
 import { selectDeviceModelAttributes } from '../../selectors/devices'
 import { selectPermissions } from '../../selectors/organizations'
 import { useLocation, Switch, Route } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { HeaderDeviceOptionMenu } from '../HeaderDeviceOptionMenu'
-import { ProductsHeaderButtons } from './ProductsHeaderButtons'
 import { UpgradeNotice } from '../UpgradeNotice'
 import { ColumnsButton } from '../../buttons/ColumnsButton'
 import { RefreshButton } from '../../buttons/RefreshButton'
@@ -114,13 +112,6 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
           </ChatAgentGuide>
         )}
         {!showSearch && menu !== '/services' && <RefreshButton size="md" color="grayDarker" />}
-        {sidebarHidden && (
-          <Route path="/products">
-            <Typography variant="h2">
-              <Title>{t('header.products', 'Products')}</Title>
-            </Typography>
-          </Route>
-        )}
         <Route path="/devices">
           {!showSearch && !searched && (
             <IconButton
@@ -148,12 +139,19 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             {manager && (
               <Switch>
                 <Route path="/devices" exact>
-                  <IconButton to="/devices/select" icon="check-square" title={t('header.showSelect', 'Show Select')} />
+                  <IconButton
+                    to="/devices/select"
+                    icon="check-square"
+                    size="md"
+                    color="grayDarker"
+                    title={t('header.showSelect', 'Show Select')}
+                  />
                 </Route>
                 <Route path="/devices/select" exact>
                   <IconButton
                     to="/devices"
                     icon="check-square"
+                    size="md"
                     type="solid"
                     color="primary"
                     title={t('header.hideSelect', 'Hide Select')}
@@ -166,9 +164,6 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
                 <HeaderDeviceOptionMenu />
               </Route>
             )}
-            <Route path={['/products', '/products/select']} exact>
-              <ProductsHeaderButtons />
-            </Route>
           </>
         )}
       </Box>

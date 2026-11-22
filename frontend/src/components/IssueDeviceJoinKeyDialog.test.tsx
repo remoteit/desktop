@@ -102,7 +102,7 @@ describe('IssueDeviceJoinKeyDialog', () => {
     expect(run).not.toContain(SECRET)
     expect(body()).toContain('it needs no volume')
     expect(body()).toContain('Copy or download this key now')
-    expect(body()).toContain('It will not be shown again')
+    expect(body()).toContain('You won’t see it again')
     expect(body()).toContain('REMOTEIT_JOIN_KEY_FILE')
 
     const clicked: HTMLAnchorElement[] = []

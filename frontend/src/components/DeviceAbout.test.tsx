@@ -255,7 +255,7 @@ describe('the machine’s accounts', () => {
     const rows = [...container.querySelectorAll('li')].map(li => li.textContent)
     expect(rows).toContain('jsmith:Jane Smith — Local, AdministratorSigned in as pat@example.com')
     expect(rows).toContain('CORP\\bob:Domain, Disabled')
-    expect(rows).toContain("r3-console:Local, Hidden, remote.it's own")
+    expect(rows).toContain("r3-console:Local, Hidden, Remote.It's own")
     expect(rows).toContain('+12 more')
     expect(container.textContent).not.toContain('sam@example.com') // on an account the device does not list
     expect(signIns).toHaveBeenLastCalledWith('A')

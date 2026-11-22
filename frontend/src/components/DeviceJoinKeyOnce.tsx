@@ -26,7 +26,7 @@ export const DeviceJoinKeyOnce: React.FC<Props> = ({ name, joinKey, children }) 
         <em>
           {t(
             'deviceJoinKeyOnce.body',
-            'It will not be shown again: remote.it keeps only its public half. If it is lost, revoke it and issue another.'
+            'You won’t see it again. Remote.It keeps only its public half. If you lose it, revoke it and issue another.'
           )}
         </em>
       </Notice>

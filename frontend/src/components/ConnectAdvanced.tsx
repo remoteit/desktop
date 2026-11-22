@@ -128,7 +128,7 @@ export const ConnectAdvanced: React.FC = () => {
                   <ListItem disablePadding>
                     <ListItemCopy
                       value={connection.rawEndpoint}
-                      label={t('connectAdvanced.agentEndpoint', 'Agent Endpoint')}
+                      label={t('connectAdvanced.agentEndpoint', 'Agent address')}
                       hideIcon
                       fullWidth
                       dense

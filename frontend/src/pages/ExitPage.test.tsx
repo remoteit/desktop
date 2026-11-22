@@ -396,7 +396,7 @@ describe('one of your exits', () => {
     await render(OFFICE)
     expect(readExit).toHaveBeenCalledWith('xoffice')
     expect(find('[data-title]').textContent).toBe('Office')
-    expect(find('[data-summary]').textContent).toBe('Ready · carried by Office Mac · 2 devices route through it')
+    expect(find('[data-summary]').textContent).toBe('Ready · exit device: Office Mac · 2 devices route through it')
     expect(find('[data-notice]')).toBeNull()
   })
 

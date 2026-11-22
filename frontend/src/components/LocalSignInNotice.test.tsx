@@ -2,7 +2,7 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-// "remote.it on this computer isn't signed in" (graphql-api docs/PROXY-GROUPS.md §15, "The portal and an installed
+// "Remote.It on this computer isn't signed in" (graphql-api docs/PROXY-GROUPS.md §15, "The portal and an installed
 // daemon"): Sign in opens the app's own link on the person's click alone, then the daemon is asked again until it serves
 // them; with no link, where to sign in is said.
 const { open, forget, browser } = vi.hoisted(() => ({
@@ -51,7 +51,7 @@ describe('LocalSignInNotice', () => {
 
   it('says so, and opens nothing until Sign in is clicked', () => {
     render({ link: LINK })
-    expect(host.textContent).toContain("remote.it on this computer isn't signed in")
+    expect(host.textContent).toContain("Remote.It on this computer isn't signed in")
     expect(host.textContent).toContain('Connect goes through this browser')
     expect(open).not.toHaveBeenCalled()
     expect(button('Check again')).toBeUndefined()
@@ -61,8 +61,8 @@ describe('LocalSignInNotice', () => {
     render({ link: LINK })
     act(() => button('Sign in')!.click())
     expect(open).toHaveBeenCalledWith(LINK)
-    expect(host.textContent).toContain('Finish signing in where remote.it opened it')
-    expect(host.textContent).toContain('Nothing opened? Open remote.it from the menu bar and choose Sign in.')
+    expect(host.textContent).toContain('Finish signing in where Remote.It opened it')
+    expect(host.textContent).toContain('Nothing opened? Open Remote.It from the menu bar and choose Sign in.')
     expect(button('Sign in')).toBeUndefined()
 
     act(() => vi.advanceTimersByTime(SIGN_IN_POLL_MS * 2))
@@ -78,7 +78,7 @@ describe('LocalSignInNotice', () => {
     Object.assign(browser, { isMac: false, isWindows: true })
     render({})
     expect(button('Sign in')).toBeUndefined()
-    expect(host.textContent).toContain('Open remote.it from the notification area and choose Sign in.')
+    expect(host.textContent).toContain('Open Remote.It from the notification area and choose Sign in.')
     act(() => button('Check again')!.click())
     expect(forget).toHaveBeenCalledTimes(1)
     expect(open).not.toHaveBeenCalled()

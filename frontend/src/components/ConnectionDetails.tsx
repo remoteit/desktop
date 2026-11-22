@@ -80,8 +80,8 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
   const canCopy = copyReady(connection)
   const endpoint = getEndpoint(name, port)
   const endpointName = connection?.public || connection?.connectLink
-    ? t('connectionDetails.publicEndpoint', 'Public Endpoint')
-    : t('connectionDetails.localEndpoint', 'Local Endpoint')
+    ? t('connectionDetails.publicEndpoint', 'Public address')
+    : t('connectionDetails.localEndpoint', 'Local address')
   const secureReverseProxy = isSecureReverseProxy(app.string)
   const secureIcon = secureReverseProxy === false && (
     <Tooltip title={t('connectionDetails.unencrypted', 'Local connection unencrypted')}>
@@ -212,11 +212,11 @@ export const ConnectionDetails: React.FC<Props> = ({ showTitle, show, app, conne
                     </DesktopUI>
                     <DesktopUI>
                       <Typography variant="body2" gutterBottom>
-                        {t('connectionDetails.guideCreatedDesktop', 'A fixed endpoint has been generated.')}
+                        {t('connectionDetails.guideCreatedDesktop', 'A fixed address is ready.')}
                       </Typography>
                     </DesktopUI>
                     <Typography variant="body2" gutterBottom>
-                      {t('connectionDetails.guideCopyOrLaunchBefore', 'Copy the endpoint or launch the application according to the')}
+                      {t('connectionDetails.guideCopyOrLaunchBefore', 'Copy the address or launch the application with the')}
                       <cite> {t('connectionDetails.guideLaunchMethod', 'launch method')} </cite>
                       {t('connectionDetails.guideCopyOrLaunchAfter', 'configured in the connection configuration.')}
                     </Typography>

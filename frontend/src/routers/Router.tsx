@@ -245,20 +245,22 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
         </Route>
       )}
       {deviceSessions && (
-        <Route path="/public-addresses/new">
+        <Route path="/public-addresses">
           <DynamicPanel
             primary={<PublicAddressesPage />}
-            secondary={<PublicAddressAddPage />}
+            secondary={
+              <Switch>
+                <Route path="/public-addresses/new">
+                  <PublicAddressAddPage />
+                </Route>
+                <Route path="/public-addresses">
+                  <ChooseOne kind="publicAddress" />
+                </Route>
+              </Switch>
+            }
             root="/public-addresses"
             layout={layout}
           />
-        </Route>
-      )}
-      {deviceSessions && (
-        <Route path="/public-addresses">
-          <Panel layout={layout}>
-            <PublicAddressesPage />
-          </Panel>
         </Route>
       )}
       {/* Add */}

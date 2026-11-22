@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { Box, Button, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import {
   DEFAULT_WINDOW,
   ExitFlowsScope,
@@ -80,19 +80,31 @@ export const ExitFlowList: React.FC<Props> = ({ scope, carrier }) => {
           values={WINDOWS.map(h => ({ key: String(h), name: windowLabel(t, h) }))}
           onChange={value => setHours(Number(value))}
         />
+        {state === 'ERROR' && (
+          <ListItem>
+            <ListItemIcon>
+              <Icon name="exclamation-triangle" size="md" color="danger" />
+            </ListItemIcon>
+            <ListItemText
+              primary={reason || t('exitFlows.error', 'Could not read the connections.')}
+              primaryTypographyProps={{ color: 'error', 'data-testid': 'exit-flows-error' } as any}
+            />
+          </ListItem>
+        )}
+        {flows && !flows.length && state === 'ready' && (
+          <ListItem>
+            <ListItemIcon />
+            <ListItemText
+              secondary={
+                next
+                  ? t('exitFlows.noneYet', 'None found so far: there is more to look through.')
+                  : t('exitFlows.none', 'No connections through an exit in this time.')
+              }
+              secondaryTypographyProps={{ 'data-testid': 'exit-flows-none' } as any}
+            />
+          </ListItem>
+        )}
       </List>
-      {state === 'ERROR' && (
-        <Typography variant="body2" color="error" paddingX={2} data-testid="exit-flows-error">
-          {reason || t('exitFlows.error', 'Could not read the connections.')}
-        </Typography>
-      )}
-      {flows && !flows.length && state === 'ready' && (
-        <Typography variant="body2" color="textSecondary" paddingX={2} paddingBottom={1} data-testid="exit-flows-none">
-          {next
-            ? t('exitFlows.noneYet', 'None found so far: there is more to look through.')
-            : t('exitFlows.none', 'No connections through an exit in this time.')}
-        </Typography>
-      )}
       {!!flows?.length && (
         <List dense disablePadding data-testid="exit-flows">
           {flows.map(flow => (
@@ -117,7 +129,7 @@ const ExitFlowItem: React.FC<{ flow: UserExitFlow; carrier?: string }> = ({ flow
   const lasted = new Date(flow.end).getTime() - new Date(flow.start).getTime()
   const carried = !!carrier && flow.exitId.toUpperCase() === carrier.toUpperCase()
   const through = carried
-    ? t('exitFlows.carried', 'carried as an exit')
+    ? t('exitFlows.carried', 'as an exit device')
     : t('exitFlows.through', 'through {{exit}}', { exit: flow.exitName || flow.exit || flow.exitId })
   return (
     <ListItem data-flow={flow.id}>
