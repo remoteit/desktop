@@ -484,7 +484,7 @@ describe('verified', () => {
     verify.mockResolvedValue({ reason: '' })
     await click(settingButton('circle-arrow-right'))
     expect($('[data-confirm] [data-notice="error"]')?.textContent).toBe(
-      'What it would do could not be said: try again.'
+      'Couldn’t check what would change. Try again.'
     )
   })
 
@@ -604,7 +604,7 @@ describe('removing it', () => {
     remove.mockResolvedValue({ addresses: [], certificate: 'ready', applied: false })
     await render(PENDING)
     await click(settingButton('rotate-left'))
-    expect($('[data-confirm]')?.textContent).toContain('No public address moves.')
+    expect($('[data-confirm]')?.textContent).toContain('No public address changes.')
     expect(($('[data-confirm-action]') as HTMLButtonElement).disabled).toBe(false)
     await click($('[data-deny]'))
     expect($('[data-confirm]')).toBeNull()

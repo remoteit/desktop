@@ -669,7 +669,7 @@ describe('deleting a proxy', () => {
     await click(settingButton('trash'))
     expect($('[data-confirm-title]')?.textContent).toBe('Delete Gateway?')
     expect($('[data-confirm]')?.textContent).toContain('Its 2 public addresses stop working for everyone.')
-    expect($('[data-confirm-action]')?.textContent).toBe('Delete')
+    expect($('[data-confirm-action]')?.textContent).toBe('Delete proxy server')
     readProxy.mockResolvedValue(null)
     await click($('[data-confirm-action]'))
     expect(deleteProxy).toHaveBeenCalledWith('P1', true)
