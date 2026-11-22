@@ -387,7 +387,7 @@ export const PublisherPage: React.FC = () => {
               </Typography>
             )}
             <Button variant="contained" size="small" onClick={() => history.push('/apps/new')} data-publisher-new-app>
-              {t('publisherPage.newApp', 'New app')}
+              {t('publisherPage.newApp', 'Create app')}
             </Button>
             <Button size="small" onClick={() => history.push('/apps/build')} sx={{ marginLeft: 1 }} data-publisher-build-app>
               {t('publisherPage.buildApp', 'Build it yourself')}

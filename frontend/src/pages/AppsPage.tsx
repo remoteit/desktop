@@ -79,7 +79,7 @@ export const AppsPage: React.FC = () => {
               onClick={() => history.push('/apps/new')}
               data-apps-new
             >
-              {t('apps.newApp', 'New app')}
+              {t('apps.newApp', 'Create app')}
             </Button>
           }
         />

@@ -74,7 +74,7 @@ export const AppCatalogRow: React.FC<AppCatalogRowProps> = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <Typography component="span" variant="body1" fontWeight={500}>
+          <Typography component="span" variant="body1">
             {appName(t, { id, name })}
           </Typography>
         }
