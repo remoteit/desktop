@@ -768,6 +768,7 @@
   },
   "chooseOne": {
     "exit": "",
+    "network": "",
     "proxy": ""
   },
   "claimDevice": {
@@ -1770,6 +1771,7 @@
     "empty": "",
     "error": "",
     "noDevices": "",
+    "none": "",
     "title": "",
     "unsupported": ""
   },
@@ -4271,6 +4273,7 @@
     "emptyTitle": "",
     "failed": "",
     "intro": "",
+    "none": "",
     "notRemoved": "",
     "open": "",
     "partial_other": "",
