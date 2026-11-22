@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
 import {
   Box,
-  Button,
   List,
   ListItem,
   ListItemIcon,
@@ -26,7 +24,7 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { Title } from '../components/Title'
+import { NetworkSectionIntro } from '../components/NetworkSectionIntro'
 import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
 import { windowOpen } from '../services/browser'
@@ -42,7 +40,6 @@ const KIND_ICON: Record<PublicAddress['kind'], string> = {
    address starts from choosing a service (pages/PublicAddressAddPage.tsx). */
 export const PublicAddressesPage: React.FC = () => {
   const { t } = useTranslation()
-  const history = useHistory()
   const accountId = useSelector(selectActiveAccountId)
   const [read, setRead] = useState<PublicAddresses | 'ERROR' | typeof UNSUPPORTED>()
   const [busy, setBusy] = useState(false)
@@ -77,25 +74,11 @@ export const PublicAddressesPage: React.FC = () => {
       gutterBottom
       bodyProps={{ verticalOverflow: true }}
       header={
-        <>
-          <Typography variant="subtitle1">
-            <Title>{t('publicAddresses.title', 'Public addresses')}</Title>
-            <Button
-              size="small"
-              variant="contained"
-              startIcon={<Icon name="plus" size="sm" />}
-              onClick={() => history.push('/public-addresses/new')}
-              data-create
-            >
-              {t('publicAddresses.add', 'Add public address')}
-            </Button>
-          </Typography>
-          <Gutters top={null} bottom="sm">
-            <Typography variant="body2" color="textSecondary">
-              {t('publicAddresses.intro', 'Open your services from any browser or app, without installing anything.')}
-            </Typography>
-          </Gutters>
-        </>
+        <NetworkSectionIntro
+          intro={t('publicAddresses.intro', 'Open your services from any browser or app, without installing anything.')}
+          action={t('publicAddresses.add', 'Add public address')}
+          to="/public-addresses/new"
+        />
       }
     >
       {read === undefined ? (
@@ -128,29 +111,14 @@ export const PublicAddressesPage: React.FC = () => {
             </Gutters>
           )}
           {!addresses.length ? (
-            <Box
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              textAlign="center"
-              paddingY={6}
-              paddingX={3}
-              data-empty
-            >
-              <Icon name="globe" size="xxl" color="grayLight" />
-              <Typography variant="h3" marginTop={2}>
-                {t('publicAddresses.emptyTitle', 'No public addresses yet')}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" marginTop={1} maxWidth={420}>
+            <Gutters top="md" bottom="sm">
+              <Typography variant="body2" color="textSecondary" data-empty>
                 {t(
-                  'publicAddresses.emptyBody',
-                  'A public address lets you open a service from anywhere. You choose who may use it.'
+                  'publicAddresses.none',
+                  'No public addresses yet. Add one to open a service from anywhere, and choose who may use it.'
                 )}
               </Typography>
-              <Button variant="contained" sx={{ marginTop: 3 }} onClick={() => history.push('/public-addresses/new')}>
-                {t('publicAddresses.add', 'Add public address')}
-              </Button>
-            </Box>
+            </Gutters>
           ) : (
             <List data-addresses>
               {addresses.map(address => (

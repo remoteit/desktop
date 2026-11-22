@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { Box, Button, List, ListItem, ListItemText, ListSubheader, Typography } from '@mui/material'
-import { useHistory } from 'react-router-dom'
+import { Box, List, ListItem, ListItemText, ListSubheader, Typography } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { Exit, OfferedExit, graphQLOfferedExits } from '../services/graphQLExits'
 import { useAccountExits } from '../hooks/useAccountExits'
@@ -13,7 +12,7 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { Title } from '../components/Title'
+import { NetworkSectionIntro } from '../components/NetworkSectionIntro'
 import { Tags } from '../components/Tags'
 import { Icon } from '../components/Icon'
 
@@ -21,7 +20,6 @@ import { Icon } from '../components/Icon'
    Remote.It's, labelled as run by Remote.It. Each opens on its page (pages/ExitPage.tsx). */
 export const ExitsPage: React.FC = () => {
   const { t } = useTranslation()
-  const history = useHistory()
   const manage = useDisabledDevicesAccess()
   const { value: exits } = useAccountExits()
   const [remoteit, setRemoteit] = useState<OfferedExit[]>([])
@@ -41,30 +39,14 @@ export const ExitsPage: React.FC = () => {
       gutterBottom
       bodyProps={{ verticalOverflow: true }}
       header={
-        <>
-          <Typography variant="subtitle1">
-            <Title>{t('exitsPage.title', 'Exits')}</Title>
-            {manage && (
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={<Icon name="plus" size="sm" />}
-                onClick={() => history.push('/exits/new')}
-                data-create
-              >
-                {t('exitsPage.create', 'Create exit')}
-              </Button>
-            )}
-          </Typography>
-          <Gutters top={null} bottom="sm">
-            <Typography variant="body2" color="textSecondary">
-              {t(
-                'exitsPage.intro',
-                'An exit sends a device’s internet traffic out through another device. Pick one under Route through.'
-              )}
-            </Typography>
-          </Gutters>
-        </>
+        <NetworkSectionIntro
+          intro={t(
+            'exitsPage.intro',
+            'An exit sends a device’s internet traffic out through another device. Pick one under Route through.'
+          )}
+          action={manage ? t('exitsPage.create', 'Create exit') : undefined}
+          to="/exits/new"
+        />
       }
     >
       {exits === undefined ? (
