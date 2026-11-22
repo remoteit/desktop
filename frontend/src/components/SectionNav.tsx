@@ -16,7 +16,7 @@ export const SectionNav: React.FC<{ panels?: number }> = ({ panels = 1 }) => {
   const nav = useNavSections()
   const { page, section } = nav
 
-  if (nav.remoteUI || !page || !section || section.pages.length < 2 || !subNavShown(page, pathname, panels)) return null
+  if (nav.remoteUI || !page || !section || !subNavShown(page, pathname, panels)) return null
 
   return (
     <Box

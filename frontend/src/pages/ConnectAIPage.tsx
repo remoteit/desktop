@@ -4,7 +4,6 @@ import { Box, Stack, Typography } from '@mui/material'
 import { Container } from '../components/Container'
 import { CopyCodeBlock } from '../components/CopyCodeBlock'
 import { Gutters } from '../components/Gutters'
-import { Title } from '../components/Title'
 import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
 import { OAUTH_MCP_RESOURCE, MCP_CONNECT_DOCS_LINK } from '../constants'
@@ -38,14 +37,7 @@ export const ConnectAIPage: React.FC = () => {
   const { t } = useTranslation()
   return (
     <Box sx={{ maxWidth: 720, height: '100%', minHeight: 0 }}>
-      <Container
-        gutterBottom
-        header={
-          <Typography variant="h1">
-            <Title>{t('connectAiPage.title', 'Connect your AI')}</Title>
-          </Typography>
-        }
-      >
+      <Container gutterBottom>
         <Gutters>
           <Typography variant="body1">
             {t(
