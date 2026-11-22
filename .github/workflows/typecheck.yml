@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+      - solo
+      - 'ux/**'
 
 permissions:
   contents: read
@@ -38,6 +40,11 @@ jobs:
 
       - name: Run typecheck
         run: npm run typecheck
+
+      # Only the wording tests: the full suite has timeouts under parallel load (NewAppPage, signer, oidcRoute, graphQLAppRelease).
+      - name: Run wording tests
+        working-directory: frontend
+        run: npx vitest run src/i18n/
 
       # Catalog COVERAGE + parity. i18n:check alone only compares the catalogs to each other, so a
       # t() key missing from ALL of them (a new UI string shipped on its inline default) passes
