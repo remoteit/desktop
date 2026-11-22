@@ -94,10 +94,10 @@ export const DeleteDevice: React.FC<Props> = ({ device, menuItem, hide, onClick,
             sx={{ alignItems: 'flex-start', '& .MuiRadio-root': { marginTop: -0.5 } }}
             label={
               <ListItemText
-                primary={t('deleteDevice.keepHosted', 'Keep them, not hosted')}
+                primary={t('deleteDevice.keepHosted', 'Keep them, with no gateway')}
                 secondary={t(
                   'deleteDevice.keepHostedHint',
-                  'They go offline, keeping their services, shares and grants, until you move them to another gateway.'
+                  'They go offline and keep their services, shares and grants. Choose another gateway to bring them back.'
                 )}
               />
             }

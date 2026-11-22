@@ -59,10 +59,10 @@ export const DeviceName: React.FC<Props> = ({ connection, service, device, inlin
           </sup>
         </Tooltip>
       )}
-      {/* remote.it Protect on: the exit it goes out through, where the list's query read it (services/deviceProtect). */}
+      {/* Route through on: the exit it goes out through, where the list's query read it (services/deviceProtect). */}
       {device?.protectExit && !service && (
         <Tooltip
-          title={t('deviceName.protect', 'Protect on — going out through {{exit}}', { exit: device.protectExit.name })}
+          title={t('deviceName.protect', 'Routing through {{exit}}', { exit: device.protectExit.name })}
           placement="top"
           arrow
         >

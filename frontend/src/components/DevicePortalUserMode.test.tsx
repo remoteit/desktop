@@ -74,6 +74,12 @@ describe('portal user mode', () => {
       button.click()
     })
 
+  it('is titled Full access, an Access level, and never says user mode', async () => {
+    await render()
+    expect(container.querySelector('h6')?.textContent).toBe('Full access')
+    expect(container.textContent?.toLowerCase()).not.toContain('user mode')
+  })
+
   it('sends the exact selected account for a user with a grant', async () => {
     state.userModeEligibility.canRequestWholeDevice = false
     vi.mocked(requestPortalUserMode).mockResolvedValue({ id: 'ACCOUNT' })
@@ -134,11 +140,11 @@ describe('portal user mode', () => {
     await pick('*')
     await click('Enable')
     await click('Enable', true)
-    expect(container.textContent).toContain('Could not load user mode.')
+    expect(container.textContent).toContain('Couldn’t load full access. Try again.')
     expect(container.textContent).toContain('test-approval-code')
     await click('Retry')
     expect(container.textContent).toContain('Waiting for OS admin approval')
-    expect(container.textContent).not.toContain('Could not load user mode.')
+    expect(container.textContent).not.toContain('Couldn’t load full access. Try again.')
     expect(container.textContent).toContain('test-approval-code')
   })
 

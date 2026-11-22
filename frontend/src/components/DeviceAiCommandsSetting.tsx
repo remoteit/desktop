@@ -22,11 +22,11 @@ export const DeviceAiCommandsSetting: React.FC<{ device: IDevice }> = ({ device 
     <DeviceSettingRow
       setting={setting}
       icon="sparkles"
-      label={t('deviceAi.label', 'AI can run commands on this device')}
+      label={t('apps.aiCommandsLabel', 'AI can run commands on this device')}
       subLabel={
         held
           ? `${appSettingNote(t, setting)}. ${t('deviceAi.heldHow', 'They can change it on the device.')}`
-          : lockedLine(t, setting) || t('deviceAi.hint', 'AI tools you connect run commands through the terminal.')
+          : lockedLine(t, setting) || t('apps.aiCommandsHelp', 'AI tools you connect run commands as the people you allow.')
       }
       quiet
       stateText

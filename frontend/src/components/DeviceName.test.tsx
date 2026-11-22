@@ -34,15 +34,15 @@ async function render(element: React.ReactElement) {
 const device = (fields: Partial<IDevice> = {}) =>
   ({ id: 'LAPTOP', name: 'Laptop', license: 'LICENSED', owner: { email: 'o@example.com' }, ...fields } as IDevice)
 
-describe('the device list’s Protect mark', () => {
-  it('a shield on a device with Protect on, the exit it goes out through in its tooltip', async () => {
+describe('the device list’s Route through mark', () => {
+  it('a shield on a device routing through an exit, that exit in its tooltip', async () => {
     const page = await render(<DeviceName device={device({ protectExit: { id: 'xoffice', name: 'Office' } })} />)
     const mark = page.querySelector('[data-protect="xoffice"]')
     expect(mark?.querySelector('[data-icon="shield"]')).not.toBeNull()
-    expect(mark?.parentElement?.getAttribute('data-tip')).toBe('Protect on — going out through Office')
+    expect(mark?.parentElement?.getAttribute('data-tip')).toBe('Routing through Office')
   })
 
-  it('none while Protect is off, where the list did not read it, or on a service’s name', async () => {
+  it('none while Route through is off, where the list did not read it, or on a service’s name', async () => {
     for (const protectExit of [null, undefined])
       expect((await render(<DeviceName device={device({ protectExit })} />)).querySelector('[data-protect]')).toBeNull()
     const service = { id: 'SVC', name: 'ssh' } as IService

@@ -1331,9 +1331,7 @@
     "withPortalNote": ""
   },
   "deviceAi": {
-    "heldHow": "",
-    "hint": "",
-    "label": ""
+    "heldHow": ""
   },
   "deviceAnyPort": {
     "portsPlaceholder": "",

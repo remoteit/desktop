@@ -1199,8 +1199,8 @@
     "deletingDevices": "deleting devices.",
     "hosts_one": "This device is the gateway for {{count}} virtual device.",
     "hosts_other": "This device is the gateway for {{count}} virtual devices.",
-    "keepHosted": "Keep them, not hosted",
-    "keepHostedHint": "They go offline, keeping their services, shares and grants, until you move them to another gateway.",
+    "keepHosted": "Keep them, with no gateway",
+    "keepHostedHint": "They go offline and keep their services, shares and grants. Choose another gateway to bring them back.",
     "mustBeOffline": "Device must be offline",
     "title": "Delete Device",
     "uninstallRecommendation": "We recommend uninstalling Remote.It before",
@@ -1331,9 +1331,7 @@
     "withPortalNote": "This browser loads the newest client each time."
   },
   "deviceAi": {
-    "heldHow": "They can change it on the device.",
-    "hint": "AI tools you connect run commands through the terminal.",
-    "label": "AI can run commands on this device"
+    "heldHow": "They can change it on the device."
   },
   "deviceAnyPort": {
     "portsPlaceholder": "* or 502,20000-20100. Empty for none.",
@@ -1597,7 +1595,7 @@
   "deviceName": {
     "new": "NEW",
     "noDeviceFound": "No device found",
-    "protect": "Protect on — going out through {{exit}}",
+    "protect": "Routing through {{exit}}",
     "sharedBy": "Shared by {{email}}",
     "unlicensed": "Unlicensed"
   },
@@ -1996,7 +1994,7 @@
     "transferringTo": "You are transferring \"{{name}}\" to a new owner."
   },
   "deviceUserMode": {
-    "label": "User mode"
+    "label": "Full access"
   },
   "deviceWebsocket": {
     "alwaysNote": "All traffic goes through the relay",
@@ -3643,18 +3641,18 @@
     "cancelRequest": "Cancel request",
     "confirmAccount": "Anyone and any process using {{name}} can reach what you can in Remote.It.",
     "confirmFallback": "New connections from {{name}} will use the whole-device identity {{person}}.",
-    "confirmRevoke": "Revoking this binding ends the sessions using it.",
+    "confirmRevoke": "Revoking this sign-in ends the sessions using it.",
     "confirmWhole": "People and processes on this device can use your Remote.It access wherever an account has no sign-in of its own. This also applies to accounts added later.",
     "enable": "Enable",
-    "loadFailed": "Could not load user mode.",
+    "loadFailed": "Couldn’t load full access. Try again.",
     "localSignIn": "You can also open Remote.It on the device and sign in from your OS account.",
     "missingCode": "Use the approval code from the request. If you no longer have the code, cancel the request and submit it again.",
     "pending": "Waiting for the device",
-    "policyOff": "The OS administrator turned off user mode on this device.",
+    "policyOff": "The device’s OS administrator turned off full access.",
     "retry": "Retry",
     "revoke": "Revoke sign-in",
-    "saveFailed": "Could not update user mode.",
-    "scope": "Enable user mode for",
+    "saveFailed": "Couldn’t change full access. Try again.",
+    "scope": "Turn on full access for",
     "waitingAdmin": "Waiting for OS admin approval",
     "wholeDevice": "Whole device"
   },
