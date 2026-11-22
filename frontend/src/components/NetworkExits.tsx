@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { Box, Button, ListItem, ListItemIcon, ListItemText, ListSubheader, MenuItem, TextField } from '@mui/material'
+import { Box, Button, ListItem, ListItemIcon, ListItemText, ListSubheader, MenuItem, TextField, Typography } from '@mui/material'
 import type { DeviceNetwork } from '../services/graphQLDeviceNetworks'
 import { refusalOf } from '../services/graphQL'
 import {
@@ -72,9 +72,11 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
         )}
       </ListSubheader>
       {!!exits.length && (
-        <ListItem dense>
-          <ListItemText secondary={t('networkExits.intro', 'Devices in this network can route through these exits.')} />
-        </ListItem>
+        <Gutters top="xs" bottom="xs">
+          <Typography variant="caption" component="p" color="textSecondary">
+            {t('networkExits.intro', 'Devices in this network can route through these exits.')}
+          </Typography>
+        </Gutters>
       )}
       {adding && (
         <Gutters>
@@ -120,11 +122,11 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
         </ListItem>
       ))}
       {!exits.length && (
-        <ListItem dense>
-          <ListItemText
-            secondary={t('networkExits.none', 'No exits yet. Add one so devices in this network can route through it.')}
-          />
-        </ListItem>
+        <Gutters top="xs" bottom="sm">
+          <Typography variant="caption" component="p" color="textSecondary">
+            {t('networkExits.none', 'No exits yet. Add one so devices in this network can route through it.')}
+          </Typography>
+        </Gutters>
       )}
       {refusal && (
         <Gutters>

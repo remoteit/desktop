@@ -129,7 +129,8 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, plain, 
           value={maxWait}
           error={!waitValid}
           onChange={event => setMaxWait(event.target.value)}
-          sx={{ display: 'block', marginTop: 2 }}
+          fullWidth
+          sx={{ marginTop: 2 }}
         />
       )}
       {refusal && (

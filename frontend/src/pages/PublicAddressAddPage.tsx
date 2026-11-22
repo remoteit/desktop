@@ -132,11 +132,12 @@ export const PublicAddressAddPage: React.FC = () => {
                     sx={{ marginBottom: 1 }}
                   />
                 )}
-                <List dense disablePadding sx={{ maxHeight: 280, overflowY: 'auto' }} data-services>
+                <List dense disablePadding sx={{ maxHeight: 280, overflowY: 'auto', '& .MuiListItemIcon-root': { justifyContent: 'flex-start' } }} data-services>
                   {shown.map(each => (
                     <ListItemButton
                       key={each.id}
                       dense
+                      disableGutters
                       selected={each.id === serviceId}
                       onClick={() => setServiceId(each.id)}
                       data-service={each.id}
