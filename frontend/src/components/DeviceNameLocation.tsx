@@ -11,6 +11,7 @@ import { DeviceName } from './DeviceName'
 import { IconButton } from '../buttons/IconButton'
 import { fontSizes } from '../styling'
 import { HostedByLine } from './HostedBy'
+import { DEVICE_TABS } from '../helpers/deviceTabs'
 
 type Props = {
   device: IDevice
@@ -59,13 +60,8 @@ const DisplayComponent: React.FC<DisplayComponentProps> = ({
         paddingTop: 1.5,
         paddingBottom: 1.5,
       }}
-      to={`/devices/${device.id}/details`}
-      match={[
-        `/devices/${device.id}/details`,
-        `/devices/${device.id}/edit`,
-        `/devices/${device.id}/users`,
-        `/devices/${device.id}/logs`,
-      ]}
+      to={`/devices/${device.id}/overview`}
+      match={DEVICE_TABS.map(tab => `/devices/${device.id}/${tab}`)}
       title={
         <Typography variant="h3">
           <DeviceName device={device} connection={connection} />

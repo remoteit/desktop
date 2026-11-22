@@ -40,12 +40,12 @@ export const HostedDevices: React.FC<Props> = ({ device }) => {
   const hosted = device.hostedDevices || []
   const manage = device.permissions.includes('MANAGE')
 
-  if (device.virtual || (!hosted.length && !manage)) return null
+  if (device.virtual || !hosted.length) return null
 
   return (
     <>
       <Typography variant="subtitle1">
-        <Title>{t('hostedDevices.title', 'Hosted devices')}</Title>
+        <Title>{t('hostedDevices.gatewayFor', 'Gateway for')}</Title>
         {manage && (
           <IconButton
             icon="plus"
@@ -80,18 +80,20 @@ export const HostedDevices: React.FC<Props> = ({ device }) => {
             <StatusChip device={{ state: h.state, services: [] } as unknown as IDevice} />
           </ListItemLocation>
         ))}
-        {!hosted.length && (
-          <ListItemLocation to={virtualDeviceAddPath(device.id)} icon="plus" inset={1.5} dense>
-            <ListItemText
-              primary={t('hostedDevices.empty', 'Add a virtual device')}
-              secondary={t(
-                'hostedDevices.emptyHint',
-                'A NAS, printer or PLC on this network that runs nothing itself: its own device, reached through this one.'
-              )}
-            />
-          </ListItemLocation>
-        )}
       </List>
     </>
+  )
+}
+
+export const AddVirtualDeviceRow: React.FC<{ device: IDevice }> = ({ device }) => {
+  const { t } = useTranslation()
+  if (device.virtual || !device.permissions.includes('MANAGE')) return null
+  return (
+    <ListItemLocation to={virtualDeviceAddPath(device.id)} icon="plus" dense>
+      <ListItemText
+        primary={t('hostedDevices.addVirtual', 'Add virtual device')}
+        secondary={t('hostedDevices.addVirtualNote', 'A NAS, printer or PLC on this network, reached through this device.')}
+      />
+    </ListItemLocation>
   )
 }

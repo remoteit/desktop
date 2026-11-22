@@ -34,9 +34,7 @@ import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { servicesClosed } from '../services/graphQLDeviceSettings'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
-import { HostedDevices } from '../components/HostedDevices'
 import { hostedStateTooltip } from '../components/HostedBy'
-import { useVirtualDevices } from '../hooks/useVirtualDevices'
 import { DisabledDeviceNotice } from '../components/DisabledDeviceNotice'
 import { DuplicateCopyNotice } from '../components/DuplicateCopyNotice'
 import { DuplicateKeyNotice } from '../components/DuplicateKeyNotice'
@@ -50,7 +48,6 @@ export const DevicePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const history = useHistory()
-  const virtualDevices = useVirtualDevices()
   // A device takes services only while remote access to them is on (its services setting). A virtual device has no
   // settings of its own: its gateway's apply.
   const closed = servicesClosed(useDeviceSettings(device?.virtual ? undefined : device?.id).setting('services'))
@@ -124,7 +121,7 @@ export const DevicePage: React.FC = () => {
                 <IconButton
                   icon="sliders"
                   title={t('devicePage.chooseGateway', 'Choose a gateway')}
-                  to={`/devices/${device.id}/edit`}
+                  to={`/devices/${device.id}/settings`}
                 />
               )
             }
@@ -141,7 +138,7 @@ export const DevicePage: React.FC = () => {
               device.permissions.includes('MANAGE') && (
                 <IconButton
                   icon="wave-pulse"
-                  title={t('devicePage.restoreDevice', 'Restore Device')}
+                  title={t('devicePage.recoverDevice', 'Recover device')}
                   onClick={() => dispatch.ui.set({ showRestoreModal: true })}
                 />
               )
@@ -155,7 +152,7 @@ export const DevicePage: React.FC = () => {
       {copies && <DuplicateCopies variant="notice" original={device} copies={copies} accountId={device.accountId} />}
       <DeviceProductNotice device={device} />
       <Typography variant="subtitle1">
-        <Title>{t('devicePage.service', 'Service')}</Title>
+        <Title>{t('devicePage.services', 'Services')}</Title>
         <SortServices />
         {!device.virtual && (
           <AddFromNetwork
@@ -172,13 +169,10 @@ export const DevicePage: React.FC = () => {
       </Typography>
       <List sx={{ '& .MuiListItem-root': { paddingRight: spacing.sm } }}>
         {editable && closed && (
-          <ListItemLocation to={`/devices/${device.id}/edit`} icon="network-wired" dense>
+          <ListItemLocation to={`/devices/${device.id}/settings/services`} icon="network-wired" dense>
             <ListItemText
-              primary={t('devicePage.servicesOff', 'Remote access to services is off')}
-              secondary={t(
-                'devicePage.servicesOffHint',
-                'Nothing on this device is served. Turn on Allow remote access to services, in its settings or on the device, to add services.'
-              )}
+              primary={t('deviceServices.sharingOff', 'Sharing is off')}
+              secondary={t('deviceServices.sharingOffNote', 'Turn on Share this device to add services.')}
             />
           </ListItemLocation>
         )}
@@ -204,8 +198,8 @@ export const DevicePage: React.FC = () => {
               </Typography>
               <Typography variant="body2" gutterBottom>
                 {t(
-                  'devicePage.availableServicesDescription',
-                  "The device's hosted services (applications) are listed here."
+                  'devicePage.availableServicesNote',
+                  "This device's services are listed here."
                 )}
               </Typography>
               <Typography variant="body2" gutterBottom>
@@ -252,7 +246,6 @@ export const DevicePage: React.FC = () => {
           })}
         </GuideBubble>
       </List>
-      {virtualDevices && <HostedDevices device={device} />}
       {!device.virtual && <RestoreModal device={device} />}
     </Container>
   )

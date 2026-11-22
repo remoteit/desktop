@@ -1,15 +1,13 @@
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useHistory, useLocation } from 'react-router-dom'
+import { Box, Tab, Tabs, Typography } from '@mui/material'
 import { DeviceContext } from '../services/Context'
-import { useDeviceSessions } from '../hooks/useDeviceSessions'
-import { useExitFlowsServed } from '../hooks/useExitFlowsServed'
-import { Box, Typography } from '@mui/material'
-import { ListItemLocation } from './ListItemLocation'
+import { useDeviceCarries } from '../hooks/useDeviceCarries'
+import { DeviceTab, deviceTabs, tabLabel } from '../helpers/deviceTabs'
 import { LoadingMessage } from './LoadingMessage'
-import { ListHorizontal } from './ListHorizontal'
 import { ShareButton } from '../buttons/ShareButton'
 import { Container } from './Container'
-import { UsersTab } from './UsersTab'
 import { MobileUI } from './MobileUI'
 import { Gutters } from './Gutters'
 import { Title } from './Title'
@@ -17,10 +15,15 @@ import { Title } from './Title'
 export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNode }> = ({ header, children }) => {
   const { t } = useTranslation()
   const { device } = useContext(DeviceContext)
-  const deviceSessions = useDeviceSessions()
-  const exitFlows = useExitFlowsServed(deviceSessions && !!device && !device.virtual)
+  const location = useLocation()
+  const history = useHistory()
+  const carries = useDeviceCarries(device)
 
   if (!device) return <LoadingMessage />
+
+  const tabs = deviceTabs(device, carries)
+  const current = location.pathname.split('/')[3] as DeviceTab
+  const value = tabs.includes(current) ? current : false
 
   return (
     <Container
@@ -35,7 +38,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
                 <ShareButton
                   to={`/devices/${device.id}/share`}
                   hide={!device.permissions.includes('MANAGE')}
-                  title={t('deviceHeaderMenu.shareAccess', 'Share access')}
+                  title={t('deviceHeaderMenu.share', 'Share')}
                 />
               </MobileUI>
             </Box>
@@ -47,59 +50,24 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               </Typography>
             </Gutters>
           )}
-          <ListHorizontal dense>
-            <ListItemLocation
-              title={t('deviceHeaderMenu.details', 'Details')}
-              icon="info-circle"
-              iconColor="grayDarker"
-              to={`/devices/${device.id}/details`}
-              match={[`/devices/${device.id}`, `/devices/${device.id}/details`]}
-              exactMatch
-              dense
-            />
-            <ListItemLocation
-              title={t('deviceHeaderMenu.configure', 'Configure')}
-              icon="sliders"
-              iconColor="grayDarker"
-              to={`/devices/${device.id}/edit`}
-              dense
-            />
-            <UsersTab instance={device} to={`/devices/${device.id}/users`} />
-            {deviceSessions && !device.virtual && (
-              <ListItemLocation
-                title={t('deviceHeaderMenu.agent', 'Agent')}
-                icon="microchip"
-                iconColor="grayDarker"
-                to={`/devices/${device.id}/agent`}
-                dense
+          <Tabs
+            value={value}
+            variant="scrollable"
+            scrollButtons={false}
+            TabIndicatorProps={{ sx: { display: 'none' } }}
+            sx={{ marginX: 3, marginTop: 1, marginBottom: 1 }}
+            data-device-tabs
+          >
+            {tabs.map(tab => (
+              <Tab
+                key={tab}
+                value={tab}
+                label={tabLabel(t, tab)}
+                data-device-tab={tab}
+                onClick={() => history.push(`/devices/${device.id}/${tab}`)}
               />
-            )}
-            {deviceSessions && !device.virtual && (
-              <ListItemLocation
-                title={t('deviceHeaderMenu.runs', 'Runs')}
-                icon="server"
-                iconColor="grayDarker"
-                to={`/devices/${device.id}/runs`}
-                dense
-              />
-            )}
-            {exitFlows && (
-              <ListItemLocation
-                title={t('deviceHeaderMenu.exitFlows', 'Exit flows')}
-                icon="globe"
-                iconColor="grayDarker"
-                to={`/devices/${device.id}/exit-flows`}
-                dense
-              />
-            )}
-            <ListItemLocation
-              title={t('deviceHeaderMenu.logs', 'Logs')}
-              icon="file-alt"
-              iconColor="grayDarker"
-              to={`/devices/${device.id}/logs`}
-              dense
-            />
-          </ListHorizontal>
+            ))}
+          </Tabs>
           {header}
         </>
       }

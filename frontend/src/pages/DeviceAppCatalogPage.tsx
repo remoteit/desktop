@@ -53,7 +53,7 @@ export const DeviceAppCatalogPage: React.FC = () => {
       header={
         <>
           <Gutters bottom={null}>
-            <Link to={`/devices/${device.id}/edit`}>
+            <Link to={`/devices/${device.id}/services`}>
               <Icon name="angle-left" size="sm" inlineLeft />
               {device.name}
             </Link>
