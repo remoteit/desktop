@@ -163,7 +163,7 @@ export const RunDevicePicker: React.FC<Props> = ({
       {Array.isArray(candidates) && !all.length ? (
         <Typography variant="body2" color="textSecondary" paddingY={1}>
           {kind === 'exit'
-            ? t('carry.noCandidates', 'You have no device that can carry an exit yet. Add a device first.')
+            ? t('carry.noCandidates', 'You have no device that can be an exit device yet. Add a device first.')
             : t('carry.noCandidatesProxy', 'You have no device that can run a proxy server yet. Add a device first.')}
         </Typography>
       ) : (
@@ -254,11 +254,13 @@ export const RunDevicePicker: React.FC<Props> = ({
             onClick={() => onAdd?.(listed)}
           >
             {action ||
-              t('runDevicePicker.add', {
-                count: listed.length,
-                defaultValue_one: 'Add {{count}} device',
-                defaultValue_other: 'Add {{count}} devices',
-              })}
+              (listed.length
+                ? t('runDevicePicker.add', {
+                    count: listed.length,
+                    defaultValue_one: 'Add {{count}} device',
+                    defaultValue_other: 'Add {{count}} devices',
+                  })
+                : t('runDevicePicker.addNone', 'Add devices'))}
           </Button>
           {onSkip && (
             <Button size="small" disabled={busy} onClick={onSkip}>

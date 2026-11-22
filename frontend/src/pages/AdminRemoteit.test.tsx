@@ -428,7 +428,7 @@ describe('remote.it’s proxies', () => {
   it('a machine’s action in it says what the machine still runs, and all is read again; the notice closes', async () => {
     await render(<AdminRemoteitProxies onProblem={vi.fn()} />)
     await click($('[data-run="E1"] [data-changed]'))
-    expect($('[data-notice="info"]')?.textContent).toBe('e1 runs the exit remote.it pdx1a (in service).')
+    expect($('[data-notice="info"]')?.textContent).toBe('e1 is an exit device for remote.it pdx1a (on).')
     expect(proxies).toHaveBeenCalledTimes(2)
     await click($('[data-notice] [data-close]'))
     expect($('[data-notice]')).toBeNull()
@@ -730,7 +730,7 @@ describe('remote.it’s exits', () => {
   it('a machine’s action in it says what the machine still runs, and all is read again', async () => {
     await render(<AdminRemoteitExits onProblem={vi.fn()} />)
     await click($('[data-run="E1"] [data-changed]', exit('X1')))
-    expect($('[data-notice="info"]')?.textContent).toBe('e1 runs the exit remote.it pdx1a (in service).')
+    expect($('[data-notice="info"]')?.textContent).toBe('e1 is an exit device for remote.it pdx1a (on).')
     expect(exits).toHaveBeenCalledTimes(2)
   })
 
@@ -779,7 +779,7 @@ describe('remote.it’s machines', () => {
     await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
     expect(document.body.textContent).toContain('Machines')
     expect(primary('E1')).toBe('e1 · online')
-    expect(secondary('E1')).toBe('E1 · runs proxy remote.it pdx1a: in service; exit remote.it pdx1a: draining')
+    expect(secondary('E1')).toBe('E1 · runs proxy remote.it pdx1a: on; exit remote.it pdx1a: pausing')
     expect(row('E1').querySelector('[data-icon="server"]')?.getAttribute('data-color')).toBe('primary')
     const actions = $('[data-run-actions]', row('E1'))!
     expect(actions.getAttribute('data-run-actions')).toBe('device')
@@ -792,7 +792,7 @@ describe('remote.it’s machines', () => {
     expect($('[data-run-actions]', row('M3'))).toBeNull()
 
     expect(primary('M4')).toBe('exit-box · online')
-    expect(secondary('M4')).toBe('M4 · runs exit remote.it pdx1a: in service')
+    expect(secondary('M4')).toBe('M4 · runs exit remote.it pdx1a: on')
     expect(button('Move to remote.it')).toBeUndefined()
   })
 
@@ -853,7 +853,7 @@ describe('remote.it’s machines', () => {
   it('an action on all a machine runs says what it still runs, and all is read again', async () => {
     await render(<AdminRemoteitMachines onProblem={vi.fn()} />)
     await click($('[data-done]', row('E1')))
-    expect($('[data-notice="info"]')?.textContent).toBe('e1 runs no proxy or exit now.')
+    expect($('[data-notice="info"]')?.textContent).toBe('e1 is no longer an exit device or proxy server.')
     expect(machines).toHaveBeenCalledTimes(2)
   })
 

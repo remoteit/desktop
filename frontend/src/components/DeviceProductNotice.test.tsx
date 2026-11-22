@@ -72,7 +72,7 @@ describe('the notice on a device’s page', () => {
     const page = await render(<DeviceProductNotice device={device} />)
     expect(page.querySelector('[data-notice]')?.getAttribute('data-notice')).toBe('warning')
     expect(page.textContent).toContain('Managed by product Pumps (enforced)')
-    expect(page.textContent).toContain('nothing else is added here')
+    expect(page.textContent).toContain('Change them on the product.')
   })
 
   it('synced: from the product, locked, the device free to add its own', async () => {
@@ -80,7 +80,7 @@ describe('the notice on a device’s page', () => {
     const page = await render(<DeviceProductNotice device={device} />)
     expect(page.querySelector('[data-notice]')?.getAttribute('data-notice')).toBe('info')
     expect(page.textContent).toContain('From product Pumps')
-    expect(page.textContent).toContain('It may have its own besides.')
+    expect(page.textContent).toContain('This device can have its own as well.')
   })
 
   it('nothing under template, with no product, or where the API has none', async () => {

@@ -95,10 +95,10 @@ describe('an action on a device: what it does, said first', () => {
   it('reads what the action would do to everything it runs and says it, before anything is done', async () => {
     await open()
     expect(effects).toHaveBeenCalledWith(E1.id, 'RETIRE', false)
-    expect(find('h2').textContent).toBe('Stop e1 now in everything it carries?')
+    expect(find('h2').textContent).toBe('Stop e1 now in all its exits and proxy servers?')
     expect(find('[data-plain-lead]').textContent).toBe('e1 stops now, ending open connections.')
     expect(confirm().textContent).toBe('Stop now')
-    expect(find('[data-effect="proxy"]').textContent).toContain('Proxy remote.it pdx1a: on → paused')
+    expect(find('[data-effect="proxy"]').textContent).toContain('Proxy server remote.it pdx1a: on → paused')
     expect(find('[data-effect="proxy"]').textContent).toContain(
       'Its 3 public addresses stay on the proxy server, served by its other devices.'
     )
@@ -211,7 +211,7 @@ describe('an action on a device: what it does, said first', () => {
 
   it('undrain asks to resume it, in the exit page’s words', async () => {
     await open({ action: 'UNDRAIN' })
-    expect(find('h2').textContent).toBe('Resume e1 in everything it carries?')
+    expect(find('h2').textContent).toBe('Resume e1 in all its exits and proxy servers?')
     expect(confirm().textContent).toBe('Resume')
   })
 })
@@ -229,7 +229,7 @@ describe('plain words in one exit or proxy server', () => {
     expect(confirm().textContent).toBe('Stop now')
     document.body.innerHTML = ''
     await open({ action: 'UNDRAIN', plain: 'APPROVE', scope: { kind: 'exit', name: 'Home' } })
-    expect(find('h2').textContent).toBe('Let e1 carry Home?')
+    expect(find('h2').textContent).toBe('Turn on e1 for Home?')
     expect(confirm().textContent).toBe('Approve')
   })
 
@@ -254,8 +254,8 @@ describe('what deleting or decommissioning a device does to what it runs', () =>
     effects.mockResolvedValue([effect({ after: 'disabled' })])
     const page = await render('DELETE')
     expect(effects).toHaveBeenCalledWith(E1.id, 'DELETE')
-    expect(page.textContent).toContain('This device carries these. Here is what changes.')
-    expect(page.textContent).toContain('Proxy remote.it pdx1a: on → serving nothing while it is disabled')
+    expect(page.textContent).toContain('This device is in these. Here is what changes.')
+    expect(page.textContent).toContain('Proxy server remote.it pdx1a: on → serving nothing while it is disabled')
   })
 
   it('nothing where it runs nothing, the API has none, or device sessions are off', async () => {

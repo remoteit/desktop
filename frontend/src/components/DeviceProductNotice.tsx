@@ -40,11 +40,11 @@ export const DeviceProductNotice: React.FC<{ device: IDevice }> = ({ device }) =
           {enforced
             ? t(
                 'deviceProductNotice.enforced',
-                'Its tags, networks and services are the product’s, as are the settings the product sets: they are changed on the product, and nothing else is added here.'
+                'Its tags, networks, services and settings come from the product. Change them on the product.'
               )
             : t(
                 'deviceProductNotice.synced',
-                'Its tags, networks and services from the product, and the settings the product sets, are locked and follow the product. It may have its own besides.'
+                'Tags, networks, services and settings from the product are locked here. This device can have its own as well.'
               )}
         </Typography>
       </Notice>

@@ -51,7 +51,7 @@ export const DeviceListEmpty: React.FC = () => {
             <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 500, padding: 3 }}>
               {t(
                 'deviceList.demoHelp',
-                'See how simple it is to connect with our AWS demo device, or add your own device from the plus menu in the top left of the screen.'
+                'Try connecting to our AWS demo device. Or add your own device with the plus button at the top left.'
               )}
             </Typography>
           </>

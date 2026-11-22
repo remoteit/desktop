@@ -104,7 +104,7 @@ describe('LocalSubnetConnect', () => {
     await click('launch')
     expect(openServiceURL).not.toHaveBeenCalled()
     expect(container.querySelector('[data-testid="confirm"]')!.textContent).toContain(
-      'This service redirects to HTTPS, so its page would keep sending the browser back to itself. Switch it to port 443 (HTTPS)'
+      'This service redirects to HTTPS, so its page would loop. Switch it to port 443 (HTTPS)'
     )
     await click('cancel')
     expect(container.querySelector('[data-testid="confirm"]')).toBeNull()

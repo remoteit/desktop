@@ -21,7 +21,7 @@ export const DeviceSharesConnection: React.FC<{ device: IDevice }> = ({ device }
       <ListItemSetting
         icon="door-open"
         label={t('deviceShares.label', 'Shares its connection')}
-        subLabel={t('deviceShares.onNote', 'This device carries an exit or a proxy server.')}
+        subLabel={t('deviceShares.onNote', 'This device is an exit device or runs a proxy server.')}
         secondaryContent={<StateWord on />}
         secondaryContentWidth="130px"
         button={t('deviceShares.open', 'Open')}

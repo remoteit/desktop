@@ -1201,7 +1201,7 @@ describe('This device’s ssh and exit', () => {
     expect(bridge.calls.filter(c => c.method === 'exitNode.join').map(c => c.args)).toEqual([{ id: 'gk3x9q2m7ab1' }])
     expect(dialog()).toBeNull()
     expect(state(container).getAttribute('data-exit-node-state')).toBe('failed')
-    expect(state(container).textContent).toContain('Joining')
+    expect(state(container).textContent).toContain('Not ready')
     expect(container.querySelector('[data-note="check-failed"]')!.textContent).toBe('Failed: it refuses exit flows')
     expect(container.querySelector('[data-note="exit-lan"]')!.textContent).toBe('Users of Office can reach this Mac’s local network.')
     await click(container.querySelector('[data-control="exit-check"]'))
@@ -1217,7 +1217,7 @@ describe('This device’s ssh and exit', () => {
     await click(dialog()!.querySelector('[data-control="exit-go"]'))
     expect(bridge.calls.filter(c => c.method === 'exitNode.create').map(c => c.args)).toEqual([{ name: '' }])
     expect(state(container).getAttribute('data-exit-node-state')).toBe('joining')
-    expect(state(container).textContent).toContain('Joining')
+    expect(state(container).textContent).toContain('Starting')
   })
 
   it('the administrator’s no says nothing; the cloud’s refusal is said in the dialog', async () => {
@@ -1243,7 +1243,7 @@ describe('This device’s ssh and exit', () => {
   })
 
   it('what it runs, in one or two words, and the way to leave it where the page gives one', async () => {
-    const words = { active: 'In service', draining: 'Draining', retired: 'Retired' }
+    const words = { active: 'On', draining: 'Pausing', retired: 'Paused' }
     for (const [s, word] of Object.entries(words)) {
       const runs = { id: 'gk3x9q2m7ab1', name: 'Office', state: s, joining: false, lan: false }
       const { container } = await render({ capabilities: caps, exitNode: { exits, runs } }, { part: 'advanced' })

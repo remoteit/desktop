@@ -84,7 +84,7 @@ export const RootConsent: React.FC<{
               )
             : t(
                 'deviceApps.asksUpdate',
-                '{{app}} {{version}} asks more of remote.it. This device stays on the version it runs until you consent.',
+                '{{app}} {{version}} asks more of Remote.It. This device stays on its current version until you consent.',
                 words
               )}
         </Typography>

@@ -125,7 +125,7 @@ describe('summaries', () => {
 
   it('says whether an exit is ready and which devices carry it', () => {
     expect(exitSummary(t, exit([]))).toBe('No device yet')
-    expect(exitSummary(t, exit([run('ux-exit')], { offered: true }))).toBe('Ready · carried by ux-exit')
+    expect(exitSummary(t, exit([run('ux-exit')], { offered: true }))).toBe('Ready · exit device: ux-exit')
     expect(exitSummary(t, exit([run('a', { joining: true, state: 'RETIRED' })]))).toBe('Starting · a')
     expect(exitSummary(t, exit([run('a', { state: 'RETIRED' })]))).toBe('Paused · a')
     expect(exitSummary(t, exit(null, { offered: true }))).toBe('Ready')

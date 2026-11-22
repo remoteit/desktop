@@ -200,7 +200,7 @@ function plainTitle(t: TFunction, action: PlainAction, device: string, name: str
   return {
     PAUSE: t('carry.pauseTitle', 'Pause {{device}} for {{name}}?', { device, name }),
     RESUME: t('carry.resumeTitle', 'Resume {{device}} for {{name}}?', { device, name }),
-    APPROVE: t('carry.approveTitle', 'Let {{device}} carry {{name}}?', { device, name }),
+    APPROVE: t('carry.approveTitle', 'Turn on {{device}} for {{name}}?', { device, name }),
     STOP: t('carry.stopTitle', 'Stop {{device}} now for {{name}}?', { device, name }),
     REMOVE: t('carry.removeTitle', 'Remove {{device}} from {{name}}?', { device, name }),
   }[action]
@@ -229,7 +229,7 @@ export const DeviceRunEffects: React.FC<{ deviceId: string; action: 'DELETE' | '
   return (
     <>
       <Typography variant="body2" marginTop={2} data-run-effects>
-        {t('runAction.runs', 'This device carries these. Here is what changes.')}
+        {t('runAction.runs', 'This device is in these. Here is what changes.')}
       </Typography>
       <EffectList effects={effects} />
     </>
@@ -238,10 +238,10 @@ export const DeviceRunEffects: React.FC<{ deviceId: string; action: 'DELETE' | '
 
 function deviceTitle(t: TFunction, action: PlainAction, device: string): string {
   return {
-    PAUSE: t('runAction.drainAll', 'Pause {{device}} in everything it carries?', { device }),
-    RESUME: t('runAction.undrainAll', 'Resume {{device}} in everything it carries?', { device }),
-    APPROVE: t('runAction.undrainAll', 'Resume {{device}} in everything it carries?', { device }),
-    STOP: t('runAction.retireAll', 'Stop {{device}} now in everything it carries?', { device }),
-    REMOVE: t('runAction.removeAll', 'Remove {{device}} from everything it carries?', { device }),
+    PAUSE: t('runAction.drainAll', 'Pause {{device}} in all its exits and proxy servers?', { device }),
+    RESUME: t('runAction.undrainAll', 'Resume {{device}} in all its exits and proxy servers?', { device }),
+    APPROVE: t('runAction.undrainAll', 'Resume {{device}} in all its exits and proxy servers?', { device }),
+    STOP: t('runAction.retireAll', 'Stop {{device}} now in all its exits and proxy servers?', { device }),
+    REMOVE: t('runAction.removeAll', 'Remove {{device}} from all its exits and proxy servers?', { device }),
   }[action]
 }

@@ -106,7 +106,7 @@ describe('choosing devices to run a proxy or an exit', () => {
     candidates.mockResolvedValue([candidate('A1', 'Mac'), candidate('B1', 'Pi', { runs: runsExit('xold', 'Old exit') })])
     const page = await render()
     expect(row(page, 'A1').textContent).toBe('Mac')
-    expect(row(page, 'B1').textContent).toContain('Stops carrying Old exit when added')
+    expect(row(page, 'B1').textContent).toContain('Stops being an exit device for Old exit when added')
   })
 
   it('adds those chosen, several at once; one chosen again is no longer chosen', async () => {
@@ -236,7 +236,7 @@ describe('choosing devices to run a proxy or an exit', () => {
   it('none to choose: says so, and adds nothing', async () => {
     candidates.mockResolvedValue([])
     const page = await render()
-    expect(page.textContent).toContain('You have no device that can carry an exit yet. Add a device first.')
+    expect(page.textContent).toContain('You have no device that can be an exit device yet. Add a device first.')
     expect(add(page).disabled).toBe(true)
   })
 })

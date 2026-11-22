@@ -621,7 +621,7 @@ export const attributes: Attribute[] = [
           ? i18n.t('connectionType.connecting', { defaultValue: 'Connecting...' })
           : connection.public
           ? connection.connectLink
-            ? i18n.t('connectionType.persistentPublic', { defaultValue: 'Persistent Public Endpoint' })
+            ? i18n.t('connectionType.persistentPublic', { defaultValue: 'Persistent public address' })
             : application?.reverseProxy
             ? i18n.t('connectionType.publicReverseProxy', { defaultValue: 'Public Reverse Proxy' })
             : i18n.t('connectionType.publicProxy', { defaultValue: 'Public Proxy' })
