@@ -95,10 +95,7 @@ export const ProductPage: React.FC = () => {
             {t('productPage.productNotFound', 'Product not found')}
           </Typography>
           <Typography variant="body2" color="textSecondary" gutterBottom>
-            {t(
-              'productPage.productNotFoundHint',
-              "The product may have been deleted or you don't have access to it."
-            )}
+            {t('productPage.productNotFoundHint', "The product may have been deleted or you don't have access to it.")}
           </Typography>
         </Body>
       </Container>

@@ -59,7 +59,8 @@ export const ProductsPage: React.FC<{ select?: boolean }> = ({ select }) => {
       {!selected.length && (
         <ListToolbar
           left={
-            initialized && (
+            initialized &&
+            !productId && (
               <Typography variant="caption" color="textSecondary" noWrap>
                 {t('productsPage.count', {
                   count: products.length,
@@ -72,11 +73,7 @@ export const ProductsPage: React.FC<{ select?: boolean }> = ({ select }) => {
           right={<ProductsToolbarButtons />}
         />
       )}
-      <Container
-        integrated
-        gutterBottom
-        bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}
-      >
+      <Container integrated gutterBottom bodyProps={{ verticalOverflow: true, horizontalOverflow: true }}>
         {fetching && !initialized ? (
           <LoadingMessage message={t('productsPage.loading', 'Loading products...')} />
         ) : products.length === 0 ? (
