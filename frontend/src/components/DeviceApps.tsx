@@ -102,7 +102,7 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
             primary={t('deviceApps.screenviewOld', 'ScreenView was installed the old way.')}
             secondary={t(
               'deviceApps.screenviewOldHelp',
-              'Switch to the ScreenView app: kept up to date by remote.it, with its settings here. It runs as root, so it asks first.'
+              'Switch to the ScreenView app. Remote.It keeps it up to date, with its settings here. It asks first, because it gets full control.'
             )}
           />
           <Button

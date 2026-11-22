@@ -99,7 +99,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
   if (eligibility.canRequestWholeDevice && !bindings.some(binding => binding.name === null))
     scopes.unshift({ name: null, account: null, requiresOsAdmin: true })
   const key = (scope: UserModeScope) => (scope.name === null ? '*' : `${scope.name}/${scope.account ?? ''}`)
-  const label = (scope: UserModeScope) => scope.name ?? t('portalUserMode.wholeDevice', 'Whole device')
+  const label = (scope: UserModeScope) => scope.name ?? t('portalUserMode.wholeDevice', 'Every account')
   const selected = scopes.find(scope => key(scope) === choice)
 
   const submit = async () => {
@@ -148,15 +148,18 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
           <Box key={binding.id} display="flex" alignItems="center" gap={2}>
             <Box flex={1}>
               <Typography variant="body2">
-                {label(binding)} · {binding.person.email ?? binding.person.id}
+                {t('portalUserMode.binding', '{{account}} · Full access as {{person}}', {
+                  account: label(binding),
+                  person: binding.person.email ?? binding.person.id,
+                })}
               </Typography>
               <Typography variant="body2" color="textSecondary">
                 {binding.state === 'active'
                   ? binding.name === null
-                    ? t('portalUserMode.activeDefault', 'Default for accounts without their own sign-in')
-                    : t('portalUserMode.active', 'Active')
+                    ? t('portalUserMode.activeDefault', 'On for every account without its own sign-in')
+                    : t('portalUserMode.active', 'On')
                   : binding.requiresOsAdmin
-                  ? t('portalUserMode.waitingAdmin', 'Waiting for OS admin approval')
+                  ? t('portalUserMode.waitingAdmin', 'Waiting for the device’s administrator')
                   : t('portalUserMode.pending', 'Waiting for the device')}
               </Typography>
             </Box>
@@ -171,7 +174,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
             >
               {binding.state === 'pending'
                 ? t('portalUserMode.cancelRequest', 'Cancel request')
-                : t('portalUserMode.revoke', 'Revoke sign-in')}
+                : t('portalUserMode.revoke', 'Turn off')}
             </Button>
           </Box>
         ))}
@@ -222,7 +225,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
                 if (selected) setConfirmation({ enable: selected })
               }}
             >
-              {t('portalUserMode.enable', 'Enable')}
+              {t('portalUserMode.enable', 'Turn on')}
             </Button>
           </Stack>
         )}
@@ -238,7 +241,13 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
           {confirmation && (
             <>
               <DialogTitle>
-                {'enable' in confirmation ? label(confirmation.enable) : t('portalUserMode.revoke', 'Revoke sign-in')}
+                {!('enable' in confirmation)
+                  ? t('portalUserMode.revokeTitle', 'Turn off full access?')
+                  : confirmation.enable.name === null
+                  ? t('portalUserMode.confirmTitleWhole', 'Turn on full access for every account?')
+                  : t('portalUserMode.confirmTitle', 'Turn on full access for {{account}}?', {
+                      account: confirmation.enable.name,
+                    })}
               </DialogTitle>
               <DialogContent>
                 {saveError && (
@@ -274,10 +283,10 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
                     {confirmation.revoke.name && whole
                       ? t(
                           'portalUserMode.confirmFallback',
-                          'New connections from {{name}} will use the whole-device identity {{person}}.',
+                          'New connections from {{name}} then use the whole device’s full access, as {{person}}.',
                           { name: confirmation.revoke.name, person: whole.person.email ?? whole.person.id }
                         )
-                      : t('portalUserMode.confirmRevoke', 'Revoking this sign-in ends the sessions using it.')}
+                      : t('portalUserMode.confirmRevoke', 'Turning it off ends the connections that use it.')}
                   </Typography>
                 )}
               </DialogContent>
@@ -287,8 +296,8 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
                 </Button>
                 <Button variant="contained" disabled={busy} onClick={submit}>
                   {'enable' in confirmation
-                    ? t('portalUserMode.enable', 'Enable')
-                    : t('portalUserMode.revoke', 'Revoke sign-in')}
+                    ? t('portalUserMode.enable', 'Turn on')
+                    : t('portalUserMode.revoke', 'Turn off')}
                 </Button>
               </DialogActions>
             </>

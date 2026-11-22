@@ -50,7 +50,7 @@ export const ServiceSubnetNameSetting: React.FC<Props> = ({ device, service, dis
       <ListItemCheckbox
         checked={named.own}
         disabled={locked}
-        label={t('serviceSubnetName.label', 'Its own DNS name')}
+        label={t('serviceSubnetName.label', 'Its own address')}
         subLabel={
           shown ? (
             <>
@@ -76,7 +76,7 @@ export const ServiceSubnetNameSetting: React.FC<Props> = ({ device, service, dis
           required
           waitForSave
           icon="globe"
-          label={t('serviceSubnetName.name', 'Service DNS name')}
+          label={t('serviceSubnetName.name', 'Service address')}
           value={splitSubnetName(name).label}
           displayValue={name}
           resetValue={named.defaultLabel || undefined}

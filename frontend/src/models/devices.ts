@@ -892,8 +892,8 @@ export default createModel<RootModel>()({
         dispatch.ui.set({
           successMessage: i18n.t('notices:device.decommissionedCount', {
             count: deviceIds.length,
-            defaultValue_one: '{{count}} device was decommissioned.',
-            defaultValue_other: '{{count}} devices were decommissioned.',
+            defaultValue_one: '{{count}} device was deleted permanently.',
+            defaultValue_other: '{{count}} devices were deleted permanently.',
           }),
         })
       }

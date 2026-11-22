@@ -27,7 +27,7 @@ export const publisherLine = (t: TFunction, app: { publisher: string; publisherV
 // How it runs, in full: as root, full control of the device; or restricted, an account of its own there.
 export const runsAsLine = (t: TFunction, root: boolean) =>
   root
-    ? t('deviceApps.runsAsRoot', 'Runs as root: full control of this device')
+    ? t('deviceApps.runsAsRoot', 'Full control of this device')
     : t('deviceApps.runsRestricted', 'Runs restricted: an account of its own on this device')
 
 // What an app needs of the device, said plainly where it needs more than an account of its own.
@@ -320,19 +320,19 @@ export function consentLine(t: TFunction, consent: DeviceAppRootConsent): string
   const words = { by: consent.email || consent.by, when: when(consent.at) }
   switch (consent.via) {
     case 'product':
-      return t('deviceApps.consentedProduct', 'Runs as root by its product’s consent: {{by}}, {{when}}', words)
+      return t('deviceApps.consentedProduct', 'Full control, allowed for its product by {{by}}, {{when}}', words)
     case 'registration':
-      return t('deviceApps.consentedRegistration', 'Runs as root since this device registered, {{when}}', words)
+      return t('deviceApps.consentedRegistration', 'Full control since this device registered, {{when}}', words)
     case 'device':
-      return t('deviceApps.consentedDevice', 'Turned on as root on the device by {{by}}, {{when}}', words)
+      return t('deviceApps.consentedDevice', 'Full control, turned on at the device by {{by}}, {{when}}', words)
     case 'carried':
       // To a release: switched by itself from its old install (ScreenView), which ran as root. To none: from before
       // consents were kept.
       return consent.version
-        ? t('deviceApps.consentedConverted', 'Runs as root, as its old install did: switched to the app by Remote.It, {{when}}', words)
-        : t('deviceApps.consentedCarried', 'Runs as root, as it did before consents were kept')
+        ? t('deviceApps.consentedConverted', 'Full control, as its old install had. Switched to the app by Remote.It, {{when}}', words)
+        : t('deviceApps.consentedCarried', 'Full control, as it had before consents were kept')
     default:
-      return t('deviceApps.consented', 'Consented to run as root by {{by}}, {{when}}', words)
+      return t('deviceApps.consented', 'Full control, allowed by {{by}}, {{when}}', words)
   }
 }
 
@@ -407,7 +407,7 @@ export function stateLine(t: TFunction, app: Pick<DeviceApp, 'state' | 'detail' 
   if (app.state === 'unavailable' && app.root && ROOT_REFUSED.test(app.detail ?? ''))
     return t(
       'deviceApps.rootRefused',
-      'Not allowed here: this device’s administrator does not allow apps that run as root (apps_root_control off)'
+      'Not allowed here. This device’s administrator doesn’t allow apps with full control.'
     )
   switch (app.state) {
     case 'running':

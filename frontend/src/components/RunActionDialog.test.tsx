@@ -98,9 +98,9 @@ describe('an action on a device: what it does, said first', () => {
     expect(find('h2').textContent).toBe('Stop e1 now in everything it carries?')
     expect(find('[data-plain-lead]').textContent).toBe('e1 stops now, ending open connections.')
     expect(confirm().textContent).toBe('Stop now')
-    expect(find('[data-effect="proxy"]').textContent).toContain('Proxy remote.it pdx1a: in service → retired')
+    expect(find('[data-effect="proxy"]').textContent).toContain('Proxy remote.it pdx1a: on → paused')
     expect(find('[data-effect="proxy"]').textContent).toContain(
-      'Its 3 endpoints stay on the proxy, served by its other devices in service.'
+      'Its 3 public addresses stay on the proxy server, served by its other devices.'
     )
     expect(find('[data-effect="exit"]').textContent).toContain(
       '1 device going out through it now moves to another of its devices.'
@@ -254,8 +254,8 @@ describe('what deleting or decommissioning a device does to what it runs', () =>
     effects.mockResolvedValue([effect({ after: 'disabled' })])
     const page = await render('DELETE')
     expect(effects).toHaveBeenCalledWith(E1.id, 'DELETE')
-    expect(page.textContent).toContain('It runs these, and they change so:')
-    expect(page.textContent).toContain('Proxy remote.it pdx1a: in service → serving nothing while it is disabled')
+    expect(page.textContent).toContain('This device carries these. Here is what changes.')
+    expect(page.textContent).toContain('Proxy remote.it pdx1a: on → serving nothing while it is disabled')
   })
 
   it('nothing where it runs nothing, the API has none, or device sessions are off', async () => {

@@ -227,7 +227,7 @@ export const DeviceRunEffects: React.FC<{ deviceId: string; action: 'DELETE' | '
   return (
     <>
       <Typography variant="body2" marginTop={2} data-run-effects>
-        {t('runAction.runs', 'It runs these, and they change so:')}
+        {t('runAction.runs', 'This device carries these. Here is what changes.')}
       </Typography>
       <EffectList effects={effects} />
     </>

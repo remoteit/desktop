@@ -191,7 +191,7 @@ describe('a product’s Apps block', () => {
       'acme.logs',
     ])
     expect(line(page, 'remoteit.console', 'about')).toBe('By remote.it · 1.4.0 · Stable')
-    expect(line(page, 'remoteit.console', 'root')).toBe('Runs as root: full control of this device')
+    expect(line(page, 'remoteit.console', 'root')).toBe('Full control of this device')
     expect(row(page, 'remoteit.console').querySelector('[data-icon="terminal"]')).not.toBeNull()
     expect(line(page, 'remoteit.console', 'capabilities')).toBe(
       'Keeps accounts for the people you share with · Signs people in with their Remote.It certificate · Lets AI run commands you allow'
