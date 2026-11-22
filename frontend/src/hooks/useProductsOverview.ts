@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { IDeviceProduct } from '../models/products'
 import { ProductOverview } from '../helpers/productStatus'
-import { graphQLProductsOverview } from '../services/graphQLDeviceProducts'
+import { graphQLProductsOverview } from '../services/productMaxDevices'
 import { selectActiveAccountId } from '../selectors/accounts'
 
 export function useProductsOverview(products: IDeviceProduct[]): Record<string, ProductOverview> | undefined {

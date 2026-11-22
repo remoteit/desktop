@@ -1,5 +1,6 @@
 import { post } from './post'
 import { graphQLBasicRequest, graphQLRequestWithReason, refusalOf } from './graphQL'
+import type { ProductOverview } from '../helpers/productStatus'
 
 /* A product's maximum of devices (graphql-api docs/PROXY-GROUPS.md §11, "A product's maximum of devices"): optional, none
    by default. Every device of the product counts but a disabled one (devicesCounted). At the maximum, a device
@@ -185,4 +186,42 @@ export async function productFullEventFields(): Promise<string> {
             via
           }`
     : ''
+}
+
+// What the products list shows of each: how many devices it has and whether it takes new ones. The device count and
+// maximum are asked for only where the API has them, or the whole read would fail.
+export async function graphQLProductsOverview(accountId?: string): Promise<Record<string, ProductOverview> | 'ERROR'> {
+  const counted = await productMaxDevicesServed()
+  const response = await graphQLBasicRequest(
+    ` query DeviceProductsOverview($accountId: String) {
+        login {
+          account(id: $accountId) {
+            deviceProducts {
+              items {
+                id
+                registrationCode
+                joinKeys { inForce }
+                oneTimeCodes { used revoked expires }
+                ${counted ? 'maxDevices devicesCounted' : ''}
+              }
+            }
+          }
+        }
+      }`,
+    { accountId }
+  )
+  if (response === 'ERROR') return 'ERROR'
+  const items: any[] = response.data?.data?.login?.account?.deviceProducts?.items || []
+  return Object.fromEntries(
+    items.map(item => [
+      item.id,
+      {
+        devices: typeof item.devicesCounted === 'number' ? item.devicesCounted : null,
+        maxDevices: typeof item.maxDevices === 'number' ? item.maxDevices : null,
+        joinKeys: item.joinKeys || [],
+        oneTimeCodes: item.oneTimeCodes || [],
+        registrationCode: !!item.registrationCode,
+      },
+    ])
+  )
 }
