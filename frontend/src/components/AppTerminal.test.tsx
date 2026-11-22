@@ -163,7 +163,7 @@ describe('AppTerminalOption — the connect panel of an app’s ssh service', ()
     expect(container.querySelector('[data-confirm]')?.textContent).toContain(
       'Shell, published by Acme, runs as root: it gets full control of this device'
     )
-    expect(container.querySelector('[data-confirm]')?.textContent).toContain('Signs in people by remote.it certificate')
+    expect(container.querySelector('[data-confirm]')?.textContent).toContain('Signs people in with their Remote.It certificate')
     await click(container.querySelector('[data-confirm-ok]'))
     expect(turn).toHaveBeenCalledWith(shell(), true, true)
   })
