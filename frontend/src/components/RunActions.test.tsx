@@ -4,8 +4,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // The dialog is its own test's (RunActionDialog.test.tsx): here, what it was opened with, and its answer.
 vi.mock('./RunActionDialog', () => ({
-  RunActionDialog: ({ action, scope, onDone }: any) => (
-    <button data-dialog={`${action}:${scope === 'device' ? 'device' : `${scope.kind}:${scope.name}`}`} onClick={() => onDone('RUNS')} />
+  RunActionDialog: ({ action, plain, scope, onDone }: any) => (
+    <button
+      data-dialog={`${action}:${scope === 'device' ? 'device' : `${scope.kind}:${scope.name}`}`}
+      data-plain={plain}
+      onClick={() => onDone('RUNS')}
+    />
   ),
   actionVerb: (_t: any, action: string) => ({ DRAIN: 'Drain', UNDRAIN: 'Undrain', RETIRE: 'Retire', REMOVE: 'Remove' }[action]),
 }))
@@ -40,20 +44,52 @@ describe('the actions on a device in what it runs', () => {
     expect(actionsFor()).toEqual(['DRAIN', 'UNDRAIN', 'RETIRE', 'REMOVE'])
   })
 
-  it('a joining device is put in service; the device as a whole is acted on in all it runs', async () => {
-    await render({ scope: { kind: 'exit', name: 'HA Derby' }, run: { state: 'RETIRED', joining: true } })
-    expect(buttons()).toEqual(['Put in service', 'Remove'])
+  it('in one exit or proxy server: Pause and Remove in service, Resume once paused; a device as a whole as before', async () => {
+    await render({ scope: { kind: 'exit', name: 'HA Derby' }, run: { state: 'ACTIVE', joining: false } })
+    expect(buttons()).toEqual(['Pause', 'Remove'])
+    document.body.innerHTML = ''
+    await render({ scope: { kind: 'exit', name: 'HA Derby' }, run: { state: 'DRAINING', joining: false } })
+    expect(buttons()).toEqual(['Resume', 'Stop now', 'Remove'])
+    document.body.innerHTML = ''
+    await render({ scope: { kind: 'exit', name: 'HA Derby' }, run: { state: 'RETIRED', joining: false } })
+    expect(buttons()).toEqual(['Resume', 'Remove'])
     document.body.innerHTML = ''
     await render({ scope: 'device' })
     expect(buttons()).toEqual(['Drain all', 'Undrain all', 'Retire all', 'Remove from all'])
   })
 
+  it('a joining device waits to be approved only where an admin starts new devices', async () => {
+    await render({ scope: { kind: 'exit', name: 'HA Derby' }, run: { state: 'RETIRED', joining: true } })
+    expect(buttons()).toEqual(['Remove'])
+    document.body.innerHTML = ''
+    await render({ scope: { kind: 'exit', name: 'HA Derby' }, run: { state: 'RETIRED', joining: true }, activation: 'admin' })
+    expect(buttons()).toEqual(['Approve', 'Remove'])
+  })
+
+  it('each plain action opens its dialog with the mutation it maps to, and its plain words', async () => {
+    const cases: [string, any, string][] = [
+      ['PAUSE', { state: 'ACTIVE', joining: false }, 'DRAIN'],
+      ['RESUME', { state: 'RETIRED', joining: false }, 'UNDRAIN'],
+      ['STOP', { state: 'DRAINING', joining: false }, 'RETIRE'],
+      ['REMOVE', { state: 'ACTIVE', joining: false }, 'REMOVE'],
+      ['APPROVE', { state: 'RETIRED', joining: true }, 'UNDRAIN'],
+    ]
+    for (const [plain, run, action] of cases) {
+      document.body.innerHTML = ''
+      await render({ scope: { kind: 'proxy', name: 'Office' }, run, activation: 'admin' })
+      await act(async () => (document.body.querySelector(`[data-plain="${plain}"]`) as HTMLElement).click())
+      const dialog = document.body.querySelector('[data-dialog]') as HTMLElement
+      expect(dialog.getAttribute('data-dialog')).toBe(`${action}:proxy:Office`)
+      expect(dialog.getAttribute('data-plain')).toBe(plain)
+    }
+  })
+
   it('each opens its dialog, which answers what the device runs after', async () => {
-    const onDone = await render({ scope: { kind: 'proxy', name: 'Remote-Dragon' }, run: { state: 'ACTIVE', joining: false } })
+    const onDone = await render({ scope: 'device' })
     expect(document.body.querySelector('[data-dialog]')).toBeNull()
     await act(async () => (document.body.querySelector('[data-action="RETIRE"]') as HTMLElement).click())
     const dialog = document.body.querySelector('[data-dialog]') as HTMLElement
-    expect(dialog.getAttribute('data-dialog')).toBe('RETIRE:proxy:Remote-Dragon')
+    expect(dialog.getAttribute('data-dialog')).toBe('RETIRE:device')
     await act(async () => dialog.click())
     expect(onDone).toHaveBeenCalledWith('RUNS')
   })

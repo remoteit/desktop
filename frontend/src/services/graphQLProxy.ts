@@ -113,7 +113,7 @@ export type NewEndpoint = {
 
 // What a list of proxies to choose from needs.
 const CHOICE_FIELDS = 'id name host remoteit local publicEndpoints location provider'
-const ENDPOINT_FIELDS = `id serviceId proxy { id name host remoteit local } kind lifetime access lockedIp allow host
+export const ENDPOINT_FIELDS = `id serviceId proxy { id name host remoteit local } kind lifetime access lockedIp allow host
   port url localAddresses created expires`
 const RECORD_FIELDS = 'records { name type value found seen }'
 const OWN_NAME_FIELDS = `name state via ${RECORD_FIELDS} certificate checked problem`

@@ -68,6 +68,8 @@ import { ProxiesPage } from '../pages/ProxiesPage'
 import { ProxyBasePage } from '../pages/ProxyBasePage'
 import { ProxyPage } from '../pages/ProxyPage'
 import { ProxyAddPage } from '../pages/ProxyAddPage'
+import { PublicAddressesPage } from '../pages/PublicAddressesPage'
+import { PublicAddressAddPage } from '../pages/PublicAddressAddPage'
 import { ChooseOne } from '../components/ChooseOne'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { PublisherPage } from '../pages/PublisherPage'
@@ -240,6 +242,23 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
             root="/proxies"
             layout={layout}
           />
+        </Route>
+      )}
+      {deviceSessions && (
+        <Route path="/public-addresses/new">
+          <DynamicPanel
+            primary={<PublicAddressesPage />}
+            secondary={<PublicAddressAddPage />}
+            root="/public-addresses"
+            layout={layout}
+          />
+        </Route>
+      )}
+      {deviceSessions && (
+        <Route path="/public-addresses">
+          <Panel layout={layout}>
+            <PublicAddressesPage />
+          </Panel>
         </Route>
       )}
       {/* Add */}

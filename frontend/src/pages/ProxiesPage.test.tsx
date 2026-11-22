@@ -2,13 +2,15 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { proxies, list, base, access } = vi.hoisted(() => ({
+const { proxies, list, base, access, pushed } = vi.hoisted(() => ({
+  pushed: vi.fn(),
   proxies: vi.fn(async () => [] as any),
   list: { value: undefined as any },
   base: { value: null as any },
   access: { manages: true, admin: true },
 }))
 vi.mock('../services/graphQLProxy', () => ({ graphQLProxies: proxies }))
+vi.mock('react-router-dom', () => ({ useHistory: () => ({ push: pushed }) }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
 // The account's own proxies and its base are the shared store's (hooks/useAccountStore.ts): here, what it holds.
 vi.mock('../hooks/useAccountExits', () => ({
@@ -20,7 +22,7 @@ vi.mock('../hooks/useAccountAdmin', () => ({ useAccountAdmin: () => access.admin
 // A proxy's row: where it leads, its icon, its title and its line.
 vi.mock('../components/ListItemLocation', () => ({
   ListItemLocation: ({ to, icon, title, subtitle, ...props }: any) => (
-    <div data-proxy={props['data-proxy']} data-to={to}>
+    <div data-proxy={props['data-proxy']} data-remoteit={props['data-remoteit']} data-to={to}>
       {icon}
       <span data-title>{title}</span>
       <span data-subtitle>{subtitle}</span>
@@ -123,6 +125,7 @@ const subtitle = (id: string) => row(id).querySelector('[data-subtitle]')?.textC
 const iconColor = (id: string) => row(id).querySelector('[data-icon="server"]')?.getAttribute('data-color')
 
 beforeEach(() => {
+  pushed.mockReset()
   access.manages = true
   access.admin = true
   base.value = null
@@ -131,13 +134,13 @@ beforeEach(() => {
 })
 
 describe('the account’s proxies', () => {
-  it('lists its own, each leading to its page, with its host, the devices it runs on, its endpoints and a certificate still to come', async () => {
+  it('lists your own, each leading to its page, whether it is ready and where it runs, its public addresses, its host and a certificate still to come', async () => {
     await render()
     expect(row('P1').getAttribute('data-to')).toBe('/proxies/P1')
     expect(row('P1').querySelector('[data-title]')?.textContent).toBe('Gateway')
-    expect(subtitle('P1')).toBe('gw-acme.dev.r3proxy.com · Runs on Office Mac · 2 endpoints')
+    expect(subtitle('P1')).toBe('Ready · on Office Mac · 2 public addresses · gw-acme.dev.r3proxy.com')
     expect(row('P2').getAttribute('data-to')).toBe('/proxies/P2')
-    expect(subtitle('P2')).toBe('nas-acme.dev.r3proxy.com · Runs on no device · No endpoints · Certificate pending')
+    expect(subtitle('P2')).toBe('No device yet · nas-acme.dev.r3proxy.com · Certificate pending')
   })
 
   it('marks one serving while a device of it is in service, and not one whose devices are joining, draining or none', async () => {
@@ -171,49 +174,52 @@ describe('the account’s proxies', () => {
     expect(['P5', 'P6', 'P7'].map(iconColor)).toEqual(['grayDark', 'grayDark', 'primary'])
   })
 
-  it('lists remote.it’s apart, by name with their host and provider, none of the account’s own among them', async () => {
+  it('lists Remote.It’s apart and labelled, each opening on its page by where it is, none of the account’s own among them', async () => {
     proxies.mockResolvedValue([
       PDX,
       { ...PDX, id: 'R2', name: 'remote.it sea1a', host: 'sea1a-r3.dev.r3proxy.com', provider: '' },
       GATEWAY,
     ])
     const page = await render()
-    expect(page.textContent).toContain('remote.it’s')
+    expect(page.textContent).toContain('Remote.It proxy servers')
     const remoteit = [...page.querySelectorAll('[data-remoteit]')]
     expect(remoteit.map(item => item.getAttribute('data-remoteit'))).toEqual(['R1', 'R2'])
+    expect(remoteit.map(item => item.getAttribute('data-to'))).toEqual(['/proxies/R1', '/proxies/R2'])
     const lines = remoteit.map(item => [
-      item.querySelector('.MuiListItemText-primary')?.textContent,
-      item.querySelector('.MuiListItemText-secondary')?.textContent,
+      item.querySelector('[data-title]')?.textContent,
+      item.querySelector('[data-subtitle]')?.textContent,
     ])
     expect(lines).toEqual([
-      ['remote.it pdx1a', 'pdx1a-r3.dev.r3proxy.com · AWS us-west-2 (Boardman)'],
-      ['remote.it sea1a', 'sea1a-r3.dev.r3proxy.com'],
+      ['remote.it pdx1a', 'pdx1 · Run by Remote.It'],
+      ['remote.it sea1a', 'pdx1 · Run by Remote.It'],
     ])
     expect(page.querySelector('[data-proxy="R1"]')).toBeNull()
   })
 
   it('no list of remote.it’s where none could be read, or there are none', async () => {
     proxies.mockResolvedValue('ERROR')
-    expect((await render()).textContent).not.toContain('remote.it’s')
+    expect((await render()).textContent).not.toContain('Remote.It proxy servers')
     proxies.mockResolvedValue('UNSUPPORTED')
-    expect((await render()).textContent).not.toContain('remote.it’s')
+    expect((await render()).textContent).not.toContain('Remote.It proxy servers')
     proxies.mockResolvedValue([GATEWAY])
     expect((await render()).querySelector('[data-remoteit]')).toBeNull()
   })
 
-  it('offers New proxy to whoever manages devices here, and not to others', async () => {
+  it('offers Create proxy server to whoever manages devices here, and not to others', async () => {
     const page = await render()
-    expect(page.querySelector('[data-icon="plus"]')?.getAttribute('data-to')).toBe('/proxies/new')
-    expect(page.querySelector('[data-icon="plus"]')?.textContent).toBe('New proxy')
+    const create = page.querySelector('[data-create]') as HTMLButtonElement
+    expect(create.textContent).toBe('Create proxy server')
+    await act(async () => create.click())
+    expect(pushed).toHaveBeenCalledWith('/proxies/new')
     access.manages = false
-    expect((await render()).querySelector('[data-icon="plus"]')).toBeNull()
+    expect((await render()).querySelector('[data-create]')).toBeNull()
   })
 
-  it('none of its own yet: says to make one, then add the devices that run it', async () => {
+  it('none of its own yet: says Remote.It’s are used until one is made', async () => {
     list.value = []
     const page = await render()
     expect(page.querySelector('[data-proxy]')).toBeNull()
-    expect(page.textContent).toContain('None yet: make a proxy, then add the devices that run it.')
+    expect(page.textContent).toContain('No proxy servers yet. Your public addresses use Remote.It’s until you create one.')
   })
 
   it('says it is reading them, a server without proxies, and proxies that could not be read', async () => {
@@ -221,11 +227,11 @@ describe('the account’s proxies', () => {
     expect((await render()).querySelector('[data-loading]')).not.toBeNull()
     list.value = 'UNSUPPORTED'
     let page = await render()
-    expect(page.querySelector('[data-notice="info"]')?.textContent).toBe('This server does not have proxies.')
+    expect(page.querySelector('[data-notice="info"]')?.textContent).toBe('Proxy servers aren’t available on this server.')
     expect(page.querySelector('[data-proxy]')).toBeNull()
     list.value = 'ERROR'
     page = await render()
-    expect(page.querySelector('[data-notice="error"]')?.textContent).toBe('The proxies could not be read.')
+    expect(page.querySelector('[data-notice="error"]')?.textContent).toBe('Couldn’t load your proxy servers. Try again.')
     expect(page.querySelector('[data-proxy]')).toBeNull()
   })
 })
@@ -246,15 +252,18 @@ describe('a proxy of the account in a line', () => {
     expect(serving({ devices: null })).toBe(false)
   })
 
-  it('its devices by name, or by id where a device has none, and its endpoint counted', () => {
+  it('its devices by name, or by id where a device has none, and its public addresses counted', () => {
     expect(proxyLine(t, { ...GATEWAY, devices: [run('D1', 'Office Mac'), run('D9', null)], endpointCount: 1 })).toBe(
-      'gw-acme.dev.r3proxy.com · Runs on Office Mac, D9 · 1 endpoint'
+      'Ready · on Office Mac, D9 · 1 public address · gw-acme.dev.r3proxy.com'
+    )
+    expect(proxyLine(t, { ...GATEWAY, devices: [run('D1', 'Office Mac', { state: 'RETIRED' })], endpointCount: 0 })).toBe(
+      'Paused · Office Mac · gw-acme.dev.r3proxy.com'
     )
   })
 
-  it('its host alone where its devices, endpoints and certificate are not read', () => {
+  it('no device yet, with its host, where its devices, addresses and certificate are not read', () => {
     expect(proxyLine(t, { ...GATEWAY, devices: null, endpointCount: null, certificate: null })).toBe(
-      'gw-acme.dev.r3proxy.com'
+      'No device yet · gw-acme.dev.r3proxy.com'
     )
   })
 })
@@ -262,7 +271,7 @@ describe('a proxy of the account in a line', () => {
 describe('its own name in its line', () => {
   const named = (state: string, via = 'name') => ({ ...GATEWAY, ownName: { name: 'gw.example.com', state, via } })
 
-  it('first where it has one, its own or its account base’s, before its host', async () => {
+  it('in place of its host where it has one, its own or its account base’s', async () => {
     list.value = [
       named('active'),
       {
@@ -273,8 +282,8 @@ describe('its own name in its line', () => {
       NAS,
     ]
     await render()
-    expect(subtitle('P1')).toBe('gw.example.com · gw-acme.dev.r3proxy.com · Runs on Office Mac · 2 endpoints')
-    expect(subtitle('P2')).toBe('nas.proxies.example.com · gw-acme.dev.r3proxy.com · Runs on Office Mac · 2 endpoints')
+    expect(subtitle('P1')).toBe('Ready · on Office Mac · 2 public addresses · gw.example.com')
+    expect(subtitle('P2')).toBe('Ready · on Office Mac · 2 public addresses · nas.proxies.example.com')
   })
 
   it('not reached under it yet, or no longer right: where it stands said with it', () => {
@@ -286,15 +295,11 @@ describe('its own name in its line', () => {
     expect(ownNameLine(t, { name: 'gw.proxies.example.com', state: 'broken', via: 'base' })).toBe(
       'gw.proxies.example.com (broken)'
     )
-    expect(proxyLine(t, named('pending'))).toBe(
-      'gw.example.com (pending) · gw-acme.dev.r3proxy.com · Runs on Office Mac · 2 endpoints'
-    )
+    expect(proxyLine(t, named('pending'))).toBe('Ready · on Office Mac · 2 public addresses · gw.example.com (pending)')
   })
 
-  it('none: its host first, as before', () => {
-    expect(proxyLine(t, { ...GATEWAY, ownName: null })).toBe(
-      'gw-acme.dev.r3proxy.com · Runs on Office Mac · 2 endpoints'
-    )
+  it('none: its host', () => {
+    expect(proxyLine(t, { ...GATEWAY, ownName: null })).toBe('Ready · on Office Mac · 2 public addresses · gw-acme.dev.r3proxy.com')
   })
 })
 
@@ -318,17 +323,17 @@ describe('the account’s base for its proxies’ names', () => {
     proxies: 0,
   }
 
-  it('none yet: offered to an admin of the account first, a paid feature, leading to its page', async () => {
+  it('none yet: offered to an admin of the account last, a paid add-on in one sentence, leading to its page', async () => {
     const page = await render()
     expect(page.querySelector('[data-proxy-base]')?.getAttribute('data-proxy-base')).toBe('none')
-    expect(page.textContent).toContain('Account base for proxies')
-    expect(entry()?.querySelector('[data-title]')?.textContent).toBe('None')
+    expect(page.textContent).toContain('Your own domain')
+    expect(entry()?.querySelector('[data-title]')?.textContent).toBe('Not set up')
     expect(entry()?.querySelector('[data-subtitle]')?.textContent).toBe(
-      'A paid feature: every proxy named under a subdomain you delegate to remote.it'
+      'A paid add-on that puts your public addresses under a domain you own.'
     )
     expect(entry()?.querySelector('[data-icon="sitemap"]')?.getAttribute('data-color')).toBe('grayDark')
-    // Before the account's own proxies.
-    expect(page.textContent!.indexOf('Account base for proxies')).toBeLessThan(page.textContent!.indexOf('Yours'))
+    // After your own proxy servers and Remote.It's.
+    expect(page.textContent!.indexOf('Your own domain')).toBeGreaterThan(page.textContent!.indexOf('Your proxy servers'))
   })
 
   it('set: its subdomain and where it stands — pending, verified, active with its proxies, broken naming what is missing', async () => {

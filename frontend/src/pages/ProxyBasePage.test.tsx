@@ -129,8 +129,8 @@ const t = ((_key: string, a: any, b?: any) =>
 const LABEL = 'Subdomain'
 const BASE = 'proxies.example.com'
 const HINT =
-  'Delegate a subdomain you control to remote.it with these NS records; every proxy of the account is then named under it, its records and certificates kept by remote.it.'
-const PAID = 'A paid feature, one for the account: every proxy of it named under a subdomain of yours.'
+  'Add these NS records where your DNS is hosted. Remote.It then names your proxy servers under this domain.'
+const PAID = 'A paid add-on that puts your public addresses under a domain you own.'
 const SERVERS = ['ns-1.awsdns-01.org', 'ns-2.awsdns-02.net', 'ns-3.awsdns-03.com', 'ns-4.awsdns-04.co.uk']
 
 // Its four NS records, each found or not — and, not found, what DNS answered instead where it answered something.
@@ -262,7 +262,7 @@ beforeEach(() => {
 describe('who sees it, and what it is', () => {
   it('a paid feature, said plainly at its head; the base of the account the portal is acting as', async () => {
     await render()
-    expect($('header')?.textContent).toContain('Account base for proxies')
+    expect($('header')?.textContent).toContain('Your own domain')
     expect($('[data-proxy-base-paid]')?.textContent).toBe(PAID)
     expect(readBase).toHaveBeenCalledWith('ACCOUNT')
   })
@@ -270,7 +270,7 @@ describe('who sees it, and what it is', () => {
   it('only for an admin of the account: anyone else is told so, and nothing is read', async () => {
     access.admin = false
     await render()
-    expect($('[data-notice="info"]')?.textContent).toBe('Only an admin of the account can see or set its base.')
+    expect($('[data-notice="info"]')?.textContent).toBe('Only an account admin can set up your own domain.')
     expect(readBase).not.toHaveBeenCalled()
     expect(section()).toBeUndefined()
   })
@@ -281,11 +281,11 @@ describe('who sees it, and what it is', () => {
     await render()
     expect($('[data-loading]')).not.toBeNull()
     await act(async () => answer.release('UNSUPPORTED'))
-    expect($('[data-notice="info"]')?.textContent).toBe('This server does not have account bases for proxies.')
+    expect($('[data-notice="info"]')?.textContent).toBe('Your own domain isn’t available on this server.')
     expect(section()).toBeUndefined()
     reads('ERROR')
     await render()
-    expect($('[data-notice="error"]')?.textContent).toBe('The account’s base could not be read.')
+    expect($('[data-notice="error"]')?.textContent).toBe('Couldn’t load your own domain. Try again.')
     expect(section()).toBeUndefined()
   })
 
@@ -303,7 +303,7 @@ describe('no base yet', () => {
     await render()
     expect(section()).toBe('none')
     expect(inline[LABEL].value).toBe('')
-    expect(inline[LABEL].placeholder).toBe('none: a subdomain you control, as proxies.example.com')
+    expect(inline[LABEL].placeholder).toBe('A subdomain you control, like proxies.example.com')
     expect(inline[LABEL].maxLength).toBe(253)
     expect('Proxies_1 .Example.com'.replace(inline[LABEL].filter, '')).toBe('Proxies1.Example.com')
     expect(hint()).toBe(HINT)
@@ -352,7 +352,7 @@ describe('no base yet', () => {
     expect(section()).toBe('none')
     setBase.mockResolvedValue({ reason: '' })
     await act(async () => inline[LABEL].onSave(BASE))
-    expect($('[data-notice="error"]')?.textContent).toBe('It was not set: try again.')
+    expect($('[data-notice="error"]')?.textContent).toBe('Couldn’t save it. Try again.')
     await click($('[data-notice] [data-close]'))
     expect($('[data-notice]')).toBeNull()
   })
@@ -361,7 +361,7 @@ describe('no base yet', () => {
     limits.value = { 'org-users': 5 }
     await render()
     expect($('[data-proxy-base-plan]')?.textContent).toBe(
-      'The account’s plan does not include a base for its proxies’ names: it is a paid add-on, and the Enterprise plan includes it.'
+      'Your plan doesn’t include your own domain. It’s a paid add-on, included in the Enterprise plan.'
     )
     expect($('[data-proxy-base-paid]')?.textContent).toBe(PAID)
     expect(inline[LABEL]).toBeUndefined()
@@ -404,7 +404,7 @@ describe('no base yet', () => {
     await render()
     expect($('[data-proxy-base-removal]')?.getAttribute('data-proxy-base-removal')).toBe('plan')
     expect($('[data-proxy-base-removal]')?.textContent).toBe(
-      'The account’s plan no longer includes a base: remote.it removes it — its proxies back under their own names — unless the plan includes one again by 2026-11-10T12:00:00.000Z'
+      'Your plan no longer includes your own domain. Remote.It removes it unless your plan includes it again by 2026-11-10T12:00:00.000Z'
     )
   })
 
@@ -412,7 +412,7 @@ describe('no base yet', () => {
     reads(based('pending', { removeAt: '2026-11-15T23:00:00.000Z', removeReason: 'pending' }))
     await render()
     expect($('[data-proxy-base-removal]')?.textContent).toBe(
-      'Not delegated yet: remote.it removes it unless its NS records are found by 2026-11-15T23:00:00.000Z'
+      'Not set up yet. Remote.It removes it unless its NS records are found by 2026-11-15T23:00:00.000Z'
     )
   })
 })
@@ -447,14 +447,14 @@ describe('pending', () => {
       'Value',
       'State',
     ])
-    expect(label('server')).toBe('Its name servers')
+    expect(label('server')).toBe('Name servers')
     expect($('[data-proxy-base-name-servers]')?.textContent).toBe(SERVERS.join(', '))
     expect(setting('server')?.querySelector('[data-copy]')?.getAttribute('data-copy')).toBe(SERVERS.join('\n'))
     expect(setting('server')?.querySelector('[data-copy]')?.getAttribute('title')).toBe('Copy them all')
     expect(hint()).toBe(HINT)
     expect(checkNow()).not.toBeNull()
-    expect(label('rotate-left')).toBe('Remove the account’s base')
-    expect(sublabel('rotate-left')).toBe('Which proxies move back is said first; then its zone is deleted')
+    expect(label('rotate-left')).toBe('Remove your own domain')
+    expect(sublabel('rotate-left')).toBe('You’ll see what changes first')
     expect(setting('circle-arrow-right')).toBeNull()
     // No proxy is under it yet: another may still be entered.
     expect(inline[LABEL].value).toBe(BASE)
@@ -500,7 +500,7 @@ describe('pending', () => {
     expect($('[data-confirm]')).toBeNull()
     verify.mockResolvedValue({ reason: '' })
     await click(checkNow())
-    expect($('[data-notice="error"]')?.textContent).toBe('Its delegation could not be checked: try again.')
+    expect($('[data-notice="error"]')?.textContent).toBe('Couldn’t check the NS records. Try again.')
   })
 
   it('Check now finding it delegated: what moves said proxy by proxy from its answer, not asked again, moved once confirmed', async () => {
@@ -508,7 +508,7 @@ describe('pending', () => {
     await render()
     await click(checkNow())
     expect(section()).toBe('verified')
-    expect($('[data-confirm-title]')?.textContent).toBe('Move the account’s proxies under proxies.example.com?')
+    expect($('[data-confirm-title]')?.textContent).toBe('Move your proxy servers under proxies.example.com?')
     expect($('[data-proxy-base-certificate]')?.textContent).toBe(
       'The certificate for proxies.example.com is not issued yet: until it is, their https endpoints are not served under it.'
     )
@@ -520,7 +520,7 @@ describe('pending', () => {
           'gw.proxies.example.com:30001 / was gw-acme.dev.r3proxy.com:30001',
         ],
       ],
-      ['NAS: nas.proxies.example.com', ['No endpoint address moves.']],
+      ['NAS: nas.proxies.example.com', ['No public address changes.']],
     ])
     expect(verify).toHaveBeenCalledTimes(1)
     expect($('[data-confirm-action]')?.textContent).toBe('Move')
@@ -549,15 +549,15 @@ describe('verified', () => {
     await render()
     expect(inline[LABEL]).toBeUndefined()
     expect(label('sitemap')).toBe(BASE)
-    expect(sublabel('sitemap')).toBe('The account’s base: to use another, remove this one first')
+    expect(sublabel('sitemap')).toBe('To use another domain, remove this one first')
     expect(label('badge-check')).toBe('Verified: its delegation to remote.it is seen')
     expect(setting('badge-check')?.getAttribute('data-color')).toBe('success')
     expect(sublabel('badge-check')).toBe(
       'The account’s proxies move under it once you confirm · Checked 2026-11-08T23:00:00.000Z'
     )
     expect(rows().map(([, , state]) => state)).toEqual(['found', 'found', 'found', 'found'])
-    expect(label('circle-arrow-right')).toBe('Move the account’s proxies under proxies.example.com')
-    expect(sublabel('circle-arrow-right')).toBe('What moves is said first, proxy by proxy')
+    expect(label('circle-arrow-right')).toBe('Move your proxy servers under proxies.example.com')
+    expect(sublabel('circle-arrow-right')).toBe('You’ll see what changes first')
     await click(settingButton('circle-arrow-right'))
     expect(verify).toHaveBeenCalledWith('ACCOUNT', false)
     expect($('[data-proxy-base-certificate]')?.textContent).toBe(
@@ -576,7 +576,7 @@ describe('verified', () => {
     verify.mockResolvedValue(said([]))
     await render()
     await click(settingButton('circle-arrow-right'))
-    expect($('[data-proxy-base-none]')?.textContent).toBe('No proxy moves.')
+    expect($('[data-proxy-base-none]')?.textContent).toBe('No proxy server changes.')
     expect($('[data-proxy-base-certificate]')).toBeNull()
     expect(($('[data-confirm-action]') as HTMLButtonElement).disabled).toBe(false)
   })
@@ -613,7 +613,7 @@ describe('verified', () => {
     verify.mockResolvedValue({ reason: '' })
     await click(settingButton('circle-arrow-right'))
     expect($('[data-confirm] [data-notice="error"]')?.textContent).toBe(
-      'What it would do could not be said: try again.'
+      'Couldn’t check what would change. Try again.'
     )
   })
 
@@ -638,17 +638,17 @@ describe('active', () => {
     expect(section()).toBe('active')
     expect(inline[LABEL]).toBeUndefined()
     expect(label('sitemap')).toBe(BASE)
-    expect(sublabel('sitemap')).toBe('The account’s base: to use another, remove this one first')
+    expect(sublabel('sitemap')).toBe('To use another domain, remove this one first')
     expect(label('circle-check')).toBe('Active: 3 proxies named under it')
     expect(setting('circle-check')?.getAttribute('data-color')).toBe('success')
     expect(sublabel('circle-check')).toBe('Checked 2026-11-08T23:00:00.000Z')
     expect(hint()).toBe(
-      'Every proxy of the account is named <label>.proxies.example.com, but one with a name of its own; remote.it writes their records and keeps their certificates. Keep these NS records where your DNS is hosted.'
+      'Your proxy servers are named <label>.proxies.example.com. Keep these NS records where your DNS is hosted.'
     )
     expect(rows()).toHaveLength(4)
     expect(setting('circle-arrow-right')).toBeNull()
     expect(checkNow()).not.toBeNull()
-    expect(label('rotate-left')).toBe('Remove the account’s base')
+    expect(label('rotate-left')).toBe('Remove your own domain')
   })
 
   it('one proxy under it, said as one', async () => {
@@ -717,10 +717,10 @@ describe('removing it', () => {
           'gw-acme.dev.r3proxy.com:30001 / was gw.proxies.example.com:30001',
         ],
       ],
-      ['NAS: nas-acme.dev.r3proxy.com', ['No endpoint address moves.']],
+      ['NAS: nas-acme.dev.r3proxy.com', ['No public address changes.']],
     ])
     expect($('[data-proxy-base-zone]')?.textContent).toBe(
-      'remote.it’s zone for proxies.example.com is deleted: its NS records can then come out of your DNS.'
+      'Remote.It deletes its zone for proxies.example.com. You can then remove its NS records from your DNS.'
     )
     await click($('[data-confirm-action]'))
     expect(remove).toHaveBeenLastCalledWith('ACCOUNT', true)
@@ -736,7 +736,7 @@ describe('removing it', () => {
     remove.mockResolvedValue(said([]))
     await render()
     await click(settingButton('rotate-left'))
-    expect($('[data-proxy-base-none]')?.textContent).toBe('No proxy moves.')
+    expect($('[data-proxy-base-none]')?.textContent).toBe('No proxy server changes.')
     expect($('[data-proxy-base-zone]')).not.toBeNull()
     expect(($('[data-confirm-action]') as HTMLButtonElement).disabled).toBe(false)
     await click($('[data-deny]'))

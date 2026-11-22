@@ -76,34 +76,37 @@ beforeEach(() => {
     .mockResolvedValue([
       candidate('B1', 'Pi'),
       candidate('A1', 'Mac'),
-      candidate('C1', 'Router', { fit: false, refusal: 'Its daemon is not online to say what it can be' }),
+      candidate('C1', 'Router', { fit: false, refusal: 'its daemon is not online to say whether it can be an exit' }),
       candidate('R1', 'Running', { fit: false, refusal: 'It runs it already', runs: runsExit('xoffice', 'Office') }),
     ])
 })
 
 describe('choosing devices to run a proxy or an exit', () => {
-  it('weighs the devices for its exit or proxy: those fit first by name, then those not, those running it already left out', async () => {
+  it('weighs the devices for its exit or proxy: those fit first by name, those running it already left out', async () => {
     const page = await render()
     expect(candidates).toHaveBeenCalledWith('exit', { id: 'xoffice' })
+    expect(listed(page)).toEqual(['A1', 'B1'])
+    await click(page.querySelector('[data-show-unfit]'))
     expect(listed(page)).toEqual(['A1', 'B1', 'C1'])
     await render({ kind: 'proxy', target: 'P1' })
     expect(candidates).toHaveBeenLastCalledWith('proxy', { id: 'P1' })
   })
 
-  it('one not fit is said by why, in graphql’s words, and cannot be chosen', async () => {
+  it('one not fit is said by why, in words a person can act on, and cannot be chosen', async () => {
     const page = await render()
-    expect(row(page, 'C1').textContent).toContain('Its daemon is not online to say what it can be')
+    await click(page.querySelector('[data-show-unfit]'))
+    expect(row(page, 'C1').textContent).toContain('This device is offline. Bring it online to add it.')
     expect(row(page, 'C1').getAttribute('data-fit')).toBe('no')
     await click(row(page, 'C1'))
     expect(chosen(page, 'C1')).toBe(false)
     expect(add(page).disabled).toBe(true)
   })
 
-  it('one fit says it can run it, or what it leaves to run it', async () => {
+  it('one fit says nothing more, or what it leaves to carry this one', async () => {
     candidates.mockResolvedValue([candidate('A1', 'Mac'), candidate('B1', 'Pi', { runs: runsExit('xold', 'Old exit') })])
     const page = await render()
-    expect(row(page, 'A1').textContent).toContain('Can run it')
-    expect(row(page, 'B1').textContent).toContain('Runs the exit Old exit: added, it leaves it')
+    expect(row(page, 'A1').textContent).toBe('Mac')
+    expect(row(page, 'B1').textContent).toContain('Stops carrying Old exit when added')
   })
 
   it('adds those chosen, several at once; one chosen again is no longer chosen', async () => {
@@ -175,15 +178,15 @@ describe('choosing devices to run a proxy or an exit', () => {
     expect(listed(page)).toHaveLength(7)
   })
 
-  it('says each refusal by its device’s name, in graphql’s words, or that it was not added; and reads them again', async () => {
+  it('says each refusal by its device’s name, in plain words, or that it was not added; and reads them again', async () => {
     const page = await render()
     expect(page.querySelector('[data-notice="warning"]')).toBeNull()
     expect(candidates).toHaveBeenCalledTimes(1)
     await rerender({ refusals: { B1: 'Its administrator forbids exits on the machine', A1: '', Z9: 'Not a device' } })
     expect([...page.querySelectorAll('[data-refused]')].map(each => each.textContent)).toEqual([
-      'Pi: Its administrator forbids exits on the machine',
-      'Mac: not added: try again',
-      'Z9: Not a device',
+      'Pi: Exits are turned off on this device.',
+      'Mac: Couldn’t add it. Try again.',
+      'Z9: Can’t use this device: Not a device',
     ])
     expect(candidates).toHaveBeenCalledTimes(2)
   })
@@ -233,24 +236,77 @@ describe('choosing devices to run a proxy or an exit', () => {
   it('none to choose: says so, and adds nothing', async () => {
     candidates.mockResolvedValue([])
     const page = await render()
-    expect(page.textContent).toContain('No device of this account that you manage is listed here.')
+    expect(page.textContent).toContain('You have no device that can carry an exit yet. Add a device first.')
     expect(add(page).disabled).toBe(true)
+  })
+})
+
+describe('what is offered, and how', () => {
+  it('never lists a client-only entry, such as a browser', async () => {
+    candidates.mockResolvedValue([
+      candidate('A1', 'Mac'),
+      candidate('W1', 'browser', { fit: false, refusal: 'it cannot be an exit (a client only)' }),
+    ])
+    const page = await render()
+    expect(listed(page)).toEqual(['A1'])
+    expect(page.querySelector('[data-show-unfit]')).toBeNull()
+  })
+
+  it('folds the devices that can’t be used behind a toggle while some can; with none that can, lists them', async () => {
+    let page = await render()
+    expect(page.querySelector('[data-show-unfit]')?.textContent).toBe('Show 1 device that can’t be used')
+    await click(page.querySelector('[data-show-unfit]'))
+    expect(listed(page)).toContain('C1')
+    expect(page.querySelector('[data-show-unfit]')?.textContent).toBe('Hide devices that can’t be used')
+    candidates.mockResolvedValue([
+      candidate('N1', 'nas', {
+        fit: false,
+        refusal: "its administrator's policy forbids exits on this machine: it would never go into service",
+      }),
+    ])
+    page = await render()
+    expect(listed(page)).toEqual(['N1'])
+    expect(page.querySelector('[data-show-unfit]')).toBeNull()
+    expect(row(page, 'N1').textContent).toContain('Exits are turned off on this device.')
+    await click(row(page, 'N1').querySelector('[data-how-to]'))
+    expect(row(page, 'N1').textContent).toContain('--cap-add NET_ADMIN --device /dev/net/tun')
+  })
+
+  it('one device at a time when single: radios, each choice said through onChoose, and no add button', async () => {
+    const onChoose = vi.fn()
+    const page = await render({ single: true, onChoose, onAdd: undefined })
+    expect(row(page, 'A1').querySelector('input[type="radio"]')).not.toBeNull()
+    expect(add(page)).toBeNull()
+    await click(row(page, 'A1'))
+    expect(onChoose).toHaveBeenLastCalledWith('A1')
+    await click(row(page, 'B1'))
+    expect(onChoose).toHaveBeenLastCalledWith('B1')
+    expect((row(page, 'A1').querySelector('input') as HTMLInputElement).checked).toBe(false)
+    await click(row(page, 'B1'))
+    expect(onChoose).toHaveBeenLastCalledWith(undefined)
+  })
+
+  it('weighs the account’s devices for one not made yet', async () => {
+    await render({ target: undefined, ownerId: 'ACCOUNT' })
+    expect(candidates).toHaveBeenCalledWith('exit', { accountId: 'ACCOUNT' })
   })
 })
 
 describe('adding devices to a local network proxy', () => {
   const OTHER = 'Laptop is on another network (10.0.0.0/24) than Office (192.168.1.0/24)'
 
-  it('a device on another network than its own: not addable, said why in graphql’s words', async () => {
+  it('a device on another network than its own: not addable, said why with graphql’s words', async () => {
     candidates.mockResolvedValue([
       candidate('A1', 'Printer Pi'),
       candidate('L1', 'Laptop', { fit: false, refusal: OTHER }),
     ])
     const page = await render({ kind: 'proxy', target: 'P-LAN' })
     expect(candidates).toHaveBeenCalledWith('proxy', { id: 'P-LAN' })
+    expect(listed(page)).toEqual(['A1'])
+    await click(page.querySelector('[data-show-unfit]'))
     expect(listed(page)).toEqual(['A1', 'L1'])
     expect(row(page, 'L1').getAttribute('data-fit')).toBe('no')
-    expect(row(page, 'L1').textContent).toBe(`Laptop${OTHER}`)
+    expect(row(page, 'L1').textContent).toBe(`LaptopCan’t use this device: ${OTHER}`)
     await click(row(page, 'L1'))
     expect(chosen(page, 'L1')).toBe(false)
     expect(add(page).disabled).toBe(true)
@@ -260,7 +316,9 @@ describe('adding devices to a local network proxy', () => {
     candidates.mockResolvedValue([candidate('A1', 'Printer Pi'), candidate('L1', 'Laptop')])
     const page = await render({ kind: 'proxy', target: 'P-LAN' })
     await rerender({ kind: 'proxy', target: 'P-LAN', refusals: { L1: OTHER } })
-    expect([...page.querySelectorAll('[data-refused]')].map(each => each.textContent)).toEqual([`Laptop: ${OTHER}`])
+    expect([...page.querySelectorAll('[data-refused]')].map(each => each.textContent)).toEqual([
+      `Laptop: Can’t use this device: ${OTHER}`,
+    ])
   })
 })
 

@@ -34,7 +34,7 @@ export const ProxyKindChoice: React.FC<Props> = ({ local, disabled, onChange }) 
           label={
             <Choice
               name={t('proxyKind.internet', 'Internet')}
-              line={t('proxyKind.internetHint', 'Reached from anywhere its devices can be reached.')}
+              line={t('proxyKind.internetHint', 'Anyone on the internet can reach its public addresses.')}
             />
           }
         />
@@ -47,13 +47,13 @@ export const ProxyKindChoice: React.FC<Props> = ({ local, disabled, onChange }) 
               name={t('proxyKind.local', 'Local network')}
               line={t(
                 'proxyKind.localHint',
-                'Reached only on its devices’ own network, for printers, PCs and anything without remote.it.'
+                'Only devices on the same local network can reach it. Good for printers and PCs.'
               )}
             />
           }
         />
       </RadioGroup>
-      <FormHelperText>{t('proxyKind.fixed', 'Chosen now: it cannot be changed later.')}</FormHelperText>
+      <FormHelperText>{t('proxyKind.fixed', 'You can’t change this later.')}</FormHelperText>
     </FormControl>
   )
 }

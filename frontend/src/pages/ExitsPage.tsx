@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { Box, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, ListItemText, ListSubheader, Typography } from '@mui/material'
+import { useHistory } from 'react-router-dom'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
-import { Exit, graphQLOfferedExits } from '../services/graphQLExits'
+import { Exit, OfferedExit, graphQLOfferedExits } from '../services/graphQLExits'
 import { useAccountExits } from '../hooks/useAccountExits'
-import { availabilityLabel, lanLabel, runsOnLine, usersLine } from '../helpers/runsHelper'
+import { exitSummary, routedLine } from '../helpers/exitWords'
 import { useDisabledDevicesAccess } from '../hooks/useDeviceDisable'
 import { ListItemLocation } from '../components/ListItemLocation'
 import { LoadingMessage } from '../components/LoadingMessage'
-import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
@@ -17,24 +17,20 @@ import { Title } from '../components/Title'
 import { Tags } from '../components/Tags'
 import { Icon } from '../components/Icon'
 
-type Remoteit = Awaited<ReturnType<typeof graphQLOfferedExits>>
-
-/* Exits (graphql-api docs/PROXY-GROUPS.md §13): what a device sends its traffic out through, run by devices. The
-   account's own — each with the devices it runs on, the devices using it, whether its users reach its devices' local
-   networks, and no device available when none of its devices is in service —, those other accounts share with you, and
-   remote.it's, offered by plan. An own exit or one shared with you opens on its page (pages/ExitPage.tsx); a tag
-   clicked shows only the exits carrying it. New exit makes one, then its devices are added (pages/ExitAddPage.tsx).
-   Behind the device-sessions flag. */
+/* Exits: your own first, each saying whether it is ready and which devices carry it; those shared with you; then
+   Remote.It's, labelled as run by Remote.It. Each opens on its page (pages/ExitPage.tsx). */
 export const ExitsPage: React.FC = () => {
   const { t } = useTranslation()
+  const history = useHistory()
   const manage = useDisabledDevicesAccess()
   const { value: exits } = useAccountExits()
-  const [remoteit, setRemoteit] = useState<Exclude<Remoteit, 'ERROR' | typeof UNSUPPORTED>>([])
+  const [remoteit, setRemoteit] = useState<OfferedExit[]>([])
   const [tagFilter, setTagFilter] = useState<ITag>()
 
-  // remote.it's, offered by plan: the exits offered to you that are remote.it's.
   useEffect(() => {
-    graphQLOfferedExits().then(offered => setRemoteit(Array.isArray(offered) ? offered.filter(exit => exit.remoteit) : []))
+    graphQLOfferedExits().then(offered =>
+      setRemoteit(Array.isArray(offered) ? offered.filter(exit => exit.remoteit) : [])
+    )
   }, [])
 
   const own = exits && typeof exits === 'object' ? exits.own : []
@@ -48,13 +44,23 @@ export const ExitsPage: React.FC = () => {
         <>
           <Typography variant="subtitle1">
             <Title>{t('exitsPage.title', 'Exits')}</Title>
-            {manage && <IconButton icon="plus" title={t('exitsPage.new', 'New exit')} to="/exits/new" size="md" />}
+            {manage && (
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={<Icon name="plus" size="sm" />}
+                onClick={() => history.push('/exits/new')}
+                data-create
+              >
+                {t('exitsPage.create', 'Create exit')}
+              </Button>
+            )}
           </Typography>
           <Gutters top={null} bottom="sm">
             <Typography variant="body2" color="textSecondary">
               {t(
-                'exitsPage.description',
-                'A device sends its traffic out through an exit, as through a VPN. An exit runs on devices: make one, then add the devices that run it.'
+                'exitsPage.intro',
+                'An exit sends a device’s internet traffic out through another device. Pick one under Route through.'
               )}
             </Typography>
           </Gutters>
@@ -64,20 +70,22 @@ export const ExitsPage: React.FC = () => {
       {exits === undefined ? (
         <LoadingMessage />
       ) : exits === UNSUPPORTED ? (
-        <Notice gutterTop>{t('exitsPage.unsupported', 'This server does not have exits.')}</Notice>
+        <Notice gutterTop>{t('exitsPage.unsupported', 'Exits aren’t available on this server.')}</Notice>
       ) : exits === 'ERROR' ? (
         <Notice severity="error" gutterTop>
-          {t('exitsPage.failed', 'The exits could not be read.')}
+          {t('exitsPage.failed', 'Couldn’t load your exits. Try again.')}
         </Notice>
       ) : (
         <>
           <List>
-            <ListSubheader>{t('exitsPage.own', 'Yours')}</ListSubheader>
+            <ListSubheader>{t('exitsPage.own', 'Your exits')}</ListSubheader>
             {tagFilter && (
               <ListItem data-tag-filter={tagFilter.name}>
                 <ListItemText
                   primary={t('exitsPage.tagFilter', 'Exits tagged')}
-                  secondary={!shown.length ? t('exitsPage.tagFilterNone', 'None of your exits carries it.') : undefined}
+                  secondary={
+                    !shown.length ? t('exitsPage.tagFilterNone', 'None of your exits has this tag.') : undefined
+                  }
                 />
                 <Tags tags={[tagFilter]} onDelete={() => setTagFilter(undefined)} />
               </ListItem>
@@ -92,7 +100,6 @@ export const ExitsPage: React.FC = () => {
                 title={exit.name}
                 subtitle={ownLine(t, exit)}
               >
-                {/* A tag clicked filters the list: it does not open the exit too. */}
                 {!!exit.tags.length && (
                   <Box display="flex" gap={0.5} onClick={event => event.stopPropagation()}>
                     <Tags tags={exit.tags} max={exit.tags.length} onClick={tag => setTagFilter(tag)} />
@@ -101,11 +108,14 @@ export const ExitsPage: React.FC = () => {
               </ListItemLocation>
             ))}
             {!own.length && (
-              <ListItem>
-                <ListItemText
-                  secondary={t('exitsPage.none', 'None yet: make an exit, then add the devices that run it.')}
-                />
-              </ListItem>
+              <Gutters top="xs" bottom="sm">
+                <Typography variant="body2" color="textSecondary" data-empty>
+                  {t(
+                    'exitsPage.none',
+                    'No exits yet. Create one to send a device’s traffic out through another of your devices.'
+                  )}
+                </Typography>
+              </Gutters>
             )}
           </List>
           {!!exits.shared.length && (
@@ -126,14 +136,17 @@ export const ExitsPage: React.FC = () => {
           )}
           {!!remoteit.length && (
             <List>
-              <ListSubheader>{t('exitsPage.remoteit', 'remote.it’s')}</ListSubheader>
+              <ListSubheader>{t('exitsPage.remoteit', 'Remote.It exits')}</ListSubheader>
               {remoteit.map(exit => (
-                <ListItem key={exit.id} data-remoteit={exit.id}>
-                  <ListItemIcon>
-                    <Icon name="globe" size="md" fixedWidth />
-                  </ListItemIcon>
-                  <ListItemText primary={exit.name} secondary={exit.provider || exit.location} />
-                </ListItem>
+                <ListItemLocation
+                  key={exit.id}
+                  data-remoteit={exit.id}
+                  to={`/exits/${exit.id}`}
+                  match={`/exits/${exit.id}`}
+                  icon={<Icon name="globe" size="md" fixedWidth />}
+                  title={exit.name}
+                  subtitle={remoteitLine(t, exit)}
+                />
               ))}
             </List>
           )}
@@ -143,22 +156,19 @@ export const ExitsPage: React.FC = () => {
   )
 }
 
-// Whether an exit carries a tag, by name case aside, as graphql compares tag names.
 export const carries = (exit: Pick<Exit, 'tags'>, tag: ITag): boolean =>
   exit.tags.some(carried => carried.name.toLowerCase() === tag.name.toLowerCase())
 
-// One of yours, in a line: the devices it runs on, the devices using it, whether its users reach its devices' local
-// networks, and no device available when so.
 export function ownLine(t: TFunction, exit: Exit): string {
-  return [runsOnLine(t, exit.devices), usersLine(t, exit.users), lanLabel(t, exit), availabilityLabel(t, exit)]
-    .filter(Boolean)
-    .join(' · ')
+  return [exitSummary(t, exit), routedLine(t, exit.users)].filter(Boolean).join(' · ')
 }
 
-// One shared with you, in a line: whose it is, whether a device of yours may choose it now, and whether its users reach
-// its devices' local networks.
 export function sharedLine(t: TFunction, exit: Exit): string {
   const whose = exit.owner?.email ? t('exitsPage.sharedBy', 'Shared by {{email}}', { email: exit.owner.email }) : ''
-  const now = exit.offered ? t('exitsPage.sharedOffered', 'A device of yours may use it') : availabilityLabel(t, exit)
-  return [whose, now, lanLabel(t, exit)].filter(Boolean).join(' · ')
+  const ready = exit.offered ? t('carry.ready', 'Ready') : t('carry.notReadyShort', 'Not ready')
+  return [ready, whose].filter(Boolean).join(' · ')
+}
+
+export function remoteitLine(t: TFunction, exit: Pick<OfferedExit, 'location' | 'provider'>): string {
+  return [exit.location || exit.provider, t('exitsPage.runByRemoteit', 'Run by Remote.It')].filter(Boolean).join(' · ')
 }

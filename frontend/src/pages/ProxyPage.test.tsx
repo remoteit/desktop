@@ -88,21 +88,28 @@ vi.mock('../components/RunDevicePicker', async importOriginal => ({
   ),
 }))
 // A device running it: what it was given, and its actions' end.
-vi.mock('../components/RunListItem', () => ({
-  RunListItem: ({ kind, run, name, activation, to, manage, local, onChanged }: any) => (
+vi.mock('../components/CarrierRow', () => ({
+  CarrierRow: ({ kind, run, name, activation, manage, onChanged }: any) => (
     <div
       data-run={run.id}
       data-kind={kind}
       data-name={name}
       data-activation={activation}
-      data-to={to}
       data-manage={manage ? '' : undefined}
-      data-local={local ? '' : undefined}
     >
       <button data-changed onClick={() => onChanged(drained, { id: run.id, name: run.name || run.id })} />
     </div>
   ),
 }))
+vi.mock('../components/ListItemLocation', () => ({
+  ListItemLocation: ({ to, title, subtitle, ...props }: any) => (
+    <div data-location={to} data-add-address={props['data-add-address'] ? '' : undefined}>
+      <span data-title>{title}</span>
+      <span data-subtitle>{subtitle}</span>
+    </div>
+  ),
+}))
+vi.mock('../components/Icon', () => ({ Icon: () => null }))
 vi.mock('../components/InlineTextFieldSetting', () => ({
   InlineTextFieldSetting: (props: any) => {
     inline[props.label] = props
@@ -241,8 +248,8 @@ import { post } from '../services/post'
 const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as any
 
 const NAME = 'Name'
-const LABEL = 'Host: its label before your account slug'
-const ACTIVATION = 'A device added goes into service'
+const LABEL = 'Address'
+const ACTIVATION = 'New exit devices start'
 
 const run = (id: string, name: string | null, extra: any = {}) => ({
   id,
@@ -274,7 +281,7 @@ const endpointsOf = (count: number) =>
     lifetime: 'permanent',
     access: n % 2 ? 'cidr' : 'public',
     lockedIp: null,
-    allow: null,
+    allow: n % 2 ? ['203.0.113.0/24'] : null,
     host: n % 2 ? 'gw-acme-corp.dev.r3proxy.com' : `ep${n + 1}-acme-corp.dev.r3proxy.com`,
     port: n % 2 ? 30000 + n : null,
     url: n % 2 ? `tcp://gw-acme-corp.dev.r3proxy.com:${30000 + n}` : `https://ep${n + 1}-acme-corp.dev.r3proxy.com`,
@@ -386,6 +393,11 @@ const $ = (selector: string) => document.body.querySelector(selector) as HTMLEle
 const setting = (icon: string) => $(`[data-setting="${icon}"]`)
 const label = (icon: string) => setting(icon)?.querySelector('[data-label]')?.textContent
 const sublabel = (icon: string) => setting(icon)?.querySelector('[data-sublabel]')?.textContent
+// Add device, or Cancel while the picker is open: the devices section's own button, not the picker's.
+const addButton = () =>
+  [...document.body.querySelectorAll('[data-runs-on] button[data-add]')].find(
+    each => !each.closest('[data-picker]')
+  ) as HTMLButtonElement
 const settingButton = (icon: string) => setting(icon)!.querySelector('button') as HTMLButtonElement
 const click = (element: Element | null) => act(async () => (element as HTMLElement).click())
 // An answer held back until the test lets it go.
@@ -419,9 +431,9 @@ describe('an own proxy’s host', () => {
   })
 
   it('its certificate: remote.it’s for every proxy name — held, or still to come', () => {
-    expect(certificateLine(t, 'ready')).toBe("remote.it's, for every proxy name")
+    expect(certificateLine(t, 'ready')).toBe('Ready')
     expect(certificateLine(t, 'pending')).toBe(
-      "remote.it's, not issued yet: until it is, its https endpoints are not served"
+      'Not issued yet. HTTPS addresses work once it is.'
     )
   })
 })
@@ -440,11 +452,11 @@ describe('a proxy’s page', () => {
 
   it('says a proxy that could not be read, and one there is not or that may not be seen', async () => {
     await render('ERROR')
-    expect($('[data-notice="error"]')?.textContent).toBe('The proxy could not be read.')
+    expect($('[data-notice="error"]')?.textContent).toBe('Couldn’t load this proxy server. Try again.')
     await render(null)
-    expect($('[data-notice="info"]')?.textContent).toBe('No such proxy, or not one you may see.')
+    expect($('[data-notice="info"]')?.textContent).toBe('This proxy server doesn’t exist, or you can’t see it.')
     await render('UNSUPPORTED')
-    expect($('[data-notice="info"]')?.textContent).toBe('No such proxy, or not one you may see.')
+    expect($('[data-notice="info"]')?.textContent).toBe('This proxy server doesn’t exist, or you can’t see it.')
   })
 
   it('an own proxy, for whoever manages it: its name and host label to change, its certificate, public endpoints, activation, own name and endpoints', async () => {
@@ -458,19 +470,19 @@ describe('a proxy’s page', () => {
     expect(Object.keys(inline)).toEqual([NAME, LABEL])
     expect(setting('earth-americas')).toBeNull()
     expect($('[data-own-name-section]')?.getAttribute('data-own-name-section')).toBe('none')
-    expect(label('certificate')).toBe("remote.it's, for every proxy name")
+    expect(label('certificate')).toBe('Ready')
     expect(setting('certificate')?.getAttribute('data-color')).toBe('success')
-    expect(label('users')).toBe('Takes public endpoints')
+    expect(label('users')).toBe('Allow public addresses anyone can open')
     expect(setting('users')?.querySelector('[data-toggle]')?.getAttribute('data-toggle')).toBe('true')
     expect($(`[data-select="${ACTIVATION}"]`)?.getAttribute('data-value')).toBe('auto')
     expect([...document.body.querySelectorAll('[data-endpoint]')].map(each => each.textContent)).toEqual([
-      'https://ep1-acme-corp.dev.r3proxy.comhttps · public · permanent',
-      'gw-acme-corp.dev.r3proxy.com:30001tcp · cidr · permanent',
+      'https://ep1-acme-corp.dev.r3proxy.comWeb (HTTPS) · Anyone with the address · Never expires',
+      'gw-acme-corp.dev.r3proxy.com:30001TCP · Only 203.0.113.0/24 · Never expires',
     ])
     expect($('[data-local-address]')).toBeNull()
-    expect($('[data-endpoints]')?.textContent).toContain(
-      '2 endpoints · Made on it from a service’s page, under Proxy endpoints'
-    )
+    expect($('[data-endpoints] [data-add-address]')?.getAttribute('data-location')).toBe('/public-addresses/new')
+    expect($('[data-endpoints] [data-add-address] [data-title]')?.textContent).toBe('Add public address')
+    expect($('[data-endpoints] [data-add-address] [data-subtitle]')?.textContent).toBe('')
     expect(JSON.parse($('[data-visitors]')!.getAttribute('data-visitors')!)).toEqual({ proxy: 'P1' })
     expect(JSON.parse($('[data-visitors]')!.getAttribute('data-devices')!)).toEqual({ D1: 'Office Mac' })
     expect(setting('globe')).toBeNull()
@@ -482,14 +494,14 @@ describe('a proxy’s page', () => {
       endpointCount: 1,
       endpoints: endpointsOf(1),
     })
-    expect(label('certificate')).toBe("remote.it's, not issued yet: until it is, its https endpoints are not served")
+    expect(label('certificate')).toBe('Not issued yet. HTTPS addresses work once it is.')
     expect(setting('certificate')?.getAttribute('data-color')).toBe('warning')
     expect(setting('users')?.querySelector('[data-toggle]')?.getAttribute('data-toggle')).toBe('false')
-    expect($('[data-endpoints]')?.textContent).toContain('1 endpoint ·')
+    expect(document.body.querySelectorAll('[data-endpoint]')).toHaveLength(1)
 
     await render({ ...GATEWAY, certificate: null, endpointCount: 0, endpoints: [] })
     expect(setting('certificate')).toBeNull()
-    expect($('[data-endpoints]')?.textContent).toContain('No endpoints ·')
+    expect($('[data-endpoints] [data-add-address] [data-subtitle]')?.textContent).toBe('No public addresses yet.')
   })
 
   it('renames it, the name trimmed, then reads it and the list beside it again; no address moves', async () => {
@@ -510,7 +522,7 @@ describe('a proxy’s page', () => {
     expect(inline[LABEL].validate('')).toBe('Lower case letters and digits, at most 29')
     expect(inline[LABEL].validate('x'.repeat(30))).toBe('Lower case letters and digits, at most 29')
     expect(inline[LABEL].helper('nas2')).toBe(
-      'Its host becomes nas2-acme-corp.dev.r3proxy.com: what moves is said before anything does.'
+      'Becomes nas2-acme-corp.dev.r3proxy.com. You’ll see what changes before anything moves.'
     )
     expect(inline[LABEL].helper('gw')).toBeFalsy()
     expect(inline[LABEL].helper('')).toBeFalsy()
@@ -524,10 +536,10 @@ describe('a proxy’s page', () => {
     expect(readProxy).toHaveBeenCalledTimes(2)
     renameProxy.mockResolvedValue('ERROR')
     await act(async () => inline[NAME].onSave('Office gateway'))
-    expect($('[data-notice="error"]')?.textContent).toBe('It was not changed: try again.')
+    expect($('[data-notice="error"]')?.textContent).toBe('Couldn’t save the change. Try again.')
     renameProxy.mockResolvedValue({ reason: '' })
     await act(async () => inline[NAME].onSave('Office gateway'))
-    expect($('[data-notice="error"]')?.textContent).toBe('It was not changed: try again.')
+    expect($('[data-notice="error"]')?.textContent).toBe('Couldn’t save the change. Try again.')
     renameProxy.mockResolvedValue({})
     await act(async () => inline[NAME].onSave('Office gateway'))
     expect($('[data-notice]')).toBeNull()
@@ -545,8 +557,8 @@ describe('a proxy’s page', () => {
     await render()
     const select = $(`[data-select="${ACTIVATION}"]`)!
     expect([...select.querySelectorAll('[data-option]')].map(option => option.textContent)).toEqual([
-      'By itself, once its checks pass',
-      'When an admin puts it in service',
+      'Automatically',
+      'After you approve',
     ])
     await click(select.querySelector('[data-option="admin"]'))
     expect(setActivation).toHaveBeenCalledWith('P1', 'admin')
@@ -566,14 +578,14 @@ describe('a proxy’s page', () => {
     expect(inline[NAME].disabled).toBe(true)
     expect(inline[LABEL].disabled).toBe(true)
     expect($(`[data-select="${ACTIVATION}"]`)?.hasAttribute('data-disabled')).toBe(true)
-    expect(($('[data-icon="plus"]') as HTMLButtonElement).disabled).toBe(true)
+    expect(addButton().disabled).toBe(true)
     expect(settingButton('arrow-right-arrow-left').disabled).toBe(true)
     expect(settingButton('trash').disabled).toBe(true)
     await act(async () => answer.release({}))
     expect(inline[NAME].disabled).toBe(false)
     expect(inline[LABEL].disabled).toBe(false)
     expect($(`[data-select="${ACTIVATION}"]`)?.hasAttribute('data-disabled')).toBe(false)
-    expect(($('[data-icon="plus"]') as HTMLButtonElement).disabled).toBe(false)
+    expect(addButton().disabled).toBe(false)
     expect(settingButton('arrow-right-arrow-left').disabled).toBe(false)
     expect(settingButton('trash').disabled).toBe(false)
   })
@@ -586,10 +598,9 @@ describe('the devices a proxy runs on', () => {
     expect(device.getAttribute('data-kind')).toBe('proxy')
     expect(device.getAttribute('data-name')).toBe('Gateway')
     expect(device.getAttribute('data-activation')).toBe('auto')
-    expect(device.getAttribute('data-to')).toBe('/devices/D1/runs')
     expect(device.hasAttribute('data-manage')).toBe(true)
     await click(device.querySelector('[data-changed]'))
-    expect($('[data-notice="info"]')?.textContent).toBe('Office Mac runs the proxy Gateway (draining).')
+    expect($('[data-notice="info"]')?.textContent).toBe('Office Mac is now pausing.')
     expect(readProxy).toHaveBeenCalledTimes(2)
     expect(reloadList).toHaveBeenCalledTimes(1)
   })
@@ -597,8 +608,8 @@ describe('the devices a proxy runs on', () => {
   it('adds the devices chosen of its account, those running it aside, one after another; none refused, the picker closes', async () => {
     await render()
     expect($('[data-picker]')).toBeNull()
-    const add = $('[data-runs-on] [data-icon="plus"]')!
-    expect(add.textContent).toBe('Add devices')
+    const add = addButton()
+    expect(add.textContent).toBe('Add device')
     await click(add)
     const shown = $('[data-picker]')!
     expect(shown.getAttribute('data-picker')).toBe('proxy')
@@ -620,26 +631,26 @@ describe('the devices a proxy runs on', () => {
     addDevice.mockImplementation(async (_proxy: string, id: string) =>
       id === 'D3' ? { reason: 'Its machine is a client only' } : { runs: { proxy: null, exit: null } }
     )
-    await click($('[data-icon="plus"]'))
+    await click(addButton())
     picker.chosen = ['D2', 'D3']
     await click($('[data-picker] [data-add]'))
     expect(addDevice).toHaveBeenCalledTimes(2)
     expect($('[data-picker]')?.getAttribute('data-refusals')).toBe('{"D3":"Its machine is a client only"}')
-    const cancel = $('[data-runs-on] [data-icon="times"]')!
+    const cancel = addButton()
     expect(cancel.textContent).toBe('Cancel')
     await click(cancel)
     expect($('[data-picker]')).toBeNull()
-    await click($('[data-icon="plus"]'))
+    await click(addButton())
     expect($('[data-picker]')?.getAttribute('data-refusals')).toBe('{}')
   })
 
   it('none runs it: says what becomes of its endpoints, or that one is needed to serve them', async () => {
     await render(IDLE)
     expect($('[data-runs-on]')?.textContent).toContain(
-      'No device runs it: its endpoints keep their addresses, and work again once a device added is in service.'
+      'No device yet. Its public addresses work again once you add one.'
     )
     await render({ ...IDLE, endpointCount: 0, endpoints: endpointsOf(0) })
-    expect($('[data-runs-on]')?.textContent).toContain('No device runs it: add one to serve its endpoints.')
+    expect($('[data-runs-on]')?.textContent).toContain('No device yet.')
   })
 })
 
@@ -647,17 +658,17 @@ describe('deleting a proxy', () => {
   it('waits until no device runs it', async () => {
     await render()
     expect(settingButton('trash').disabled).toBe(true)
-    expect(sublabel('trash')).toBe('Take its devices out of it first')
+    expect(sublabel('trash')).toBe('Remove its devices first.')
     await render(IDLE)
     expect(settingButton('trash').disabled).toBe(false)
-    expect(sublabel('trash')).toBe('It is kept until it is deleted, with no device running it too')
+    expect(sublabel('trash')).toBe('')
   })
 
   it('says its endpoints go with it, confirms that to graphql, and leads back to the proxies', async () => {
     await render(IDLE)
     await click(settingButton('trash'))
     expect($('[data-confirm-title]')?.textContent).toBe('Delete Gateway?')
-    expect($('[data-confirm]')?.textContent).toContain('Its 2 endpoints are removed, for everyone using one.')
+    expect($('[data-confirm]')?.textContent).toContain('Its 2 public addresses stop working for everyone.')
     expect($('[data-confirm-action]')?.textContent).toBe('Delete')
     readProxy.mockResolvedValue(null)
     await click($('[data-confirm-action]'))
@@ -669,7 +680,7 @@ describe('deleting a proxy', () => {
   it('with no endpoints: says nothing else changes, and asks graphql no confirm', async () => {
     await render({ ...IDLE, endpointCount: 0, endpoints: endpointsOf(0) })
     await click(settingButton('trash'))
-    expect($('[data-confirm]')?.textContent).toContain('It has no endpoints: nothing else changes.')
+    expect($('[data-confirm]')?.textContent).toContain('Nothing else changes.')
     await click($('[data-confirm-action]'))
     expect(deleteProxy).toHaveBeenCalledWith('P1', false)
     expect(push).toHaveBeenCalledWith('/proxies')
@@ -694,7 +705,7 @@ describe('deleting a proxy', () => {
     deleteProxy.mockResolvedValue('ERROR')
     await click(settingButton('trash'))
     await click($('[data-confirm-action]'))
-    expect($('[data-notice="error"]')?.textContent).toBe('It was not deleted.')
+    expect($('[data-notice="error"]')?.textContent).toBe('Couldn’t delete the proxy server. Try again.')
     expect(push).not.toHaveBeenCalled()
   })
 })
@@ -706,14 +717,14 @@ describe('moving a proxy’s endpoints', () => {
     await render({ ...IDLE, endpointCount: 0, endpoints: endpointsOf(0) })
     expect(setting('arrow-right-arrow-left')).toBeNull()
     await render(IDLE)
-    expect(label('arrow-right-arrow-left')).toBe('Move its endpoints to another proxy')
+    expect(label('arrow-right-arrow-left')).toBe('Move its public addresses to another proxy server')
   })
 
   it('to another proxy of its account: each address before and after said first, then moved, and all read again', async () => {
     await render(IDLE)
     await click(settingButton('arrow-right-arrow-left'))
     expect(accountProxies).toHaveBeenCalledWith('ACCOUNT')
-    expect($('[data-confirm-title]')?.textContent).toBe('Move the endpoints of Gateway')
+    expect($('[data-confirm-title]')?.textContent).toBe('Move the public addresses of Gateway')
     const picks = [...document.body.querySelectorAll('[data-pick]')]
     expect(picks.map(pick => pick.textContent)).toEqual([
       'Spare · sp-acme-corp.dev.r3proxy.com',
@@ -771,7 +782,7 @@ describe('moving a proxy’s endpoints', () => {
     expect(readProxy).toHaveBeenCalledTimes(1)
     moveEndpoints.mockResolvedValue({ reason: '' })
     await click($('[data-pick="P3"]'))
-    expect($('[data-confirm] [data-notice="error"]')?.textContent).toBe('The move could not be said: try again.')
+    expect($('[data-confirm] [data-notice="error"]')?.textContent).toBe('Couldn’t check the move. Try again.')
   })
 
   // An answer for a proxy chosen before must not stand for the one chosen now, which the move is then made to.
@@ -816,7 +827,7 @@ describe('moving a proxy’s endpoints', () => {
     accountProxies.mockResolvedValue([IDLE])
     await render(IDLE)
     await click(settingButton('arrow-right-arrow-left'))
-    expect($('[data-confirm]')?.textContent).toContain('Its account has no other proxy to take them.')
+    expect($('[data-confirm]')?.textContent).toContain('You have no other proxy server to move them to.')
     expect($('[data-pick]')).toBeNull()
     expect(($('[data-confirm-action]') as HTMLButtonElement).disabled).toBe(true)
     await click($('[data-deny]'))
@@ -826,19 +837,21 @@ describe('moving a proxy’s endpoints', () => {
 })
 
 describe('a proxy that is not the account’s own, or not managed', () => {
-  it('remote.it’s, for its admins: where it is reached, its activation, endpoints and devices; nothing to rename, add, move or delete', async () => {
+  it('Remote.It’s, for its admins: labelled, where it is and its address, its activation, public addresses and devices; nothing to rename, add, move or delete', async () => {
     await render(PDX)
-    expect($('[data-header]')?.textContent).toBe('remote.it pdx1aOne of remote.it’s proxies · pdx1a-r3.dev.r3proxy.com')
+    expect($('[data-header]')?.textContent).toBe('remote.it pdx1apdx1 · Run by Remote.It')
     expect($('[data-inline]')).toBeNull()
+    expect(label('location-dot')).toBe('AWS us-west-2 (Boardman)')
     expect(label('globe')).toBe('pdx1a-r3.dev.r3proxy.com')
-    expect(sublabel('globe')).toBe('Where it is reached')
+    expect(sublabel('globe')).toBe('Address')
+    expect(label('shield-check')).toBe('Remote.It runs and looks after this proxy server')
     for (const icon of ['certificate', 'users', 'arrow-right-arrow-left', 'trash', 'cloud', 'house-signal'])
       expect(setting(icon)).toBeNull()
     expect($('[data-own-name-section]')).toBeNull()
     expect($(`[data-select="${ACTIVATION}"]`)).not.toBeNull()
-    expect($('[data-endpoints]')?.textContent).toContain('5 endpoints ·')
+    expect(document.body.querySelectorAll('[data-endpoint]')).toHaveLength(5)
     expect($('[data-runs-on] [data-run="E1"]')).not.toBeNull()
-    expect($('[data-icon="plus"]')).toBeNull()
+    expect(addButton()).toBeUndefined()
   })
 
   it('one who does not manage it sees its name and host, and the endpoints they made on it, nothing to change', async () => {
@@ -854,7 +867,8 @@ describe('a proxy that is not the account’s own, or not managed', () => {
     expect([...document.body.querySelectorAll('[data-endpoint]')].map(each => each.getAttribute('data-endpoint'))).toEqual([
       'EP1',
     ])
-    expect($('[data-endpoints]')?.textContent).not.toContain('endpoints ·')
+    expect($('[data-endpoints] [data-add-address] [data-subtitle]')?.textContent).toBe('')
+    expect(setting('shield-check')).toBeNull()
     expect($('[data-inline]')).toBeNull()
     expect($('[data-select]')).toBeNull()
     expect($('[data-runs-on]')).toBeNull()
@@ -866,7 +880,7 @@ describe('a proxy that is not the account’s own, or not managed', () => {
     await render()
     renameProxy.mockResolvedValue({ reason: 'Not yours to rename' })
     await act(async () => inline[NAME].onSave('Office gateway'))
-    await click($('[data-icon="plus"]'))
+    await click(addButton())
     expect($('[data-notice]')).not.toBeNull()
     expect($('[data-picker]')).not.toBeNull()
     params.proxyID = 'P2'
@@ -985,16 +999,16 @@ describe('a proxy’s host label, each move said first', () => {
     setLabel.mockResolvedValueOnce(said()).mockResolvedValueOnce({ reason: '' })
     await act(async () => inline[LABEL].onSave('gw2'))
     await click($('[data-confirm-action]'))
-    expect($('[data-confirm] [data-notice="error"]')?.textContent).toBe('Nothing was moved: try again.')
+    expect($('[data-confirm] [data-notice="error"]')?.textContent).toBe('Nothing was moved. Try again.')
     expect(readProxy).toHaveBeenCalledTimes(1)
   })
 
   it('under a slug the account no longer has: offered to move onto the account’s slug now, by its same label', async () => {
     accountSlug('acme')
     await render()
-    expect(label('arrow-right-arrow-left')).toBe('Its host is under the account’s former slug')
-    expect(sublabel('arrow-right-arrow-left')).toBe('Moved onto the account’s slug now, it becomes gw-acme.dev.r3proxy.com')
-    expect(inline[LABEL].helper('gw')).toBe('Its host becomes gw-acme.dev.r3proxy.com: what moves is said before anything does.')
+    expect(label('arrow-right-arrow-left')).toBe('Its address uses your account’s old name')
+    expect(sublabel('arrow-right-arrow-left')).toBe('Move it to gw-acme.dev.r3proxy.com')
+    expect(inline[LABEL].helper('gw')).toBe('Becomes gw-acme.dev.r3proxy.com. You’ll see what changes before anything moves.')
     setLabel.mockResolvedValue(said({ host: 'gw-acme.dev.r3proxy.com' }))
     await click(settingButton('arrow-right-arrow-left'))
     expect(setLabel).toHaveBeenCalledWith('P1', 'gw', false)
@@ -1038,7 +1052,7 @@ describe('a proxy’s host label, each move said first', () => {
     accountSlug('acme')
     await render()
     await click(settingButton('arrow-right-arrow-left'))
-    expect($('[data-confirm]')?.textContent).toContain('Nothing moves: it is so already.')
+    expect($('[data-confirm]')?.textContent).toContain('Nothing changes.')
     expect(($('[data-confirm-action]') as HTMLButtonElement).disabled).toBe(true)
   })
 
@@ -1063,7 +1077,7 @@ describe('public endpoints', () => {
     await render()
     await click(setting('users')!.querySelector('[data-toggle]'))
     expect(setPublic).toHaveBeenCalledWith('P1', false, false)
-    expect($('[data-confirm-title]')?.textContent).toBe('Stop Gateway taking public endpoints?')
+    expect($('[data-confirm-title]')?.textContent).toBe('Stop allowing public addresses on Gateway?')
     expect($('[data-public-off]')?.textContent).toBe('It has 2 public endpoints: confirm to remove them')
     await click($('[data-confirm-action]'))
     expect(setPublic).toHaveBeenLastCalledWith('P1', false, true)
@@ -1088,7 +1102,7 @@ describe('moving the endpoints, read or made amiss', () => {
     await render(IDLE)
     await click(settingButton('arrow-right-arrow-left'))
     expect($('[data-confirm] [data-notice="error"]')?.textContent).toBe(
-      'Its account’s proxies could not be read: try again.'
+      'Couldn’t load your other proxy servers. Try again.'
     )
     expect($('[data-confirm]')?.textContent).not.toContain('no other proxy')
   })
@@ -1100,7 +1114,7 @@ describe('moving the endpoints, read or made amiss', () => {
     await click($('[data-pick="P2"]'))
     moveEndpoints.mockResolvedValue({ reason: '' })
     await click($('[data-confirm-action]'))
-    expect($('[data-confirm] [data-notice="error"]')?.textContent).toBe('The move was not made: try again.')
+    expect($('[data-confirm] [data-notice="error"]')?.textContent).toBe('Couldn’t move them. Try again.')
   })
 })
 
@@ -1141,7 +1155,7 @@ describe('Internet or Local network', () => {
     expect($('[data-header]')?.textContent).toBe('Gatewaygw-acme-corp.dev.r3proxy.com · Internet')
     expect(label('cloud')).toBe('Internet')
     expect(sublabel('cloud')).toBe(
-      'Reached from anywhere its devices can be reached. Chosen when it was made: it cannot be changed.'
+      'Anyone on the internet can reach its public addresses. This can’t be changed.'
     )
     expect(setting('house-signal')).toBeNull()
   })
@@ -1153,7 +1167,7 @@ describe('Internet or Local network', () => {
     )
     expect(label('house-signal')).toBe('Local network only: 192.168.1.0/24')
     expect(sublabel('house-signal')).toBe(
-      'Reached only on its devices’ own network, for printers, PCs and anything without remote.it. Chosen when it was made: it cannot be changed.'
+      'Only devices on the same local network can reach it. Good for printers and PCs. This can’t be changed.'
     )
     expect(setting('cloud')).toBeNull()
   })
@@ -1163,7 +1177,7 @@ describe('Internet or Local network', () => {
     expect($('[data-header]')?.textContent).toBe('Officeoffice-acme-corp.dev.r3proxy.com · Local network only')
     expect(label('house-signal')).toBe('Local network only')
     expect(sublabel('house-signal')).toBe(
-      'Reached only on its devices’ own network, for printers, PCs and anything without remote.it. Its network is its first device’s. Chosen when it was made: it cannot be changed.'
+      'Only devices on the same local network can reach it. Good for printers and PCs. Its first device sets the network. This can’t be changed.'
     )
   })
 
@@ -1189,11 +1203,9 @@ describe('Internet or Local network', () => {
     expect(setting('house-signal')).toBeNull()
   })
 
-  it('its devices are told it is a local proxy, to say each one’s private address; an Internet proxy’s are not', async () => {
+  it('its devices are listed as any proxy server’s', async () => {
     await render(OFFICE)
-    expect($('[data-runs-on] [data-run="D1"]')?.hasAttribute('data-local')).toBe(true)
-    await render()
-    expect($('[data-runs-on] [data-run="D1"]')?.hasAttribute('data-local')).toBe(false)
+    expect($('[data-runs-on] [data-run="D1"]')?.getAttribute('data-kind')).toBe('proxy')
   })
 })
 
@@ -1228,7 +1240,7 @@ describe('its own name', () => {
     expect(inline[NAME].disabled).toBe(true)
     expect(inline[LABEL].disabled).toBe(true)
     expect(settingButton('trash').disabled).toBe(true)
-    expect(($('[data-icon="plus"]') as HTMLButtonElement).disabled).toBe(true)
+    expect(addButton().disabled).toBe(true)
     await click($('[data-own-name-busy]'))
     expect(inline[NAME].disabled).toBe(false)
     expect(settingButton('trash').disabled).toBe(false)
@@ -1251,7 +1263,7 @@ describe('its own name', () => {
   it('served under it — active, or broken until its certificate needs renewing —, its https certificate is the name’s, said there', async () => {
     for (const state of ['pending', 'verified']) {
       await render(named(state))
-      expect(label('certificate')).toBe("remote.it's, for every proxy name")
+      expect(label('certificate')).toBe('Ready')
     }
     for (const state of ['active', 'broken']) {
       await render(named(state))

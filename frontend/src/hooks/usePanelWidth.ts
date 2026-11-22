@@ -19,6 +19,9 @@ const PANEL_WIDTH_DEFAULTS: Record<string, { default: number; primary?: number; 
   runs: { default: 330 },
   // The Apps pages: the catalogue on the left, the app (its releases and its devices) on the right, which needs the room.
   apps: { default: 420 },
+  exits: { default: 420 },
+  proxies: { default: 420 },
+  'public-addresses': { default: 520 },
 }
 
 export function getPanelWidthDefault(

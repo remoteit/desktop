@@ -17,24 +17,11 @@ vi.mock('../services/graphQLExits', () => ({ graphQLCreateExit: create }))
 vi.mock('../services/graphQLDeviceRuns', () => ({ graphQLAddExitDevice: addDevice }))
 // The exits list beside the page is the store's (hooks/useAccountStore.ts): here, its being read again.
 vi.mock('../hooks/useAccountExits', () => ({ useAccountExits: () => ({ value: undefined, reload }) }))
-// The picker is its own (RunDevicePicker.tsx): here, what it was given, the devices chosen in it, and Not now. Adding
-// them one after another is its real addEach.
-vi.mock('../selectors/devices', () => ({ getAllDevices: () => [] }))
-vi.mock('../components/RunDevicePicker', async () => ({
-  ...(await vi.importActual<typeof import('../components/RunDevicePicker')>('../components/RunDevicePicker')),
-  RunDevicePicker: ({ kind, target, ownerId, busy, refusals, lan, onAdd, onSkip }: any) => (
-    <div
-      data-picker={kind}
-      data-owner={ownerId}
-      data-for={target}
-      data-busy={busy ? 'yes' : 'no'}
-      data-lan={lan ? 'open' : 'closed'}
-      data-refusals={Object.entries(refusals)
-        .map(([id, reason]) => `${id}: ${reason}`)
-        .join('|')}
-    >
-      <button data-add onClick={() => onAdd(picker.chosen)} />
-      {onSkip && <button data-skip onClick={onSkip} />}
+// The picker is its own (RunDevicePicker.tsx): here, what it was given, and the device chosen in it.
+vi.mock('../components/RunDevicePicker', () => ({
+  RunDevicePicker: ({ kind, target, ownerId, single, onChoose }: any) => (
+    <div data-picker={kind} data-owner={ownerId} data-for={target ?? ''} data-single={single ? 'yes' : 'no'}>
+      <button data-choose onClick={() => onChoose(picker.chosen[0])} />
     </div>
   ),
 }))
@@ -87,8 +74,9 @@ const MADE: Exit = {
 }
 
 const find = (selector: string) => document.body.querySelector(selector) as HTMLElement
-const makeIt = () =>
-  [...document.body.querySelectorAll('button')].find(each => each.textContent === 'Make the exit') as HTMLButtonElement
+const button = (text: string) =>
+  [...document.body.querySelectorAll('button')].find(each => each.textContent === text) as HTMLButtonElement
+const createIt = () => button('Create exit')
 const nameField = () => document.body.querySelector('input') as HTMLInputElement
 const click = (element: Element | null) => act(async () => (element as HTMLElement).click())
 
@@ -99,10 +87,6 @@ async function type(text: string) {
     nameField().dispatchEvent(new Event('input', { bubbles: true }))
   })
 }
-const enter = () =>
-  act(async () => {
-    nameField().dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
-  })
 
 let root: Root | undefined
 async function render() {
@@ -116,11 +100,9 @@ async function render() {
   root = createRoot(container)
   await act(async () => root!.render(<ExitAddPage />))
 }
-// The page with the exit made, its devices to choose.
-async function made() {
-  await render()
-  await type('Office')
-  await click(makeIt())
+async function choose(id?: string) {
+  picker.chosen = id ? [id] : []
+  await click(find('[data-choose]'))
 }
 
 beforeEach(() => {
@@ -131,134 +113,106 @@ beforeEach(() => {
   picker.chosen = []
 })
 
-describe('making an exit', () => {
-  it('is named first: Make the exit waits for a name, then makes it in the active account by its name trimmed', async () => {
+describe('creating an exit', () => {
+  it('asks its name and one device of the active account to carry it, before it is made', async () => {
     await render()
-    expect(find('[data-title]').textContent).toBe('New exit')
-    expect(find('[data-picker]')).toBeNull()
-    expect(makeIt().disabled).toBe(true)
+    expect(find('[data-title]').textContent).toBe('Create exit')
+    expect(find('[data-picker]').getAttribute('data-picker')).toBe('exit')
+    expect(find('[data-picker]').getAttribute('data-owner')).toBe('ACCOUNT')
+    expect(find('[data-picker]').getAttribute('data-for')).toBe('')
+    expect(find('[data-picker]').getAttribute('data-single')).toBe('yes')
+    expect(createIt().disabled).toBe(true)
     await type('   ')
-    expect(makeIt().disabled).toBe(true)
-    await type('  Office  ')
-    expect(makeIt().disabled).toBe(false)
-    await click(makeIt())
-    expect(create).toHaveBeenCalledWith('Office', 'ACCOUNT')
+    expect(createIt().disabled).toBe(true)
+    await type('  Office ')
+    expect(createIt().disabled).toBe(false)
   })
 
-  it('Enter in the name makes it too, once a name is typed', async () => {
+  it('made by its name trimmed, the device chosen added to it, then its page opens', async () => {
     await render()
-    await enter()
-    expect(create).not.toHaveBeenCalled()
-    await type('Office')
-    await enter()
+    await type('  Office ')
+    await choose('PI')
+    await click(createIt())
     expect(create).toHaveBeenCalledWith('Office', 'ACCOUNT')
+    expect(addDevice).toHaveBeenCalledWith('xnew', 'PI')
+    expect(reload).toHaveBeenCalled()
+    expect(push).toHaveBeenCalledWith('/exits/xnew')
+  })
+
+  it('with no device chosen, it is made alone and its page opens to add one', async () => {
+    await render()
+    await type('Office')
+    await click(createIt())
+    expect(create).toHaveBeenCalledTimes(1)
+    expect(addDevice).not.toHaveBeenCalled()
+    expect(push).toHaveBeenCalledWith('/exits/xnew')
   })
 
   it('while it is made, it is not asked for again', async () => {
-    let answer!: (exit: Exit) => void
+    let answer: (exit: Exit) => void = () => {}
     create.mockReturnValue(new Promise(resolve => (answer = resolve)))
     await render()
     await type('Office')
-    await click(makeIt())
-    expect(makeIt().disabled).toBe(true)
-    await enter()
-    expect(create).toHaveBeenCalledTimes(1)
+    await click(createIt())
+    expect(createIt().disabled).toBe(true)
     await act(async () => answer(MADE))
-    expect(find('[data-picker]')).not.toBeNull()
-  })
-
-  it('made, its devices are chosen next, among its account’s; the list beside it read again', async () => {
-    await made()
-    expect(find('[data-title]').textContent).toBe('Office')
-    expect(nameField()).toBeNull()
-    expect(document.body.textContent).toContain(
-      'Made. Now choose the devices that run it: each goes into service once its checks pass.'
-    )
-    const shown = find('[data-picker]')
-    expect(shown.getAttribute('data-picker')).toBe('exit')
-    expect(shown.getAttribute('data-owner')).toBe('ACCOUNT')
-    expect(shown.getAttribute('data-for')).toBe('xnew')
-    expect(shown.getAttribute('data-refusals')).toBe('')
-    expect(reload).toHaveBeenCalledTimes(1)
+    expect(push).toHaveBeenCalledWith('/exits/xnew')
   })
 
   it('refused: said in graphql’s words, or that it was not made, the name kept to try again', async () => {
-    create.mockResolvedValue({ reason: 'You may not make exits in this account' })
+    create.mockResolvedValue({ reason: 'name taken' })
     await render()
     await type('Office')
-    await click(makeIt())
-    expect(find('[data-notice="error"]').textContent).toBe('You may not make exits in this account')
-    expect(find('[data-picker]')).toBeNull()
-    expect(find('[data-title]').textContent).toBe('New exit')
+    await click(createIt())
+    expect(find('[data-notice]').getAttribute('data-notice')).toBe('error')
+    expect(find('[data-notice]').textContent).toBe('name taken')
     expect(nameField().value).toBe('Office')
-    expect(reload).not.toHaveBeenCalled()
+    expect(push).not.toHaveBeenCalled()
     create.mockResolvedValue({ reason: '' })
-    await click(makeIt())
-    expect(find('[data-notice="error"]').textContent).toBe('It was not made: try again.')
-    create.mockResolvedValue(MADE)
-    await click(makeIt())
-    expect(find('[data-notice]')).toBeNull()
-    expect(find('[data-picker]')).not.toBeNull()
+    await click(createIt())
+    expect(find('[data-notice]').textContent).toBe('Couldn’t create the exit. Try again.')
   })
 })
 
-describe('adding its devices', () => {
-  it('those chosen are added to it one after another, and its page opens', async () => {
-    await made()
-    picker.chosen = ['D1', 'D2']
-    await click(find('[data-add]'))
-    expect(addDevice.mock.calls).toEqual([
-      ['xnew', 'D1'],
-      ['xnew', 'D2'],
-    ])
-    expect(reload).toHaveBeenCalledTimes(2)
-    expect(push).toHaveBeenCalledWith('/exits/xnew')
-  })
-
-  it('while they are added, the picker is busy', async () => {
-    await made()
-    let added!: (value: unknown) => void
-    addDevice.mockReturnValue(new Promise(resolve => (added = resolve)))
-    picker.chosen = ['D1']
-    await click(find('[data-add]'))
-    expect(find('[data-picker]').getAttribute('data-busy')).toBe('yes')
-    await act(async () => added({ runs: { proxy: null, exit: null } }))
-    expect(push).toHaveBeenCalledWith('/exits/xnew')
-  })
-
-  it('one refused keeps the page: each refusal passed back to the picker by its id, the exit kept to add to', async () => {
-    await made()
-    addDevice.mockImplementation(async (_exit: string, id: string) =>
-      id === 'D2' ? { reason: 'It cannot be an exit (a client only)' } : { runs: { proxy: null, exit: null } }
-    )
-    picker.chosen = ['D1', 'D2']
-    await click(find('[data-add]'))
-    expect(addDevice).toHaveBeenCalledTimes(2)
+describe('the device refused', () => {
+  it('the exit kept, why said in a person’s words; another device is added to it, not a new exit', async () => {
+    addDevice.mockResolvedValueOnce({
+      reason: "its administrator's policy forbids exits on this machine: it would never go into service",
+    })
+    await render()
+    await type('Office')
+    await choose('NAS')
+    await click(createIt())
     expect(push).not.toHaveBeenCalled()
-    expect(find('[data-picker]').getAttribute('data-refusals')).toBe('D2: It cannot be an exit (a client only)')
-    expect(find('[data-picker]').getAttribute('data-busy')).toBe('no')
-    expect(find('[data-title]').textContent).toBe('Office')
-    expect(reload).toHaveBeenCalledTimes(2)
-    addDevice.mockResolvedValue({ runs: { proxy: null, exit: null } })
-    picker.chosen = ['D2']
-    await click(find('[data-add]'))
-    expect(addDevice).toHaveBeenLastCalledWith('xnew', 'D2')
+    expect(find('[data-notice]').textContent).toBe(
+      'Exit created, but that device couldn’t be added. Exits are turned off on this device.'
+    )
+    expect(nameField().disabled).toBe(true)
+    expect(find('[data-picker]').getAttribute('data-for')).toBe('xnew')
+    await choose('PI')
+    await click(button('Add device'))
     expect(create).toHaveBeenCalledTimes(1)
+    expect(addDevice).toHaveBeenLastCalledWith('xnew', 'PI')
     expect(push).toHaveBeenCalledWith('/exits/xnew')
   })
 
-  it('the picker is told whether the exit made lets its users reach its devices’ local networks', async () => {
-    await made()
-    expect(find('[data-picker]').getAttribute('data-lan')).toBe('closed')
-    create.mockResolvedValue({ ...MADE, lan: true })
-    await made()
-    expect(find('[data-picker]').getAttribute('data-lan')).toBe('open')
+  it('Open exit opens it with no device added', async () => {
+    addDevice.mockResolvedValueOnce({ reason: '' })
+    await render()
+    await type('Office')
+    await choose('NAS')
+    await click(createIt())
+    expect(find('[data-notice]').textContent).toBe(
+      'Exit created, but that device couldn’t be added. Choose another device.'
+    )
+    await click(button('Open exit'))
+    expect(push).toHaveBeenCalledWith('/exits/xnew')
   })
 
-  it('Not now opens its page with no device added', async () => {
-    await made()
-    await click(find('[data-skip]'))
-    expect(push).toHaveBeenCalledWith('/exits/xnew')
-    expect(addDevice).not.toHaveBeenCalled()
+  it('Cancel before anything is made goes back to the exits', async () => {
+    await render()
+    await click(button('Cancel'))
+    expect(push).toHaveBeenCalledWith('/exits')
+    expect(create).not.toHaveBeenCalled()
   })
 })

@@ -2,12 +2,11 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { createProxy, addDevice, reload, push, picker } = vi.hoisted(() => ({
+const { createProxy, addDevice, reload, push } = vi.hoisted(() => ({
   createProxy: vi.fn(async (_set: any) => ({} as any)),
   addDevice: vi.fn(async (_proxy: string, _deviceId: string) => ({ runs: { proxy: null, exit: null } } as any)),
   reload: vi.fn(),
   push: vi.fn(),
-  picker: { chosen: [] as string[] },
 }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select({}) }))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'ACCOUNT' }))
@@ -23,24 +22,18 @@ vi.mock('../services/deviceSessionInfo', () => ({
 }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED', withoutDeviceSessions: () => false }))
 vi.mock('../hooks/useAccountExits', () => ({ useAccountProxies: () => ({ value: undefined, reload }) }))
-// The picker is its own (RunDevicePicker.tsx): here, what it was given, the devices chosen added, and Not now. addEach
-// is its.
+// The picker is its own (RunDevicePicker.tsx): here, what it was given, and a device chosen through onChoose.
 vi.mock('../selectors/devices', () => ({ getAllDevices: () => [] }))
-vi.mock('../components/RunDevicePicker', async importOriginal => ({
-  ...(await importOriginal<typeof import('../components/RunDevicePicker')>()),
-  RunDevicePicker: ({ kind, target, ownerId, busy, refusals, onAdd, onSkip }: any) => (
-    <div
-      data-picker={kind}
-      data-owner={ownerId}
-      data-for={target}
-      data-refusals={JSON.stringify(refusals)}
-    >
-      <button data-add disabled={busy} onClick={() => onAdd(picker.chosen)} />
-      <button data-skip disabled={busy} onClick={onSkip} />
+vi.mock('../components/RunDevicePicker', () => ({
+  RunDevicePicker: ({ kind, target, ownerId, single, onChoose }: any) => (
+    <div data-picker={kind} data-owner={ownerId} data-for={target ?? ''} data-single={single ? '' : undefined}>
+      <button data-choose="D1" onClick={() => onChoose('D1')} />
+      <button data-unchoose onClick={() => onChoose(undefined)} />
     </div>
   ),
 }))
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
+vi.mock('../components/Icon', () => ({ Icon: () => null }))
 vi.mock('../components/Container', () => ({
   Container: ({ header, children }: any) => (
     <div>
@@ -81,7 +74,7 @@ import { ProxyAddPage } from './ProxyAddPage'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const NAME = 'Name'
-const LABEL = 'Host label, before your account slug'
+const LABEL = 'Address label'
 
 const MADE = {
   id: 'P1',
@@ -114,7 +107,8 @@ const field = (label: string) =>
     | HTMLElement
     | undefined
 const input = (label: string) => field(label)!.querySelector('input') as HTMLInputElement
-const make = () => [...document.body.querySelectorAll('button')].find(b => b.textContent === 'Make the proxy')!
+const button = (text: string) => [...document.body.querySelectorAll('button')].find(b => b.textContent === text)!
+const make = () => ($('[data-create]') as HTMLButtonElement)
 const kind = (value: 'internet' | 'local') => $(`input[type=radio][value="${value}"]`) as HTMLInputElement
 async function type(label: string, text: string) {
   const element = input(label)
@@ -136,43 +130,56 @@ beforeEach(() => {
   addDevice.mockReset().mockResolvedValue({ runs: { proxy: null, exit: null } })
   reload.mockReset()
   push.mockReset()
-  picker.chosen = []
 })
 
-describe('a new proxy', () => {
-  it('is made once it has a name; its label lower case letters and digits as typed, one too long said and refused', async () => {
+describe('a new proxy server, in one step', () => {
+  it('is created once it has a name; its address label, under More options, lower case letters and digits', async () => {
     await render()
-    expect($('[data-header]')?.textContent).toBe('New proxy')
+    expect($('[data-header]')?.textContent).toContain('Create proxy server')
+    expect(make().textContent).toBe('Create proxy server')
     expect(make().disabled).toBe(true)
     await type(NAME, '   ')
     expect(make().disabled).toBe(true)
     await type(NAME, 'Gateway')
     expect(make().disabled).toBe(false)
     expect(input(NAME).maxLength).toBe(255)
-
-    expect(input(LABEL).placeholder).toBe('none: made from its name')
+    expect(button('More options')).toBeDefined()
+    expect(input(LABEL).placeholder).toBe('Made from the name')
     expect(input(LABEL).maxLength).toBe(29)
     await type(LABEL, 'Gw-1_X')
     expect(input(LABEL).value).toBe('gw1x')
     expect(field(LABEL)!.hasAttribute('data-error')).toBe(false)
-    expect(make().disabled).toBe(false)
     await type(LABEL, 'x'.repeat(30))
     expect(field(LABEL)!.hasAttribute('data-error')).toBe(true)
     expect(field(LABEL)!.querySelector('[data-helper]')?.textContent).toBe('Lower case letters and digits, at most 29')
     expect(make().disabled).toBe(true)
     await type(LABEL, '')
-    expect(field(LABEL)!.hasAttribute('data-error')).toBe(false)
     expect(make().disabled).toBe(false)
   })
 
-  it('is made in the active account with its name trimmed, its label and public endpoints as chosen', async () => {
+  it('is Internet unless Local network is chosen, said to be fixed for good', async () => {
+    await render()
+    expect($('[data-proxy-kind]')?.getAttribute('data-proxy-kind')).toBe('internet')
+    expect($('[data-proxy-kind]')?.textContent).toContain('You can’t change this later.')
+    await click(kind('local'))
+    await type(NAME, 'Office')
+    await click(make())
+    expect(createProxy).toHaveBeenCalledWith({
+      name: 'Office',
+      label: undefined,
+      publicEndpoints: true,
+      local: true,
+      accountId: 'ACCOUNT',
+    })
+  })
+
+  it('is created in the active account, its name trimmed, label and public addresses as chosen', async () => {
     await render()
     await type(NAME, ' Gateway ')
     await type(LABEL, 'gw')
     const publicEndpoints = $('input[type=checkbox]') as HTMLInputElement
     expect(publicEndpoints.checked).toBe(true)
     await click(publicEndpoints)
-    expect(publicEndpoints.checked).toBe(false)
     await click(make())
     expect(createProxy).toHaveBeenCalledWith({
       name: 'Gateway',
@@ -183,180 +190,80 @@ describe('a new proxy', () => {
     })
   })
 
-  it('with no label given, graphql makes its label from its name, and it takes public endpoints', async () => {
+  it('offers one device of the active account to run it, before it is made', async () => {
+    await render()
+    expect($('[data-picker]')?.getAttribute('data-picker')).toBe('proxy')
+    expect($('[data-picker]')?.getAttribute('data-owner')).toBe('ACCOUNT')
+    expect($('[data-picker]')?.getAttribute('data-for')).toBe('')
+    expect($('[data-picker]')?.hasAttribute('data-single')).toBe(true)
+  })
+
+  it('with a device chosen: created, the device added, the list read again and its page opened', async () => {
+    await render()
+    await type(NAME, 'Gateway')
+    await click($('[data-choose]'))
+    await click(make())
+    expect(addDevice).toHaveBeenCalledWith('P1', 'D1')
+    expect(reload).toHaveBeenCalled()
+    expect(push).toHaveBeenCalledWith('/proxies/P1')
+  })
+
+  it('with no device chosen: created, and its page opened to add one there', async () => {
     await render()
     await type(NAME, 'Gateway')
     await click(make())
-    expect(createProxy).toHaveBeenCalledWith({
-      name: 'Gateway',
-      label: undefined,
-      publicEndpoints: true,
-      local: false,
-      accountId: 'ACCOUNT',
-    })
+    expect(addDevice).not.toHaveBeenCalled()
+    expect(push).toHaveBeenCalledWith('/proxies/P1')
   })
 
-  // An own name is its page's, once it is made: it points at the host it is made under.
-  it('asks no own domain or own name: its name, kind, label and public endpoints alone', async () => {
+  it('a device refused: said in plain words, the proxy server kept, another to add or the page to open', async () => {
+    addDevice.mockResolvedValue({ reason: 'its daemon is not online to say whether it can be a proxy' })
     await render()
-    expect([...document.body.querySelectorAll('[data-field]')].map(each => each.getAttribute('data-field'))).toEqual([
-      NAME,
-      LABEL,
-    ])
-    expect(document.body.textContent).not.toMatch(/domain/i)
-  })
-
-  it('is Internet or Local network, each said in a line, and said to be chosen for good; Internet unless chosen', async () => {
-    await render()
-    const choice = $('[data-proxy-kind]')!
-    expect(choice.getAttribute('data-proxy-kind')).toBe('internet')
-    expect(kind('internet').checked).toBe(true)
-    expect(choice.textContent).toBe(
-      'Reached from' +
-        'Internet' +
-        'Reached from anywhere its devices can be reached.' +
-        'Local network' +
-        'Reached only on its devices’ own network, for printers, PCs and anything without remote.it.' +
-        'Chosen now: it cannot be changed later.'
-    )
-    await click(kind('local'))
-    expect(kind('local').checked).toBe(true)
-    expect($('[data-proxy-kind]')?.getAttribute('data-proxy-kind')).toBe('local')
-    await type(NAME, 'Printers')
+    await type(NAME, 'Gateway')
+    await click($('[data-choose]'))
     await click(make())
-    expect(createProxy).toHaveBeenCalledWith(expect.objectContaining({ name: 'Printers', local: true }))
-  })
-
-  it('made Local network: says it is reached on its devices’ own network only, and that its devices are all on one', async () => {
-    createProxy.mockResolvedValue({ ...MADE, local: true })
-    await render()
-    await type(NAME, 'Printers')
-    await click(kind('local'))
-    await click(make())
-    expect(document.body.textContent).toContain(
-      'Made: it is reached at gw-acme.dev.r3proxy.com, on its devices’ own network only. Now choose the devices that run it, all on one network — the first one added sets it: each goes into service once its checks pass.'
+    expect(push).not.toHaveBeenCalled()
+    expect($('[data-notice="error"]')?.textContent).toBe(
+      'Proxy server created, but that device couldn’t be added. This device is offline. Bring it online to add it.'
     )
     expect($('[data-picker]')?.getAttribute('data-for')).toBe('P1')
-  })
-
-  it('a device on another network than the local proxy’s first device: refused in graphql’s words, said by it in the picker', async () => {
-    createProxy.mockResolvedValue({ ...MADE, local: true })
-    addDevice.mockImplementation(async (_proxy: string, id: string) =>
-      id === 'D2'
-        ? { reason: 'Laptop is on another network (10.0.0.0/24) than Gateway (192.168.1.0/24)' }
-        : { runs: { proxy: null, exit: null } }
-    )
-    await render()
-    await type(NAME, 'Gateway')
-    await click(kind('local'))
+    expect(make().textContent).toBe('Add device')
+    addDevice.mockResolvedValue({ runs: { proxy: null, exit: null } })
     await click(make())
-    picker.chosen = ['D1', 'D2']
-    await click($('[data-picker] [data-add]'))
-    expect($('[data-picker]')?.getAttribute('data-refusals')).toBe(
-      '{"D2":"Laptop is on another network (10.0.0.0/24) than Gateway (192.168.1.0/24)"}'
-    )
-    expect(push).not.toHaveBeenCalled()
-  })
-
-  it('made: says where it is reached, the list beside it read again, and the devices that run it chosen of its account', async () => {
-    await render()
-    await type(NAME, 'Gateway')
-    await click(make())
-    expect($('[data-header]')?.textContent).toBe('Gateway')
-    expect(document.body.textContent).toContain(
-      'Made: it is reached at gw-acme.dev.r3proxy.com. Now choose the devices that run it: each goes into service once its checks pass.'
-    )
-    expect(field(NAME)).toBeUndefined()
-    expect(reload).toHaveBeenCalledTimes(1)
-    const shown = $('[data-picker]')!
-    expect(shown.getAttribute('data-picker')).toBe('proxy')
-    expect(shown.getAttribute('data-owner')).toBe('ACCOUNT')
-    expect(shown.getAttribute('data-for')).toBe('P1')
-  })
-
-  it('the devices chosen are added one after another, then its page is opened', async () => {
-    await render()
-    await type(NAME, 'Gateway')
-    await click(make())
-    picker.chosen = ['D1', 'D2']
-    await click($('[data-picker] [data-add]'))
-    expect(addDevice.mock.calls).toEqual([
-      ['P1', 'D1'],
-      ['P1', 'D2'],
-    ])
-    expect(reload).toHaveBeenCalledTimes(2)
+    expect(createProxy).toHaveBeenCalledTimes(1)
+    expect(push).toHaveBeenCalledWith('/proxies/P1')
+    push.mockReset()
+    await click(button('Open proxy server'))
     expect(push).toHaveBeenCalledWith('/proxies/P1')
   })
 
-  it('a device refused is said in the picker by it, the page left to choose again; Not now opens the proxy, kept', async () => {
-    addDevice.mockImplementation(async (_proxy: string, id: string) =>
-      id === 'D2'
-        ? { reason: 'Office Mac is not online to say what it can run' }
-        : { runs: { proxy: null, exit: null } }
-    )
+  it('a refusal to create it is said in graphql’s words, or that it was not created; the form stays', async () => {
+    createProxy.mockResolvedValue({ reason: 'A proxy is named so already' })
     await render()
     await type(NAME, 'Gateway')
     await click(make())
-    picker.chosen = ['D1', 'D2']
-    await click($('[data-picker] [data-add]'))
-    expect(addDevice).toHaveBeenCalledTimes(2)
-    expect($('[data-picker]')?.getAttribute('data-refusals')).toBe(
-      '{"D2":"Office Mac is not online to say what it can run"}'
-    )
-    expect(reload).toHaveBeenCalledTimes(2)
-    expect(push).not.toHaveBeenCalled()
-    await click($('[data-picker] [data-skip]'))
-    expect(push).toHaveBeenCalledWith('/proxies/P1')
-  })
-
-  it('its devices are of the account it was made in, the active one where it says none', async () => {
-    createProxy.mockResolvedValue({ ...MADE, owner: { id: 'ORG', email: 'it@example.com' } })
-    await render()
-    await type(NAME, 'Gateway')
-    await click(make())
-    expect($('[data-picker]')?.getAttribute('data-owner')).toBe('ORG')
-    createProxy.mockResolvedValue({ ...MADE, owner: null })
-    await render()
-    await type(NAME, 'Gateway')
-    await click(make())
-    expect($('[data-picker]')?.getAttribute('data-owner')).toBe('ACCOUNT')
-  })
-
-  it('a refusal to make it is said in graphql’s words, or that it was not made, and the form stays to change', async () => {
-    createProxy.mockResolvedValue({ reason: 'Gw-acme.dev.r3proxy.com is another proxy’s: choose another label' })
-    await render()
-    await type(NAME, 'Gateway')
-    await type(LABEL, 'gw')
-    await click(make())
-    expect($('[data-notice="error"]')?.textContent).toBe(
-      'Gw-acme.dev.r3proxy.com is another proxy’s: choose another label'
-    )
-    expect(input(LABEL).value).toBe('gw')
-    expect($('[data-picker]')).toBeNull()
-    expect(reload).not.toHaveBeenCalled()
-    expect(make().disabled).toBe(false)
-
+    expect($('[data-notice="error"]')?.textContent).toBe('A proxy is named so already')
     createProxy.mockResolvedValue({ reason: '' })
     await click(make())
-    expect($('[data-notice="error"]')?.textContent).toBe('It was not made: try again.')
-
-    createProxy.mockResolvedValue(MADE)
-    await type(LABEL, 'gw2')
-    await click(make())
-    expect($('[data-notice]')).toBeNull()
-    expect($('[data-picker]')).not.toBeNull()
+    expect($('[data-notice="error"]')?.textContent).toBe('Couldn’t create the proxy server. Try again.')
+    expect(input(NAME).value).toBe('Gateway')
+    expect(push).not.toHaveBeenCalled()
   })
 
-  it('while it is being made, it cannot be made again', async () => {
+  it('while it is being created, it cannot be created again', async () => {
     const answer = held<any>()
     createProxy.mockReturnValue(answer.promise)
     await render()
     await type(NAME, 'Gateway')
     await click(make())
     expect(make().disabled).toBe(true)
-    expect(kind('local').disabled).toBe(true)
-    await act(async () => answer.release({ reason: 'Its account has no slug yet: set one first' }))
-    expect(make().disabled).toBe(false)
+    await act(async () => answer.release(MADE))
     expect(createProxy).toHaveBeenCalledTimes(1)
+  })
+
+  it('Cancel goes back to the proxy servers', async () => {
+    await render()
+    await click(button('Cancel'))
+    expect(push).toHaveBeenCalledWith('/proxies')
   })
 })

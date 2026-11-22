@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Box, Button } from '@mui/material'
 import type { DeviceRuns, RunAction, RunState } from '../services/graphQLDeviceRuns'
-import { RunActionDialog, actionVerb } from './RunActionDialog'
+import { RunActionDialog } from './RunActionDialog'
+import { PlainAction, RUN_ACTION, plainActionLabel, plainActionsFor } from '../helpers/exitWords'
 
 type Props = {
   device: { id: string; name: string }
@@ -11,6 +12,7 @@ type Props = {
   scope: 'device' | { kind: 'proxy' | 'exit'; name: string }
   // Its state there, for the actions that apply; the device as a whole offers each.
   run?: { state: RunState; joining: boolean }
+  activation?: string
   disabled?: boolean
   onDone: (runs: DeviceRuns) => void
 }
@@ -23,48 +25,61 @@ export function actionsFor(run?: { state: RunState; joining: boolean }): RunActi
   return ['UNDRAIN', 'REMOVE']
 }
 
-/* Drain, undrain, retire and remove for a device — in everything it runs, or in one proxy or exit —, each through its
-   dialog, which says what it would do first (components/RunActionDialog.tsx). */
-export const RunActions: React.FC<Props> = ({ device, scope, run, disabled, onDone }) => {
+type Choice = { action: RunAction; plain?: PlainAction }
+
+/* For a device as a whole: drain, undrain, retire and remove. For a device in one exit or proxy server: Pause (drain),
+   Resume or Approve (undrain), Stop now (retire) and Remove. Each goes through its dialog, which says what it would do
+   first (components/RunActionDialog.tsx). */
+export const RunActions: React.FC<Props> = ({ device, scope, run, activation, disabled, onDone }) => {
   const { t } = useTranslation()
-  const [action, setAction] = useState<RunAction>()
+  const [choice, setChoice] = useState<Choice>()
+  const choices: (Choice & { label: string })[] =
+    scope === 'device'
+      ? actionsFor(run).map(action => ({ action, label: deviceWideVerb(t, action) }))
+      : plainActionsFor(run ?? { state: 'ACTIVE', joining: false }, activation).map(plain => ({
+          action: RUN_ACTION[plain],
+          plain,
+          label: plainActionLabel(t, plain),
+        }))
 
   return (
-    <Box display="flex" flexWrap="wrap" gap={1} marginTop={0.5} data-run-actions={scope === 'device' ? 'device' : scope.kind}>
-      {actionsFor(run).map(each => (
+    <Box
+      display="flex"
+      flexWrap="wrap"
+      gap={1}
+      marginTop={0.5}
+      data-run-actions={scope === 'device' ? 'device' : scope.kind}
+    >
+      {choices.map(each => (
         <Button
-          key={each}
+          key={each.plain ?? each.action}
           size="small"
-          variant="outlined"
-          color={each === 'RETIRE' || each === 'REMOVE' ? 'error' : 'primary'}
+          variant={each.plain === 'REMOVE' || each.plain === 'STOP' ? 'text' : 'outlined'}
+          color={each.action === 'RETIRE' || each.action === 'REMOVE' ? 'error' : 'primary'}
           disabled={disabled}
-          data-action={each}
+          data-action={each.action}
+          data-plain={each.plain}
           onClick={event => {
             event.stopPropagation()
-            setAction(each)
+            setChoice(each)
           }}
         >
-          {scope === 'device' ? deviceWideVerb(t, each) : undrainLabel(t, each, run)}
+          {each.label}
         </Button>
       ))}
-      {action && (
+      {choice && (
         <RunActionDialog
           open
           device={device}
-          action={action}
+          action={choice.action}
+          plain={choice.plain}
           scope={scope}
-          onClose={() => setAction(undefined)}
+          onClose={() => setChoice(undefined)}
           onDone={onDone}
         />
       )}
     </Box>
   )
-}
-
-// A joining device is put in service, not undrained.
-function undrainLabel(t: TFunction, action: RunAction, run?: { joining: boolean }) {
-  if (action === 'UNDRAIN' && run?.joining) return t('runAction.putInService', 'Put in service')
-  return actionVerb(t, action)
 }
 
 function deviceWideVerb(t: TFunction, action: RunAction) {

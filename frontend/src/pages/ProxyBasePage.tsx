@@ -105,7 +105,7 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
     if (!name) return setMoving({ mode: 'remove' })
     setBusy(true)
     const said = await graphQLSetAccountProxyBase(accountId, name)
-    setNotice('reason' in said ? said.reason || t('proxyBase.notSet', 'It was not set: try again.') : undefined)
+    setNotice('reason' in said ? said.reason || t('proxyBase.notSet', 'Couldn’t save it. Try again.') : undefined)
     await refresh()
     setBusy(false)
   }
@@ -118,7 +118,7 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
     const read = await refresh()
     setBusy(false)
     if ('reason' in said)
-      return setNotice(said.reason || t('proxyBase.notChecked', 'Its delegation could not be checked: try again.'))
+      return setNotice(said.reason || t('proxyBase.notChecked', 'Couldn’t check the NS records. Try again.'))
     setNotice(undefined)
     if (read?.state === 'verified') setMoving({ mode: 'verify', said })
   }
@@ -140,13 +140,13 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
       header={
         <>
           <Typography variant="h1">
-            <Title>{t('proxyBase.title', 'Account base for proxies')}</Title>
+            <Title>{t('proxyBase.title', 'Your own domain')}</Title>
           </Typography>
           <Gutters top={null} bottom="sm">
             <Typography variant="body2" color="textSecondary" data-proxy-base-paid>
               {t(
                 'proxyBase.paid',
-                'A paid feature, one for the account: every proxy of it named under a subdomain of yours.'
+                'A paid add-on that puts your public addresses under a domain you own.'
               )}
             </Typography>
           </Gutters>
@@ -157,7 +157,7 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
         {!admin ? (
           <Gutters>
             <Notice fullWidth>
-              {t('proxyBase.adminOnly', 'Only an admin of the account can see or set its base.')}
+              {t('proxyBase.adminOnly', 'Only an account admin can set up your own domain.')}
             </Notice>
           </Gutters>
         ) : base === undefined ? (
@@ -166,8 +166,8 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
           <Gutters>
             <Notice severity={base === 'ERROR' ? 'error' : 'info'} fullWidth>
               {base === 'ERROR'
-                ? t('proxyBase.failed', 'The account’s base could not be read.')
-                : t('proxyBase.unsupported', 'This server does not have account bases for proxies.')}
+                ? t('proxyBase.failed', 'Couldn’t load your own domain. Try again.')
+                : t('proxyBase.unsupported', 'Your own domain isn’t available on this server.')}
             </Notice>
           </Gutters>
         ) : !current && !included ? (
@@ -180,14 +180,14 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
               <ListItemSetting
                 icon="sitemap"
                 label={current.base}
-                subLabel={t('proxyBase.serving', 'The account’s base: to use another, remove this one first')}
+                subLabel={t('proxyBase.serving', 'To use another domain, remove this one first')}
               />
             ) : (
               <InlineTextFieldSetting
                 icon="sitemap"
                 label={t('proxyBase.label', 'Subdomain')}
                 value={current?.base ?? ''}
-                placeholder={t('proxyBase.placeholder', 'none: a subdomain you control, as proxies.example.com')}
+                placeholder={t('proxyBase.placeholder', 'A subdomain you control, like proxies.example.com')}
                 filter={/[^a-zA-Z0-9.-]/g}
                 maxLength={253}
                 disabled={busy}
@@ -203,11 +203,11 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
                     {current.removeReason === 'plan'
                       ? t(
                           'proxyBase.removedPlan',
-                          'The account’s plan no longer includes a base: remote.it removes it — its proxies back under their own names — unless the plan includes one again by'
+                          'Your plan no longer includes your own domain. Remote.It removes it unless your plan includes it again by'
                         )
                       : t(
                           'proxyBase.removedPending',
-                          'Not delegated yet: remote.it removes it unless its NS records are found by'
+                          'Not set up yet. Remote.It removes it unless its NS records are found by'
                         )}{' '}
                     <Timestamp date={new Date(current.removeAt)} variant="minutes" />
                   </span>
@@ -222,12 +222,12 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
                   current?.state === 'active'
                     ? t(
                         'proxyBase.activeHint',
-                        'Every proxy of the account is named <label>.{{base}}, but one with a name of its own; remote.it writes their records and keeps their certificates. Keep these NS records where your DNS is hosted.',
+                        'Your proxy servers are named <label>.{{base}}. Keep these NS records where your DNS is hosted.',
                         { base: current.base }
                       )
                     : t(
                         'proxyBase.hint',
-                        'Delegate a subdomain you control to remote.it with these NS records; every proxy of the account is then named under it, its records and certificates kept by remote.it.'
+                        'Add these NS records where your DNS is hosted. Remote.It then names your proxy servers under this domain.'
                       )
                 }
               />
@@ -240,7 +240,7 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
             {!!current?.nameServers.length && (
               <ListItemSetting
                 icon="server"
-                label={t('proxyBase.nameServers', 'Its name servers')}
+                label={t('proxyBase.nameServers', 'Name servers')}
                 subLabel={<span data-proxy-base-name-servers>{current.nameServers.join(', ')}</span>}
                 secondaryContent={
                   <CopyIconButton
@@ -261,8 +261,8 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
             {current?.state === 'verified' && (
               <ListItemSetting
                 icon="circle-arrow-right"
-                label={t('proxyBase.move', 'Move the account’s proxies under {{base}}', { base: current.base })}
-                subLabel={t('proxyBase.moveHint', 'What moves is said first, proxy by proxy')}
+                label={t('proxyBase.move', 'Move your proxy servers under {{base}}', { base: current.base })}
+                subLabel={t('proxyBase.moveHint', 'You’ll see what changes first')}
                 button={t('ownName.moveButton', 'Move')}
                 buttonDisabled={busy}
                 secondaryContentWidth={BUTTON_ROOM}
@@ -272,8 +272,8 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
             {current && (
               <ListItemSetting
                 icon="rotate-left"
-                label={t('proxyBase.remove', 'Remove the account’s base')}
-                subLabel={t('proxyBase.removeHint', 'Which proxies move back is said first; then its zone is deleted')}
+                label={t('proxyBase.remove', 'Remove your own domain')}
+                subLabel={t('proxyBase.removeHint', 'You’ll see what changes first')}
                 button={t('ownName.removeButton', 'Remove')}
                 buttonDisabled={busy}
                 secondaryContentWidth={BUTTON_ROOM}
@@ -313,7 +313,7 @@ const PaidOnly: React.FC<{ t: TFunction }> = ({ t }) => {
       <span data-proxy-base-plan>
         {t(
           'proxyBase.planNone',
-          'The account’s plan does not include a base for its proxies’ names: it is a paid add-on, and the Enterprise plan includes it.'
+          'Your plan doesn’t include your own domain. It’s a paid add-on, included in the Enterprise plan.'
         )}
       </span>
     </Notice>
@@ -401,7 +401,7 @@ const BaseMoveDialog: React.FC<
       maxWidth="sm"
       title={
         mode === 'verify'
-          ? t('proxyBase.moveTitle', 'Move the account’s proxies under {{base}}?', { base })
+          ? t('proxyBase.moveTitle', 'Move your proxy servers under {{base}}?', { base })
           : t('proxyBase.removeTitle', 'Remove {{base}}?', { base })
       }
       action={mode === 'verify' ? t('ownName.moveButton', 'Move') : t('ownName.removeButton', 'Remove')}
@@ -414,7 +414,7 @@ const BaseMoveDialog: React.FC<
         <LoadingMessage />
       ) : 'reason' in said ? (
         <Notice severity="error" fullWidth>
-          {said.reason || t('proxyPage.namesUnsaid', 'What it would do could not be said: try again.')}
+          {said.reason || t('proxyPage.namesUnsaid', 'Couldn’t check what would change. Try again.')}
         </Notice>
       ) : (
         <>
@@ -445,7 +445,7 @@ const BaseMoveDialog: React.FC<
                     ))
                   ) : (
                     <ListItem disableGutters>
-                      <ListItemText secondary={t('proxyPage.namesNoAddresses', 'No endpoint address moves.')} />
+                      <ListItemText secondary={t('proxyPage.namesNoAddresses', 'No public address changes.')} />
                     </ListItem>
                   )}
                 </List>
@@ -453,14 +453,14 @@ const BaseMoveDialog: React.FC<
             ))
           ) : (
             <Typography variant="body2" gutterBottom data-proxy-base-none>
-              {t('proxyBase.noProxies', 'No proxy moves.')}
+              {t('proxyBase.noProxies', 'No proxy server changes.')}
             </Typography>
           )}
           {mode === 'remove' && (
             <Typography variant="body2" data-proxy-base-zone>
               {t(
                 'proxyBase.removeZone',
-                'remote.it’s zone for {{base}} is deleted: its NS records can then come out of your DNS.',
+                'Remote.It deletes its zone for {{base}}. You can then remove its NS records from your DNS.',
                 { base }
               )}
             </Typography>
