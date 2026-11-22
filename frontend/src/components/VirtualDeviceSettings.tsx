@@ -36,7 +36,7 @@ export const VirtualDeviceSettings: React.FC<{ device: IDevice }> = ({ device })
   const gatewayValues: ISelect[] = gateways.map(g => ({ key: g.id, name: g.name }))
   if (current?.id && !gatewayValues.some(v => v.key === current.id))
     gatewayValues.unshift({ key: current.id, name: gatewayName(t, current) })
-  if (!current) gatewayValues.unshift({ key: '', name: t('virtualDeviceSettings.notHosted', 'Not hosted') })
+  if (!current) gatewayValues.unshift({ key: '', name: t('virtualDeviceSettings.noGateway', 'No gateway') })
 
   return (
     <>
@@ -65,7 +65,7 @@ export const VirtualDeviceSettings: React.FC<{ device: IDevice }> = ({ device })
         onSave={host => devices.updateVirtualDevice({ device, set: { host: host.toString().trim() } })}
       />
       <InlineSelectSetting
-        label={t('virtualDeviceSettings.hostedBy', 'Hosted by')}
+        label={t('virtualDeviceSettings.gateway', 'Gateway')}
         icon={<Icon name="arrow-turn-down" rotate={270} size="md" color="grayDarker" />}
         value={current?.id || ''}
         values={gatewayValues}

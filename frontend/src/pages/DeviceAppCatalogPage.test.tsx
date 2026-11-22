@@ -87,8 +87,8 @@ describe('the catalogue for this device', () => {
     const page = await render()
     expect(page.querySelector('[data-title]')?.textContent).toBe('Add an app to pi-kitchen')
     const files = offer(page, 'remoteit.files')
-    expect(files.querySelector('[data-catalog-publisher]')?.textContent).toBe('remote.it')
-    expect(files.querySelector('[data-catalog-runs]')?.textContent).toBe('Restricted')
+    expect(files.querySelector('[data-catalog-publisher]')?.textContent).toBe('By remote.it')
+    expect(files.querySelector('[data-catalog-runs]')).toBeNull()
     expect(files.querySelector('[data-catalog-description]')?.textContent).toBe('Browse a folder')
     await click(files.querySelector('[data-available-add]'))
     expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.files', enabled: false }), true)
@@ -109,10 +109,10 @@ describe('the catalogue for this device', () => {
       available({ id: 'acme.new', name: 'New', needsNewer: true }),
     ]
     const page = await render()
-    expect(offer(page, 'acme.agent').querySelector('[data-catalog-runs]')?.textContent).toBe('Runs as root: full control of the device')
+    expect(offer(page, 'acme.agent').querySelector('[data-catalog-runs]')?.textContent).toBe('Needs full control of the device')
     expect(offer(page, 'acme.off').querySelector('[data-available-why]')?.textContent).toMatch(/apps_control off/)
     expect((offer(page, 'acme.off').querySelector('[data-available-add]') as HTMLButtonElement).disabled).toBe(true)
-    expect(offer(page, 'acme.none').querySelector('[data-available-why]')?.textContent).toBe('No release of it here yet')
+    expect(offer(page, 'acme.none').querySelector('[data-available-why]')?.textContent).toBe('Not available yet')
     expect(offer(page, 'acme.new').querySelector('[data-available-newer]')).not.toBeNull()
     expect((offer(page, 'acme.new').querySelector('[data-available-add]') as HTMLButtonElement).disabled).toBe(false)
     await click(offer(page, 'acme.agent').querySelector('[data-available-add]'))
@@ -154,7 +154,7 @@ describe('the catalogue for this device', () => {
     act(() => root.unmount())
     apps.value.available = []
     page = await render()
-    expect(page.querySelector('[data-catalog-empty]')?.textContent).toBe('There is no app this device does not have already.')
+    expect(page.querySelector('[data-catalog-empty]')?.textContent).toBe('This device already has every app available to it.')
   })
 
   it('what each asks of remote.it, as graphql gives it for the release offered, beside Runs as root — and named in the consent', async () => {
@@ -171,13 +171,13 @@ describe('the catalogue for this device', () => {
     ]
     const page = await render()
     expect(offer(page, 'acme.shell').querySelector('[data-catalog-capabilities]')?.textContent).toBe(
-      'Keeps accounts for the people you share with · Signs in people by remote.it certificate'
+      'Keeps accounts for the people you share with · Signs people in with their Remote.It certificate'
     )
     expect(offer(page, 'remoteit.files').querySelector('[data-catalog-capabilities]')).toBeNull()
     await click(offer(page, 'acme.shell').querySelector('[data-available-add]'))
     expect([...page.querySelectorAll('[data-confirm] [data-app-capability]')].map(c => c.textContent)).toEqual([
       '· Keeps accounts for the people you share with',
-      '· Signs in people by remote.it certificate',
+      '· Signs people in with their Remote.It certificate',
     ])
     await click(page.querySelector('[data-confirm-ok]'))
     expect(turn).toHaveBeenCalledWith(

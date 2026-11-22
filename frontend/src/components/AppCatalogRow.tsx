@@ -1,14 +1,13 @@
 import React from 'react'
 import { AppIcon } from './AppIcon'
 import { useTranslation } from 'react-i18next'
-import { Box, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
-import { capabilitiesLine } from '../helpers/appsHelper'
+import { Box, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, useMediaQuery, useTheme } from '@mui/material'
+import { appName, appPurpose, capabilitiesLine, needsLine } from '../helpers/appsHelper'
 
-/* One app in the catalogue (presence-server docs/device-apps-design.md, "The Apps pages"): its name, its publisher with
-   Verified: <domain> and Yours for the account's own, Runs as root or Restricted and what else it asks of remote.it
-   (its capabilities, in words), its icon (its own, else from how its service opens), its description, its platforms and
-   what is said beside them (how many devices have it, or why this device cannot take it). The row opens the app;
-   its action (Add…) sits at its end. */
+/* One app in the catalogue (presence-server docs/device-apps-design.md, "The Apps pages"): what it does first (its
+   description, else a line from its name and how it opens), then where it runs and what it needs (full control where
+   it runs as root, and its capabilities), then its publisher with Verified: <domain> and Yours for the account's own.
+   The row opens the app; its action sits at its end. */
 export type AppCatalogRowProps = {
   id: string
   name: string
@@ -21,8 +20,8 @@ export type AppCatalogRowProps = {
   icon?: string | null // its own icon's URL (components/AppIcon)
   description?: string | null
   platforms?: string | null // as families
-  aside?: React.ReactNode // beside the platforms: how many devices have it
-  notes?: React.ReactNode // under it: why it cannot be added, a remote.it too old
+  aside?: React.ReactNode // beside the platforms: how many devices have it, or the version offered
+  notes?: React.ReactNode // under it: why it cannot be added, an agent too old
   action?: React.ReactNode
   onOpen?: () => void
 }
@@ -45,72 +44,89 @@ export const AppCatalogRow: React.FC<AppCatalogRowProps> = ({
   onOpen,
 }) => {
   const { t } = useTranslation()
+  const needs = needsLine(t, root)
+  // On a phone the action sits under the words, which would otherwise wrap a few to a line beside it.
+  const narrow = useMediaQuery(useTheme().breakpoints.down('sm'))
+  const beside = narrow ? undefined : action
+  const facts = (
+    <Box sx={{ display: 'flex', columnGap: 1.5, rowGap: 0, flexWrap: 'wrap' }}>
+      {platforms && (
+        <Typography variant="caption" color="textSecondary" data-catalog-platforms>
+          {platforms}
+        </Typography>
+      )}
+      {needs && (
+        <Typography variant="caption" color="warning.main" data-catalog-runs>
+          {needs}
+        </Typography>
+      )}
+      {aside && (
+        <Typography variant="caption" color="textSecondary" data-catalog-aside>
+          {aside}
+        </Typography>
+      )}
+    </Box>
+  )
   const body = (
     <>
-      <ListItemIcon sx={{ alignSelf: 'flex-start', marginTop: 0.5 }}>
-        <AppIcon icon={icon} protocol={protocol} size="md" />
+      <ListItemIcon sx={{ alignSelf: 'flex-start', marginTop: 0.75 }}>
+        <AppIcon icon={icon} protocol={protocol} size="lg" />
       </ListItemIcon>
       <ListItemText
         primary={
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'baseline', flexWrap: 'wrap' }}>
-            <span>{name}</span>
-            <Typography variant="caption" color="textSecondary" data-catalog-publisher>
+          <Typography component="span" variant="body1" fontWeight={500}>
+            {appName(t, { id, name })}
+          </Typography>
+        }
+        secondaryTypographyProps={{ component: 'div' }}
+        secondary={
+          <>
+            <Typography
+              variant="body2"
+              component="div"
+              color="grayDarkest.main"
+              sx={{ marginY: 0.25 }}
+              data-catalog-description
+            >
+              {appPurpose(t, { id, name, description, protocol })}
+            </Typography>
+            {facts}
+            {!!capabilities?.length && (
+              <Typography variant="caption" component="div" color="textSecondary" data-catalog-capabilities>
+                {capabilitiesLine(t, capabilities)}
+              </Typography>
+            )}
+            <Typography variant="caption" component="div" color="gray.main" data-catalog-publisher>
               {[
-                publisher,
+                t('deviceApps.publisher', 'By {{publisher}}', { publisher }),
                 verifiedDomain && t('deviceApps.verified', 'Verified: {{domain}}', { domain: verifiedDomain }),
                 own && t('apps.yours', 'Yours'),
               ]
                 .filter(Boolean)
                 .join(' · ')}
             </Typography>
-            <Typography variant="caption" color={root ? 'warning.main' : 'textSecondary'} data-catalog-runs>
-              {root
-                ? t('apps.runsAsRootFull', 'Runs as root: full control of the device')
-                : t('apps.restricted', 'Restricted')}
-            </Typography>
-            {!!capabilities?.length && (
-              <Typography variant="caption" color="textSecondary" data-catalog-capabilities>
-                {capabilitiesLine(t, capabilities)}
-              </Typography>
-            )}
-          </Box>
-        }
-        secondaryTypographyProps={{ component: 'div' }}
-        secondary={
-          <>
-            {description && (
-              <Typography variant="caption" component="div" color="textSecondary" data-catalog-description>
-                {description}
-              </Typography>
-            )}
-            {(platforms || aside) && (
-              <Box sx={{ display: 'flex', gap: 3 }}>
-                {platforms && (
-                  <Typography variant="caption" color="textSecondary" data-catalog-platforms>
-                    {platforms}
-                  </Typography>
-                )}
-                {aside && (
-                  <Typography variant="caption" color="textSecondary" data-catalog-aside>
-                    {aside}
-                  </Typography>
-                )}
+            {notes}
+            {narrow && action && (
+              <Box sx={{ marginTop: 1 }} onClick={event => event.stopPropagation()}>
+                {action}
               </Box>
             )}
-            {notes}
           </>
         }
       />
     </>
   )
   return (
-    <ListItem disablePadding data-catalog-app={id} secondaryAction={action}>
+    <ListItem disablePadding data-catalog-app={id} secondaryAction={beside} sx={{ alignItems: 'flex-start' }}>
       {onOpen ? (
-        <ListItemButton onClick={onOpen} sx={{ paddingRight: action ? '120px !important' : undefined }}>
+        <ListItemButton
+          onClick={onOpen}
+          sx={{ alignItems: 'flex-start', paddingY: 1, paddingRight: beside ? '140px !important' : undefined }}
+        >
           {body}
         </ListItemButton>
       ) : (
-        <Box sx={{ display: 'flex', width: '100%', paddingX: 2, paddingY: 0.5 }}>{body}</Box>
+        <Box sx={{ display: 'flex', width: '100%', paddingX: 2, paddingY: 1 }}>{body}</Box>
       )}
     </ListItem>
   )

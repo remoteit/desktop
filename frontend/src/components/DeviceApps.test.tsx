@@ -159,13 +159,11 @@ const switchOf = (row: HTMLElement) => row.querySelector('[data-app-switch] inpu
 const click = (el: Element | null) => act(async () => (el as HTMLElement).click())
 
 describe('the device’s Apps section', () => {
-  it('a row each app: its name, publisher, Runs as root or Restricted, the version it runs, its state in a word', async () => {
+  it('a row each app: its name (the console as Terminal), its state in a word or two, its publisher', async () => {
     const page = await render(<DeviceApps device={device()} />)
-    expect(appRow(page, 'remoteit.console').textContent).toContain('Console')
-    expect(appRow(page, 'remoteit.console').querySelector('[data-app-about]')?.textContent).toBe(
-      'remote.it · Runs as root · 1.4.0 · Running'
-    )
-    expect(appRow(page, 'acme.backup').querySelector('[data-app-about]')?.textContent).toBe('Acme · Restricted · — · Disabled')
+    expect(appRow(page, 'remoteit.console').textContent).toContain('Terminal')
+    expect(appRow(page, 'remoteit.console').querySelector('[data-app-about]')?.textContent).toBe('Running · By remote.it')
+    expect(appRow(page, 'acme.backup').querySelector('[data-app-about]')?.textContent).toBe('Off · By Acme')
     // Its settings are on its own page now.
     expect(page.querySelector('[data-app-settings]')).toBeNull()
   })
@@ -206,7 +204,7 @@ describe('the device’s Apps section', () => {
   it('removing: listed with its state, no switch and no page', async () => {
     apps.value = { ...apps.value, apps: [{ ...backup(), state: 'removing', version: '1.2.0' }] }
     const page = await render(<DeviceApps device={device()} />)
-    expect(appRow(page, 'acme.backup').querySelector('[data-app-about]')?.textContent).toBe('Acme · Restricted · 1.2.0 · Removing…')
+    expect(appRow(page, 'acme.backup').querySelector('[data-app-about]')?.textContent).toBe('Removing… · By Acme')
     expect(switchOf(appRow(page, 'acme.backup'))).toBeNull()
     expect(appRow(page, 'acme.backup').querySelector('[data-app-open-page]')).toBeNull()
   })
@@ -218,9 +216,9 @@ describe('the device’s Apps section', () => {
     }
     const page = await render(<DeviceApps device={device()} />)
     expect(appRow(page, 'remoteit.console').querySelector('[data-app-held-back="consent"]')?.textContent).toBe(
-      'Held back: A new version needs to run as root'
+      'Not updated: A new version needs to run as root'
     )
-    expect(appRow(page, 'acme.backup').querySelector('[data-app-held-back="pinned"]')?.textContent).toBe('Held back: Pinned to 1.0.0')
+    expect(appRow(page, 'acme.backup').querySelector('[data-app-held-back="pinned"]')?.textContent).toBe('Not updated: Pinned to 1.0.0')
   })
 
   it('an app its product holds: "Managed by its product", its switch held', async () => {
@@ -460,11 +458,11 @@ describe('build step 9: ScreenView installed the old way', () => {
       rootConsent: { by: 'remote.it', email: null, at: '2026-11-13T18:00:00.000Z', version: '1.0.0', via: 'carried' } }
     apps.value = { ...apps.value, apps: [converted], available: [] }
     let page = await render(<DeviceApps device={device()} />)
-    expect(appRow(page, 'remoteit.screenview').querySelector('[data-app-about]')?.textContent).toBe('Acme · Runs as root · — · Converting from the old install')
+    expect(appRow(page, 'remoteit.screenview').querySelector('[data-app-about]')?.textContent).toBe('Converting from the old install · By Acme')
     unmount()
     apps.value = { ...apps.value, apps: [{ ...converted, state: 'running', conversion: null }], available: [] }
     page = await render(<DeviceApps device={device()} />)
-    expect(appRow(page, 'remoteit.screenview').querySelector('[data-app-about]')?.textContent).toBe('Acme · Runs as root · — · Running')
+    expect(appRow(page, 'remoteit.screenview').querySelector('[data-app-about]')?.textContent).toBe('Running · By Acme')
   })
 })
 

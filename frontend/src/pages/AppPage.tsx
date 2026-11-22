@@ -46,7 +46,11 @@ import { AppCapabilities } from '../components/AppRootConsent'
 import {
   allowLine,
   asksConsent,
+  appName,
+  appPurpose,
   capabilitiesLine,
+  needsLine,
+  platformsLine,
   channelName,
   day,
   heldBackLine,
@@ -145,7 +149,7 @@ export const AppPage: React.FC = () => {
               ? t('apps.notInCatalog', 'This app is not one this account may use.')
               : app === UNSERVED
               ? t('apps.catalogUnserved', 'This server does not have the app catalogue yet.')
-              : t('apps.catalogFailed', 'The apps could not be read.')}
+              : t('apps.catalogFailedRetry', 'Couldn’t load apps. Reload the page to try again.')}
           </Notice>
         </Box>
       </Container>
@@ -183,7 +187,7 @@ export const AppPage: React.FC = () => {
       values.consentRoot ? values : { version: values.version }
     )
     setBusy(false)
-    if (refused(answer)) return setRefusal(answer.reason || t('apps.notChanged', 'The app was not changed.'))
+    if (refused(answer)) return setRefusal(answer.reason || t('apps.notChangedRetry', 'Couldn’t change the app. Try again.'))
     setResults(answer)
     setSelected([])
     load()
@@ -201,15 +205,18 @@ export const AppPage: React.FC = () => {
   const toggle = (id: string) => setSelected(now => (now.includes(id) ? now.filter(s => s !== id) : [...now, id]))
 
   return (
-    <Container gutterBottom bodyProps={{ verticalOverflow: true }} header={header(app.name)}>
+    <Container gutterBottom bodyProps={{ verticalOverflow: true }} header={header(appName(t, app))}>
       <Gutters top="sm" data-catalog-app-page={app.id}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
           <AppIcon icon={app.icon} protocol={app.protocol} size="xl" />
           <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="body2" data-app-about>
+            <Typography variant="body1" data-app-description>
+              {appPurpose(t, app)}
+            </Typography>
+            <Typography variant="caption" component="div" color="textSecondary" sx={{ marginTop: 0.5 }} data-app-about>
               {[
-                app.version ?? t('apps.noRelease', 'No release here yet'),
-                app.publisher.name,
+                app.version ? platformsLine(t, app.platforms) : t('apps.noReleaseYet', 'Not available yet'),
+                t('deviceApps.publisher', 'By {{publisher}}', { publisher: app.publisher.name }),
                 app.publisher.verifiedDomain &&
                   t('deviceApps.verified', 'Verified: {{domain}}', { domain: app.publisher.verifiedDomain }),
                 app.publisher.own && t('apps.yours', 'Yours'),
@@ -217,24 +224,19 @@ export const AppPage: React.FC = () => {
                 .filter(Boolean)
                 .join(' · ')}
             </Typography>
-            <Typography variant="body2" color={app.root ? 'warning.main' : 'textSecondary'} data-app-runs>
-              {app.root
-                ? t('apps.runsAsRootFull', 'Runs as root: full control of the device')
-                : t('apps.restricted', 'Restricted')}
-            </Typography>
+            {app.root && (
+              <Typography variant="caption" component="div" color="warning.main" data-app-runs>
+                {needsLine(t, app.root)}
+              </Typography>
+            )}
             {!!app.capabilities.length && (
-              <Typography variant="body2" color="textSecondary" data-app-asks>
+              <Typography variant="caption" component="div" color="textSecondary" data-app-asks>
                 {capabilitiesLine(t, app.capabilities)}
               </Typography>
             )}
-            {app.description && (
-              <Typography variant="body2" color="textSecondary" data-app-description>
-                {app.description}
-              </Typography>
-            )}
-            {!!app.platforms.length && (
-              <Typography variant="caption" color="textSecondary" data-app-platforms>
-                {app.platforms.join(' · ')}
+            {app.version && (
+              <Typography variant="caption" component="div" color="gray.main" data-app-platforms>
+                {t('apps.latestIs', 'Latest version {{version}}', { version: app.version })}
               </Typography>
             )}
             <Box sx={{ display: 'flex', gap: 1, marginTop: 1 }}>
@@ -245,7 +247,7 @@ export const AppPage: React.FC = () => {
                 onClick={() => history.push(`/apps/${app.id}/add`)}
                 data-app-add
               >
-                {t('apps.addEllipsis', 'Add…')}
+                {t('apps.addToDevices', 'Add to devices')}
               </Button>
               {app.publisher.own && (
                 <Button size="small" variant="outlined" onClick={() => history.push('/account/publisher')} data-app-manage>
@@ -337,7 +339,7 @@ export const AppPage: React.FC = () => {
         {!!app.fleet.heldBackBy?.length && (
           <ListItem>
             <Typography variant="caption" color="textSecondary" data-app-fleet-held-by>
-              {t('apps.heldBack', 'Held back: {{reason}}', {
+              {t('apps.heldBack', 'Not updated: {{reason}}', {
                 reason: app.fleet.heldBackBy
                   .map(({ reason, count }) => `${heldBackReason(t, { reason, detail: '' })} (${count})`)
                   .join(' · '),
@@ -512,7 +514,7 @@ export const AppPage: React.FC = () => {
         )}
         <AppCapabilities
           capabilities={updateAsks}
-          title={updateRoot ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+          title={updateRoot ? undefined : t('apps.capabilitiesAsksFor', 'It also asks for')}
         />
       </Confirm>
       <Confirm
@@ -549,7 +551,7 @@ export const AppPage: React.FC = () => {
         {pinNeedsConsent && pinRelease && (
           <AppCapabilities
             capabilities={pinRelease.capabilities}
-            title={pinRelease.root ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+            title={pinRelease.root ? undefined : t('apps.capabilitiesAsksFor', 'It also asks for')}
           />
         )}
         {pinNeedsConsent && pinRelease && (
@@ -599,11 +601,9 @@ const ReleaseRow: React.FC<{
           </Typography>
           <Typography variant="caption" color={release.root ? 'warning.main' : 'textSecondary'} component="div">
             {[
-              release.root
-                ? t('apps.runsAsRootFull', 'Runs as root: full control of the device')
-                : t('apps.restricted', 'Restricted'),
+              needsLine(t, release.root),
               capabilitiesLine(t, release.capabilities),
-              release.platforms.join(' · '),
+              platformsLine(t, release.platforms),
             ]
               .filter(Boolean)
               .join(' · ')}

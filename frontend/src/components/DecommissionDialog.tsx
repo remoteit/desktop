@@ -15,7 +15,7 @@ type Props = {
   onDone?: () => void
 }
 
-/* Decommission: final, so it says what goes and asks for it typed — the device's name, or for several, how many
+/* Delete permanently (graphql's decommission): final, so it says what goes and asks for it typed — the device's name, or for several, how many
    (graphql-api docs/DEVICE-DISABLE.md). Offered only on a disabled device. */
 export const DecommissionDialog: React.FC<Props> = ({ open, devices, onClose, onDone }) => {
   const { t } = useTranslation()
@@ -31,9 +31,9 @@ export const DecommissionDialog: React.FC<Props> = ({ open, devices, onClose, on
   }, [open])
 
   const lost = [
-    { icon: 'clock-rotate-left', text: t('decommission.lostHistory', 'Its history: events, logs and reports') },
-    { icon: 'user-group', text: t('decommission.lostShares', 'Its shares, and the access they give') },
-    { icon: 'sliders', text: t('decommission.lostSettings', 'Its services, settings, tags and scripts') },
+    { icon: 'clock-rotate-left', text: t('decommission.lostHistoryPlain', 'History, events, logs and reports') },
+    { icon: 'user-group', text: t('decommission.lostSharesPlain', 'Shares, and the access they give') },
+    { icon: 'sliders', text: t('decommission.lostSettingsPlain', 'Services, settings, tags and scripts') },
   ]
 
   return (
@@ -41,14 +41,14 @@ export const DecommissionDialog: React.FC<Props> = ({ open, devices, onClose, on
       open={open}
       title={
         single
-          ? t('decommission.title', { name: devices[0]?.name, defaultValue: 'Decommission "{{name}}"?' })
-          : t('decommission.titleCount', {
+          ? t('decommission.deleteTitle', { name: devices[0]?.name, defaultValue: 'Delete "{{name}}" permanently?' })
+          : t('decommission.deleteTitleCount', {
               count: devices.length,
-              defaultValue_one: 'Decommission {{count}} device?',
-              defaultValue_other: 'Decommission {{count}} devices?',
+              defaultValue_one: 'Delete {{count}} device permanently?',
+              defaultValue_other: 'Delete {{count}} devices permanently?',
             })
       }
-      action={t('decommission.action', 'Decommission')}
+      action={t('decommission.deleteAction', 'Delete permanently')}
       color="error"
       maxWidth="sm"
       disabled={!matches || destroying}
@@ -61,7 +61,7 @@ export const DecommissionDialog: React.FC<Props> = ({ open, devices, onClose, on
       onDeny={onClose}
     >
       <Notice severity="error" gutterBottom fullWidth>
-        {t('decommission.final', "This can't be undone. Everything the cloud keeps for it goes:")}
+        {t('decommission.finalPlain', 'You can’t undo this. Remote.It deletes everything it keeps for the device.')}
       </Notice>
       <List dense disablePadding>
         {lost.map(item => (
@@ -77,13 +77,13 @@ export const DecommissionDialog: React.FC<Props> = ({ open, devices, onClose, on
       {single && <DeviceRunEffects deviceId={devices[0].id} action="DECOMMISSION" />}
       <Typography variant="body2" gutterBottom>
         {t(
-          'decommission.legacy',
-          'A device running older software keeps checking in until that software is removed, and is refused quietly. A device on current software removes its own key and stops.'
+          'decommission.agentStops',
+          'A current agent removes its own key and stops. An older agent keeps checking in and is refused until you uninstall it.'
         )}
       </Typography>
       <Typography variant="body2" sx={{ marginTop: 2 }}>
         {single
-          ? t('decommission.typeName', { name: expected, defaultValue: 'Type the device name, {{name}}, to confirm.' })
+          ? t('decommission.typeNamePlain', { name: expected, defaultValue: 'Type {{name}} to confirm.' })
           : t('decommission.typeCount', {
               count: devices.length,
               defaultValue_one: 'Type {{count}}, the number of devices, to confirm.',

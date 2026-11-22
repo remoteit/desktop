@@ -26,12 +26,16 @@ import { ColorChip } from '../components/ColorChip'
 import { Timestamp } from '../components/Timestamp'
 import { DataDisplay } from '../components/DataDisplay'
 import { Gutters } from '../components/Gutters'
-import { JobRunPanel, JobRunStatus, useJobRuns, useJobWatch } from '../components/JobRunPanel'
+import { JobRunPanel, useJobRuns, useJobWatch } from '../components/JobRunPanel'
+import { JobRunResult } from '../components/JobRunResult'
 import { radius, spacing } from '../styling'
 
 type Props = {
   showBack?: boolean
 }
+
+// How many of a run's devices show the first lines of their output in the list: each is a read of its own.
+const OUTPUT_PREVIEWS = 20
 
 export const JobDetailPage: React.FC<Props> = () => {
   const { t } = useTranslation()
@@ -160,7 +164,7 @@ export const JobDetailPage: React.FC<Props> = () => {
         {jobsFetching || fetching ? (
           <LoadingMessage />
         ) : (
-          <Notice severity="warning">{t('jobDetailPage.jobNotFound', 'Job not found')}</Notice>
+          <Notice severity="warning">{t('jobDetailPage.runNotFound', 'Couldn’t find this run.')}</Notice>
         )}
       </Container>
     )
@@ -187,7 +191,7 @@ export const JobDetailPage: React.FC<Props> = () => {
             <Box sx={{ flex: 1 }}>
               {isFileMissing ? (
                 <Typography component="span" variant="body2" fontStyle="italic">
-                  {t('jobDetailPage.fileDeleted', 'File Deleted')}&nbsp;
+                  {t('jobDetailPage.scriptDeleted', 'Script deleted')}&nbsp;
                 </Typography>
               ) : (
                 scriptName
@@ -215,10 +219,10 @@ export const JobDetailPage: React.FC<Props> = () => {
             />
             {scriptFileRef && (
               <DeleteButton
-                title={t('jobDetailPage.deleteRun', 'Delete Run')}
+                title={t('jobDetailPage.deleteRunTitle', 'Delete run')}
                 warning={t(
-                  'jobDetailPage.deleteRunWarning',
-                  'This will permanently delete this run and all its results.'
+                  'jobDetailPage.deleteRunWarningPlain',
+                  'This deletes the run and all its results. You can’t undo this.'
                 )}
                 disabled={isActive}
                 onDelete={async () => {
@@ -253,7 +257,7 @@ export const JobDetailPage: React.FC<Props> = () => {
                 onClick={async () => await dispatch.jobs.cancel(job.id)}
                 sx={{ my: 2 }}
               >
-                {t('jobDetailPage.cancelRun', 'Cancel Run')}
+                {t('jobDetailPage.cancelRunButton', 'Cancel run')}
               </Button>
             )}
             <ScriptRunSummary
@@ -265,7 +269,7 @@ export const JobDetailPage: React.FC<Props> = () => {
               files={files}
               runConfigAction={
                 scriptFileRef ? (
-                  <IconButton icon="plus" title={t('jobDetailPage.newRun', 'New Run')} size="md" onClick={handleNewRun} />
+                  <IconButton icon="plus" title={t('jobDetailPage.newRunTitle', 'New run')} size="md" onClick={handleNewRun} />
                 ) : undefined
               }
             />
@@ -277,7 +281,7 @@ export const JobDetailPage: React.FC<Props> = () => {
         <Gutters size="md" bottom={null}>
           <ListItemBack
             to={fileID ? `/script/${fileID}/${jobID}` : `/runs/job/${jobID}`}
-            title={<Typography variant="subtitle2">{t('jobDetailPage.deviceResults', 'DEVICE RESULTS')}</Typography>}
+            title={<Typography variant="subtitle2">{t('jobDetailPage.allDevices', 'All devices')}</Typography>}
           />
           <ListItem
             dense
@@ -315,7 +319,7 @@ export const JobDetailPage: React.FC<Props> = () => {
               <DataDisplay attributes={jobDeviceAttributes} />
             </Box>
           ) : (
-            <Notice fullWidth>{t('jobDetailPage.noReturnValues', 'No return values from this device')}</Notice>
+            <Notice fullWidth>{t('jobDetailPage.noReturnValuesPlain', 'This device returned no values.')}</Notice>
           )}
         </Gutters>
       ) : (
@@ -360,16 +364,29 @@ export const JobDetailPage: React.FC<Props> = () => {
           ) : (
             <>
               <List>
-                {jobDevices.runs.map(jd => (
-                  <ListItemLocation
-                    sx={{ paddingRight: 2 }}
-                    key={jd.id}
-                    to={fileID ? `/script/${fileID}/${jobID}/${jd.id}` : `/runs/job/${jobID}/${jd.id}`}
-                    title={jd.device.name}
-                    subtitle={runs?.[jd.id]?.run ? <JobRunStatus run={runs[jd.id].run} /> : undefined}
-                    icon={<JobStatusIcon status={runs?.[jd.id]?.status || jd.status} device />}
-                  />
-                ))}
+                {jobDevices.runs.map((jd, index) => {
+                  const run = runs?.[jd.id]?.run
+                  return (
+                    <ListItemLocation
+                      sx={{ paddingRight: 2, alignItems: 'flex-start' }}
+                      key={jd.id}
+                      to={fileID ? `/script/${fileID}/${jobID}/${jd.id}` : `/runs/job/${jobID}/${jd.id}`}
+                      title={jd.device.name}
+                      subtitle={
+                        run ? (
+                          <JobRunResult
+                            accountId={accountId}
+                            jobId={job.id}
+                            jobDeviceId={jd.id}
+                            run={run}
+                            preview={index < OUTPUT_PREVIEWS}
+                          />
+                        ) : undefined
+                      }
+                      icon={<JobStatusIcon status={runs?.[jd.id]?.status || jd.status} device />}
+                    />
+                  )
+                })}
               </List>
               {jobDevices.count > 0 && jobDevices.count < jobDevices.total && (
                 <LoadMore

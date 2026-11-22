@@ -30,6 +30,38 @@ export const runsAsLine = (t: TFunction, root: boolean) =>
     ? t('deviceApps.runsAsRoot', 'Runs as root: full control of this device')
     : t('deviceApps.runsRestricted', 'Runs restricted: an account of its own on this device')
 
+// What an app needs of the device, said plainly where it needs more than an account of its own.
+export const needsLine = (t: TFunction, root: boolean) =>
+  root ? t('apps.needsFullControl', 'Needs full control of the device') : undefined
+
+// The terminal app is named for what people use it as.
+export const TERMINAL_APP = 'remoteit.console'
+export const appName = (t: TFunction, app: { id: string; name: string }) =>
+  app.id === TERMINAL_APP ? t('apps.terminalName', 'Terminal') : app.name
+
+/* What an app does: its publisher's description, else a line built only from its name and how it opens, so an app
+   without one is never given claims of ours. */
+export function appPurpose(
+  t: TFunction,
+  app: { id: string; name: string; description?: string | null; protocol?: string | null }
+): string {
+  const said = app.description?.trim()
+  if (said) return said
+  const name = appName(t, app)
+  switch (app.protocol) {
+    case 'http':
+    case 'https':
+      return t('apps.purposeWeb', '{{name}} runs on the device and opens in your browser.', { name })
+    case 'ssh':
+      return t('apps.purposeTerminal', '{{name}} runs on the device and opens as a terminal.', { name })
+    case 'vnc':
+    case 'rdp':
+      return t('apps.purposeScreen', '{{name}} runs on the device and shows its screen.', { name })
+    default:
+      return t('apps.purposeOther', '{{name}} runs on the device.', { name })
+  }
+}
+
 // The same, for a row: Runs as root, or Restricted.
 export const runsAsWord = (t: TFunction, root: boolean) =>
   root ? t('apps.runsAsRoot', 'Runs as root') : t('apps.restricted', 'Restricted')
@@ -42,9 +74,9 @@ export function capabilityWords(t: TFunction, capability: string): string {
     case 'person-accounts':
       return t('apps.capabilityPersonAccounts', 'Keeps accounts for the people you share with')
     case 'person-certificates':
-      return t('apps.capabilityPersonCertificates', 'Signs in people by remote.it certificate')
+      return t('apps.capabilityPersonCertificates', 'Signs people in with their Remote.It certificate')
     case 'ssh-exec':
-      return t('apps.capabilitySshExec', 'AI commands go through this app')
+      return t('apps.capabilitySshExec', 'Lets AI run commands you allow')
     default:
       return capability
   }
@@ -252,8 +284,22 @@ export function platformFamilies(platforms: string[]): string[] {
   return families.filter((family, i) => families.indexOf(family) === i)
 }
 
+const FAMILY_NAMES: ILookup<string> = {
+  linux: 'Linux',
+  'linux-musl': 'Linux (musl)',
+  darwin: 'macOS',
+  windows: 'Windows',
+  freebsd: 'FreeBSD',
+  android: 'Android',
+  ios: 'iOS',
+}
+
 export const platformsLine = (t: TFunction, platforms: string[]) =>
-  platforms.includes('any') ? t('apps.anyPlatform', 'Any platform') : platformFamilies(platforms).join(' · ')
+  platforms.includes('any')
+    ? t('apps.anyPlatform', 'Any platform')
+    : platformFamilies(platforms)
+        .map(family => FAMILY_NAMES[family] ?? family)
+        .join(' · ')
 
 // A time as the person reads it, as Timestamp says a time.
 export function when(at: string) {
@@ -283,7 +329,7 @@ export function consentLine(t: TFunction, consent: DeviceAppRootConsent): string
       // To a release: switched by itself from its old install (ScreenView), which ran as root. To none: from before
       // consents were kept.
       return consent.version
-        ? t('deviceApps.consentedConverted', 'Runs as root, as its old install did: switched to the app by remote.it, {{when}}', words)
+        ? t('deviceApps.consentedConverted', 'Runs as root, as its old install did: switched to the app by Remote.It, {{when}}', words)
         : t('deviceApps.consentedCarried', 'Runs as root, as it did before consents were kept')
     default:
       return t('deviceApps.consented', 'Consented to run as root by {{by}}, {{when}}', words)
@@ -310,7 +356,7 @@ export function allowLine(t: TFunction, root: boolean, product: boolean, publish
 export const heldConsentWords = (t: TFunction, root: boolean) =>
   root
     ? t('apps.heldConsent', 'A new version needs to run as root')
-    : t('apps.heldConsentAsks', 'A new version asks more of remote.it')
+    : t('apps.heldConsentAsks', 'A new version asks for more access')
 // Whether the release a consent is waited for runs as root, as graphql's words for it say (device-apps.ts
 // needsConsentOf: "… needs to run as root", else "… asks for <capabilities>"); none said: as before capabilities did.
 export const heldConsentRoot = (heldBack: Pick<AppHeldBack, 'detail'>) =>
@@ -347,7 +393,7 @@ function withdrawalWords(t: TFunction, app: { detail: string | null }): string {
 
 // Its state as the device says it, with why where it says.
 export function stateLine(t: TFunction, app: Pick<DeviceApp, 'state' | 'detail' | 'root' | 'awaitingRoot'>): string {
-  if (needsNewer(app)) return t('deviceApps.needsNewer', 'Needs a newer remote.it on this device')
+  if (needsNewer(app)) return t('deviceApps.needsNewer', 'Needs a newer agent on this device')
   // Withdrawn, or kept though withdrawn: the words say it all where it cannot run ("Not available here: Its release
   // was withdrawn …" would say it twice); a state that runs or is disabled keeps its word before them.
   const withdrawn = withdrawal(app)
@@ -387,6 +433,45 @@ export function stateLine(t: TFunction, app: Pick<DeviceApp, 'state' | 'detail' 
   }
 }
 
+/* An app's state on a device in a word or two, with what more the device says where it says more: Running, Starting,
+   Off, Not available (Withdrawn where its release was), Needs update, Not allowed, Removing. problem marks a state
+   that keeps it from running while it is on. */
+export function appStatus(
+  t: TFunction,
+  app: Pick<DeviceApp, 'state' | 'detail' | 'root' | 'awaitingRoot'>
+): { word: string; detail?: string; problem?: boolean } {
+  if (needsNewer(app))
+    return {
+      word: t('apps.statusNeedsUpdate', 'Needs update'),
+      detail: t('apps.statusNeedsUpdateDetail', 'Update the agent on this device to run this app.'),
+      problem: true,
+    }
+  if (app.state === 'unavailable' && app.root && ROOT_REFUSED.test(app.detail ?? ''))
+    return {
+      word: t('apps.statusNotAllowed', 'Not allowed'),
+      detail: t('apps.statusRootRefused', 'This device’s administrator does not allow apps that need full control.'),
+      problem: true,
+    }
+  const withdrawn = withdrawal(app)
+  const detail = (withdrawn ? withdrawalWords(t, app) : app.detail?.trim()) || undefined
+  switch (app.state) {
+    case 'running':
+      return { word: t('apps.stateRunning', 'Running'), detail: app.awaitingRoot ? undefined : detail }
+    case 'starting':
+      return { word: t('apps.stateStarting', 'Starting'), detail }
+    case 'unavailable':
+      return {
+        word: withdrawn === 'withdrawn' ? t('apps.stateWithdrawn', 'Withdrawn') : t('apps.stateNotAvailable', 'Not available'),
+        detail,
+        problem: true,
+      }
+    case 'removing':
+      return { word: t('apps.removing', 'Removing…') }
+    default:
+      return { word: t('apps.stateOff', 'Off'), detail }
+  }
+}
+
 // A state in one word, for a row: Running, Starting, Disabled, Unavailable — Withdrawn where its release was —, Removing.
 export function stateWord(t: TFunction, state: string, detail?: string | null): string {
   if (state === 'unavailable' && withdrawal({ detail: detail ?? null }) === 'withdrawn')
@@ -408,7 +493,7 @@ export function stateWord(t: TFunction, state: string, detail?: string | null): 
 // Why it does not run the version its channel gives, in words: graphql's detail where it said one, else the reason's.
 export function heldBackLine(t: TFunction, heldBack: AppHeldBack, pinned?: string | null): string {
   const reason = heldBackReason(t, heldBack, pinned)
-  return t('apps.heldBack', 'Held back: {{reason}}', { reason })
+  return t('apps.heldBack', 'Not updated: {{reason}}', { reason })
 }
 
 export function heldBackReason(t: TFunction, heldBack: AppHeldBack, pinned?: string | null): string {
@@ -419,7 +504,7 @@ export function heldBackReason(t: TFunction, heldBack: AppHeldBack, pinned?: str
       // graphql says what the release waiting asks (device-apps.ts needsConsentOf): running as root, or capabilities.
       return heldConsentWords(t, heldConsentRoot(heldBack))
     case 'daemon':
-      return t('deviceApps.needsNewer', 'Needs a newer remote.it on this device')
+      return t('deviceApps.needsNewer', 'Needs a newer agent on this device')
     default:
       if (heldBack.detail) return heldBack.detail
       switch (heldBack.reason) {

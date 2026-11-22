@@ -1005,7 +1005,7 @@ export default createModel<RootModel>()({
         successMessage: i18n.t('notices:device.virtualMoved', {
           name: device.name,
           gateway: gateway.name,
-          defaultValue: '"{{name}}" is now hosted by {{gateway}}.',
+          defaultValue: '"{{name}}" now uses {{gateway}} as its gateway.',
         }),
       })
       return true

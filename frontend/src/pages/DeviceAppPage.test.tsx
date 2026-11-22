@@ -181,55 +181,82 @@ const select = (el: Element | null, value: string) =>
 const enabledSwitch = (page: HTMLElement) => page.querySelector('[data-app-enabled] input') as HTMLInputElement
 
 describe('the app on this device', () => {
-  it('its name, publisher with Verified, how it runs, and the way back to its device', async () => {
-    const page = await render()
+  it('what it does first, its publisher with Verified, what it needs, and the way back to its device', async () => {
+    let page = await render()
     expect(page.querySelector('[data-title]')?.textContent).toBe('Backup')
+    // No description in the catalogue: a line from its name and how it opens, nothing more claimed.
+    expect(page.querySelector('[data-app-purpose]')?.textContent).toBe('Backup runs on the device and opens in your browser.')
     expect(page.querySelector('[data-app-publisher]')?.textContent).toBe('By Acme · Verified: acme.com')
-    expect(page.querySelector('[data-app-runs]')?.textContent).toBe('Runs restricted: an account of its own on this device')
+    // A restricted app needs nothing more of the device: nothing said.
+    expect(page.querySelector('[data-app-runs]')).toBeNull()
     expect(page.querySelector('[data-app-back]')?.getAttribute('data-to')).toBe('/devices/D1/edit')
     expect(catalog).toHaveBeenCalledWith('acme.backup', { accountId: 'A1', releases: 100 })
+    act(() => root.unmount())
+    container.remove()
+    catalog.mockResolvedValue({ ...CATALOG, description: 'Nightly backups to your bucket.' })
+    apps.value.apps = [backup({ root: true })]
+    page = await render()
+    expect(page.querySelector('[data-app-purpose]')?.textContent).toBe('Nightly backups to your bucket.')
+    expect(page.querySelector('[data-app-runs]')?.textContent).toBe('Needs full control of the device')
   })
 
-  it('its state: running, starting, disabled, unavailable with its detail, removing — with no controls then', async () => {
+  it('the console is named Terminal wherever its name is shown; its id and API name stay', async () => {
+    params.appID = 'remoteit.console'
+    apps.value.apps = [backup({ id: 'remoteit.console', name: 'Console', protocol: 'ssh' })]
+    const page = await render()
+    expect(page.querySelector('[data-title]')?.textContent).toBe('Terminal')
+    expect(page.querySelector('[data-app-purpose]')?.textContent).toBe('Terminal runs on the device and opens as a terminal.')
+    expect(catalog).toHaveBeenCalledWith('remoteit.console', expect.anything())
+  })
+
+  it('its state in a word or two beside an On/Off switch, the device’s words under it; removing — with no controls then', async () => {
     let page = await render()
-    expect(text(page, 'state')).toBe('StateRunningEnabled')
+    expect(text(page, 'state')).toBe('RunningOn')
     expect(enabledSwitch(page).checked).toBe(true)
-    for (const [more, words] of [
-      [{ state: 'starting' }, 'Starting — waiting for the device to say so'],
-      [{ enabled: false, state: 'disabled', grantUntil: null }, 'Disabled'],
-      [{ state: 'unavailable', detail: 'No build for linux-mips' }, 'Not available here: No build for linux-mips'],
+    for (const [more, word, detail] of [
+      [{ state: 'starting' }, 'Starting', undefined],
+      [{ enabled: false, state: 'disabled', grantUntil: null }, 'Off', undefined],
+      [{ state: 'unavailable', detail: 'No build for linux-mips' }, 'Not available', 'No build for linux-mips'],
+      [{ state: 'unavailable', detail: 'Needs a newer remote.it on this device' }, 'Needs update', 'Update the agent on this device to run this app.'],
     ] as const) {
       act(() => root.unmount())
       apps.value.apps = [backup(more as any)]
       page = await render()
-      expect(text(page, 'state')).toContain(words)
+      expect(page.querySelector('[data-app-state]')?.textContent).toBe(word)
+      expect(page.querySelector('[data-app-state-detail]')?.textContent).toBe(detail)
     }
+    expect(text(page, 'state')).toContain('On')
     act(() => root.unmount())
     apps.value.apps = [backup({ enabled: false, state: 'removing' })]
     page = await render()
-    expect(text(page, 'state')).toBe('StateRemoving…')
+    expect(text(page, 'state')).toBe('Removing…')
     expect(enabledSwitch(page)).toBeNull()
     expect(row(page, 'channel')).toBeNull()
     expect(row(page, 'settings')).toBeNull()
     expect(page.querySelector('[data-app-remove]')).toBeNull()
   })
 
-  it('its version against the one offered on its channel: up to date', async () => {
-    const page = await render()
-    expect(page.querySelector('[data-app-version-line]')?.textContent).toBe('1.4.0 running · 1.4.0 offered on Stable · up to date')
+  it('its version, under Version: up to date, or the newer one its channel offers', async () => {
+    let page = await render()
+    expect(page.querySelector('[data-app-version-section] [data-app-version-line]')?.textContent).toBe('1.4.0, up to date')
+    act(() => root.unmount())
+    container.remove()
+    apps.value.apps = [backup({ channel: 'beta', release: '1.5.0', upToDate: false })]
+    page = await render()
+    expect(page.querySelector('[data-app-version-line]')?.textContent).toBe('1.4.0 · 1.5.0 on Beta')
   })
 
   it('enabled but not run — turned off by its administrator — is on the device, not running', async () => {
     apps.value.apps = [backup({ state: 'unavailable', detail: 'Turned off on this device by its administrator (acme.backup_control off)', adminControl: 'off' } as Partial<DeviceApp>)]
     const page = await render()
-    expect(page.querySelector('[data-app-version-line]')?.textContent).toBe('1.4.0 on the device · 1.4.0 offered on Stable · up to date')
+    expect(page.querySelector('[data-app-version-line]')?.textContent).toBe('1.4.0 on the device, not running')
   })
 
   it('a disabled app says the version it keeps, and no grant', async () => {
     apps.value.apps = [backup({ enabled: false, state: 'disabled', grantUntil: null, upToDate: false })]
     const page = await render()
-    expect(page.querySelector('[data-app-version-line]')?.textContent).toBe('1.4.0 on the device, disabled')
-    expect(text(page, 'delivery')).toBe('DeliveryNone while disabled')
+    expect(page.querySelector('[data-app-version-line]')?.textContent).toBe('1.4.0, kept on the device while off')
+    expect(text(page, 'delivery')).toBe('DeliveryNone while off')
   })
 })
 
@@ -237,7 +264,7 @@ describe('held back, with why and what releases it', () => {
   it('pinned: Unpin, which unpins (version "")', async () => {
     apps.value.apps = [backup({ pinned: '1.4.0', latest: '1.5.0', upToDate: false, heldBack: { reason: 'pinned', detail: 'Pinned to 1.4.0' } })]
     const page = await render()
-    expect(page.querySelector('[data-app-held-back="pinned"]')?.textContent).toBe('Held back: Pinned to 1.4.0')
+    expect(page.querySelector('[data-app-held-back="pinned"]')?.textContent).toBe('Not updated: Pinned to 1.4.0')
     await click(page.querySelector('[data-app-unpin]'))
     expect(setRelease).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), { version: '' })
   })
@@ -245,7 +272,7 @@ describe('held back, with why and what releases it', () => {
   it('a new version needing root: Update now…, which asks first and moves it with consentRoot alone', async () => {
     apps.value.apps = [backup({ awaitingRoot: '1.5.0', upToDate: false, heldBack: { reason: 'consent', detail: '' } })]
     const page = await render()
-    expect(page.querySelector('[data-app-held-back="consent"]')?.textContent).toBe('Held back: A new version needs to run as root')
+    expect(page.querySelector('[data-app-held-back="consent"]')?.textContent).toBe('Not updated: A new version needs to run as root')
     await click(page.querySelector('[data-app-update-now]'))
     expect(setRelease).not.toHaveBeenCalled()
     expect(page.querySelector('[data-root-consent-update]')?.textContent).toContain('Backup 1.5.0 needs to run as root')
@@ -265,10 +292,10 @@ describe('held back, with why and what releases it', () => {
 
   it('the rest say why, with nothing to press: a daemon too old, no build, the device’s own words', async () => {
     for (const [heldBack, words] of [
-      [{ reason: 'daemon', detail: 'x' }, 'Held back: Needs a newer remote.it on this device'],
-      [{ reason: 'platform', detail: 'No build for linux-mips' }, 'Held back: No build for linux-mips'],
-      [{ reason: 'untrusted', detail: '' }, 'Held back: The device refused its publisher’s signature'],
-      [{ reason: 'pending', detail: '' }, 'Held back: Given, and the device has not said it runs it yet'],
+      [{ reason: 'daemon', detail: 'x' }, 'Not updated: Needs a newer agent on this device'],
+      [{ reason: 'platform', detail: 'No build for linux-mips' }, 'Not updated: No build for linux-mips'],
+      [{ reason: 'untrusted', detail: '' }, 'Not updated: The device refused its publisher’s signature'],
+      [{ reason: 'pending', detail: '' }, 'Not updated: Given, and the device has not said it runs it yet'],
     ] as const) {
       apps.value.apps = [backup({ upToDate: false, heldBack })]
       const page = await render()
@@ -297,7 +324,7 @@ describe('channel and pin', () => {
   it('the channel: the account’s (named), stable or beta, by setDeviceAppRelease — one whose release asks, after the yes', async () => {
     const page = await render()
     const channel = page.querySelector('[data-app-channel]') as HTMLSelectElement
-    expect([...channel.options].map(o => o.textContent)).toEqual(['Account’s (Stable)', 'Stable', 'Beta'])
+    expect([...channel.options].map(o => o.textContent)).toEqual(['Account default (Stable)', 'Stable', 'Beta'])
     await select(channel, 'stable')
     expect(setRelease).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), { channel: 'stable' })
     // Beta gives 1.5.0, which runs as root: asked first, as graphql refuses it without.
@@ -437,7 +464,7 @@ describe('its service, settings, root, delivery and problems', () => {
     catalog.mockResolvedValue({ ...CATALOG, protocol: 'https' })
     let page = await render()
     expect(page.querySelector('[data-app-open]')).toBeNull()
-    expect(text(page, 'service')).toContain('Stopped while the app is disabled: enable it to open it')
+    expect(text(page, 'service')).toContain('Stopped while the app is off. Turn it on to open it.')
     act(() => root.unmount())
     container.remove()
     catalog.mockResolvedValue({ ...CATALOG, protocol: null })
@@ -543,7 +570,7 @@ describe('its service, settings, root, delivery and problems', () => {
     expect(services[0].querySelector('[data-app-port-setting="web_port"]')?.textContent).toBe('Port people connect to')
     expect(services[1].textContent).toContain('Stream · ports 8554, 5004-5005')
     expect(services[1].querySelector('[data-app-service-ports]')?.textContent).toBe(
-      'This connection reaches port 8554 only. All its ports, 8554, 5004-5005, are reached by name on the device subnet.'
+      'This connection reaches port 8554 only. Reach all its ports, 8554, 5004-5005, at the device’s address.'
     )
     expect(services[1].querySelector('[data-app-port-setting="rtsp_port"]')?.textContent).toBe('Port of rtsp')
     // Each port setting edited once: under its service, not again under Settings.
@@ -586,7 +613,7 @@ describe('its service, settings, root, delivery and problems', () => {
     act(() => root.unmount())
     container.remove()
     apps.value.apps = [backup({ hostKey: 'sha256:0f1e' })]
-    expect((await render()).querySelector('[data-host-key]')?.textContent).toBe('Host key sha256:0f1e')
+    expect((await render()).querySelector('[data-host-key]')?.textContent).toBe('sha256:0f1e')
   })
 
   it('what it asks of remote.it beyond running, beside how it runs; nothing for an ordinary app', async () => {
@@ -595,7 +622,7 @@ describe('its service, settings, root, delivery and problems', () => {
     container.remove()
     apps.value.apps = [backup({ root: true, capabilities: ['person-accounts', 'person-certificates', 'ssh-exec'] })]
     expect((await render()).querySelector('[data-app-asks]')?.textContent).toBe(
-      'Keeps accounts for the people you share with · Signs in people by remote.it certificate · AI commands go through this app'
+      'Keeps accounts for the people you share with · Signs people in with their Remote.It certificate · Lets AI run commands you allow'
     )
   })
 
@@ -645,35 +672,88 @@ describe('its service, settings, root, delivery and problems', () => {
   it('the delivery grant’s end; the device’s problems', async () => {
     apps.value.apps = [backup({ problems: [{ name: 'max_size_control', error: 'no-such-setting', detail: 'remoteit.files.max_size_control: no such setting, removed in 1.2.0' }] })]
     const page = await render()
-    expect(text(page, 'delivery')).toMatch(/^DeliveryGranted until .+, renewed by itself$/)
+    expect(text(page, 'delivery')).toMatch(/^DeliveryAllowed until .+, renewed automatically$/)
     expect(page.querySelector('[data-app-problem="max_size_control"]')?.textContent).toBe(
       'remoteit.files.max_size_control: no such setting, removed in 1.2.0'
     )
   })
 })
 
+describe('sections: settings in plain words, Version and Advanced', () => {
+  const setting = (name: string, type: string, label: string, value: any) => ({
+    ...backup().settings[0],
+    name,
+    type,
+    label,
+    default: value,
+    value,
+    choices: null,
+  })
+
+  it('“AI can run commands on this device” first, for an app that lets AI run commands; set by setDeviceAppSetting', async () => {
+    apps.value.apps = [
+      backup({
+        capabilities: ['ssh-exec'],
+        settings: [setting('mode', 'choice', 'Back up', 'nightly'), setting('ai_commands', 'bool', 'Allow AI commands', true)],
+      }),
+    ]
+    const page = await render()
+    const shown = [...row(page, 'settings').querySelectorAll('[data-setting]')].map(el => el.textContent)
+    expect(shown).toEqual(['AI can run commands on this device', 'Back up'])
+    await click(page.querySelector('[data-setting="ai_commands"]'))
+    expect(setSetting).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), 'ai_commands', false)
+  })
+
+  it('an app without that capability keeps its release’s words', async () => {
+    apps.value.apps = [backup({ settings: [setting('ai_commands', 'bool', 'Allow AI commands', true)] })]
+    const page = await render()
+    expect(page.querySelector('[data-setting="ai_commands"]')?.textContent).toBe('Allow AI commands')
+  })
+
+  it('numeric limits sit under Advanced, not Settings', async () => {
+    apps.value.apps = [
+      backup({ settings: [setting('mode', 'choice', 'Back up', 'nightly'), setting('max_detached', 'int', 'Detached commands at once', 8)] }),
+    ]
+    const page = await render()
+    expect(row(page, 'settings').querySelector('[data-setting="max_detached"]')).toBeNull()
+    expect(page.querySelector('[data-app-advanced] [data-setting="max_detached"]')?.textContent).toBe('Detached commands at once')
+  })
+
+  it('no Advanced where there is nothing for it', async () => {
+    expect((await render()).querySelector('[data-app-advanced]')).toBeNull()
+  })
+
+  it('Version holds the version, channel, the version it is kept on and delivery; Advanced the host key', async () => {
+    apps.value.apps = [backup({ hostKey: 'sha256:0f1e' })]
+    const page = await render()
+    const version = page.querySelector('[data-app-version-section]') as HTMLElement
+    for (const name of ['version', 'channel', 'pin', 'delivery']) expect(version.querySelector(`[data-app-row-${name}]`)).not.toBeNull()
+    expect(page.querySelector('[data-app-advanced] [data-host-key]')).not.toBeNull()
+  })
+})
+
 describe('enable, disable and remove', () => {
-  it('the switch and Disable disable at once; Enable on a root app asks first', async () => {
+  it('the switch turns it off at once; on, a root app asks first', async () => {
     let page = await render()
-    await click(page.querySelector('[data-app-toggle]'))
+    await click(enabledSwitch(page))
     expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }), false)
     act(() => root.unmount())
     apps.value.apps = [backup({ root: true, enabled: false, state: 'disabled' })]
     page = await render()
-    expect(page.querySelector('[data-app-toggle]')?.textContent).toBe('Enable')
+    expect(text(page, 'state')).toBe('OffOff')
     await click(enabledSwitch(page))
     expect(turn).toHaveBeenCalledTimes(1)
     await click(page.querySelector('[data-confirm-ok]'))
     expect(turn).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'acme.backup' }), true, true)
   })
 
-  it('Remove… asks, saying its data on the device is deleted; yes removes it and goes back to the device', async () => {
+  it('Remove app… asks, saying its data on the device is deleted; yes removes it and goes back to the device', async () => {
     const page = await render()
     await click(page.querySelector('[data-app-remove]'))
     expect(remove).not.toHaveBeenCalled()
     expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Remove Backup from pi-kitchen?')
     expect(page.querySelector('[data-app-remove-words]')?.textContent).toBe(
-      'Its files and its data on the device are deleted. This cannot be undone.'
+      'This deletes the app’s files and data on the device. You can’t undo this.'
     )
     await click(page.querySelector('[data-confirm-ok]'))
     expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'acme.backup' }))
@@ -693,28 +773,27 @@ describe('enable, disable and remove', () => {
     apps.value.apps = [backup({ locked: { product: 'Kiosks', level: 'enforced' } })]
     const page = await render()
     expect(page.querySelector('[data-app-managed]')?.textContent).toBe('Managed by its product Kiosks')
-    for (const control of ['[data-app-enabled] input', '[data-app-toggle]', '[data-app-remove]', '[data-app-channel]', '[data-app-pin]'])
+    for (const control of ['[data-app-enabled] input', '[data-app-remove]', '[data-app-channel]', '[data-app-pin]'])
       expect((page.querySelector(control) as HTMLInputElement).disabled).toBe(true)
   })
 
-  it('kept local by its administrator: said up front; switch, Disable and Remove greyed — the channel and pin stay', async () => {
+  it('kept local by its administrator: said up front; switch and Remove greyed — the channel and pin stay', async () => {
     apps.value.apps = [backup({ adminControl: 'local' })]
     const page = await render()
     expect(page.querySelector('[data-app-admin="local"]')?.textContent).toBe(
       'Kept local by this device’s administrator: changed on the device only'
     )
-    for (const control of ['[data-app-enabled] input', '[data-app-toggle]', '[data-app-remove]'])
+    for (const control of ['[data-app-enabled] input', '[data-app-remove]'])
       expect((page.querySelector(control) as HTMLInputElement).disabled).toBe(true)
     for (const control of ['[data-app-channel]', '[data-app-pin]'])
       expect((page.querySelector(control) as HTMLSelectElement).disabled).toBe(false)
   })
 
-  it('turned off by its administrator: said; Enable greyed — Remove stays; an enabled one may be disabled', async () => {
+  it('turned off by its administrator: said; turning it on greyed — Remove stays; one still on may be turned off', async () => {
     apps.value.apps = [backup({ adminControl: 'off', enabled: false, state: 'disabled', release: null, serviceId: null, grantUntil: null })]
     let page = await render()
     expect(page.querySelector('[data-app-admin="off"]')?.textContent).toBe('Turned off on this device by its administrator')
     expect(enabledSwitch(page).disabled).toBe(true)
-    expect((page.querySelector('[data-app-toggle]') as HTMLButtonElement).disabled).toBe(true)
     expect((page.querySelector('[data-app-remove]') as HTMLButtonElement).disabled).toBe(false)
     act(() => root.unmount())
     container.remove()
@@ -730,8 +809,7 @@ describe('enable, disable and remove', () => {
     expect(page.querySelector('[data-app-admin]')).toBeNull()
     expect(text(page, 'state')).toContain('Turned off on this device by its administrator (acme.backup_control off)')
     expect(enabledSwitch(page).disabled).toBe(false)
-    expect((page.querySelector('[data-app-toggle]') as HTMLButtonElement).textContent).toBe('Disable')
-    expect((page.querySelector('[data-app-toggle]') as HTMLButtonElement).disabled).toBe(false)
+    expect(enabledSwitch(page).checked).toBe(true)
   })
 
   it('without Scripting: no enable, channel or pin — Disable and Remove stay; without Manage, nothing', async () => {

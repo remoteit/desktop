@@ -65,7 +65,7 @@ export const DuplicateCopies: React.FC<Props> = ({ original, copies, accountId, 
       )}
       {removable && (
         <Button size="small" color="error" disabled={destroying} onClick={() => setRemoving(true)}>
-          {t('duplicateCopies.removeAll', 'Remove all…')}
+          {t('duplicateCopies.deleteAll', 'Delete all permanently…')}
         </Button>
       )}
     </Stack>
@@ -115,16 +115,16 @@ export const DuplicateCopies: React.FC<Props> = ({ original, copies, accountId, 
           defaultValue_one: 'Keep the copy as a new device?',
           defaultValue_other: 'Keep {{count}} copies as new devices?',
         })}
-        action={t('duplicateCopies.keepAction', 'Keep All')}
+        action={t('duplicateCopies.keepCopiesAction', 'Keep copies')}
         maxWidth="sm"
         onConfirm={keepAll}
         onDeny={() => setKeeping(false)}
       >
         <Typography variant="body2">
-          {t('duplicateCopies.keepBody', {
+          {t('duplicateCopies.keepBodyPlain', {
             name: original.name,
             defaultValue:
-              'Each becomes a device of its own: enabled, starting from the setup of {{name}} — its services, tags and product — and taking a licence. {{name}} is unchanged.',
+              'Each copy becomes its own device, set up like {{name}}, and needs a license. {{name}} stays as it is.',
           })}
         </Typography>
       </Confirm>
@@ -143,10 +143,10 @@ export const DuplicateCopies: React.FC<Props> = ({ original, copies, accountId, 
         <Notice severity="warning" gutterTop button={actions}>
           {toggle}
           <em>
-            {t('duplicateCopies.notice', {
+            {t('duplicateCopies.noticePlain', {
               name: original.name,
               defaultValue:
-                'Machines that signed in as {{name}} while it was online, split off as devices of their own. They are disabled — no access, no licence — until you keep or remove them.',
+                'Other machines signed in as {{name}} while it was online. Each is now its own disabled device. Keep it or delete it permanently.',
             })}
           </em>
           {reason && <em data-refusal>{reason}</em>}

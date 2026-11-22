@@ -55,7 +55,7 @@ export const ServiceIndicators: React.FC<Props> = ({ device, services = [], conn
       {/* A gateway: how many virtual devices it hosts that the viewer can see. */}
       {!!device?.hosts && (
         <ColorChip
-          label={t('serviceIndicators.hosts', { count: device.hosts, defaultValue: 'hosts {{count}}' })}
+          label={t('serviceIndicators.gatewayFor', { count: device.hosts, defaultValue: 'gateway for {{count}}' })}
           size="small"
           color="primary"
           onClick={() => history.push(`/devices/${device.id}`)}

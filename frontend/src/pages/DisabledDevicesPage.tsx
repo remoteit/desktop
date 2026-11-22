@@ -72,7 +72,7 @@ export const DisabledDevicesPage: React.FC = () => {
     return (
       <Body center>
         <Typography variant="body2" color="textSecondary">
-          {t('disabledDevicesPage.noManageAccess', 'Disabled devices are seen by those who may manage devices here.')}
+          {t('disabledDevicesPage.needsManage', 'Only people who can manage devices here see disabled devices.')}
         </Typography>
       </Body>
     )
@@ -98,8 +98,8 @@ export const DisabledDevicesPage: React.FC = () => {
           <Gutters bottom="sm">
             <Typography variant="body2" color="textSecondary">
               {t(
-                'disabledDevicesPage.description',
-                'A disabled device serves nothing and is not counted, but keeps its services, shares and settings. Restore it to bring it back as it was, or decommission it to remove it for good.'
+                'disabledDevicesPage.descriptionPlain',
+                'A disabled device serves nothing and doesn’t count toward your plan. It keeps its services, shares and settings. Restore it or delete it permanently.'
               )}
             </Typography>
           </Gutters>
@@ -142,7 +142,7 @@ export const DisabledDevicesPage: React.FC = () => {
                   disabled={!decommissionSelected || destroying}
                   onClick={() => setDecommission(byId(selected))}
                 >
-                  {t('disabledDevicesPage.decommissionSelected', 'Decommission…')}
+                  {t('disabledDevicesPage.deleteSelected', 'Delete permanently…')}
                 </Button>
               )}
             </Stack>
@@ -162,7 +162,7 @@ export const DisabledDevicesPage: React.FC = () => {
         <LoadingMessage />
       ) : failed ? (
         <Notice severity="error" gutterTop>
-          {t('disabledDevicesPage.failed', 'Disabled devices could not be read.')}
+          {t('disabledDevicesPage.failedRetry', 'Couldn’t load disabled devices. Reload the page to try again.')}
         </Notice>
       ) : !rows.length ? (
         <Body center>
@@ -198,7 +198,7 @@ export const DisabledDevicesPage: React.FC = () => {
                   {canDecommission(row) && (
                     <IconButton
                       icon="trash"
-                      title={t('disabledDevicesPage.decommission', 'Decommission…')}
+                      title={t('disabledDevicesPage.deletePermanently', 'Delete permanently…')}
                       disabled={destroying}
                       onClick={() => setDecommission([row])}
                     />

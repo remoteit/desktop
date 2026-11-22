@@ -44,7 +44,7 @@ export const StatusChip: React.FC<Props> = ({ device, service, connections }) =>
 
   const Chip =
     device?.virtual && !device.hostedBy ? (
-      <ColorChip label={t('statusChip.notHosted', 'Not hosted')} size="small" color="warning" />
+      <ColorChip label={t('statusChip.noGateway', 'No gateway')} size="small" color="warning" />
     ) : instance?.license === 'UNLICENSED' ? (
       <ColorChip label={t('statusChip.unlicensed', 'Unlicensed')} size="small" color="warning" />
     ) : instance?.state === 'inactive' ? (

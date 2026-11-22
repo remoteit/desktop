@@ -33,7 +33,7 @@ import { AppChangeResults } from '../components/AppChangeResults'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
 import { AppCapabilities } from '../components/AppRootConsent'
-import { addAsks, adminControlLine, allowLine, asksConsent, channelName } from '../helpers/appsHelper'
+import { addAsks, adminControlLine, allowLine, appName, asksConsent, channelName } from '../helpers/appsHelper'
 
 type Target = 'devices' | 'tag' | 'product'
 
@@ -156,7 +156,7 @@ export const AppAddDialog: React.FC = () => {
       const answer = await graphQLSetDeviceProductApp(product.id, ready.id, 'enabled', release)
       setBusy(false)
       if (answer === true) setProductDone(product.name)
-      else setRefusal((answer !== 'ERROR' && answer.reason) || t('apps.notAdded', 'The app was not added.'))
+      else setRefusal((answer !== 'ERROR' && answer.reason) || t('apps.notAddedRetry', 'Couldn’t add the app. Try again.'))
       return
     }
     const answer = await graphQLAddDeviceApps(ready.id, {
@@ -165,7 +165,7 @@ export const AppAddDialog: React.FC = () => {
       ...release,
     })
     setBusy(false)
-    if (refused(answer)) setRefusal(answer.reason || t('apps.notAdded', 'The app was not added.'))
+    if (refused(answer)) setRefusal(answer.reason || t('apps.notAddedRetry', 'Couldn’t add the app. Try again.'))
     else setResults(answer)
   }
 
@@ -173,7 +173,7 @@ export const AppAddDialog: React.FC = () => {
 
   return (
     <Dialog open onClose={close} fullWidth maxWidth="sm" data-app-add-dialog>
-      <DialogTitle>{t('apps.addTitle', 'Add {{app}}', { app: ready?.name ?? appID })}</DialogTitle>
+      <DialogTitle>{t('apps.addTitle', 'Add {{app}}', { app: ready ? appName(t, ready) : appID })}</DialogTitle>
       <DialogContent>
         {app === undefined ? (
           <LoadingMessage />
@@ -181,7 +181,7 @@ export const AppAddDialog: React.FC = () => {
           <Notice severity="error" fullWidth>
             {app === null
               ? t('apps.notInCatalog', 'This app is not one this account may use.')
-              : t('apps.catalogFailed', 'The apps could not be read.')}
+              : t('apps.catalogFailedRetry', 'Couldn’t load apps. Reload the page to try again.')}
           </Notice>
         ) : done ? (
           <Box data-app-add-results>
@@ -220,7 +220,7 @@ export const AppAddDialog: React.FC = () => {
                   <LoadingMessage />
                 ) : devices === 'ERROR' ? (
                   <Notice severity="error" fullWidth gutterTop>
-                    {t('apps.devicesFailed', 'The devices could not be read.')}
+                    {t('apps.devicesFailedRetry', 'Couldn’t load devices. Try again.')}
                   </Notice>
                 ) : (
                   <List dense sx={{ maxHeight: 280, overflowY: 'auto' }}>
@@ -243,9 +243,9 @@ export const AppAddDialog: React.FC = () => {
                             secondary={
                               why ??
                               (device.has === 'disabled'
-                                ? t('apps.disabledThere', 'Disabled there: adding enables it')
+                                ? t('apps.offThere', 'Off there. Adding turns it on.')
                                 : device.offer?.needsNewer
-                                ? t('apps.needsNewerTick', 'Needs a newer remote.it: it runs once remote.it is upgraded')
+                                ? t('apps.needsNewerAgentTick', 'Needs a newer agent. It starts once the agent is updated.')
                                 : undefined)
                             }
                             secondaryTypographyProps={{ color: why ? 'textSecondary' : 'warning.main' }}
@@ -340,7 +340,7 @@ export const AppAddDialog: React.FC = () => {
                 inputProps={{ 'data-app-add-channel': true }}
               >
                 <option value="">
-                  {t('apps.accountChannelIs', 'Account’s ({{channel}})', {
+                  {t('apps.accountDefaultChannel', 'Account default ({{channel}})', {
                     channel: channelName(t, ready.accountChannel ?? 'stable'),
                   })}
                 </option>
@@ -352,14 +352,14 @@ export const AppAddDialog: React.FC = () => {
                   select
                   size="small"
                   variant="standard"
-                  label={t('apps.pin', 'Pin')}
+                  label={t('apps.keepOn', 'Keep on')}
                   value={version}
                   onChange={e => setVersion(e.target.value)}
                   SelectProps={{ native: true }}
                   InputLabelProps={{ shrink: true }}
                   inputProps={{ 'data-app-add-version': true }}
                 >
-                  <option value="">{t('apps.noPin', 'None')}</option>
+                  <option value="">{t('apps.latestVersion', 'Latest version')}</option>
                   {standing.map(r => (
                     <option key={r.version} value={r.version}>
                       {r.version}
@@ -368,7 +368,7 @@ export const AppAddDialog: React.FC = () => {
                 </TextField>
               ) : (
                 <Button size="small" onClick={() => setPinning(true)} disabled={!standing.length} data-app-add-pin>
-                  {t('apps.pinVersion', 'Pin a version')}
+                  {t('apps.keepOnOneVersion', 'Keep on one version')}
                 </Button>
               )}
             </Box>
@@ -389,7 +389,7 @@ export const AppAddDialog: React.FC = () => {
                   )}
                   <AppCapabilities
                     capabilities={capabilities}
-                    title={root ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+                    title={root ? undefined : t('apps.capabilitiesAsksFor', 'It also asks for')}
                   />
                   <FormControlLabel
                     control={
@@ -460,6 +460,6 @@ function whyNot(t: TFunction, device: AppTarget): string | undefined {
   if (device.has === 'disabled') return
   if (!device.offer) return t('apps.notOffered', 'Not offered to this device: no build for its platform, or not its account’s')
   if (device.offer.refused) return device.offer.refused
-  if (!device.offer.version) return t('deviceApps.noRelease', 'No release of it here yet')
+  if (!device.offer.version) return t('apps.noReleaseYet', 'Not available yet')
 }
 

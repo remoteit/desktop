@@ -479,7 +479,7 @@ export const attributes: Attribute[] = [
   // the device's name (the virtual fields ride on that query while the flag is on).
   new DeviceAttribute({
     id: 'hostedBy',
-    label: 'Hosted by',
+    label: 'Gateway',
     query: 'deviceName',
     defaultWidth: 180,
     details: false, // the details page has its Hosting block
@@ -488,7 +488,7 @@ export const attributes: Attribute[] = [
       device?.virtual
         ? device.hostedBy
           ? gatewayName((key, fallback) => i18n.t(key, { defaultValue: fallback }), device.hostedBy)
-          : i18n.t('hostedBy.notHosted', { defaultValue: 'not hosted' })
+          : i18n.t('hostedBy.noGateway', { defaultValue: 'no gateway' })
         : undefined,
   }),
   // @TODO add attributes to the device model on graphql request

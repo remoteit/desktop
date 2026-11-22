@@ -11,7 +11,7 @@ export const DeviceHosting: React.FC<{ device: IDevice }> = ({ device }) => {
   const { t } = useTranslation()
   return (
     <>
-      <Typography variant="subtitle1">{t('deviceHosting.title', 'Hosting')}</Typography>
+      <Typography variant="subtitle1">{t('deviceHosting.virtualDevice', 'Virtual device')}</Typography>
       <List dense disablePadding>
         <ListItem disableGutters secondaryAction={<StatusChip device={device} />}>
           <ListItemText

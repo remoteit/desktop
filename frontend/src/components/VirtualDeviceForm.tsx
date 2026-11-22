@@ -286,12 +286,12 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
             required
             fullWidth
             variant="filled"
-            label={t('virtualDeviceForm.hostedBy', 'Hosted by')}
+            label={t('virtualDeviceForm.gateway', 'Gateway')}
             value={gatewayId}
             disabled={converting}
             helperText={t(
-              'virtualDeviceForm.hostedByHint',
-              'A device on its network that you manage. Sessions reach it through this device.'
+              'virtualDeviceForm.gatewayHint',
+              'A device you manage on the same network. Connections reach the virtual device through it.'
             )}
             onChange={event => setGatewayId(event.target.value)}
           >
@@ -305,8 +305,8 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
           {!gateways.length && (
             <Notice severity="info" gutterTop>
               {t(
-                'virtualDeviceForm.noGateways',
-                'No device you manage can host one yet. Install remote.it on a device on its network first.'
+                'virtualDeviceForm.noGatewaysYet',
+                'None of your devices can be a gateway yet. Install Remote.It on a device on the same network first.'
               )}
             </Notice>
           )}

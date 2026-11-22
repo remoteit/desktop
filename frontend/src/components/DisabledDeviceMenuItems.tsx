@@ -33,7 +33,7 @@ export const RestoreDisabledMenuItem: React.FC<Props> = ({ device, onClick }) =>
   )
 }
 
-// ... and Decommission…, for its owner or an org admin.
+// ... and Delete permanently…, for its owner or an org admin.
 export const DecommissionMenuItem: React.FC<Props> = ({ device, onClick }) => {
   const { t } = useTranslation()
   const history = useHistory()
@@ -46,7 +46,7 @@ export const DecommissionMenuItem: React.FC<Props> = ({ device, onClick }) => {
         <ListItemIcon>
           <Icon name="trash" size="md" fixedWidth />
         </ListItemIcon>
-        <ListItemText primary={t('disabledDevice.decommission', 'Decommission…')} />
+        <ListItemText primary={t('disabledDevice.deletePermanently', 'Delete permanently…')} />
       </MenuItem>
       <DecommissionDialog
         open={open}

@@ -42,7 +42,7 @@ export const HostedByLine: React.FC<Props> = ({ device, link, inline }) => {
             {t('hostedBy.via', 'via')} {name}
           </>
         ) : (
-          t('hostedBy.notHosted', 'not hosted')
+          t('hostedBy.noGateway', 'no gateway')
         )}
       </Typography>
     </Box>
@@ -54,7 +54,7 @@ export function hostedStateTooltip(t: (key: string, options: any) => string, dev
   if (!device?.virtual) return
   if (!device.hostedBy)
     return t('hostedBy.notHostedTooltip', {
-      defaultValue: 'Not hosted. Choose a gateway in its settings to bring it back online.',
+      defaultValue: 'No gateway. Choose one in its settings to bring it back online.',
     })
   const gateway = gatewayName((key, fallback) => t(key, { defaultValue: fallback }), device.hostedBy)
   return device.hostedBy.state === 'active'

@@ -27,7 +27,7 @@ export const DisableDevice: React.FC<Props> = ({ device, onClick, onCancel }) =>
         <ListItemIcon>
           <Icon name={destroying ? 'spinner-third' : 'ban'} spin={destroying} size="md" fixedWidth />
         </ListItemIcon>
-        <ListItemText primary={t('disableDevice.title', 'Disable Device')} />
+        <ListItemText primary={t('disableDevice.menuTitle', 'Disable device…')} />
       </MenuItem>
       <DisableConfirm
         open={open}
@@ -111,10 +111,10 @@ export const DisableConfirm: React.FC<{
       {!!hosts && (
         <>
           <Typography variant="body2" sx={{ marginTop: 2 }}>
-            {t('disableDevice.hosts', {
+            {t('disableDevice.gatewayFor', {
               count: hosts,
-              defaultValue_one: 'It hosts {{count}} virtual device.',
-              defaultValue_other: 'It hosts {{count}} virtual devices.',
+              defaultValue_one: 'This device is the gateway for {{count}} virtual device.',
+              defaultValue_other: 'This device is the gateway for {{count}} virtual devices.',
             })}
           </Typography>
           <RadioGroup
@@ -127,10 +127,10 @@ export const DisableConfirm: React.FC<{
               sx={{ alignItems: 'flex-start', '& .MuiRadio-root': { marginTop: -0.5 } }}
               label={
                 <ListItemText
-                  primary={t('disableDevice.keepHosted', 'Keep them, not hosted')}
+                  primary={t('disableDevice.keepWithoutGateway', 'Keep them, with no gateway')}
                   secondary={t(
-                    'disableDevice.keepHostedHint',
-                    'They are no longer hosted by it: offline, keeping their services, shares and grants, until you move them to another gateway. Restoring this gateway does not bring them back to it.'
+                    'disableDevice.keepWithoutGatewayHint',
+                    'They go offline and keep their services, shares and grants. Choose another gateway to bring them back.'
                   )}
                 />
               }

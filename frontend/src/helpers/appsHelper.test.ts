@@ -80,11 +80,11 @@ describe('a many-device call’s outcome a device (DeviceAppChange.outcome)', ()
 describe('what an app asks of remote.it, in words', () => {
   it('each capability as the catalogue and the consent say it; one unknown by its name', () => {
     expect(capabilityWords(t, 'person-accounts')).toBe('Keeps accounts for the people you share with')
-    expect(capabilityWords(t, 'person-certificates')).toBe('Signs in people by remote.it certificate')
-    expect(capabilityWords(t, 'ssh-exec')).toBe('AI commands go through this app')
+    expect(capabilityWords(t, 'person-certificates')).toBe('Signs people in with their Remote.It certificate')
+    expect(capabilityWords(t, 'ssh-exec')).toBe('Lets AI run commands you allow')
     expect(capabilityWords(t, 'gpu')).toBe('gpu')
     expect(capabilitiesLine(t, ['person-certificates', 'ssh-exec'])).toBe(
-      'Signs in people by remote.it certificate · AI commands go through this app'
+      'Signs people in with their Remote.It certificate · Lets AI run commands you allow'
     )
     expect(capabilitiesLine(t, [])).toBe('')
   })
@@ -256,7 +256,7 @@ describe('consent, as graphql asks it (app-catalog.ts consentAsked, coversRootAm
       'A new version needs to run as root'
     )
     expect(heldBackReason(t, { reason: 'consent', detail: 'A new version asks for ssh-exec' })).toBe(
-      'A new version asks more of remote.it'
+      'A new version asks for more access'
     )
   })
 })

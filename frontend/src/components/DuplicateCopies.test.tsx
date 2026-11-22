@@ -113,9 +113,9 @@ describe('DuplicateCopies', () => {
     await render()
     await act(async () => button('Keep all').click())
     expect(container.querySelector('[data-confirm]')!.textContent).toContain(
-      'Each becomes a device of its own: enabled, starting from the setup of Pump'
+      'Each copy becomes its own device, set up like Pump'
     )
-    await act(async () => button('Keep All').click())
+    await act(async () => button('Keep copies').click())
     expect(keepDuplicates).toHaveBeenCalledWith({ ids: ['Y1', 'Y2'] })
   })
 
@@ -123,13 +123,13 @@ describe('DuplicateCopies', () => {
     keepDuplicates.mockResolvedValue('Licence limit reached')
     await render()
     await act(async () => button('Keep all').click())
-    await act(async () => button('Keep All').click())
+    await act(async () => button('Keep copies').click())
     expect(container.querySelector('[data-refusal]')!.textContent).toBe('Licence limit reached')
   })
 
-  it('removes all by decommissioning them, then reads the copies again', async () => {
+  it('deletes all permanently (decommissions them), then reads the copies again', async () => {
     await render()
-    await act(async () => button('Remove all…').click())
+    await act(async () => button('Delete all permanently…').click())
     expect(container.querySelector('[data-decommission]')!.getAttribute('data-decommission')).toBe('Y1,Y2')
     await act(async () => button('Decommissioned').click())
     expect(requestDuplicateCopies).toHaveBeenCalledWith('A1', true)
@@ -139,7 +139,7 @@ describe('DuplicateCopies', () => {
     rule.current = (device: any) => device.owner?.id === 'U1'
     await render([copy('Y1'), copy('Y2', { owner: { id: 'U2' }, permissions: ['VIEW'] })])
     expect(button('Keep all')).toBeUndefined()
-    expect(button('Remove all…')).toBeUndefined()
+    expect(button('Delete all permanently…')).toBeUndefined()
   })
 
   it('one copy needs keepDuplicate; several, keepDuplicates', async () => {
@@ -154,7 +154,7 @@ describe('DuplicateCopies', () => {
   it("on the original's page: a notice, open, saying what the copies are", async () => {
     await render(undefined, 'notice')
     expect(container.querySelector('[data-notice]')).not.toBeNull()
-    expect(text()).toContain('Machines that signed in as Pump while it was online')
+    expect(text()).toContain('Other machines signed in as Pump while it was online')
     expect(container.querySelectorAll('[data-duplicate-copies] a')).toHaveLength(2)
   })
 

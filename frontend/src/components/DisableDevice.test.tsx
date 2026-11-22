@@ -52,7 +52,7 @@ describe('DisableConfirm', () => {
   it('a gateway: its virtual devices kept by default, or disabled with it', async () => {
     const gateway = device('g1', { hosts: 2, hostedDevices: [{ name: 'Cam' }, { name: 'NAS' }] as IHostedDevice[] })
     const onConfirm = await render([gateway])
-    expect(document.body.textContent).toMatch(/It hosts 2 virtual devices/)
+    expect(document.body.textContent).toMatch(/This device is the gateway for 2 virtual devices/)
     expect(document.body.textContent).toMatch(/Cam, NAS/)
     await act(async () => button('Disable').click())
     expect(onConfirm).toHaveBeenLastCalledWith(true)
