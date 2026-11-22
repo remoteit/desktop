@@ -6,6 +6,7 @@ import {
   DEVICE_CONTAINER_STATE,
   DEVICE_DOWNLOADS_URL,
 } from '../constants'
+import { CONTAINER_ACCESS_FLAGS } from '../helpers/joinKeyFile'
 import { IPlatform } from '.'
 
 // The remote.it device package (remoteit-device): one-line installs for Linux, macOS and Windows, from the stage's
@@ -18,16 +19,19 @@ export const devicePackagePath = (platform: string) => `/add/${platform}?package
 
 // The container that registers with a code: its key kept in a volume, so it is the same device after it is recreated,
 // and — selfUpdate — taking remote.it's releases itself (the image's R3_DEVICE_SELF_UPDATE), which that volume keeps.
-export function devicePackageContainerCommand(selfUpdate: boolean): string {
-  const lines = [
-    'docker run -d --name remoteit --restart unless-stopped --network host',
-    `-v remoteit-device:${DEVICE_CONTAINER_STATE}`,
-    '-e R3_REGISTRATION_CODE=[CODE]',
-  ]
+// access: an exit and Access, which need the tun device (CONTAINER_ACCESS_FLAGS). name: the device's, else the host's.
+export function devicePackageContainerCommand(selfUpdate: boolean, access = true, name?: string): string {
+  const lines = ['docker run -d --name remoteit --restart unless-stopped --network host']
+  if (access) lines.push(CONTAINER_ACCESS_FLAGS)
+  lines.push(`-v remoteit-device:${DEVICE_CONTAINER_STATE}`, '-e R3_REGISTRATION_CODE=[CODE]')
+  const deviceName = name?.trim()
+  if (deviceName) lines.push(`-e R3_DEVICE_NAME=${shellQuote(deviceName)}`)
   if (selfUpdate) lines.push(`-e ${DEVICE_CONTAINER_SELF_UPDATE_ENV}=1`)
   lines.push(DEVICE_CONTAINER_IMAGE)
   return lines.join(' \\\n  ')
 }
+
+const shellQuote = (value: string) => (/^[\w.@%+=:,/-]+$/.test(value) ? value : `'${value.replace(/'/g, `'\\''`)}'`)
 
 // The command with the registration code in it ([CODE], as every platform's template).
 export function devicePackageCommand(platform: string, selfUpdate = true): string {
@@ -50,15 +54,15 @@ export function withDevicePackage(platform: IPlatform, t: TFunction): IPlatform 
       installation: {
         command: devicePackageContainerCommand(true),
         instructions: t(
-          'devicePackage.whereContainer',
-          'Run it where Docker runs; the volume keeps the device, so it stays the same device when the container is recreated. This page updates when the device registers.'
+          'devicePackage.whereDocker',
+          'Run it on the machine with Docker. The volume keeps the device the same when you recreate the container.'
         ),
       },
     }
   const where =
     platform.id === 'windows'
       ? t('devicePackage.whereWindows', 'Run it in a PowerShell opened as administrator.')
-      : t('devicePackage.whereTerminal', 'Run it in a terminal; it asks for your password to install.')
+      : t('devicePackage.whereTerminalPassword', 'Run it in a terminal. It asks for your password to install.')
   return {
     ...platform,
     override: undefined,
@@ -67,11 +71,7 @@ export function withDevicePackage(platform: IPlatform, t: TFunction): IPlatform 
       command: devicePackageCommand(platform.id),
       instructions: (
         <>
-          {where}{' '}
-          {t(
-            'devicePackage.joins',
-            'A machine already on another remote.it stage keeps it, and joins this one beside it. This page updates when the device registers.'
-          )}
+          {where} {t('devicePackage.pageUpdates', 'This page updates when the device comes online.')}
         </>
       ),
     },

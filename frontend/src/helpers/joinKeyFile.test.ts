@@ -15,6 +15,7 @@ describe('joinKeyContainerCommand', () => {
   it("a device's key: its file mounted read-only and named, no volume — the device is kept in memory", () => {
     expect(lines(joinKeyContainerCommand('device', 'k.txt'))).toEqual([
       'docker run -d --name remoteit --restart unless-stopped --network host',
+      '--cap-add NET_ADMIN --device /dev/net/tun',
       '-e REMOTEIT_JOIN_KEY_FILE=/run/secrets/remoteit_join_key',
       '-v "$PWD/k.txt:/run/secrets/remoteit_join_key:ro"',
       'remoteit/device',
@@ -40,5 +41,14 @@ describe('joinKeyContainerCommand', () => {
 
   it('a device key ignores the ephemeral flag: it never needs a volume', () => {
     expect(joinKeyContainerCommand('device', 'k.txt', true)).toBe(joinKeyContainerCommand('device', 'k.txt'))
+  })
+
+  it('without Access: no NET_ADMIN and no tun device, the rest the same', () => {
+    const off = joinKeyContainerCommand('product', 'k.txt', false, true, false)
+    expect(off).not.toContain('NET_ADMIN')
+    expect(off).not.toContain('/dev/net/tun')
+    expect(joinKeyContainerCommand('product', 'k.txt', false, true)).toBe(
+      off.replace('--network host', '--network host \\\n  --cap-add NET_ADMIN --device /dev/net/tun')
+    )
   })
 })

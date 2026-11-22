@@ -113,6 +113,7 @@ describe('AddDeviceAheadDialog', () => {
       `REMOTEIT_JOIN_KEY=${SECRET}`,
       [
         'docker run -d --name remoteit --restart unless-stopped --network host',
+        '--cap-add NET_ADMIN --device /dev/net/tun', // on by default: an exit and Access
         '-e REMOTEIT_JOIN_KEY_FILE=/run/secrets/remoteit_join_key',
         '-v "$PWD/remoteit-device-join-key-kiosk-4.txt:/run/secrets/remoteit_join_key:ro"',
         'remoteit/device',

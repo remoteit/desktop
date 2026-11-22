@@ -50,6 +50,7 @@ describe('device package installs', () => {
     const on = devicePackageContainerCommand(true).split(' \\\n  ')
     expect(on).toEqual([
       'docker run -d --name remoteit --restart unless-stopped --network host',
+      '--cap-add NET_ADMIN --device /dev/net/tun',
       '-v remoteit-device:/var/lib/remoteit-device',
       '-e R3_REGISTRATION_CODE=[CODE]',
       '-e R3_DEVICE_SELF_UPDATE=1',
@@ -61,6 +62,29 @@ describe('device package installs', () => {
     expect(docker.id).toBe('docker') // its code's type: Docker Container
     expect(docker.override).toBeUndefined() // PlatformAddPage gives it the page with the self-update switch
     expect(docker.installation?.command).toBe(devicePackageContainerCommand(true))
+  })
+
+  it("Docker's command, on by default, lets the device be an exit and use Access; off, it leaves the flags out", () => {
+    expect(devicePackageCommand('docker')).toContain('--cap-add NET_ADMIN --device /dev/net/tun')
+    const off = devicePackageContainerCommand(true, false)
+    expect(off).not.toContain('NET_ADMIN')
+    expect(off).not.toContain('/dev/net/tun')
+    expect(off.split(' \\\n  ')).toEqual([
+      'docker run -d --name remoteit --restart unless-stopped --network host',
+      '-v remoteit-device:/var/lib/remoteit-device',
+      '-e R3_REGISTRATION_CODE=[CODE]',
+      '-e R3_DEVICE_SELF_UPDATE=1',
+      'remoteit/device',
+    ])
+  })
+
+  it("Docker's command names the device when given a name, quoted for the shell; blank leaves it to the host's", () => {
+    const lines = (name?: string) => devicePackageContainerCommand(false, true, name).split(' \\\n  ')
+    expect(lines('kitchen-pi')).toContain('-e R3_DEVICE_NAME=kitchen-pi')
+    expect(lines('Kitchen Pi')).toContain("-e R3_DEVICE_NAME='Kitchen Pi'")
+    expect(lines("Bob's Pi")).toContain("-e R3_DEVICE_NAME='Bob'\\''s Pi'")
+    expect(lines('  ').join(' ')).not.toContain('R3_DEVICE_NAME')
+    expect(lines().join(' ')).not.toContain('R3_DEVICE_NAME')
   })
 
   it('Home Assistant keeps its own page: the code, pasted into the add-on', () => {

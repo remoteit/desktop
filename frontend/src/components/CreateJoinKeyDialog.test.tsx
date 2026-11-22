@@ -176,6 +176,7 @@ describe('CreateJoinKeyDialog', () => {
     expect(run).toBe(
       [
         'docker run -d --name remoteit --restart unless-stopped --network host',
+        '--cap-add NET_ADMIN --device /dev/net/tun', // on by default: an exit and Access
         '-v remoteit-device:/var/lib/remoteit-device',
         '-e R3_DEVICE_SELF_UPDATE=1', // on by default: the volume keeps each release
         '-e REMOTEIT_JOIN_KEY_FILE=/run/secrets/remoteit_join_key',
