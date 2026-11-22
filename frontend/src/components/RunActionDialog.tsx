@@ -43,6 +43,7 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, plain, 
   const [refusal, setRefusal] = useState<string>()
   const kind = scope === 'device' ? undefined : scope.kind
   const words = kind ? plain ?? plainActionOf(action) : undefined
+  const said = plain ?? plainActionOf(action)
 
   useEffect(() => {
     if (!open) return
@@ -92,22 +93,16 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, plain, 
     <Confirm
       open={open}
       maxWidth="sm"
-      title={
-        words && scope !== 'device'
-          ? plainTitle(t, words, device.name, scope.name)
-          : actionTitle(t, action, device.name, scope === 'device' ? undefined : scope.name)
-      }
-      action={words ? plainActionLabel(t, words) : actionVerb(t, action)}
-      color={action === 'UNDRAIN' || words === 'PAUSE' ? 'primary' : 'error'}
+      title={scope === 'device' ? deviceTitle(t, said, device.name) : plainTitle(t, said, device.name, scope.name)}
+      action={plainActionLabel(t, said)}
+      color={action === 'UNDRAIN' || said === 'PAUSE' ? 'primary' : 'error'}
       disabled={busy || !Array.isArray(effects) || !effects.length || refused || !waitValid}
       onConfirm={act}
       onDeny={onClose}
     >
-      {words && scope !== 'device' && (
-        <Typography variant="body2" gutterBottom data-plain-lead>
-          {plainLead(t, words, device.name)}
-        </Typography>
-      )}
+      <Typography variant="body2" gutterBottom data-plain-lead>
+        {plainLead(t, said, device.name)}
+      </Typography>
       {effects === undefined ? (
         <LoadingMessage />
       ) : effects === 'ERROR' ? (
@@ -124,21 +119,13 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, plain, 
       {forcible && (
         <FormControlLabel
           control={<Checkbox checked={force} onChange={event => setForce(event.target.checked)} />}
-          label={
-            words
-              ? t('carry.forceStop', 'End open connections now')
-              : t('runAction.forceRetire', 'Retire it now, ending whatever is open through it')
-          }
+          label={t('carry.forceStop', 'End open connections now')}
         />
       )}
       {action === 'DRAIN' && (
         <TextField
           type="number"
-          label={
-            words
-              ? t('carry.maxWait', 'Wait for open connections (minutes)')
-              : t('runAction.maxWait', 'Max wait for its connections (minutes)')
-          }
+          label={t('carry.maxWait', 'Wait for open connections (minutes)')}
           value={maxWait}
           error={!waitValid}
           onChange={event => setMaxWait(event.target.value)}
@@ -247,28 +234,12 @@ export const DeviceRunEffects: React.FC<{ deviceId: string; action: 'DELETE' | '
   )
 }
 
-// The dialog's title: on the device in everything it runs, or in one proxy or exit.
-function actionTitle(t: TFunction, action: RunAction, device: string, name?: string): string {
-  if (name)
-    return {
-      DRAIN: t('runAction.drainIn', 'Drain {{device}} in {{name}}?', { device, name }),
-      UNDRAIN: t('runAction.undrainIn', 'Put {{device}} in service in {{name}}?', { device, name }),
-      RETIRE: t('runAction.retireIn', 'Retire {{device}} in {{name}}?', { device, name }),
-      REMOVE: t('runAction.removeFrom', 'Take {{device}} out of {{name}}?', { device, name }),
-    }[action]
+function deviceTitle(t: TFunction, action: PlainAction, device: string): string {
   return {
-    DRAIN: t('runAction.drainAll', 'Drain {{device}} in everything it runs?', { device }),
-    UNDRAIN: t('runAction.undrainAll', 'Put {{device}} back in service in everything it runs?', { device }),
-    RETIRE: t('runAction.retireAll', 'Retire {{device}} in everything it runs?', { device }),
-    REMOVE: t('runAction.removeAll', 'Take {{device}} out of everything it runs?', { device }),
-  }[action]
-}
-
-export function actionVerb(t: TFunction, action: RunAction): string {
-  return {
-    DRAIN: t('runAction.drain', 'Drain'),
-    UNDRAIN: t('runAction.undrain', 'Undrain'),
-    RETIRE: t('runAction.retire', 'Retire'),
-    REMOVE: t('runAction.remove', 'Remove'),
+    PAUSE: t('runAction.drainAll', 'Pause {{device}} in everything it carries?', { device }),
+    RESUME: t('runAction.undrainAll', 'Resume {{device}} in everything it carries?', { device }),
+    APPROVE: t('runAction.undrainAll', 'Resume {{device}} in everything it carries?', { device }),
+    STOP: t('runAction.retireAll', 'Stop {{device}} now in everything it carries?', { device }),
+    REMOVE: t('runAction.removeAll', 'Remove {{device}} from everything it carries?', { device }),
   }[action]
 }

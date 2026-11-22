@@ -4540,28 +4540,18 @@
     "publicName": "Proxy público"
   },
   "runAction": {
-    "drain": "",
     "drainAll": "",
     "drainEverything": "",
-    "drainIn": "",
     "effectsFailed": "",
     "failed": "",
-    "forceRetire": "",
-    "maxWait": "",
     "nothing": "",
-    "remove": "",
     "removeAll": "",
     "removeEverything": "",
-    "removeFrom": "",
-    "retire": "",
     "retireAll": "",
     "retireEverything": "",
-    "retireIn": "",
     "runs": "",
-    "undrain": "",
     "undrainAll": "",
-    "undrainEverything": "",
-    "undrainIn": ""
+    "undrainEverything": ""
   },
   "runDevicePicker": {
     "add_one": "",

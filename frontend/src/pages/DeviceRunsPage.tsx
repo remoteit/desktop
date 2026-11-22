@@ -143,7 +143,7 @@ export const DeviceRunsPage: React.FC = () => {
                   <>
                     {t(
                       'deviceRuns.everythingHint',
-                      'Drain for maintenance, put back, retire or remove. Each action says what it does first.'
+                      'Pause for maintenance, resume, stop now or remove. Each action says what it does first.'
                     )}
                     <RunActions device={named} scope="device" onDone={changed} />
                   </>

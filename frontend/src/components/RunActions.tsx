@@ -84,9 +84,9 @@ export const RunActions: React.FC<Props> = ({ device, scope, run, activation, di
 
 function deviceWideVerb(t: TFunction, action: RunAction) {
   return {
-    DRAIN: t('runAction.drainEverything', 'Drain all'),
-    UNDRAIN: t('runAction.undrainEverything', 'Undrain all'),
-    RETIRE: t('runAction.retireEverything', 'Retire all'),
+    DRAIN: t('runAction.drainEverything', 'Pause all'),
+    UNDRAIN: t('runAction.undrainEverything', 'Resume all'),
+    RETIRE: t('runAction.retireEverything', 'Stop all now'),
     REMOVE: t('runAction.removeEverything', 'Remove from all'),
   }[action]
 }
