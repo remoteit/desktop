@@ -26,10 +26,11 @@ vi.mock('../components/Gutters', () => ({ Gutters: ({ children }: any) => <div>{
 vi.mock('../components/Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{children}</div> }))
 vi.mock('../hooks/useInterval', () => ({ useInterval: () => {} }))
 vi.mock('../components/ListItemSetting', () => ({
-  ListItemSetting: ({ icon, label, subLabel }: any) => (
+  ListItemSetting: ({ icon, label, subLabel, button }: any) => (
     <div data-setting={icon}>
       <span data-label>{label}</span>
       <span data-sublabel>{subLabel}</span>
+      {button && <span data-button>{button}</span>}
     </div>
   ),
 }))
@@ -89,6 +90,15 @@ describe('DeviceAgentPage', () => {
     const row = (await render()).querySelector('[data-setting="microchip"]')!
     expect(row.querySelector('[data-label]')!.textContent).toBe('1.1.0.9')
     expect(row.querySelector('[data-sublabel]')!.textContent).toBe('Up to date')
+  })
+
+  it('opens its details when an update is waiting, and keeps them shut when up to date', async () => {
+    daemon.mockResolvedValue({ ...DAEMON, update: { version: '1.1.0.10', state: 'pending' } })
+    const button = async () => (await render()).querySelector('[data-setting="microchip"] [data-button]')!.textContent
+    expect(await button()).toBe('Hide details')
+    document.body.innerHTML = ''
+    daemon.mockResolvedValue({ ...DAEMON, target: { version: '1.1.0.9', rollback: false } })
+    expect(await button()).toBe('Details')
   })
 
   it('a failed update says so on its one line', async () => {

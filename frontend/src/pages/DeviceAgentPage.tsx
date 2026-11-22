@@ -42,8 +42,14 @@ export const DeviceAgentSection: React.FC = () => {
 
   useEffect(() => {
     setDaemon(undefined)
+    setOpen(false)
     load()
   }, [load])
+
+  const waiting = typeof daemon === 'object' && !!daemon?.update && daemon.update.state !== 'installed'
+  useEffect(() => {
+    if (waiting) setOpen(true)
+  }, [waiting])
 
   useInterval(load, typeof daemon === 'object' && updating(daemon) ? WATCH_INTERVAL : undefined)
 
