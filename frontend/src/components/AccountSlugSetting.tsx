@@ -38,7 +38,7 @@ export const AccountSlugSetting: React.FC<{ accountId?: string }> = ({ accountId
 
   return (
     <List>
-      <ListSubheader>{t('accountSlug.title', 'Device DNS names')}</ListSubheader>
+      <ListSubheader>{t('accountSlug.title', 'Device addresses')}</ListSubheader>
       <InlineTextFieldSetting
         required
         icon="globe"
@@ -70,7 +70,7 @@ export const AccountSlugSetting: React.FC<{ accountId?: string }> = ({ accountId
         <Typography variant="caption" color="textSecondary">
           {t(
             'accountSlug.about',
-            "Every device's DNS name ends in -<slug>. Changing it renames all of them for everyone who reaches them; the old slug keeps working for {{days}} days, then is held from anyone else for six months.",
+            "Every device's address ends in -<slug>. Changing it renames them for everyone. The old slug works for {{days}} days, then stays reserved for six months.",
             { days: FORMER_RESOLVES_DAYS }
           )}
         </Typography>

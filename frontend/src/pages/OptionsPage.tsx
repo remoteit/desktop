@@ -85,7 +85,7 @@ export const OptionsPage: React.FC = () => {
             label={t('options.sshConfig.label', 'Managed SSH config')}
             subLabel={t(
               'options.sshConfig.subLabel',
-              "Allow Remote.it to include it's managed SSH config file for easier access to your devices."
+              "Include the SSH config file Remote.It manages, for easier access to your devices."
             )}
             icon="terminal"
             toggle={!!preferences.sshConfig}
