@@ -1,4 +1,6 @@
 import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
+import { productMaxDevicesServed } from './productMaxDevices'
+import type { ProductOverview } from '../helpers/productStatus'
 
 const SERVICE_FIELDS = 'id name type { id name } host port enabled'
 
@@ -49,6 +51,44 @@ export async function graphQLDeviceProducts(options?: {
         }
       }`,
     options || {}
+  )
+}
+
+// What the products list shows of each: how many devices it has and whether it takes new ones. The device count and
+// maximum are asked for only where the API has them, or the whole read would fail.
+export async function graphQLProductsOverview(accountId?: string): Promise<Record<string, ProductOverview> | 'ERROR'> {
+  const counted = await productMaxDevicesServed()
+  const response = await graphQLBasicRequest(
+    ` query DeviceProductsOverview($accountId: String) {
+        login {
+          account(id: $accountId) {
+            deviceProducts {
+              items {
+                id
+                registrationCode
+                joinKeys { inForce }
+                oneTimeCodes { used revoked expires }
+                ${counted ? 'maxDevices devicesCounted' : ''}
+              }
+            }
+          }
+        }
+      }`,
+    { accountId }
+  )
+  if (response === 'ERROR') return 'ERROR'
+  const items: any[] = response.data?.data?.login?.account?.deviceProducts?.items || []
+  return Object.fromEntries(
+    items.map(item => [
+      item.id,
+      {
+        devices: typeof item.devicesCounted === 'number' ? item.devicesCounted : null,
+        maxDevices: typeof item.maxDevices === 'number' ? item.maxDevices : null,
+        joinKeys: item.joinKeys || [],
+        oneTimeCodes: item.oneTimeCodes || [],
+        registrationCode: !!item.registrationCode,
+      },
+    ])
   )
 }
 

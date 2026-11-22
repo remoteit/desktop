@@ -5,15 +5,15 @@ import { Container } from './Container'
 import { LoadingMessage } from './LoadingMessage'
 import { Title } from './Title'
 import { Gutters } from './Gutters'
-import { ProductOptionMenu } from './ProductOptionMenu'
 
 type Props = {
   product?: IDeviceProduct
+  title: string
   header?: React.ReactNode
   children?: React.ReactNode
 }
 
-export const ProductHeaderMenu: React.FC<Props> = ({ product, header, children }) => {
+export const ProductHeaderMenu: React.FC<Props> = ({ product, title, header, children }) => {
   if (!product) return <LoadingMessage />
 
   return (
@@ -22,13 +22,12 @@ export const ProductHeaderMenu: React.FC<Props> = ({ product, header, children }
       bodyProps={{ verticalOverflow: true, gutterTop: true }}
       header={
         <>
-          <Typography variant="h1" sx={{ alignItems: 'center' }}>
-            <Title>{product.name || 'Unknown'}</Title>
-            <ProductOptionMenu product={product} />
+          <Typography variant="h1">
+            <Title>{title}</Title>
           </Typography>
           <Gutters top={null}>
-            <Typography variant="body2" color="textSecondary">
-              {product.platform?.name || `Platform ${product.platform?.id}`}
+            <Typography variant="body2" color="textSecondary" noWrap>
+              {product.name || 'Unknown'}
             </Typography>
           </Gutters>
           {header}

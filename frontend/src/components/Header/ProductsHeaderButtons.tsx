@@ -8,7 +8,10 @@ import { selectPermissions } from '../../selectors/organizations'
 import { getHasProducts } from '../../selectors/products'
 import { Icon } from '../Icon'
 
-export const ProductsHeaderButtons: React.FC = () => {
+/* The list's own toolbar holds these now (ProductsPage); the header's slot for them stays empty. */
+export const ProductsHeaderButtons: React.FC = () => null
+
+export const ProductsToolbarButtons: React.FC = () => {
   const history = useHistory()
   const location = useLocation()
   const hasProducts = useSelector(getHasProducts)
@@ -26,7 +29,7 @@ export const ProductsHeaderButtons: React.FC = () => {
         to={isSelectMode ? '/products' : '/products/select'}
         icon="check-square"
         type={isSelectMode ? 'solid' : 'regular'}
-        color={isSelectMode ? 'primary' : undefined}
+        color={isSelectMode ? 'primary' : 'grayDarker'}
         title={isSelectMode ? t('header.hideSelect', 'Hide Select') : t('header.showSelect', 'Show Select')}
       />
       <Tooltip title={adminRequired} placement="top" arrow>
@@ -39,7 +42,7 @@ export const ProductsHeaderButtons: React.FC = () => {
             onClick={() => history.push('/products/add')}
             startIcon={<Icon name="plus" />}
           >
-            {t('header.create', 'Create')}
+            {t('productsPage.create', 'Create product')}
           </Button>
         </span>
       </Tooltip>

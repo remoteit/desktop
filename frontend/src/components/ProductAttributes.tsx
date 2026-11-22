@@ -1,8 +1,10 @@
-import { Chip, Typography } from '@mui/material'
+import { Box, Chip, Typography } from '@mui/material'
 import React from 'react'
 import { IP_PRIVATE } from '@common/constants'
+import i18n from '../i18n'
 import { Attribute } from './Attributes'
 import { Timestamp } from './Timestamp'
+import { ProductIntakeChip } from './ProductIntakeChip'
 
 export class ProductAttribute extends Attribute<IDataOptions> {
   type: Attribute['type'] = 'DEVICE'
@@ -22,9 +24,41 @@ export const productAttributes: ProductAttribute[] = [
     label: 'Name',
     required: true,
     defaultWidth: 300,
-    value: ({ product }: IDataOptions) => (
-      <Typography noWrap>{product?.name}</Typography>
+    value: ({ product, productOverview, mobile }: IDataOptions) => (
+      <>
+        <Typography noWrap>{product?.name}</Typography>
+        {mobile && productOverview && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {productOverview.devices != null && (
+              <Typography variant="caption" color="textSecondary" noWrap>
+                {i18n.t('productAttributes.deviceCount', {
+                  count: productOverview.devices,
+                  defaultValue_one: '{{count}} device',
+                  defaultValue_other: '{{count}} devices',
+                })}
+              </Typography>
+            )}
+            <ProductIntakeChip overview={productOverview} />
+          </Box>
+        )}
+      </>
     ),
+  }),
+  new ProductAttribute({
+    id: 'productDevices',
+    label: 'Devices',
+    defaultWidth: 90,
+    value: ({ productOverview }: IDataOptions) => (
+      <Typography variant="body2" color="grayDarker.main" noWrap>
+        {productOverview?.devices ?? '–'}
+      </Typography>
+    ),
+  }),
+  new ProductAttribute({
+    id: 'productIntake',
+    label: 'New devices',
+    defaultWidth: 150,
+    value: ({ productOverview }: IDataOptions) => productOverview && <ProductIntakeChip overview={productOverview} />,
   }),
   new ProductAttribute({
     id: 'productPlatform',

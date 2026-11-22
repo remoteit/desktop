@@ -6,6 +6,7 @@ import { GridList } from './GridList'
 import { Icon } from './Icon'
 import { ProductAttribute } from './ProductAttributes'
 import { ProductListItem } from './ProductListItem'
+import { ProductOverview } from '../helpers/productStatus'
 
 export interface ProductListProps {
   attributes: ProductAttribute[]
@@ -13,6 +14,7 @@ export interface ProductListProps {
   columnWidths: ILookup<number>
   fetching?: boolean
   products?: IDeviceProduct[]
+  overview?: Record<string, ProductOverview>
   select?: boolean
   selected?: string[]
   activeProductId?: string
@@ -24,6 +26,7 @@ export const ProductList: React.FC<ProductListProps> = ({
   attributes,
   required,
   products = [],
+  overview,
   columnWidths,
   fetching,
   select,
@@ -57,6 +60,7 @@ export const ProductList: React.FC<ProductListProps> = ({
         <ProductListItem
           key={product.id}
           product={product}
+          overview={overview?.[product.id]}
           required={required}
           attributes={attributes}
           mobile={mobile}

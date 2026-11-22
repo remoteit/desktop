@@ -48,17 +48,14 @@ export const ProductSettingsPage: React.FC = () => {
     return (
       <Container gutterBottom>
         <Typography variant="h2" gutterBottom sx={{ marginTop: 2 }}>
-          Product not found
+          {t('productPage.productNotFound', 'Product not found')}
         </Typography>
       </Container>
     )
   }
 
-  // Join keys and one-time codes first: they are how a product registers devices. Reusable codes follow for the
-  // products that still have them; a new product has none, and so no registration command. Then whether its devices are
-  // persistent or ephemeral, read with the credentials, and how many it may hold, read on its own where the API has it.
   return (
-    <ProductHeaderMenu product={product}>
+    <ProductHeaderMenu product={product} title={t('productSettingsPage.title', 'Join keys and settings')}>
       <Gutters>
         {product.registrationWarning && (
           <Notice severity="warning" fullWidth gutterBottom>
@@ -77,12 +74,14 @@ export const ProductSettingsPage: React.FC = () => {
         {product.registrationCode && (
           <Box sx={{ marginTop: detailed ? 3 : 0 }}>
             <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-              {registrationCommand ? 'Registration Command' : 'Registration Code'}
+              {registrationCommand
+                ? t('productSettingsPage.registrationCommand', 'Older registration command')
+                : t('productSettingsPage.registrationCode', 'Older registration code')}
             </Typography>
             <Typography variant="body2" color="textSecondary" gutterBottom sx={{ marginBottom: 2 }}>
               {registrationCommand
-                ? 'Use this command to register devices with this product configuration:'
-                : 'Use this registration code to register devices with this product configuration:'}
+                ? t('productSettingsPage.registrationCommandHelp', 'Devices installed with this command join this product.')
+                : t('productSettingsPage.registrationCodeHelp', 'Devices installed with this code join this product.')}
             </Typography>
             <CopyCodeBlock
               value={registrationCommand || product.registrationCode}
@@ -101,7 +100,7 @@ export const ProductSettingsPage: React.FC = () => {
       <ProductRevokedCodes product={product} />
       <Gutters>
         <Typography variant="subtitle2" color="textSecondary" gutterBottom sx={{ marginTop: 3 }}>
-          Details
+          {t('productSettingsPage.details', 'Details')}
         </Typography>
         <DataDisplay product={product} attributes={productDetailAttributes} />
       </Gutters>

@@ -60,11 +60,8 @@ export const ProductTransferPage: React.FC = () => {
   }
 
   return (
-    <ProductHeaderMenu product={product}>
-      <Gutters size="md" bottom={null}>
-        <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-          {t('productTransferPage.title', 'Transfer Product')}
-        </Typography>
+    <ProductHeaderMenu product={product} title={t('productTransferPage.title', 'Transfer product')}>
+      <Gutters bottom={null}>
         <ContactSelector contacts={contacts} selected={selected ? [selected] : []} onSelect={handleChange} isMulti={false} />
       </Gutters>
       <Gutters>
@@ -81,9 +78,9 @@ export const ProductTransferPage: React.FC = () => {
           )}
         </Typography>
       </Gutters>
-      <Gutters top="xl">
+      <Gutters top="lg">
         <Button color="primary" onClick={() => setOpen(true)} disabled={!selected || transferring} variant="contained">
-          {transferring ? t('productTransferPage.transferring', 'Transferring...') : t('productTransferPage.transfer', 'Transfer')}
+          {transferring ? t('productTransferPage.transferring', 'Transferring...') : t('productTransferPage.transfer', 'Transfer product')}
         </Button>
         <Button disabled={transferring} onClick={onCancel}>
           {t('productTransferPage.cancel', 'Cancel')}
@@ -98,7 +95,7 @@ export const ProductTransferPage: React.FC = () => {
         onDeny={() => setOpen(false)}
         color="error"
         title={t('common.areYouSure', 'Are you sure?')}
-        action={t('productTransferPage.transfer', 'Transfer')}
+        action={t('productTransferPage.transfer', 'Transfer product')}
       >
         <Notice severity="error" gutterBottom fullWidth>
           {t('productTransferPage.loseAccessWarning', 'You will lose all access and control of this product upon transfer.')}
