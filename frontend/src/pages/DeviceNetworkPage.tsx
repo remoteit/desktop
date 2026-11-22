@@ -1,13 +1,12 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useHistory, useParams } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Box,
+  Button,
   Chip,
   List,
-  ListItem,
-  ListItemText,
   ListSubheader,
   MenuItem,
   TextField,
@@ -17,71 +16,76 @@ import {
 } from '@mui/material'
 import {
   NetworkMember,
-  graphQLAddNetworkDevice,
-  graphQLListNetworkService,
-  graphQLRemoveNetworkDevice,
-  graphQLCreateNetworkDeviceRule,
-  graphQLRemoveNetworkDeviceRule,
-  graphQLUpdateNetworkDeviceRule,
   NetworkRule,
+  Reached,
   RoleAccess,
   AccountAccess,
-  graphQLNetworkTag,
   RuleChoices,
-  graphQLSetNetworkShareRole,
   ShareRole,
+  canReach,
+  deviceCount,
   exposes,
-  initiates,
-  roleFor,
+  graphQLAddNetworkDevice,
+  graphQLCreateNetworkDeviceRule,
+  graphQLListNetworkService,
+  graphQLNetworkTag,
+  graphQLRemoveNetworkDevice,
+  graphQLRemoveNetworkDeviceRule,
+  graphQLSetNetworkShareRole,
+  graphQLUpdateNetworkDeviceRule,
+  membershipFor,
+  peopleCount,
+  reachedOf,
+  ruleChoicesFor,
+  ruleReachedOf,
   targeted,
 } from '../services/graphQLDeviceNetworks'
-import { State } from '../store'
+import { Dispatch, State } from '../store'
 import { getAllDevices } from '../selectors/devices'
 import { selectTags } from '../selectors/tags'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { useLabel } from '../hooks/useLabel'
-import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
-import { graphQLRemoveNetworkShare } from '../services/graphQLMutation'
+import { reloadDeviceNetworks, useDeviceNetworks } from '../hooks/useDeviceNetworks'
+import { graphQLDeleteNetwork, graphQLRemoveNetworkShare } from '../services/graphQLMutation'
 import { Link } from '../components/Link'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { IconButton } from '../buttons/IconButton'
+import { DeleteButton } from '../buttons/DeleteButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { DeviceNetworkGraph } from '../components/DeviceNetworkGraph'
+import { devicesText, peopleText, ruleSentence, tagsText } from '../components/DeviceNetworkWords'
 import { NetworkExits } from '../components/NetworkExits'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { spacing } from '../styling'
 
-/* A network of devices (docs/superpowers/specs/2026-09-30-device-sessions-ui-design.md §3): its devices, each an
-   initiator (a switch) and a target as soon as it exposes something — all its services, any port of its own, or
-   services chosen one by one — the people who may connect to it (who reach what its targets expose, as initiators
-   do) with their devices in user mode, and its devices by tag — the owner's, or another account's you administer. A device is added with + and set up in place; one joins only
-   when you manage both it and the network. In place of the network page while the device-sessions flag is on. */
+/* A network of devices: its map, its devices — for each, whether it can reach the devices that can be reached, and
+   how it can be reached — and its people. A device joins only when you manage both it and the network. */
 export const DeviceNetworkPage: React.FC = () => {
   const { t } = useTranslation()
+  const history = useHistory()
+  const dispatch = useDispatch<Dispatch>()
   const { networkID } = useParams<{ networkID?: string }>()
   const { networks, reload } = useDeviceNetworks()
   const devices = useSelector(getAllDevices)
   const [busy, setBusy] = useState(false)
-  // The tab shown — Devices, People or the graph — remembered in this browser for the next network opened.
-  const [view, setView] = useState<NetworkView>(savedView)
-  const choose = (next: NetworkView) => {
-    setView(next)
-    try {
-      localStorage.setItem(VIEW_KEY, next)
-    } catch {
-      // Storage refused (a private window): the choice holds for this visit only.
-    }
-  }
-  // What is being added, and from which account: a device one by one, devices by tag, or another account's heading.
-  const [adding, setAdding] = useState<{ accountId: string; kind: 'device' | 'tag' } | 'account' | false>(false)
+  const [view, setView] = useState<NetworkView>('map')
+  const [adding, setAdding] = useState<{ kind: 'device' | 'tag'; accountId?: string } | 'account' | false>(false)
   const [extra, setExtra] = useState<string[]>([]) // accounts opened to add from, with nothing on the network yet
-  // Which devices the list shows: all, those that initiate, or those that are targets (exposing something).
-  const [show, setShow] = useState<'ALL' | 'INITIATORS' | 'TARGETS'>('ALL')
+  const [show, setShow] = useState<'ALL' | 'REACH' | 'REACHED'>('ALL')
   const tags = useSelector(selectTags)
   const dark = useSelector((state: State) => state.ui.themeDark)
   const accountId = useSelector(selectActiveAccountId)
+  const userId = useSelector((state: State) => state.auth.user?.id)
+
+  useEffect(() => {
+    setView('map')
+    setAdding(false)
+    setExtra([])
+    setShow('ALL')
+  }, [networkID])
 
   const network = Array.isArray(networks) ? networks.find(n => n.id === networkID) : undefined
   if (networks === undefined) return <LoadingMessage />
@@ -89,24 +93,36 @@ export const DeviceNetworkPage: React.FC = () => {
     return (
       <Container gutterBottom header={<Typography variant="h1">{t('deviceNetwork.title', 'Network')}</Typography>}>
         <Gutters>
-          <Notice severity="info" fullWidth>
-            {t('deviceNetwork.none', 'No such network, or it is not shown on this API.')}
+          <Notice severity={networks === 'ERROR' ? 'error' : 'info'} fullWidth>
+            {networks === 'ERROR'
+              ? t('deviceNetwork.readError', 'Couldn’t load this network. Check your connection and try again.')
+              : t(
+                  'deviceNetwork.none',
+                  'This network isn’t here. It may have been deleted, or it is no longer shared with you.'
+                )}
           </Notice>
+          <Button sx={{ marginTop: 2 }} onClick={() => (networks === 'ERROR' ? reload() : history.push('/networks'))}>
+            {networks === 'ERROR'
+              ? t('deviceNetwork.tryAgain', 'Try again')
+              : t('deviceNetwork.back', 'Show all networks')}
+          </Button>
         </Gutters>
       </Container>
     )
 
   const manage = network.permissions.includes('MANAGE')
-  // Its administrators — the owner, the owning account's admins, admin shares — set who holds each tier and its
-  // devices by tag.
   const admin = network.permissions.includes('ADMIN')
+  const owner = network.owner.id === userId
   const link = network.kind === 'LINK'
   const deviceById = new Map(devices.map(device => [device.id, device]))
   const nameOf = (id: string) =>
-    deviceById.get(id)?.name || network.devices.find(member => member.deviceId === id)?.name || id
+    deviceById.get(id)?.name ||
+    network.devices.find(member => member.deviceId === id)?.name ||
+    (network.deviceRules || []).flatMap(rule => rule.named || []).find(device => device.id === id)?.name ||
+    id
   const listed = new Set(network.connections.map(connection => connection.service.id))
-  // The accounts whose devices you may add by tag: the owner's, and others you administer.
   const ruleAccounts = network.ruleAccounts || []
+  const rules = network.deviceRules || []
 
   const act = async (change: () => Promise<unknown>) => {
     setBusy(true)
@@ -114,107 +130,46 @@ export const DeviceNetworkPage: React.FC = () => {
     await reload()
     setBusy(false)
   }
-  // The services of a member the network lists.
   const listedOf = (member: NetworkMember) =>
     network.connections.filter(connection => connection.service.device?.id === member.deviceId).length
+  // Another account's devices are not in your list: their services come with the network.
+  const servicesOf = (member: NetworkMember): ServiceRef[] =>
+    deviceById.get(member.deviceId)?.services || member.services || []
+  const save = (member: NetworkMember, reach: boolean, reached: Reached) =>
+    graphQLAddNetworkDevice(network.id, member.deviceId, membershipFor(reach, reached))
 
-  // A member's choices, saved with the role they make: an initiator when switched on, a target when it exposes
-  // something (all services, any port, or a listed service).
-  const change = (
-    member: NetworkMember,
-    set: { initiator?: boolean; scope?: NetworkMember['scope']; anyPort?: boolean }
-  ) => {
-    const scope = set.scope ?? member.scope
-    const anyPort = set.anyPort ?? (targeted(member) && member.anyPort)
-    const initiator = set.initiator ?? initiates(member)
-    const exposing = scope === 'ALL' || anyPort || (targeted(member) && listedOf(member) > 0)
-    return act(() =>
-      graphQLAddNetworkDevice(network.id, member.deviceId, { role: roleFor(initiator, exposing), scope, anyPort })
-    )
-  }
-  // A service listed or not; the member becomes a target with its first, and stops being one with its last — unless its
-  // product holds the membership: then what the network lists is all that changes.
-  const list = (member: NetworkMember, serviceId: string) =>
+  const setReach = (member: NetworkMember, reach: boolean) =>
+    act(() => save(member, reach, reachedOf(member, listedOf(member))))
+
+  const setReached = (member: NetworkMember, reached: Reached) =>
+    act(async () => {
+      const reach = canReach(member)
+      if (reached === 'NOTHING') {
+        for (const service of servicesOf(member))
+          if (listed.has(service.id)) await graphQLListNetworkService(network.id, service.id, false)
+        return save(member, reach, 'NOTHING')
+      }
+      // Chosen from all services: every service starts chosen, so nothing changes until one is unchosen.
+      if (reached === 'CHOSEN' && !listedOf(member))
+        for (const service of servicesOf(member)) await graphQLListNetworkService(network.id, service.id, true)
+      return save(member, reach, reached)
+    })
+
+  // A chosen service on or off. A device its product holds keeps its role: only what the network lists changes.
+  const setService = (member: NetworkMember, serviceId: string) =>
     act(async () => {
       const listing = !listed.has(serviceId)
       await graphQLListNetworkService(network.id, serviceId, listing)
       if (member.fromProduct) return
-      // What it exposes now, as a target: an initiator's stored scope and any port do not count.
-      const all = targeted(member) && member.scope === 'ALL'
-      const anyPort = targeted(member) && member.anyPort
-      const exposing = all || anyPort || listedOf(member) + (listing ? 1 : -1) > 0
-      const role = roleFor(initiates(member), exposing)
-      if (role !== member.role)
-        await graphQLAddNetworkDevice(network.id, member.deviceId, { role, scope: all ? 'ALL' : 'LISTED', anyPort })
+      const count = listedOf(member) + (listing ? 1 : -1)
+      const next = membershipFor(canReach(member), count > 0 ? 'CHOSEN' : 'NOTHING')
+      if (next.role !== member.role || next.scope !== member.scope || next.anyPort !== member.anyPort)
+        await graphQLAddNetworkDevice(network.id, member.deviceId, next)
     })
-
-  // A target exposing all its services — All services, or Any port, which takes them all with it.
-  const allOn = (member: NetworkMember) => targeted(member) && (member.scope === 'ALL' || member.anyPort)
-  // Another account's devices are not in your list: their services come with the network.
-  const servicesOf = (member: NetworkMember): ServiceRef[] =>
-    deviceById.get(member.deviceId)?.services || member.services || []
-
-  // All services off: every service unlisted, and any port off with it.
-  const setAll = (member: NetworkMember, on: boolean) =>
-    on
-      ? change(member, { scope: 'ALL' })
-      : act(async () => {
-          for (const service of servicesOf(member))
-            if (listed.has(service.id)) await graphQLListNetworkService(network.id, service.id, false)
-          await graphQLAddNetworkDevice(network.id, member.deviceId, {
-            role: roleFor(initiates(member), false),
-            scope: 'LISTED',
-            anyPort: false,
-          })
-        })
-  // Any port on takes all services with it; off leaves them.
-  const setAnyPort = (member: NetworkMember, on: boolean) =>
-    change(member, on ? { scope: 'ALL', anyPort: true } : { anyPort: false })
-  // A service on or off. Off while all are on: the rest are listed one by one, and All services and Any port go off.
-  const setService = (member: NetworkMember, serviceId: string) => {
-    if (!allOn(member)) return list(member, serviceId)
-    return act(async () => {
-      const rest = servicesOf(member).filter(service => service.id !== serviceId)
-      for (const service of rest)
-        if (!listed.has(service.id)) await graphQLListNetworkService(network.id, service.id, true)
-      if (listed.has(serviceId)) await graphQLListNetworkService(network.id, serviceId, false)
-      await graphQLAddNetworkDevice(network.id, member.deviceId, {
-        role: roleFor(initiates(member), rest.length > 0),
-        scope: 'LISTED',
-        anyPort: false,
-      })
-    })
-  }
-
-  // What a member is: an initiator, a target exposing what, or nothing chosen yet.
-  const exposure = (member: NetworkMember) => {
-    if (!exposes(network, member)) return t('deviceNetwork.exposesNothing', 'Exposes nothing')
-    const parts = [
-      allOn(member)
-        ? t('deviceNetwork.allServices', 'All services')
-        : t('deviceNetwork.listedServices', '{{count}} of {{total}} services', {
-            count: listedOf(member),
-            total: servicesOf(member).length,
-          }),
-    ]
-    if (member.anyPort) parts.push(t('deviceNetwork.anyPort', 'Any port'))
-    return parts.join(' · ')
-  }
-  const summary = (member: NetworkMember) => {
-    const parts: string[] = []
-    if (member.fromProduct) parts.push(t('deviceNetwork.fromProduct', 'From its product'))
-    if (initiates(member)) parts.push(t('deviceNetwork.initiator', 'Initiator'))
-    if (exposes(network, member))
-      parts.push(t('deviceNetwork.targetExposing', 'Target: {{what}}', { what: exposure(member) }))
-    return parts.length ? parts.join(' · ') : t('deviceNetwork.nothingChosen', 'Nothing chosen yet')
-  }
 
   const addable = devices.filter(
     device => device.permissions.includes('MANAGE') && !network.devices.some(member => member.deviceId === device.id)
   )
-  // The network's devices by the account they come from — the owner's first, then each other one — each with its
-  // devices by tag and those added one by one.
-  const rules = network.deviceRules || []
   const ownerOf = (device: IDevice) => device.owner?.id || network.owner.id
   const accountName = (id: string) =>
     ruleAccounts.find(account => account.id === id)?.name ||
@@ -228,9 +183,9 @@ export const DeviceNetworkPage: React.FC = () => {
     ...extra,
   ].filter((id, index, all) => all.indexOf(id) === index)
   const memberShown = (member: NetworkMember) =>
-    show === 'ALL' || (show === 'INITIATORS' ? initiates(member) : exposes(network, member))
+    show === 'ALL' || (show === 'REACH' ? canReach(member) : exposes(network, member))
   const ruleShown = (rule: NetworkRule) =>
-    show === 'ALL' || (show === 'INITIATORS' ? rule.initiator : rule.allServices || rule.anyPort)
+    show === 'ALL' || (show === 'REACH' ? rule.initiator : rule.allServices || rule.anyPort)
   const accounts = accountIds
     .map(id => {
       const members = network.devices
@@ -240,34 +195,18 @@ export const DeviceNetworkPage: React.FC = () => {
       const count = new Set([...groups.flatMap(rule => rule.devices), ...members.map(member => member.deviceId)]).size
       return { id, name: accountName(id), members, rules: groups, count }
     })
-    // Filtered, an account with nothing of that kind is left out.
     .filter(account => show === 'ALL' || account.count > 0 || account.rules.length > 0)
     .sort((a, b) => (a.id === network.owner.id ? -1 : b.id === network.owner.id ? 1 : a.name.localeCompare(b.name)))
-  // Accounts you could add from that are not shown yet: those whose tags you may use, or whose devices you manage.
   const others = [
     ...ruleAccounts.filter(account => account.tags.length).map(account => account.id),
     ...addable.map(ownerOf),
   ].filter((id, index, all) => all.indexOf(id) === index && !accountIds.includes(id))
-  // People shared with on their own: a share whose account is no organization (an organization's is under its heading).
   const individuals = network.access
     .filter(a => !a.organizationName && !network.accountAccess?.some(section => section.accountId === a.user.id))
     .map(a => ({ ...a.user, role: a.role || ('CONNECT' as ShareRole) }))
-  // The tabs' counts: every device on it, listed or by tag; everyone reaching it — its owner, people shared with, and
-  // the members organizations bring in by role.
-  const deviceCount = new Set([
-    ...network.devices.map(member => member.deviceId),
-    ...rules.flatMap(rule => rule.devices),
-  ]).size
-  const peopleCount = new Set([
-    network.owner.id,
-    ...network.access.map(share => share.user.id),
-    ...(network.accountAccess || []).flatMap(section => [
-      section.accountId,
-      ...section.roles.flatMap(role => role.members.map(member => member.id)),
-    ]),
-  ]).size
-  // One colour per account across Devices and People: the devices' accounts in their order, then any other, then
-  // Individuals.
+  const alsoTagged = (deviceId: string) => rules.filter(rule => rule.overridden.includes(deviceId))
+  const empty = !network.devices.length && !rules.length
+  const canAdd = manage && !link && (!!addable.length || ruleAccounts.some(account => account.tags.length))
   const colorOrder = [
     ...accounts.map(account => account.id),
     ...(network.accountAccess || []).map(section => section.accountId),
@@ -275,217 +214,271 @@ export const DeviceNetworkPage: React.FC = () => {
   ].filter((id, index, all) => all.indexOf(id) === index)
   const colorOf = (accountId: string) => colorOrder.indexOf(accountId)
 
+  const startAdding = () => {
+    setView('devices')
+    setShow('ALL')
+    setAdding({ kind: addable.length ? 'device' : 'tag' })
+  }
+
+  const addDevice = (deviceId: string) => {
+    setAdding(false)
+    act(() => graphQLAddNetworkDevice(network.id, deviceId, membershipFor(false, 'NOTHING')))
+  }
+  const addRule = (ruleAccount: string, tag: string) => {
+    setAdding(false)
+    act(() =>
+      graphQLCreateNetworkDeviceRule(network.id, {
+        tags: [tag],
+        accountId: ruleAccount === network.owner.id ? undefined : ruleAccount,
+      })
+    )
+  }
+
+  const tabLabel = (text: string, count?: number) => (
+    <>
+      {text}
+      {count !== undefined && (
+        <Box component="span" sx={{ marginLeft: 0.75, opacity: 0.6 }}>
+          {count}
+        </Box>
+      )}
+    </>
+  )
+
+  const addButton = (
+    <Button
+      variant="contained"
+      size="small"
+      disabled={busy}
+      onClick={startAdding}
+      startIcon={<Icon name="plus" size="sm" inline />}
+    >
+      {t('deviceNetwork.addDevice', 'Add device')}
+    </Button>
+  )
+
   return (
     <Container
       gutterBottom
       bodyProps={{ verticalOverflow: true }}
       header={
-        <Typography variant="h1">
-          <Title>{network.name}</Title>
-          {link && <Chip size="small" label={t('deviceNetwork.link', 'Link')} sx={{ marginLeft: 1 }} />}
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={view}
-            onChange={(_, value) => value && choose(value)}
-            sx={{ marginLeft: 'auto' }}
-          >
-            <ToggleButton value="devices">
-              {t('deviceNetwork.devicesTab', 'Devices {{count}}', { count: deviceCount })}
-            </ToggleButton>
-            <ToggleButton value="people">
-              {t('deviceNetwork.peopleTab', 'People {{count}}', { count: peopleCount })}
-            </ToggleButton>
-            <ToggleButton value="graph">{t('deviceNetwork.graph', 'Graph')}</ToggleButton>
-          </ToggleButtonGroup>
-        </Typography>
-      }
-    >
-      {view === 'graph' ? (
-        <Gutters>
-          <DeviceNetworkGraph network={network} devices={devices} exposure={exposure} />
-        </Gutters>
-      ) : view === 'devices' ? (
-        <List>
-          <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            {t('deviceNetwork.devices', 'Devices')}
+        <>
+          <Typography variant="h1" sx={{ alignItems: 'center', gap: 1 }}>
+            <Title>{network.name}</Title>
+            {link && <Chip size="small" label={t('deviceNetwork.link', 'Link')} />}
+            {canAdd && addButton}
+            {owner && (
+              <DeleteButton
+                title={t('deviceNetwork.delete', 'Delete network')}
+                warning={
+                  <Notice severity="error" fullWidth>
+                    {t('deviceNetwork.deleteWarning', 'Deleting {{name}} removes it for everyone. Its devices stay.', {
+                      name: network.name,
+                    })}
+                  </Notice>
+                }
+                onDelete={async () => {
+                  await graphQLDeleteNetwork(network.id)
+                  await reloadDeviceNetworks(accountId)
+                  dispatch.networks.fetch()
+                  history.push('/networks')
+                }}
+              />
+            )}
+          </Typography>
+          <Box sx={{ paddingX: `${spacing.xl}px`, paddingBottom: 1.5 }}>
             <ToggleButtonGroup
               size="small"
               exclusive
-              value={show}
-              onChange={(_, value) => value && setShow(value)}
-              sx={{ '& .MuiToggleButton-root': { paddingY: 0.25, paddingX: 1.25, fontSize: 11 } }}
+              value={view}
+              onChange={(_, value) => value && setView(value)}
+              sx={{ '& .MuiToggleButton-root': { paddingX: 2 } }}
             >
-              <ToggleButton value="ALL">{t('deviceNetwork.showAll', 'All')}</ToggleButton>
-              <ToggleButton value="INITIATORS">{t('deviceNetwork.showInitiators', 'Initiators')}</ToggleButton>
-              <ToggleButton value="TARGETS">{t('deviceNetwork.showTargets', 'Targets')}</ToggleButton>
+              <ToggleButton value="map">{tabLabel(t('deviceNetwork.mapTab', 'Map'))}</ToggleButton>
+              <ToggleButton value="devices">
+                {tabLabel(t('deviceNetwork.devicesTab', 'Devices'), deviceCount(network))}
+              </ToggleButton>
+              <ToggleButton value="people">
+                {tabLabel(t('deviceNetwork.peopleTab', 'People'), peopleCount(network))}
+              </ToggleButton>
             </ToggleButtonGroup>
-          </ListSubheader>
-          {show !== 'ALL' && !accounts.length && (
-            <Empty
+          </Box>
+        </>
+      }
+    >
+      {view === 'map' ? (
+        empty ? (
+          <EmptyNetwork
+            text={
+              manage
+                ? t('deviceNetwork.emptyManage', 'Add devices to {{name}}. Then choose which can reach the others.', {
+                    name: network.name,
+                  })
+                : t('deviceNetwork.emptyView', 'No devices on this network yet.')
+            }
+            action={canAdd && addButton}
+          />
+        ) : (
+          <Gutters>
+            <DeviceNetworkGraph network={network} devices={devices} />
+          </Gutters>
+        )
+      ) : view === 'devices' ? (
+        <List disablePadding>
+          {adding && adding !== 'account' && !adding.accountId && (
+            <AddPanel
+              kind={adding.kind}
+              devices={addable.map(device => ({
+                id: device.id,
+                name: device.name,
+                account: accountName(ownerOf(device)),
+              }))}
+              tagChoices={ruleAccounts.flatMap(account =>
+                account.tags.map(tag => ({ accountId: account.id, account: account.name, tag }))
+              )}
+              onKind={kind => setAdding({ kind })}
+              onDevice={addDevice}
+              onTag={addRule}
+              onCancel={() => setAdding(false)}
+            />
+          )}
+          {empty ? (
+            <EmptyNetwork
               text={
-                show === 'INITIATORS'
-                  ? t('deviceNetwork.noInitiators', 'No device initiates on this network')
-                  : t('deviceNetwork.noTargets', 'No device is a target on this network')
+                manage
+                  ? t('deviceNetwork.emptyManage', 'Add devices to {{name}}. Then choose which can reach the others.', {
+                      name: network.name,
+                    })
+                  : t('deviceNetwork.emptyView', 'No devices on this network yet.')
+              }
+              action={canAdd && !adding && addButton}
+            />
+          ) : (
+            <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+              {t('deviceNetwork.show', 'Show')}
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                value={show}
+                onChange={(_, value) => value && setShow(value)}
+                sx={{ '& .MuiToggleButton-root': { paddingY: 0.25, paddingX: 1.25, fontSize: 11 } }}
+              >
+                <ToggleButton value="ALL">{t('deviceNetwork.showAll', 'All')}</ToggleButton>
+                <ToggleButton value="REACH">{t('deviceNetwork.showReach', 'Can reach')}</ToggleButton>
+                <ToggleButton value="REACHED">{t('deviceNetwork.showReached', 'Can be reached')}</ToggleButton>
+              </ToggleButtonGroup>
+            </ListSubheader>
+          )}
+          {!empty && show !== 'ALL' && !accounts.length && (
+            <EmptyLine
+              text={
+                show === 'REACH'
+                  ? t('deviceNetwork.noReach', 'No device can reach the others yet.')
+                  : t('deviceNetwork.noReached', 'No device can be reached yet.')
               }
             />
           )}
-          {!network.devices.length && !rules.length && !manage && (
-            <Empty text={t('deviceNetwork.noDevices', 'No devices on this network yet')} />
-          )}
-          {accounts.map(account => {
-            const tagChoices = ruleAccounts.find(choice => choice.id === account.id)?.tags || []
-            const deviceChoices = addable.filter(device => ownerOf(device) === account.id)
-            const open = adding && adding !== 'account' && adding.accountId === account.id ? adding.kind : false
-            return (
-              <React.Fragment key={account.id}>
-                <AccountHeadingBand
-                  icon="building"
-                  name={account.name}
-                  color={accountColor(colorOf(account.id), dark)}
-                  detail={
-                    account.count === 1
-                      ? t('deviceNetwork.groupDevice', '1 device')
-                      : t('deviceNetwork.groupDevices', '{{count}} devices', { count: account.count })
-                  }
-                >
-                  {!link && !!tagChoices.length && (
-                    <IconButton
-                      icon="tag"
-                      title={t('deviceNetwork.addByTag', 'Add devices by tag')}
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => setAdding(open === 'tag' ? false : { accountId: account.id, kind: 'tag' })}
-                    />
-                  )}
-                  {manage && !link && !!deviceChoices.length && (
-                    <IconButton
-                      icon="plus"
-                      title={t('deviceNetwork.addDevice', 'Add a device')}
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => setAdding(open === 'device' ? false : { accountId: account.id, kind: 'device' })}
-                    />
-                  )}
-                </AccountHeadingBand>
-                {open === 'tag' && (
-                  <Gutters>
-                    <TextField
-                      select
-                      fullWidth
-                      size="small"
-                      label={t('deviceNetwork.chooseTag', 'Devices tagged')}
-                      value=""
-                      onChange={event => {
-                        const tag = event.target.value
-                        setAdding(false)
-                        // A group starts with its tag and nothing chosen: its choices are made on its heading.
-                        act(() =>
-                          graphQLCreateNetworkDeviceRule(network.id, {
-                            tags: [tag],
-                            accountId: account.id === network.owner.id ? undefined : account.id,
-                          })
-                        )
-                      }}
-                    >
-                      {tagChoices.map(tag => (
-                        <MenuItem key={tag} value={tag}>
-                          {tag}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Gutters>
-                )}
-                {open === 'device' && (
-                  <Gutters>
-                    <TextField
-                      select
-                      fullWidth
-                      size="small"
-                      label={t('deviceNetwork.chooseDevice', 'Device to add')}
-                      value=""
-                      onChange={event => {
-                        const deviceId = event.target.value
-                        setAdding(false)
-                        // Added exposing nothing and initiating nothing: its choices are made here, in place.
-                        act(() =>
-                          graphQLAddNetworkDevice(network.id, deviceId, {
-                            role: 'TARGET',
-                            scope: 'LISTED',
-                            anyPort: false,
-                          })
-                        )
-                      }}
-                    >
-                      {deviceChoices.map(device => (
-                        <MenuItem key={device.id} value={device.id}>
-                          {device.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Gutters>
-                )}
-                {account.rules.map(rule => (
-                  <TagGroup
-                    key={rule.id}
-                    rule={rule}
-                    tags={rule.accountId === network.owner.id ? tags : []}
-                    choices={tagChoices}
-                    foreign={rule.accountId !== network.owner.id}
-                    deviceById={deviceById}
-                    editable={rule.editable && !link && !busy}
-                    removable={admin && !link && !busy}
-                    onChange={set => act(() => graphQLUpdateNetworkDeviceRule(rule.id, set))}
-                    onRemove={() => act(() => graphQLRemoveNetworkDeviceRule(rule.id))}
-                  />
-                ))}
-                {!!account.members.length && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.75,
-                      paddingX: 2,
-                      paddingY: 1,
-                      paddingLeft: GROUP_INDENT,
-                      borderTop: 1,
-                      borderColor: 'grayLighter.main',
-                      bgcolor: 'grayLightest.main',
-                    }}
+          {!empty &&
+            accounts.map(account => {
+              const tagChoices = ruleAccounts.find(choice => choice.id === account.id)?.tags || []
+              const deviceChoices = addable.filter(device => ownerOf(device) === account.id)
+              const open = adding && adding !== 'account' && adding.accountId === account.id ? adding.kind : false
+              return (
+                <React.Fragment key={account.id}>
+                  <AccountHeadingBand
+                    icon="building"
+                    name={account.name}
+                    color={accountColor(colorOf(account.id), dark)}
+                    detail={devicesText(t, account.count)}
                   >
-                    <Icon name="laptop" size="sm" color="grayDark" />
-                    <Typography variant="body2">{t('deviceNetwork.oneByOne', 'Added one by one')}</Typography>
-                    <Typography variant="caption" color="textSecondary">
-                      ·{' '}
-                      {account.members.length === 1
-                        ? t('deviceNetwork.groupDevice', '1 device')
-                        : t('deviceNetwork.groupDevices', '{{count}} devices', { count: account.members.length })}
-                    </Typography>
-                  </Box>
-                )}
-                {account.members.map(member => (
-                  <MemberRow
-                    key={member.deviceId}
-                    name={nameOf(member.deviceId)}
-                    member={member}
-                    services={servicesOf(member)}
-                    listed={listed}
-                    allOn={allOn(member)}
-                    summary={summary(member)}
-                    editable={manage && !link && !busy}
-                    onInitiator={() => change(member, { initiator: !initiates(member) })}
-                    onAll={() => setAll(member, !allOn(member))}
-                    onAnyPort={() => setAnyPort(member, !(targeted(member) && member.anyPort))}
-                    onService={serviceId => setService(member, serviceId)}
-                    onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
-                  />
-                ))}
-                {!account.members.length && !account.rules.length && (
-                  <Empty text={t('deviceNetwork.noAccountDevices', 'None yet: add devices by tag or one by one')} />
-                )}
-              </React.Fragment>
-            )
-          })}
+                    {manage && !link && !!deviceChoices.length && (
+                      <Button
+                        size="small"
+                        color="inherit"
+                        disabled={busy}
+                        onClick={() => setAdding(open === 'device' ? false : { accountId: account.id, kind: 'device' })}
+                      >
+                        {t('deviceNetwork.addDevice', 'Add device')}
+                      </Button>
+                    )}
+                    {!link && !!tagChoices.length && (
+                      <Button
+                        size="small"
+                        color="inherit"
+                        disabled={busy}
+                        onClick={() => setAdding(open === 'tag' ? false : { accountId: account.id, kind: 'tag' })}
+                      >
+                        {t('deviceNetwork.addByTag', 'Add by tag')}
+                      </Button>
+                    )}
+                  </AccountHeadingBand>
+                  {open && (
+                    <AddPanel
+                      kind={open}
+                      fixed
+                      devices={deviceChoices.map(device => ({ id: device.id, name: device.name }))}
+                      tagChoices={tagChoices.map(tag => ({ accountId: account.id, tag }))}
+                      onKind={kind => setAdding({ kind, accountId: account.id })}
+                      onDevice={addDevice}
+                      onTag={addRule}
+                      onCancel={() => setAdding(false)}
+                    />
+                  )}
+                  {account.rules.map(rule => (
+                    <TagRule
+                      key={rule.id}
+                      rule={rule}
+                      tags={rule.accountId === network.owner.id ? tags : []}
+                      choices={tagChoices}
+                      nameOf={nameOf}
+                      editable={rule.editable && !link && !busy}
+                      removable={admin && !link && !busy}
+                      onChange={set => act(() => graphQLUpdateNetworkDeviceRule(rule.id, set))}
+                      onRemove={() => act(() => graphQLRemoveNetworkDeviceRule(rule.id))}
+                    />
+                  ))}
+                  {!!account.rules.length && !!account.members.length && (
+                    <Box
+                      sx={{
+                        paddingX: 2,
+                        paddingLeft: ROW_INDENT,
+                        paddingY: 0.75,
+                        borderTop: 1,
+                        borderColor: 'grayLighter.main',
+                        bgcolor: 'grayLightest.main',
+                      }}
+                    >
+                      <Typography variant="caption" color="textSecondary">
+                        {t('deviceNetwork.oneByOne', 'Added one by one')}
+                      </Typography>
+                    </Box>
+                  )}
+                  {account.members.map(member => (
+                    <MemberRow
+                      key={member.deviceId}
+                      name={nameOf(member.deviceId)}
+                      member={member}
+                      services={servicesOf(member)}
+                      listed={listed}
+                      listedCount={listedOf(member)}
+                      alsoTagged={alsoTagged(member.deviceId).map(rule => tagsText(t, rule))}
+                      editable={manage && !link && !busy}
+                      onReach={reach => setReach(member, reach)}
+                      onReached={reached => setReached(member, reached)}
+                      onService={serviceId => setService(member, serviceId)}
+                      onRemove={() => act(() => graphQLRemoveNetworkDevice(network.id, member.deviceId))}
+                    />
+                  ))}
+                  {!account.members.length && !account.rules.length && (
+                    <EmptyLine
+                      text={t('deviceNetwork.noAccountDevices', 'No devices from {{account}} yet.', {
+                        account: account.name,
+                      })}
+                    />
+                  )}
+                </React.Fragment>
+              )
+            })}
           {!link && !!others.length && (
             <Box sx={{ paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLight.main' }}>
               {adding === 'account' ? (
@@ -507,30 +500,27 @@ export const DeviceNetworkPage: React.FC = () => {
                   ))}
                 </TextField>
               ) : (
-                <Typography
-                  variant="caption"
-                  color="primary"
-                  sx={{ cursor: 'pointer' }}
-                  onClick={() => setAdding('account')}
-                >
-                  {t('deviceNetwork.addFromAccount', '+ Add from another account')}
-                </Typography>
+                <Button size="small" onClick={() => setAdding('account')}>
+                  {t('deviceNetwork.addFromAccount', 'Add from another account')}
+                </Button>
               )}
             </Box>
           )}
           <NetworkExits network={network} accountId={accountId} />
         </List>
       ) : (
-        <List>
-          <ListSubheader>
+        <List disablePadding>
+          <ListSubheader sx={{ display: 'flex', alignItems: 'center' }}>
             {t('deviceNetwork.people', 'People')}
             {admin && (
-              <IconButton
-                icon="user-plus"
-                title={t('deviceNetwork.share', 'Share the network')}
-                to={`/networks/${network.id}/share`}
-                size="sm"
-              />
+              <Button
+                size="small"
+                sx={{ marginLeft: 'auto' }}
+                onClick={() => history.push(`/networks/${network.id}/share`)}
+                startIcon={<Icon name="user-plus" size="sm" inline />}
+              >
+                {t('deviceNetwork.share', 'Add person')}
+              </Button>
             )}
           </ListSubheader>
           {(network.accountAccess || []).map(section => (
@@ -561,11 +551,7 @@ export const DeviceNetworkPage: React.FC = () => {
               icon="users"
               name={t('deviceNetwork.individuals', 'Individuals')}
               color={accountColor(colorOf(INDIVIDUALS), dark)}
-              detail={
-                individuals.length === 1
-                  ? t('deviceNetwork.onePerson', '1 person')
-                  : t('deviceNetwork.peopleCount', '{{count}} people', { count: individuals.length })
-              }
+              detail={peopleText(t, individuals.length)}
             />
           )}
           {individuals.map(person => (
@@ -583,10 +569,7 @@ export const DeviceNetworkPage: React.FC = () => {
           {!!network.accountAccess?.some(section => section.roles.length) && (
             <Box sx={{ paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
               <Typography variant="caption" color="textSecondary">
-                {t(
-                  'deviceNetwork.rolesNote',
-                  "An organization's roles decide which of its people reach this network — all networks, or those it has tagged — up to the tier it holds."
-                )}{' '}
+                {t('deviceNetwork.rolesNote', 'Roles decide which people in an organization reach this network.')}{' '}
                 <Link to="/organization/roles">{t('deviceNetwork.editRoles', 'Edit roles')}</Link>
               </Typography>
             </Box>
@@ -597,60 +580,218 @@ export const DeviceNetworkPage: React.FC = () => {
   )
 }
 
-const Empty: React.FC<{ text: string }> = ({ text }) => (
-  <ListItem dense>
-    <ListItemText secondary={text} />
-  </ListItem>
+const EmptyLine: React.FC<{ text: string }> = ({ text }) => (
+  <Box sx={{ paddingX: 2, paddingLeft: GROUP_INDENT, paddingY: 1.25, borderTop: 1, borderColor: 'grayLighter.main' }}>
+    <Typography variant="body2" color="textSecondary">
+      {text}
+    </Typography>
+  </Box>
 )
+
+const EmptyNetwork: React.FC<{ text: string; action?: React.ReactNode }> = ({ text, action }) => (
+  <Gutters>
+    <Box
+      sx={{
+        border: 1,
+        borderStyle: 'dashed',
+        borderColor: 'grayLight.main',
+        borderRadius: 2,
+        paddingX: 3,
+        paddingY: 5,
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 2,
+      }}
+    >
+      <Icon name="chart-network" size="xxl" color="grayLight" type="light" />
+      <Typography variant="body2" color="textSecondary" sx={{ maxWidth: 360 }}>
+        {text}
+      </Typography>
+      {action}
+    </Box>
+  </Gutters>
+)
+
+type AddChoice = { id: string; name: string; account?: string }
+type TagChoice = { accountId: string; account?: string; tag: string }
+
+const AddPanel: React.FC<{
+  kind: 'device' | 'tag'
+  fixed?: boolean // from one account's heading
+  devices: AddChoice[]
+  tagChoices: TagChoice[]
+  onKind: (kind: 'device' | 'tag') => void
+  onDevice: (deviceId: string) => void
+  onTag: (accountId: string, tag: string) => void
+  onCancel: () => void
+}> = ({ kind, fixed, devices, tagChoices, onKind, onDevice, onTag, onCancel }) => {
+  const { t } = useTranslation()
+  const manyAccounts = new Set(devices.map(device => device.account)).size > 1
+  const manyTagAccounts = new Set(tagChoices.map(choice => choice.accountId)).size > 1
+  return (
+    <Box
+      sx={{
+        paddingX: 2,
+        paddingLeft: GROUP_INDENT,
+        paddingY: 1.5,
+        bgcolor: 'primaryHighlight.main',
+        borderTop: 1,
+        borderColor: 'grayLighter.main',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+      }}
+    >
+      {kind === 'device' ? (
+        <TextField
+          select
+          fullWidth
+          size="small"
+          autoFocus
+          label={t('deviceNetwork.chooseDevice', 'Device to add')}
+          value=""
+          onChange={event => onDevice(String(event.target.value))}
+          SelectProps={{ defaultOpen: !fixed }}
+        >
+          {[...devices]
+            .sort((a, b) => (a.account || '').localeCompare(b.account || '') || a.name.localeCompare(b.name))
+            .map(device => (
+              <MenuItem key={device.id} value={device.id}>
+                {device.name}
+                {manyAccounts && (
+                  <Typography variant="caption" color="textSecondary" sx={{ marginLeft: 1 }}>
+                    {device.account}
+                  </Typography>
+                )}
+              </MenuItem>
+            ))}
+        </TextField>
+      ) : (
+        <TextField
+          select
+          fullWidth
+          size="small"
+          label={t('deviceNetwork.chooseTag', 'Add every device tagged')}
+          value=""
+          onChange={event => {
+            const [accountId, tag] = String(event.target.value).split('\u0000')
+            onTag(accountId, tag)
+          }}
+        >
+          {tagChoices.map(choice => (
+            <MenuItem key={`${choice.accountId}/${choice.tag}`} value={`${choice.accountId}\u0000${choice.tag}`}>
+              {choice.tag}
+              {manyTagAccounts && (
+                <Typography variant="caption" color="textSecondary" sx={{ marginLeft: 1 }}>
+                  {choice.account}
+                </Typography>
+              )}
+            </MenuItem>
+          ))}
+        </TextField>
+      )}
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        {kind === 'device' && !!tagChoices.length && (
+          <Button size="small" onClick={() => onKind('tag')} startIcon={<Icon name="tag" size="sm" inline />}>
+            {t('deviceNetwork.addByTagInstead', 'Add devices by tag instead')}
+          </Button>
+        )}
+        {kind === 'tag' && !!devices.length && (
+          <Button size="small" onClick={() => onKind('device')} startIcon={<Icon name="laptop" size="sm" inline />}>
+            {t('deviceNetwork.addOneInstead', 'Add one device instead')}
+          </Button>
+        )}
+        <Button size="small" color="inherit" onClick={onCancel} sx={{ marginLeft: 'auto' }}>
+          {t('deviceNetwork.cancel', 'Cancel')}
+        </Button>
+      </Box>
+    </Box>
+  )
+}
 
 // Shown in place up to this many services; past it, the first SHOWN and a count, with a filter past FILTER.
 const INLINE = 8
 const SHOWN = 6
 const FILTER = 10
-// The device's name, with what it is under it, beside its chips.
 const NAME_WIDTH = 180
-// Under an account's heading: its groups' headings one step in, their devices two — so every device's chips start
-// in one column, and a group's switches line up above its devices' chips.
+const SELECT = { '& .MuiInputBase-input': { fontSize: 14 } }
 const GROUP_INDENT = 4
-const ROW_INDENT = 6
-const HEADING_WIDTH = `calc(${NAME_WIDTH}px + 16px)` // NAME_WIDTH + the step from GROUP_INDENT to ROW_INDENT
+const ROW_INDENT = 4
 
-/* A device on the network, in two rows of chips: Initiator, All services and Any port, then its services in their own
-   order — highlighted when exposed, all of them when All services or Any port is on. A long list folds to its first
-   few and "+N more"; open, it can be filtered. */
+const ReachSelect: React.FC<{ value: boolean; disabled: boolean; onChange: (reach: boolean) => void }> = ({
+  value,
+  disabled,
+  onChange,
+}) => {
+  const { t } = useTranslation()
+  return (
+    <TextField
+      select
+      size="small"
+      label={t('deviceNetwork.canReach', 'Can reach')}
+      value={value ? 'ALL' : 'NOTHING'}
+      disabled={disabled}
+      onChange={event => onChange(event.target.value === 'ALL')}
+      sx={{ minWidth: 0, flex: '1 1 120px', ...SELECT }}
+    >
+      <MenuItem value="NOTHING">{t('deviceNetwork.nothing', 'Nothing')}</MenuItem>
+      <MenuItem value="ALL">{t('deviceNetwork.reachAll', 'All services')}</MenuItem>
+    </TextField>
+  )
+}
+
+const ReachedSelect: React.FC<{
+  value: Reached
+  disabled: boolean
+  chosen: boolean // offer Chosen services
+  onChange: (reached: Reached) => void
+}> = ({ value, disabled, chosen, onChange }) => {
+  const { t } = useTranslation()
+  return (
+    <TextField
+      select
+      size="small"
+      label={t('deviceNetwork.canBeReached', 'Can be reached')}
+      value={value}
+      disabled={disabled}
+      onChange={event => onChange(event.target.value as Reached)}
+      sx={{ minWidth: 0, flex: '1.4 1 160px', ...SELECT }}
+    >
+      <MenuItem value="NOTHING">{t('deviceNetwork.nothing', 'Nothing')}</MenuItem>
+      <MenuItem value="ALL">{t('deviceNetwork.allServices', 'All services')}</MenuItem>
+      <MenuItem value="ALL_ANY_PORT">{t('deviceNetwork.allAnyPort', 'All services and any port')}</MenuItem>
+      {chosen && <MenuItem value="CHOSEN">{t('deviceNetwork.chosen', 'Chosen services')}</MenuItem>}
+    </TextField>
+  )
+}
+
 export const MemberRow: React.FC<{
   name: string
   member: NetworkMember
   services: ServiceRef[]
   listed: Set<string>
-  allOn: boolean
-  summary: string
+  listedCount: number
+  alsoTagged: string[]
   editable: boolean
-  onInitiator: () => void
-  onAll: () => void
-  onAnyPort: () => void
+  onReach: (reach: boolean) => void
+  onReached: (reached: Reached) => void
   onService: (serviceId: string) => void
   onRemove: () => void
-}> = ({ name, member, services, listed, allOn, summary, editable, ...on }) => {
+}> = ({ name, member, services, listed, listedCount, alsoTagged, editable, ...on }) => {
   const { t } = useTranslation()
+  const [choosing, setChoosing] = useState(false)
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState('')
-  // A membership its device's product holds is the product's: its role, what it exposes as a whole, and whether it is
-  // here at all go with the product's grant (graphql refuses them here). The services the network lists stay the
-  // network's, one by one.
+  // A membership its device's product holds is the product's: graphql refuses its role here. The services the network
+  // lists stay the network's, one by one.
   const held = !!member.fromProduct
   const membership = editable && !held
-  const exposed = (service: ServiceRef) => allOn || (targeted(member) && listed.has(service.id))
-  const toggle = (label: React.ReactNode, active: boolean, onClick?: () => void, dashed?: boolean, can = editable) => (
-    <Chip
-      size="small"
-      label={label}
-      color={active ? 'primary' : 'default'}
-      variant={active ? 'filled' : 'outlined'}
-      onClick={can ? onClick : undefined}
-      sx={dashed ? { borderStyle: 'dashed' } : undefined}
-    />
-  )
+  const stored = reachedOf(member, listedCount)
+  const reached: Reached = choosing && stored === 'NOTHING' ? 'CHOSEN' : stored
+  const reach = canReach(member)
+  const chipsEditable = editable && (membership || targeted(member))
 
   const folded = services.length > INLINE && !open
   const hidden = folded ? services.slice(SHOWN) : []
@@ -658,66 +799,67 @@ export const MemberRow: React.FC<{
     ? services.slice(0, SHOWN)
     : services.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()))
 
+  const notes = [
+    held && t('deviceNetwork.fromProduct', 'Set by its product'),
+    !!alsoTagged.length &&
+      t('deviceNetwork.alsoTagged', '{{name}} is also tagged {{tags}}. The settings here apply, not the tag rule.', {
+        tags: alsoTagged.join(', '),
+        name,
+      }),
+    !reach &&
+      reached === 'NOTHING' &&
+      !choosing &&
+      t('deviceNetwork.notSetUp', 'Not set up yet. Choose what {{name}} can reach or how it can be reached.', { name }),
+  ].filter(Boolean) as string[]
+
   return (
     <Box
+      data-member={member.deviceId}
       sx={{
-        display: 'flex',
-        gap: 1,
-        paddingX: 2,
+        position: 'relative',
         paddingLeft: ROW_INDENT,
-        paddingY: 1,
+        paddingRight: 6,
+        paddingY: 1.5,
         borderTop: 1,
         borderColor: 'grayLighter.main',
       }}
     >
-      <Box sx={{ width: NAME_WIDTH, flex: '0 0 auto', minWidth: 0, paddingTop: 0.25 }}>
-        <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={name}>
-          {name}
-        </Typography>
-        <Typography variant="caption" color="textSecondary" component="div">
-          {summary}
-        </Typography>
-      </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          {toggle(
-            t('deviceNetwork.initiatorToggle', 'Initiator'),
-            initiates(member),
-            on.onInitiator,
-            false,
-            membership
-          )}
-          <Typography variant="caption" color="textSecondary">
-            ·
-          </Typography>
-          {toggle(t('deviceNetwork.allServices', 'All services'), allOn, on.onAll, false, membership)}
-          {toggle(
-            t('deviceNetwork.anyPort', 'Any port'),
-            targeted(member) && member.anyPort,
-            on.onAnyPort,
-            false,
-            membership
-          )}
-          <Box sx={{ marginLeft: 'auto' }}>
-            {membership && (
-              <IconButton
-                icon="times"
-                title={t('deviceNetwork.remove', 'Remove from the network')}
-                size="sm"
-                onClick={on.onRemove}
-              />
-            )}
-          </Box>
+      {membership && (
+        <Box sx={{ position: 'absolute', right: 8, top: 14 }}>
+          <IconButton
+            icon="times"
+            title={t('deviceNetwork.remove', 'Remove {{name}} from this network', { name })}
+            size="sm"
+            onClick={on.onRemove}
+          />
         </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 0.75,
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            marginTop: 1,
-          }}
-        >
+      )}
+      <Box sx={{ display: 'flex', columnGap: 2, rowGap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Box sx={{ flex: `1 1 ${NAME_WIDTH}px`, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Icon name="laptop" size="sm" color="grayDark" />
+          <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={name}>
+            {name}
+          </Typography>
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1, flex: '10 1 300px', minWidth: 0, alignItems: 'center' }}>
+          <ReachSelect value={reach} disabled={!membership} onChange={on.onReach} />
+          <ReachedSelect
+            value={reached}
+            disabled={!membership}
+            chosen={!!services.length || reached === 'CHOSEN'}
+            onChange={next => {
+              setChoosing(next === 'CHOSEN')
+              if (next === 'CHOSEN' && stored === 'NOTHING') return
+              if (next !== stored) on.onReached(next)
+            }}
+          />
+        </Box>
+      </Box>
+      {reached === 'CHOSEN' && (
+        <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', alignItems: 'center', marginTop: 1 }}>
+          <Typography variant="caption" color="textSecondary" sx={{ marginRight: 0.5 }}>
+            {t('deviceNetwork.chosenLabel', 'Reached on')}
+          </Typography>
           {open && services.length > FILTER && (
             <TextField
               size="small"
@@ -727,56 +869,226 @@ export const MemberRow: React.FC<{
               onChange={event => setFilter(event.target.value)}
             />
           )}
-          {folded && allOn
-            ? toggle(t('deviceNetwork.allCount', 'All {{count}} services', { count: services.length }), true, () =>
-                setOpen(true)
-              )
-            : shown.map(service => (
-                <React.Fragment key={service.id}>
-                  {toggle(
-                    service.name,
-                    exposed(service),
-                    () => on.onService(service.id),
-                    false,
-                    membership || (editable && !allOn && targeted(member))
-                  )}
-                </React.Fragment>
-              ))}
-          {folded &&
-            !allOn &&
-            toggle(
-              hidden.some(exposed)
-                ? t('deviceNetwork.moreSelected', '+{{count}} more · {{selected}} selected', {
-                    count: hidden.length,
-                    selected: hidden.filter(exposed).length,
-                  })
-                : t('deviceNetwork.more', '+{{count}} more', { count: hidden.length }),
-              false,
-              () => setOpen(true),
-              true
-            )}
+          {shown.map(service => (
+            <Chip
+              key={service.id}
+              size="small"
+              label={service.name}
+              color={listed.has(service.id) ? 'primary' : 'default'}
+              variant={listed.has(service.id) ? 'filled' : 'outlined'}
+              icon={listed.has(service.id) ? <Icon name="check" size="xxs" inline /> : undefined}
+              onClick={chipsEditable ? () => on.onService(service.id) : undefined}
+            />
+          ))}
+          {folded && (
+            <Chip
+              size="small"
+              variant="outlined"
+              sx={{ borderStyle: 'dashed' }}
+              onClick={() => setOpen(true)}
+              label={
+                hidden.some(service => listed.has(service.id))
+                  ? t('deviceNetwork.moreSelected', '{{count}} more · {{selected}} chosen', {
+                      count: hidden.length,
+                      selected: hidden.filter(service => listed.has(service.id)).length,
+                    })
+                  : t('deviceNetwork.more', '{{count}} more', { count: hidden.length })
+              }
+            />
+          )}
           {open && services.length > INLINE && (
-            <Typography
-              variant="caption"
-              color="primary"
-              sx={{ cursor: 'pointer' }}
+            <Button
+              size="small"
               onClick={() => {
                 setOpen(false)
                 setFilter('')
               }}
             >
               {t('deviceNetwork.showLess', 'Show less')}
-            </Typography>
+            </Button>
           )}
         </Box>
+      )}
+      {!!notes.length && (
+        <Box sx={{ marginTop: 0.75 }}>
+          {notes.map(note => (
+            <Typography key={note} variant="caption" color="textSecondary" component="div">
+              {note}
+            </Typography>
+          ))}
+        </Box>
+      )}
+    </Box>
+  )
+}
+
+/* Devices by tag: what the rule does as a sentence, its two controls, and the devices it adds. A device it matches
+   that is set on its own is named: its own settings apply. */
+const TagRule: React.FC<{
+  rule: NetworkRule
+  tags: ITag[] // the active account's, for colours: empty for another account's rule
+  choices: string[] // the tag names its account has, to add
+  nameOf: (id: string) => string
+  editable: boolean
+  removable: boolean
+  onChange: (set: RuleChoices) => void
+  onRemove: () => void
+}> = ({ rule, tags, choices, nameOf, editable, removable, onChange, onRemove }) => {
+  const { t } = useTranslation()
+  const getColor = useLabel()
+  const [picking, setPicking] = useState(false)
+  const [open, setOpen] = useState(false)
+  const colorOf = (name: string) =>
+    getColor(rule.tagColors?.find(tag => tag.name === name)?.color ?? tags.find(tag => tag.name === name)?.color ?? 0)
+  const devices = [...rule.devices].sort((a, b) => nameOf(a).localeCompare(nameOf(b)))
+  const shown = open ? devices : devices.slice(0, INLINE)
+
+  return (
+    <Box
+      data-rule={rule.id}
+      sx={{ paddingX: 2, paddingLeft: ROW_INDENT, paddingY: 1.5, borderTop: 1, borderColor: 'grayLighter.main' }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+        <Icon name="tag" size="sm" color="grayDark" />
+        <Typography variant="body2" sx={{ fontWeight: 500, flex: 1 }} data-rule-sentence>
+          {ruleSentence(t, rule)}
+        </Typography>
+        {(editable || removable) && (
+          <IconButton
+            icon="times"
+            title={t('deviceNetwork.removeRule', 'Stop adding devices by these tags')}
+            size="sm"
+            onClick={onRemove}
+          />
+        )}
+      </Box>
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', marginTop: 1, paddingLeft: 3 }}>
+        {rule.tags.map(tag => (
+          <Chip
+            key={tag}
+            size="small"
+            variant="outlined"
+            icon={
+              <Box
+                component="span"
+                sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: colorOf(tag), marginLeft: '8px !important' }}
+              />
+            }
+            label={tag}
+            onDelete={
+              editable && rule.tags.length > 1
+                ? () => onChange({ tags: rule.tags.filter(name => name !== tag) })
+                : undefined
+            }
+          />
+        ))}
+        {editable && !!choices.filter(tag => !rule.tags.includes(tag)).length && (
+          <Button size="small" onClick={() => setPicking(!picking)}>
+            {t('deviceNetwork.addTag', 'Add tag')}
+          </Button>
+        )}
+      </Box>
+      {picking && (
+        <Box sx={{ paddingLeft: 3, marginTop: 1 }}>
+          <TextField
+            select
+            fullWidth
+            size="small"
+            value=""
+            label={t('deviceNetwork.chooseTagToAdd', 'Tag')}
+            onChange={event => {
+              setPicking(false)
+              onChange({ tags: [...rule.tags, event.target.value] })
+            }}
+          >
+            {choices
+              .filter(tag => !rule.tags.includes(tag))
+              .map(tag => (
+                <MenuItem key={tag} value={tag}>
+                  {tag}
+                </MenuItem>
+              ))}
+          </TextField>
+        </Box>
+      )}
+      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', marginTop: 1.5, paddingLeft: 3 }}>
+        <ReachSelect value={rule.initiator} disabled={!editable} onChange={initiator => onChange({ initiator })} />
+        <ReachedSelect
+          value={ruleReachedOf(rule)}
+          disabled={!editable}
+          chosen={false}
+          onChange={reached => reached !== 'CHOSEN' && onChange(ruleChoicesFor(reached))}
+        />
+        {rule.tags.length > 1 && (
+          <TextField
+            select
+            size="small"
+            label={t('deviceNetwork.match', 'Match')}
+            value={rule.operator}
+            disabled={!editable}
+            onChange={event => onChange({ operator: event.target.value as NetworkRule['operator'] })}
+            sx={{ minWidth: 150, flex: '1 1 150px', ...SELECT }}
+          >
+            <MenuItem value="ANY">{t('deviceNetwork.anyTag', 'Any of these tags')}</MenuItem>
+            <MenuItem value="ALL">{t('deviceNetwork.allTags', 'All of these tags')}</MenuItem>
+          </TextField>
+        )}
+      </Box>
+      {!rule.holds && (
+        <Notice severity="warning" fullWidth sx={{ marginTop: 1.5 }}>
+          {t(
+            'deviceNetwork.ruleStopped',
+            '{{account}} devices left this network. {{email}} no longer administers {{account}}.',
+            {
+              email: rule.addedByEmail || t('deviceNetwork.someone', 'The person who added them'),
+              account: rule.accountName,
+            }
+          )}{' '}
+          {t('deviceNetwork.ruleStoppedFix', 'Ask someone who administers both accounts to add them again.')}
+        </Notice>
+      )}
+      <Box sx={{ paddingLeft: 3, marginTop: 1.25 }}>
+        <Typography variant="caption" color="textSecondary" component="div">
+          {!rule.holds
+            ? null
+            : !devices.length
+            ? t('deviceNetwork.noMatches', 'No devices have these tags yet.')
+            : t('deviceNetwork.ruleAdds', 'Adds {{devices}}', { devices: devicesText(t, devices.length) })}
+        </Typography>
+        {!!devices.length && (
+          <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', marginTop: 0.75 }}>
+            {shown.map(id => (
+              <Chip key={id} size="small" icon={<Icon name="laptop" size="xxs" inline />} label={nameOf(id)} />
+            ))}
+            {devices.length > INLINE && (
+              <Chip
+                size="small"
+                variant="outlined"
+                sx={{ borderStyle: 'dashed' }}
+                onClick={() => setOpen(!open)}
+                label={
+                  open
+                    ? t('deviceNetwork.showLess', 'Show less')
+                    : t('deviceNetwork.more', '{{count}} more', { count: devices.length - INLINE })
+                }
+              />
+            )}
+          </Box>
+        )}
+        {rule.overridden.map(id => (
+          <Typography key={id} variant="caption" color="textSecondary" component="div" sx={{ marginTop: 0.75 }}>
+            {t('deviceNetwork.overridden', '{{name}} has these tags, but is set on its own below.', {
+              name: nameOf(id),
+            })}
+          </Typography>
+        ))}
       </Box>
     </Box>
   )
 }
 
-/* A person the network is shared with, or its owner, beside the devices they have in user mode — full access: those
-   reach everything the person can, this network's targets with the rest. The pills show; they do nothing. Past 8, the
-   first 6 and "+N more". Removing a person unshares the network with them; its owner stays. */
+/* A person the network is shared with, or its owner, beside their devices with full access as them: those reach
+   everything the person can, this network's devices with the rest. Removing a person unshares the network with them. */
 const PersonRow: React.FC<{
   email: string
   caption?: string
@@ -815,10 +1127,10 @@ const PersonRow: React.FC<{
         )}
         <Typography variant="caption" color="textSecondary" component="div">
           {devices.length === 1
-            ? t('deviceNetwork.deviceInUserMode', '1 device in user mode')
+            ? t('deviceNetwork.deviceFullAccess', '1 device with full access')
             : devices.length
-            ? t('deviceNetwork.devicesInUserMode', '{{count}} devices in user mode', { count: devices.length })
-            : t('deviceNetwork.noUserMode', 'No devices in user mode')}
+            ? t('deviceNetwork.devicesFullAccess', '{{count}} devices with full access', { count: devices.length })
+            : t('deviceNetwork.noFullAccess', 'No devices with full access')}
         </Typography>
       </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -881,7 +1193,7 @@ const PersonRow: React.FC<{
               <Chip
                 size="small"
                 variant="outlined"
-                label={t('deviceNetwork.more', '+{{count}} more', { count: devices.length - SHOWN })}
+                label={t('deviceNetwork.more', '{{count}} more', { count: devices.length - SHOWN })}
                 onClick={() => setOpen(true)}
                 sx={{ borderStyle: 'dashed' }}
               />
@@ -900,16 +1212,7 @@ const PersonRow: React.FC<{
 
 const INDIVIDUALS = 'individuals'
 
-type NetworkView = 'devices' | 'people' | 'graph'
-const VIEW_KEY = 'deviceNetwork.view'
-const savedView = (): NetworkView => {
-  try {
-    const saved = localStorage.getItem(VIEW_KEY)
-    return saved === 'people' || saved === 'graph' ? saved : 'devices'
-  } catch {
-    return 'devices'
-  }
-}
+type NetworkView = 'map' | 'devices' | 'people'
 
 // An account's heading band, in its colour: the same in Devices and People.
 const AccountHeadingBand: React.FC<{
@@ -923,7 +1226,8 @@ const AccountHeadingBand: React.FC<{
     sx={{
       display: 'flex',
       alignItems: 'center',
-      gap: 1,
+      flexWrap: 'wrap',
+      columnGap: 1,
       paddingX: 2,
       paddingY: 1,
       borderTop: 1,
@@ -933,14 +1237,14 @@ const AccountHeadingBand: React.FC<{
     }}
   >
     <Icon name={icon} size="sm" color={color.text} />
-    <Typography variant="body1" sx={{ fontWeight: 500, color: 'inherit' }} noWrap>
+    <Typography variant="body1" sx={{ fontWeight: 500, color: 'inherit', minWidth: 0 }} noWrap>
       {name}
     </Typography>
     {detail && (
       <Typography
         variant="caption"
         component="div"
-        sx={{ color: 'inherit', opacity: 0.85, display: 'flex', alignItems: 'center', gap: 0.5 }}
+        sx={{ color: 'inherit', opacity: 0.85, display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}
       >
         · {detail}
       </Typography>
@@ -966,10 +1270,7 @@ const AccountPeople: React.FC<{
   const getColor = useLabel()
   const count = new Set([section.accountId, ...section.roles.flatMap(role => role.members.map(member => member.id))])
     .size
-  const people =
-    count === 1
-      ? t('deviceNetwork.onePerson', '1 person')
-      : t('deviceNetwork.peopleCount', '{{count}} people', { count })
+  const people = peopleText(t, count)
   return (
     <>
       <AccountHeadingBand
@@ -979,11 +1280,11 @@ const AccountPeople: React.FC<{
         detail={
           section.owner ? (
             <>
-              {t('deviceNetwork.owner', 'owner')} · {people}
+              {t('deviceNetwork.owner', 'Owner')} · {people}
             </>
           ) : (
             <>
-              {t('deviceNetwork.sharedUpTo', 'shared · up to')}{' '}
+              {t('deviceNetwork.sharedUpTo', 'Shared, up to')}{' '}
               {admin ? (
                 <TextField
                   select
@@ -1018,7 +1319,7 @@ const AccountPeople: React.FC<{
       </AccountHeadingBand>
       {(!!section.tags.length || section.tagsEditable) && (
         <NetworkTags
-          label={t('deviceNetwork.taggedIn', 'Its tags here')}
+          label={t('deviceNetwork.taggedIn', 'Tags on this network')}
           names={section.tags.map(tag => tag.name)}
           colorOf={name => getColor(section.tags.find(tag => tag.name === name)?.color ?? 0)}
           choices={section.tagChoices}
@@ -1031,7 +1332,7 @@ const AccountPeople: React.FC<{
         email={section.email}
         owner={section.owner}
         role={section.tier}
-        caption={section.owner ? undefined : t('deviceNetwork.itsOwner', 'Its owner')}
+        caption={section.owner ? undefined : t('deviceNetwork.accountOwner', 'Account owner')}
         devices={devices.filter(device => device.userId === section.accountId)}
         editable={false}
         onRole={() => undefined}
@@ -1051,9 +1352,6 @@ const tierLabel = (t: (key: string, fallback: string) => string, tier: ShareRole
     ? t('deviceNetwork.roleManage', 'Can manage')
     : t('deviceNetwork.roleConnect', 'Can connect')
 
-// Past this many matching devices, a group shows the first SHOWN and "+N more devices".
-const GROUP_SHOWN = 6
-
 type ServiceRef = { id: string; name: string }
 
 // An account's colour on its heading, by its place on the page — the owner's first — so the accounts on one network
@@ -1069,304 +1367,6 @@ const ACCOUNT_COLORS = [
 const accountColor = (index: number, dark: boolean) => {
   const color = ACCOUNT_COLORS[index % ACCOUNT_COLORS.length]
   return dark ? { background: color.deep, text: color.lightText } : { background: color.light, text: color.text }
-}
-
-/* Devices by tag: a heading — its tags (removable, and "+ tag" to add one), Initiator, All services, Any port, and Any
-   tag / All tags when it has several — and a row for each device it makes a member, showing what the heading gives it
-   (set on the heading, not per device). A device it matches but that is added on its own is a line saying so: its own
-   row is what it is. Folds past GROUP_SHOWN devices. */
-
-const TagGroup: React.FC<{
-  rule: NetworkRule
-  tags: ITag[] // the active account's, for colours: empty for another account's group
-  choices: string[] // the tag names its account has, to add
-  foreign: boolean // another account's devices, named on the heading
-  deviceById: Map<string, IDevice>
-  editable: boolean
-  removable: boolean
-  onChange: (set: RuleChoices) => void
-  onRemove: () => void
-}> = ({ rule, tags, choices, foreign, deviceById, editable, removable, onChange, onRemove }) => {
-  const { t } = useTranslation()
-  const getColor = useLabel()
-  const [open, setOpen] = useState(false)
-  const [picking, setPicking] = useState(false)
-  const [filter, setFilter] = useState('')
-  const colorOf = (name: string) =>
-    getColor(rule.tagColors?.find(tag => tag.name === name)?.color ?? tags.find(tag => tag.name === name)?.color ?? 0)
-  const nameOf = (id: string) => deviceById.get(id)?.name || rule.named?.find(device => device.id === id)?.name || id
-  const target = rule.allServices || rule.anyPort
-  const toggle = (label: React.ReactNode, active: boolean, onClick?: () => void) => (
-    <Chip
-      size="small"
-      label={label}
-      color={active ? 'primary' : 'default'}
-      variant={active ? 'filled' : 'outlined'}
-      onClick={editable ? onClick : undefined}
-    />
-  )
-  const summary = [
-    rule.initiator && t('deviceNetwork.groupInitiators', 'initiators'),
-    rule.anyPort
-      ? t('deviceNetwork.groupAnyPort', 'targets: all services · any port')
-      : rule.allServices && t('deviceNetwork.groupAllServices', 'targets: all services'),
-    rule.overridden.length &&
-      (rule.overridden.length === 1
-        ? t('deviceNetwork.groupOverriddenOne', '1 set on its own')
-        : t('deviceNetwork.groupOverridden', '{{count}} set on their own', { count: rule.overridden.length })),
-  ].filter(Boolean)
-  const devices = [...rule.devices].sort((a, b) => nameOf(a).localeCompare(nameOf(b)))
-  const folded = devices.length > GROUP_SHOWN && !open
-  const shown = folded
-    ? devices.slice(0, GROUP_SHOWN)
-    : devices.filter(id => nameOf(id).toLowerCase().includes(filter.toLowerCase()))
-
-  return (
-    <Box sx={{ borderTop: 1, borderColor: 'grayLighter.main' }}>
-      <Box sx={{ paddingX: 2, paddingLeft: GROUP_INDENT, paddingY: 1, bgcolor: 'grayLightest.main' }}>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Box sx={{ width: HEADING_WIDTH, flex: '0 0 auto', minWidth: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-              <Icon name="tag" size="sm" color="grayDark" />
-              {rule.tags.map((tag, index) => (
-                <React.Fragment key={tag}>
-                  {!!index && (
-                    <Typography variant="caption" color="textSecondary">
-                      {rule.operator === 'ALL' ? t('deviceNetwork.and', 'and') : t('deviceNetwork.or', 'or')}
-                    </Typography>
-                  )}
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    icon={
-                      <Box
-                        component="span"
-                        sx={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          bgcolor: colorOf(tag),
-                          marginLeft: '8px !important',
-                        }}
-                      />
-                    }
-                    label={tag}
-                    onDelete={
-                      editable && rule.tags.length > 1
-                        ? () => onChange({ tags: rule.tags.filter(name => name !== tag) })
-                        : undefined
-                    }
-                  />
-                </React.Fragment>
-              ))}
-              {editable && (
-                <Chip
-                  size="small"
-                  variant="outlined"
-                  label={t('deviceNetwork.addTag', '+ tag')}
-                  onClick={() => setPicking(!picking)}
-                  sx={{ borderStyle: 'dashed' }}
-                />
-              )}
-            </Box>
-            {picking && (
-              <TextField
-                select
-                fullWidth
-                size="small"
-                value=""
-                label={t('deviceNetwork.chooseTag', 'Devices tagged')}
-                sx={{ marginTop: 1 }}
-                onChange={event => {
-                  setPicking(false)
-                  onChange({ tags: [...rule.tags, event.target.value] })
-                }}
-              >
-                {choices
-                  .filter(tag => !rule.tags.includes(tag))
-                  .map(tag => (
-                    <MenuItem key={tag} value={tag}>
-                      {tag}
-                    </MenuItem>
-                  ))}
-              </TextField>
-            )}
-          </Box>
-          <Box
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              flexWrap: 'wrap',
-              alignSelf: 'flex-start',
-            }}
-          >
-            {toggle(t('deviceNetwork.initiatorToggle', 'Initiator'), rule.initiator, () =>
-              onChange({ initiator: !rule.initiator })
-            )}
-            <Typography variant="caption" color="textSecondary">
-              ·
-            </Typography>
-            {toggle(t('deviceNetwork.allServices', 'All services'), rule.allServices || rule.anyPort, () =>
-              onChange(
-                rule.allServices || rule.anyPort ? { allServices: false, anyPort: false } : { allServices: true }
-              )
-            )}
-            {toggle(t('deviceNetwork.anyPort', 'Any port'), rule.anyPort, () =>
-              onChange(rule.anyPort ? { anyPort: false } : { anyPort: true, allServices: true })
-            )}
-            {rule.tags.length > 1 && (
-              <>
-                <Typography variant="caption" color="textSecondary">
-                  ·
-                </Typography>
-                {toggle(t('deviceNetwork.anyTag', 'Any tag'), rule.operator === 'ANY', () =>
-                  onChange({ operator: 'ANY' })
-                )}
-                {toggle(t('deviceNetwork.allTags', 'All tags'), rule.operator === 'ALL', () =>
-                  onChange({ operator: 'ALL' })
-                )}
-              </>
-            )}
-            <Box sx={{ marginLeft: 'auto' }}>
-              {(editable || removable) && (
-                <IconButton
-                  icon="times"
-                  title={t('deviceNetwork.removeGroup', 'Remove the devices by tag')}
-                  size="sm"
-                  onClick={onRemove}
-                />
-              )}
-            </Box>
-          </Box>
-        </Box>
-        <Typography variant="caption" color="textSecondary" component="div" sx={{ marginTop: 0.5 }}>
-          {[
-            rule.devices.length === 1
-              ? t('deviceNetwork.groupDevice', '1 device')
-              : t('deviceNetwork.groupDevices', '{{count}} devices', { count: rule.devices.length }),
-            ...summary,
-          ].join(' · ') || t('deviceNetwork.nothingChosen', 'Nothing chosen yet')}
-        </Typography>
-      </Box>
-      {open && devices.length > FILTER && (
-        <Box sx={{ paddingX: 2, paddingTop: 1, paddingLeft: ROW_INDENT }}>
-          <TextField
-            size="small"
-            fullWidth
-            placeholder={t('deviceNetwork.filterDevices', 'Filter {{count}} devices', { count: devices.length })}
-            value={filter}
-            onChange={event => setFilter(event.target.value)}
-          />
-        </Box>
-      )}
-      {!rule.holds && (
-        <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: ROW_INDENT, borderTop: 1, borderColor: 'grayLighter.main' }}>
-          <Typography variant="caption" color="error">
-            {t(
-              'deviceNetwork.groupStopped',
-              'Stopped: {{email}} no longer administers {{account}}, so its devices are off this network. Someone who administers both can set it again.',
-              { email: rule.addedByEmail || '?', account: rule.accountName }
-            )}
-          </Typography>
-        </Box>
-      )}
-      {rule.holds && !devices.length && !rule.overridden.length && (
-        <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: ROW_INDENT }}>
-          <Typography variant="caption" color="textSecondary">
-            {t('deviceNetwork.noMatches', 'No devices carry these tags')}
-          </Typography>
-        </Box>
-      )}
-      {shown.map(id => (
-        <Box
-          key={id}
-          sx={{
-            display: 'flex',
-            gap: 1,
-            paddingX: 2,
-            paddingY: 1,
-            paddingLeft: ROW_INDENT,
-            borderTop: 1,
-            borderColor: 'grayLighter.main',
-          }}
-        >
-          <Box sx={{ width: NAME_WIDTH, flex: '0 0 auto', minWidth: 0 }}>
-            <Typography variant="body2" noWrap sx={{ fontWeight: 500 }} title={nameOf(id)}>
-              {nameOf(id)}
-            </Typography>
-            <Typography variant="caption" color="textSecondary" component="div">
-              {[
-                rule.initiator && t('deviceNetwork.initiator', 'Initiator'),
-                target &&
-                  (rule.anyPort
-                    ? t('deviceNetwork.targetAllAny', 'Target: all services · any port')
-                    : t('deviceNetwork.targetAll', 'Target: all services')),
-              ]
-                .filter(Boolean)
-                .join(' · ') || t('deviceNetwork.nothingYet', 'Nothing yet')}
-            </Typography>
-          </Box>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
-              {(deviceById.get(id)?.services || rule.named?.find(device => device.id === id)?.services || []).map(
-                service => (
-                  <Chip
-                    key={service.id}
-                    size="small"
-                    label={service.name}
-                    color={target ? 'primary' : 'default'}
-                    variant={target ? 'filled' : 'outlined'}
-                  />
-                )
-              )}
-              <Typography
-                variant="caption"
-                color="textSecondary"
-                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-              >
-                <Icon name="tag" size="xs" />{' '}
-                {foreign
-                  ? t('deviceNetwork.fromAccountTags', 'from {{account}} tags', { account: rule.accountName })
-                  : t('deviceNetwork.fromTags', 'from the tags')}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      ))}
-      {devices.length > GROUP_SHOWN && (
-        <Box sx={{ paddingX: 2, paddingY: 1, paddingLeft: ROW_INDENT, borderTop: 1, borderColor: 'grayLighter.main' }}>
-          <Typography
-            variant="caption"
-            color="primary"
-            sx={{ cursor: 'pointer' }}
-            onClick={() => {
-              setOpen(!open)
-              setFilter('')
-            }}
-          >
-            {open
-              ? t('deviceNetwork.showFewer', 'Show fewer')
-              : t('deviceNetwork.moreDevices', '+{{count}} more devices', { count: devices.length - GROUP_SHOWN })}
-          </Typography>
-        </Box>
-      )}
-      {rule.overridden.map(id => (
-        <Box
-          key={id}
-          sx={{ paddingX: 2, paddingY: 0.75, paddingLeft: ROW_INDENT, borderTop: 1, borderColor: 'grayLighter.main' }}
-        >
-          <Typography variant="caption" color="textSecondary">
-            {t('deviceNetwork.overridden', '{{name}} carries these tags but is set on its own below', {
-              name: nameOf(id),
-            })}
-          </Typography>
-        </Box>
-      ))}
-    </Box>
-  )
 }
 
 /* An account's tags on the network: an organization role with access by tag reaches the networks carrying its tags,
@@ -1414,14 +1414,14 @@ const NetworkTags: React.FC<{
           <Chip
             size="small"
             variant="outlined"
-            label={t('deviceNetwork.addTag', '+ tag')}
+            label={t('deviceNetwork.addTag', 'Add tag')}
             onClick={() => setPicking(!picking)}
             sx={{ borderStyle: 'dashed' }}
           />
         )}
         {!names.length && (
           <Typography variant="caption" color="textSecondary">
-            {t('deviceNetwork.noNetworkTags', 'none')}
+            {t('deviceNetwork.noNetworkTags', 'None')}
           </Typography>
         )}
       </Box>
@@ -1496,10 +1496,7 @@ const RoleRow: React.FC<{
           />
           <Typography variant="body2">{tier}</Typography>
           <Typography variant="caption" color="textSecondary">
-            ·{' '}
-            {count === 1
-              ? t('deviceNetwork.onePerson', '1 person')
-              : t('deviceNetwork.peopleCount', '{{count}} people', { count })}
+            · {peopleText(t, count)}
           </Typography>
         </Box>
       </Box>
@@ -1540,7 +1537,7 @@ const RoleRow: React.FC<{
           <Typography variant="caption" color="primary" sx={{ cursor: 'pointer' }} onClick={() => setAll(!all)}>
             {all
               ? t('deviceNetwork.showLess', 'Show less')
-              : t('deviceNetwork.morePeople', '+{{count}} more people', { count: count - INLINE })}
+              : t('deviceNetwork.morePeople', '{{count}} more people', { count: count - INLINE })}
           </Typography>
         </Box>
       )}
