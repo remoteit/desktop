@@ -64,6 +64,7 @@ export const ProxiesPage: React.FC = () => {
                 data-proxy={proxy.id}
                 to={`/proxies/${proxy.id}`}
                 match={`/proxies/${proxy.id}`}
+                sx={{ '& .MuiListItemText-secondary': { overflowWrap: 'anywhere' } }}
                 icon={<Icon name="server" size="md" color={serving(proxy) ? 'primary' : 'grayDark'} fixedWidth />}
                 title={
                   <>

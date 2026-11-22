@@ -182,7 +182,7 @@ const AddressRow: React.FC<{ address: PublicAddress; busy: boolean; onRemove: ()
       sx={{ paddingRight: narrow ? undefined : 17, paddingY: 1.5 }}
       secondaryAction={narrow ? undefined : actions}
     >
-      <ListItemIcon sx={{ marginTop: 0.5 }}>
+      <ListItemIcon sx={{ marginTop: 0.75 }}>
         <Icon name={KIND_ICON[address.kind]} size="md" color="primary" fixedWidth />
       </ListItemIcon>
       <ListItemText
@@ -192,9 +192,9 @@ const AddressRow: React.FC<{ address: PublicAddress; busy: boolean; onRemove: ()
         secondary={
           <>
             <Typography variant="caption" component="div" color="textSecondary">
-              <Link to={`/devices/${address.device.id}/${address.service.id}`}>{address.service.name}</Link>
+              <Link to={`/devices/${address.device.id}/${address.service.id}`} sx={{ padding: 0 }}>{address.service.name}</Link>
               {' · '}
-              <Link to={`/devices/${address.device.id}`}>{address.device.name}</Link>
+              <Link to={`/devices/${address.device.id}`} sx={{ padding: 0 }}>{address.device.name}</Link>
               {' · '}
               {kindLabel(t, address.kind)}
             </Typography>

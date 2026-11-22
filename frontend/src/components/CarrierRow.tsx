@@ -45,7 +45,9 @@ export const CarrierRow: React.FC<Props> = ({ kind, run, name, activation, manag
       <ListItemText
         primary={
           <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
-            <Link to={`/devices/${run.id}`}>{device.name}</Link>
+            <Link to={`/devices/${run.id}`} sx={{ padding: 0 }}>
+              {device.name}
+            </Link>
             <Chip
               size="small"
               label={carrierState(t, run)}

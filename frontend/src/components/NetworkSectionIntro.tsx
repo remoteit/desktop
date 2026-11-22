@@ -20,8 +20,9 @@ export const NetworkSectionIntro: React.FC<{ intro: string; action?: string; to?
         </Typography>
         {action && to && (
           <Button
-            size={phone ? 'medium' : 'small'}
+            size="small"
             variant="contained"
+            sx={{ minHeight: phone ? 40 : undefined }}
             startIcon={<Icon name="plus" size="sm" />}
             onClick={() => history.push(to)}
             data-create

@@ -252,6 +252,7 @@ export const DeviceNetworkPage: React.FC = () => {
       disabled={busy}
       onClick={startAdding}
       startIcon={<Icon name="plus" size="sm" inline />}
+      sx={{ flexShrink: 0 }}
     >
       {t('deviceNetwork.addDevice', 'Add device')}
     </Button>
@@ -567,7 +568,7 @@ export const DeviceNetworkPage: React.FC = () => {
             />
           ))}
           {!!network.accountAccess?.some(section => section.roles.length) && (
-            <Box sx={{ paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
+            <Box sx={{ paddingX: `${spacing.xl}px`, paddingY: 1, borderTop: 1, borderColor: 'grayLighter.main' }}>
               <Typography variant="caption" color="textSecondary">
                 {t('deviceNetwork.rolesNote', 'Roles decide which people in an organization reach this network.')}{' '}
                 <Link to="/organization/roles">{t('deviceNetwork.editRoles', 'Edit roles')}</Link>
