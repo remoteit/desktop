@@ -55,7 +55,7 @@ describe('AccountSlugSetting', () => {
     const container = await render('ORG')
     expect(read).toHaveBeenCalledWith('ORG')
     expect(container.querySelector('[data-value]')!.textContent).toBe('acme')
-    expect(container.textContent).toContain('the old slug keeps working for 30 days')
+    expect(container.textContent).toContain('The old slug works for 30 days')
   })
 
   it('checks the form as typed, then whether the account can have it', async () => {
