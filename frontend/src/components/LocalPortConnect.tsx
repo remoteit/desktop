@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, TextField, Typography } from '@mui/material'
-import { CopyIconButton } from '../buttons/CopyIconButton'
-import { IconButton } from '../buttons/IconButton'
+import { TextField, Typography } from '@mui/material'
+import useClipboard from '../hooks/useClipboard'
 import { openServiceURL } from '../services/browser'
 import { emit } from '../services/Controller'
 import { useApplication } from '../hooks/useApplication'
@@ -12,7 +11,7 @@ import { saveLaunchTokens } from '../helpers/connectionHelper'
 import { sshCommand } from '../helpers/sshHelper'
 import { PromptModal } from './PromptModal'
 import { Link } from './Link'
-import { Icon } from './Icon'
+import { ConnectRoute } from './ConnectRoute'
 
 /* A service on a local port of this machine (services/localPorts): this machine's device listens on 127.0.0.1 and
    connects on demand, under <name>.at.remote.it — or localhost, where a resolver here drops answers of 127.0.0.1. Shown
@@ -31,6 +30,7 @@ type Props = { state: LocalPortState; service?: IService; connection?: IConnecti
 
 export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }) => {
   const { t } = useTranslation()
+  const clipboard = useClipboard()
   const { local } = state
   const [names, setNames] = useState<boolean>(true)
   const [editing, setEditing] = useState(false)
@@ -57,13 +57,25 @@ export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }
   const ssh = service?.typeID === 28
   const launchable = web || app.canLaunch
 
+  const how = t('localPortConnect.how', 'On a local port of this computer.')
+
   if (!local) {
     return (
-      <Panel>
-        <Typography variant="body2" color="textSecondary">
-          {state.error || t('localPortConnect.opening', 'Opening a local port…')}
-        </Typography>
-      </Panel>
+      <ConnectRoute
+        variant="primary"
+        icon="play"
+        label={t('localPortConnect.connect', 'Connect')}
+        how={how}
+        loading={!state.error}
+        error={state.error}
+        details={
+          !state.error && (
+            <Typography variant="caption" color="textSecondary" component="div">
+              {t('localPortConnect.opening', 'Opening a local port…')}
+            </Typography>
+          )
+        }
+      />
     )
   }
 
@@ -73,10 +85,7 @@ export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }
     : state.listed
     ? t('localPortConnect.listed', 'On this computer: {{whose}}', { whose: listedWhose(state.listed, t) })
     : state.listed === null && local.state === 'listening'
-    ? t(
-        'localPortConnect.notListed',
-        'Does not answer this account on the computer: it answers only the accounts its person is signed in on'
-      )
+    ? t('localPortConnect.notListedHere', "Your account on this computer can't use it. Sign in to Remote.It there first.")
     : undefined
 
   const endpoint = web ? localPortWebURL(local, names) : ssh ? sshCommand(host, local.port) : `${host}:${local.port}`
@@ -97,25 +106,50 @@ export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }
     state.open(chosen)
   }
 
+  const copyOnly = !launchable || (ssh && !app.canLaunch)
+  const label = !local.open
+    ? t('localPortConnect.connect', 'Connect')
+    : copyOnly
+    ? clipboard.copied
+      ? t('connectRoute.copied', 'Copied')
+      : ssh
+      ? t('connectRoute.copySsh', 'Copy ssh command')
+      : t('connectRoute.copyAddress', 'Copy address')
+    : web
+    ? t('connectRoute.openBrowser', 'Open in browser')
+    : ssh
+    ? t('connectRoute.openTerminal', 'Open terminal')
+    : t('connectRoute.openApp', 'Open in {{app}}', { app: app.title })
+
+  const run = () => {
+    if (!local.open) return state.open()
+    if (copyOnly) return clipboard.copy(endpoint)
+    if (!web && app.prompt) return setPrompt(true)
+    launch()
+  }
+
+  const status = !local.open
+    ? t('localPortConnect.closed', 'Closed')
+    : local.state === 'failed'
+    ? t('localPortConnect.failedDetail', 'Not listening. {{detail}}', { detail: local.detail || local.state })
+    : local.state === 'pending'
+    ? t('localPortConnect.startingHere', 'Starting on this computer…')
+    : t('localPortConnect.listeningHow', 'Connects when used and closes when idle.')
+
   return (
-    <Panel>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Icon name="laptop-code" color="primary" />
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography variant="caption" color="textSecondary" component="div">
-            {t('localPortConnect.title', 'On a local port of this machine')}
-          </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap title={endpoint} data-testid="local-port-endpoint">
-            {endpoint}
-          </Typography>
+    <ConnectRoute
+      variant="primary"
+      icon={!local.open ? 'play' : copyOnly ? 'copy' : web ? 'globe' : ssh ? 'terminal' : 'launch'}
+      label={label}
+      how={how}
+      address={endpoint}
+      onClick={run}
+      loading={state.busy}
+      error={state.error}
+      details={
+        <>
           <Typography variant="caption" color="textSecondary" component="div" data-testid="local-port-state">
-            {!local.open
-              ? t('localPortConnect.closed', 'Closed')
-              : local.state === 'failed'
-              ? t('localPortConnect.failed', 'Not listening: {{detail}}', { detail: local.detail || local.state })
-              : local.state === 'pending'
-              ? t('localPortConnect.pending', 'Starting on this machine…')
-              : t('localPortConnect.listening', 'Listening — connects when used, closes when idle')}
+            {status}
           </Typography>
           {whose ? (
             <Typography
@@ -136,93 +170,68 @@ export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }
               </Typography>
             )
           )}
-        </Box>
-        {launchable && local.open && (
-          <IconButton
-            icon="launch"
-            color="primary"
-            title={web ? t('localPortConnect.launch', 'Open in the browser') : app.contextTitle}
-            onClick={() => (!web && app.prompt ? setPrompt(true) : launch())}
-          />
-        )}
-        {launchable && <PromptModal app={app} open={prompt} onClose={() => setPrompt(false)} onSubmit={launch} />}
-        <CopyIconButton value={endpoint} color="primary" />
-        {local.open ? (
-          <IconButton
-            icon="power-off"
-            color="primary"
-            title={t('localPortConnect.disconnect', 'Disconnect')}
-            loading={state.busy}
-            onClick={() => state.close()}
-          />
-        ) : (
-          <IconButton
-            icon="play"
-            color="primary"
-            title={t('localPortConnect.connect', 'Connect')}
-            loading={state.busy}
-            onClick={() => state.open()}
-          />
-        )}
-      </Box>
-      {state.error && (
-        <Typography variant="caption" color="error" component="div" sx={{ marginTop: 0.5 }}>
-          {state.error}
-        </Typography>
-      )}
-      <Typography variant="caption" component="div" sx={{ marginTop: 0.5, display: 'flex', gap: 2, alignItems: 'center' }}>
-        {editing ? (
-          <>
-            <TextField
-              size="small"
-              variant="standard"
-              autoFocus
-              value={portText}
-              onChange={e => setPortText(e.target.value.replace(/\D/g, '').slice(0, 5))}
-              onKeyDown={e => e.key === 'Enter' && savePort()}
-              inputProps={{ 'aria-label': t('localPortConnect.port', 'Port'), inputMode: 'numeric' }}
-              sx={{ width: 80 }}
-            />
-            <Link onClick={savePort}>{t('localPortConnect.usePort', 'Use this port')}</Link>
-            <Link onClick={() => setEditing(false)}>{t('localPortConnect.cancel', 'Cancel')}</Link>
-          </>
-        ) : (
-          <Link
-            onClick={() => {
-              setPortText(String(local.port))
-              setEditing(true)
-            }}
+          <Typography
+            variant="caption"
+            component="div"
+            sx={{ marginTop: 0.5, display: 'flex', flexWrap: 'wrap', columnGap: 2, alignItems: 'center' }}
           >
-            {t('localPortConnect.changePort', 'Change port')}
-          </Link>
-        )}
-        {web && local.https && (
-          <Link onClick={() => state.open(undefined, false)} data-testid="local-port-use-http">
-            {t('localPortConnect.useHttp', 'Does not open? Use http instead')}
-          </Link>
-        )}
-        {web && !local.https && local.httpsAvailable && names && (
-          <Link onClick={() => state.open(undefined, true)} data-testid="local-port-use-https">
-            {t('localPortConnect.useHttps', 'Use https')}
-          </Link>
-        )}
-        <Link
-          onClick={() => {
-            setNamesResolve(!names)
-            setNames(!names)
-            // localhost cannot be served under the name's certificate: plain from here.
-            if (names && local.https) state.open(undefined, false)
-          }}
-        >
-          {names
-            ? t('localPortConnect.useLocalhost', 'Name does not open? Use localhost')
-            : t('localPortConnect.useName', 'Use {{name}}', { name: local.host })}
-        </Link>
-      </Typography>
-    </Panel>
+            {editing ? (
+              <>
+                <TextField
+                  size="small"
+                  variant="standard"
+                  autoFocus
+                  value={portText}
+                  onChange={e => setPortText(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                  onKeyDown={e => e.key === 'Enter' && savePort()}
+                  inputProps={{ 'aria-label': t('localPortConnect.port', 'Port'), inputMode: 'numeric' }}
+                  sx={{ width: 80 }}
+                />
+                <Link onClick={savePort}>{t('localPortConnect.usePort', 'Use this port')}</Link>
+                <Link onClick={() => setEditing(false)}>{t('localPortConnect.cancel', 'Cancel')}</Link>
+              </>
+            ) : (
+              <Link
+                onClick={() => {
+                  setPortText(String(local.port))
+                  setEditing(true)
+                }}
+              >
+                {t('localPortConnect.changePort', 'Change port')}
+              </Link>
+            )}
+            {web && local.https && (
+              <Link onClick={() => state.open(undefined, false)} data-testid="local-port-use-http">
+                {t('localPortConnect.useHttpPlain', "Doesn't open? Use http")}
+              </Link>
+            )}
+            {web && !local.https && local.httpsAvailable && names && (
+              <Link onClick={() => state.open(undefined, true)} data-testid="local-port-use-https">
+                {t('localPortConnect.useHttps', 'Use https')}
+              </Link>
+            )}
+            <Link
+              onClick={() => {
+                setNamesResolve(!names)
+                setNames(!names)
+                // localhost cannot be served under the name's certificate: plain from here.
+                if (names && local.https) state.open(undefined, false)
+              }}
+            >
+              {names
+                ? t('localPortConnect.useLocalhostShort', "Name doesn't open? Use localhost")
+                : t('localPortConnect.useName', 'Use {{name}}', { name: local.host })}
+            </Link>
+            {local.open && (
+              <Link onClick={() => state.close()} data-testid="local-port-disconnect">
+                {t('localPortConnect.disconnect', 'Disconnect')}
+              </Link>
+            )}
+          </Typography>
+        </>
+      }
+    >
+      {launchable && <PromptModal app={app} open={prompt} onClose={() => setPrompt(false)} onSubmit={launch} />}
+    </ConnectRoute>
   )
 }
-
-const Panel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <Box sx={{ paddingX: 2, paddingY: 1.25, borderRadius: 1, bgcolor: 'primaryHighlight.main' }}>{children}</Box>
-)

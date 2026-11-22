@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { List, Button, Collapse, Divider } from '@mui/material'
+import { List, Button, Collapse, Divider, Box } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 import { useParams, useLocation } from 'react-router-dom'
@@ -32,10 +32,13 @@ import { PortalUI } from './PortalUI'
 import { Gutters } from './Gutters'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
+import { Diagram } from './Diagram'
+import { ServiceConnectButton } from '../buttons/ServiceConnectButton'
 import { formatPorts, isMultiPort } from '../services/multiPortServices'
 
 export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ variant = 'connection' }) => {
   const { t } = useTranslation()
+  const [detailsOpen, setDetailsOpen] = useState(false)
   const location = useLocation<{
     autoConnect?: boolean
     autoLaunch?: boolean
@@ -44,7 +47,8 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
   }>()
   const dispatch = useDispatch<Dispatch>()
   const { sessionID } = useParams<{ deviceID?: string; sessionID?: string }>()
-  const { connection, device, service, instance } = React.useContext(DeviceContext)
+  const { connection, device, service, instance, user } = React.useContext(DeviceContext)
+  const connectThisDevice = useSelector((state: State) => state.ui.connectThisDevice)
   const session = useSelector((state: State) => state.sessions.all.find(s => s.id === sessionID))
   const accordion = useSelector((state: State) => state.ui.accordion)
   const reverseProxy = useSelector((state: State) => isReverseProxy(state, service?.typeID))
@@ -62,8 +66,12 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
 
   if (!service || !instance) return null
 
+  // The header says the service runs on this device instead (components/ServiceHeaderMenu).
+  const onThisDevice = device?.thisDevice && instance.owner.id === user.id && !connectThisDevice
+
   return (
     <>
+      {variant === 'connection' && !onThisDevice && <ServiceConnectButton />}
       <Gutters top={null} size="md" bottom={null}>
         <ConnectionDetails
           app={app}
@@ -85,7 +93,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
           <Notice severity="info">
             {t('multiPort.firstPortOnly', 'This connection reaches port {{port}} only.', { port: service.port })}
             <em>
-              {t('multiPort.subnetReachesAll', 'All its ports, {{ports}}, are reached by name on the device subnet.', {
+              {t('multiPort.accessReachesAll', 'With Access, every port ({{ports}}) is reached by address.', {
                 ports: formatPorts(service.ports),
               })}
             </em>
@@ -99,11 +107,14 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
         {variant === 'connection' && (
           <AccordionMenuItem
             gutters
-            subtitle={t('connect.connection', 'Connection')}
-            expanded={accordion.config}
-            onClick={() => dispatch.ui.accordion({ config: !accordion.config })}
+            subtitle={t('connect.connectionDetails', 'Connection details')}
+            expanded={detailsOpen}
+            onClick={() => setDetailsOpen(!detailsOpen)}
             action={<ConnectionMenu connection={connection} service={service} />}
           >
+            <Box paddingX={2} paddingBottom={2}>
+              <Diagram />
+            </Box>
             <List disablePadding>
               <ListItemLocation
                 icon="sliders"
@@ -139,11 +150,11 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
                     severity="info"
                     onClose={() => dispatch.ui.setPersistent({ showDesktopNotice: false })}
                   >
-                    <strong>{t('connect.persistentEndpointsTitle', 'Want Persistent Private Endpoints?')}</strong>
+                    <strong>{t('connect.desktopAppTitle', 'Connect without a public address')}</strong>
                     <em>
                       {t(
-                        'connect.persistentEndpointsBody',
-                        'On demand connections with persistent endpoints, remote access, and improved launch commands.'
+                        'connect.desktopAppBody',
+                        'The Remote.It app connects on demand, reaches devices by address and launches your apps.'
                       )}
                     </em>
                     <Button
@@ -153,7 +164,7 @@ export const Connect: React.FC<{ variant?: 'connection' | 'session' }> = ({ vari
                       sx={{ marginTop: 1, marginBottom: 1 }}
                       onClick={() => windowOpen('https://link.remote.it/download/desktop')}
                     >
-                      {t('connect.downloadDesktop', 'Download Desktop')}
+                      {t('connect.downloadApp', 'Download the app')}
                     </Button>
                   </Notice>
                 )}

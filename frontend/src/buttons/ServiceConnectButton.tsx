@@ -1,35 +1,41 @@
 import React, { useState, useContext, useEffect } from 'react'
-import { clearConnectionError } from '../helpers/connectionHelper'
+import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
+import { Box, Collapse, List, Skeleton, Typography } from '@mui/material'
+import { State } from '../store'
+import { clearConnectionError } from '../helpers/connectionHelper'
+import { ConnectRouteKind, chooseRoutes } from '../helpers/connectRoutes'
 import { GUIDE_START_DATE } from '../constants'
 import { ConnectionErrorMessage } from '../components/ConnectionErrorMessage'
-import { Box, Typography, Collapse } from '@mui/material'
 import { DeviceContext } from '../services/Context'
-import { ComboButton } from './ComboButton'
 import { GuideBubble } from '../components/GuideBubble'
-import { ErrorButton } from '../buttons/ErrorButton'
 import { DesktopUI } from '../components/DesktopUI'
 import { Gutters } from '../components/Gutters'
 import { LocalSubnetConnect } from '../components/LocalSubnetConnect'
 import { opensTerminal } from '../helpers/sshHelper'
 import { useLocalSignIn, useSubnetReach } from '../hooks/useLocalSubnetName'
+import { useAddressReachable } from '../hooks/useAddressReachable'
 import { LocalSignInNotice } from '../components/LocalSignInNotice'
 import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
 import { AppTerminalOption } from '../components/AppTerminal'
 import { useServiceApp } from '../hooks/useDeviceApps'
 import { useApplication } from '../hooks/useApplication'
-import { Link } from '../components/Link'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { LocalPortConnect } from '../components/LocalPortConnect'
 import { LocalPortsListed } from '../components/LocalPortsListed'
+import { PublicAddressConnect } from '../components/PublicAddressConnect'
+import { ConnectRoute, ConnectRouteVariant } from '../components/ConnectRoute'
 import { useLocalPort } from '../hooks/useLocalPort'
 import { wantsHttps } from '../services/localPorts'
 import { HTTP_TYPE } from '../services/graphQLDetectedScheme'
+import { isReverseProxy } from '../models/applicationTypes'
 
 export const ServiceConnectButton: React.FC = () => {
   const { t } = useTranslation()
   const { device, service, connection, instance } = useContext(DeviceContext)
   const [showError, setShowError] = useState<boolean>(true)
-  // A name that works on this machine needs no connection: it is shown in place of Connect, the proxy one step away.
+  const reverseProxy = useSelector((state: State) => isReverseProxy(state, service?.typeID))
+  const deviceSessions = useDeviceSessions()
   const reach = useSubnetReach(device?.id, service?.id)
   const local = reach.local
   // A service's own name's port goes with that name alone: the one this machine answered may be its device's (a daemon
@@ -39,50 +45,129 @@ export const ServiceConnectButton: React.FC = () => {
     other => other.id !== service?.id && other.enabled !== false && other.port === 443
   )
   const defaultHttp = !sharedHttpsInUse && service?.typeID === HTTP_TYPE && service.port === 80
-  const [proxy, setProxy] = useState(false)
-  // No agent here reaches it, but it has a name and serves the web: this browser's client can open it in its own tab
-  // (services/browserGateway), the proxy one step away as for a local name.
   const web = useApplication(service, connection).urlForm
   const ssh = service?.typeID === 28
-  // The app the service belongs to, where it does: one whose service is ssh and that signs people in by certificate
-  // opens in our web SSH as well, with the person's own account (components/AppTerminal).
   const serving = useServiceApp(device, service)
   const byCertificate = opensTerminal(serving.app, serving.appService)
   // The browser gateway uses the default HTTPS port. A shared name on another port needs a service connection.
   const gatewayWeb = web && (reach.port === 443 || service?.port === 443 || defaultHttp)
-  const gateway = !local && reach.checked && !!reach.name && (gatewayWeb || ssh) && !proxy
-  // A local port of this machine (services/localPorts), where it runs our daemon: asked for here, or open already —
-  // then it is what the panel shows, until it is disconnected.
+  const named = reach.checked && !!reach.name
+  const browserRoute = named && !local && !!gatewayWeb
+  const reachable = useAddressReachable(browserRoute ? reach.name : undefined)
   const localPort = useLocalPort(service?.id, device?.id)
   const [portAsked, setPortAsked] = useState(false)
-  const onPort = localPort.offered && (portAsked || !!localPort.local?.open)
   useEffect(() => {
     if (localPort.local && !localPort.local.open && !localPort.busy) setPortAsked(false)
   }, [localPort.local?.open, localPort.busy])
-  const named = !connection.enabled && !onPort && ((!!local && !proxy) || gateway)
-  // remote.it is on this machine but does not act for this person (services/localSubnet localSignIn): Connect goes
-  // through this browser meanwhile, and signing in there is offered.
-  const signIn = useLocalSignIn(!local && reach.checked && !!reach.name && !onPort)
+  const portChosen = localPort.offered && (portAsked || !!localPort.local?.open)
+
+  const routes = chooseRoutes({
+    address: !!local,
+    browser: browserRoute,
+    browserReachable: reachable,
+    terminal: named && ssh,
+    localPort: localPort.offered,
+    localPortChosen: portChosen,
+    publicActive: !!connection.enabled || !!connection.connecting,
+  })
+  // The app's own terminal while it runs is the terminal route; otherwise what the app is doing, and turning it on.
+  const appOption = byCertificate && (!named || serving.app?.state !== 'running')
+  const checking = !!reach.name && !reach.checked && !connection.enabled && !portChosen
+  const byAddress = routes.primary === 'address' || routes.primary === 'browser' || routes.primary === 'terminal'
+  // remote.it is on this machine but does not act for this person (services/localSubnet localSignIn): signing in there
+  // is offered, the other routes working meanwhile.
+  const signIn = useLocalSignIn(!local && named && !portChosen)
+
   const usePort = () => {
     setPortAsked(true)
     // A web service asks for https the first time (graphql serves it where it can); after that, as the person left it.
     localPort.open(undefined, wantsHttps(!!web, localPort.local) || undefined)
   }
-  const portLink = localPort.offered && (
-    <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
-      <Link onClick={usePort}>{t('serviceConnectButton.useLocalPort', 'Connect on a local port instead')}</Link>
-    </Typography>
-  )
-  // The name works here, so the proxy is not in use: an error an earlier proxy attempt left on the connection — saved
-  // with it, so back on every reload, and red on the service — is stale, and cleared. A proxy attempt asked for after
-  // this sets its own.
+
+  // The address works here, so the public route is not in use: an error an earlier attempt left on the connection —
+  // saved with it, so back on every reload, and red on the service — is stale, and cleared.
   useEffect(() => {
-    if (named && connection?.error) clearConnectionError(connection)
-  }, [named, connection?.error])
+    if (byAddress && !connection.enabled && connection?.error) clearConnectionError(connection)
+  }, [byAddress, connection?.error])
+
+  if (!service) return null
+  const offline = service.state !== 'active' && !!device?.name
+
+  const route = (kind: ConnectRouteKind, variant: ConnectRouteVariant) => {
+    switch (kind) {
+      case 'address':
+        return (
+          <LocalSubnetConnect
+            key={kind}
+            variant={variant}
+            local={local!}
+            port={namePort}
+            defaultHttp={defaultHttp}
+            service={service}
+            connection={connection}
+            byCertificate={byCertificate}
+          />
+        )
+      case 'browser':
+        return <BrowserGatewayConnect key={kind} variant={variant} name={reach.name!} reachable={reachable} />
+      case 'terminal':
+        return (
+          <BrowserGatewayConnect
+            key={kind}
+            variant={variant}
+            name={reach.name!}
+            terminal={{
+              port: reach.port || service.port || 22,
+              title: service.name,
+              service: service.id,
+              byCertificate,
+            }}
+          />
+        )
+      case 'localPort':
+        return variant === 'primary' && portChosen ? (
+          <LocalPortConnect key={kind} state={localPort} service={service} connection={connection} />
+        ) : (
+          <ConnectRoute
+            key={kind}
+            variant={variant}
+            icon="laptop-code"
+            label={
+              variant === 'primary'
+                ? t('localPortConnect.connect', 'Connect')
+                : t('localPortConnect.optionLabel', 'Connect on a local port')
+            }
+            how={t('localPortConnect.optionHow', 'Opens a port on this computer that connects when used.')}
+            onClick={usePort}
+            loading={localPort.busy}
+          />
+        )
+      case 'public':
+        return (
+          <PublicAddressConnect
+            key={kind}
+            variant={variant}
+            device={device}
+            service={service}
+            connection={connection}
+            permissions={instance?.permissions}
+            reverseProxy={reverseProxy}
+            signedInAddresses={deviceSessions}
+            showError={showError}
+            onToggleError={() => setShowError(!showError)}
+          />
+        )
+    }
+  }
 
   return (
     <Collapse in={!connection.connectLink} timeout={800}>
-      <Gutters top={null} bottom="lg" size="md">
+      <Gutters top="md" bottom="sm" size="md">
+        {signIn && !local && !portChosen && (
+          <Box sx={{ marginBottom: 2 }}>
+            <LocalSignInNotice signIn={signIn} />
+          </Box>
+        )}
         <GuideBubble
           guide="connectButton"
           enterDelay={400}
@@ -93,116 +178,65 @@ export const ServiceConnectButton: React.FC = () => {
           instructions={
             <>
               <Typography variant="h3" gutterBottom>
-                <b>
-                  <DesktopUI hide>{t('serviceConnectButton.guideTitleBrowser', 'Starting a connection')}</DesktopUI>
-                  <DesktopUI>{t('serviceConnectButton.guideTitleDesktop', 'Connect on demand')}</DesktopUI>
-                </b>
+                <b>{t('serviceConnectButton.guideConnect', 'Connect to this service')}</b>
               </Typography>
               <DesktopUI hide>
                 <Typography variant="body2" gutterBottom>
-                  {t(
-                    'serviceConnectButton.guideBodyBrowser',
-                    'Create a connection to this service with the connect button.'
-                  )}
+                  {t('serviceConnectButton.guideBodyRoute', 'The big button picks the best way from where you are.')}
                 </Typography>
               </DesktopUI>
               <DesktopUI>
                 <Typography variant="body2" gutterBottom>
                   {t(
-                    'serviceConnectButton.guideBodyDesktop',
-                    'Start listening on this endpoint for network requests. On request, automatically create the connection and disconnect when idle.'
+                    'serviceConnectButton.guideBodyOnDemand',
+                    'Connect starts listening for this service. It connects when used and disconnects when idle.'
                   )}
                 </Typography>
               </DesktopUI>
-              {connection.autoLaunch && (
-                <Typography variant="body2" gutterBottom>
-                  <em>
-                    {t(
-                      'serviceConnectButton.guideAutoLaunch',
-                      'This connection will launch when connected because the "Auto Launch" configuration toggle is on.'
-                    )}
-                  </em>
-                </Typography>
-              )}
             </>
           }
         >
-          {signIn && !local && !onPort && (
-            <Gutters size="md" top={null} bottom={null}>
-              <LocalSignInNotice signIn={signIn} />
-            </Gutters>
-          )}
-          <Gutters size="md" sx={{ display: 'flex', alignItems: 'flex-end', '& button': { height: 45 } }} bottom={null}>
-            {onPort ? (
-              <Box sx={{ width: '100%' }}>
-                <LocalPortConnect state={localPort} service={service} connection={connection} />
-              </Box>
-            ) : named ? (
-              <Box sx={{ width: '100%' }}>
-                {local ? (
-                  <LocalSubnetConnect
-                    local={local}
-                    port={namePort}
-                    defaultHttp={defaultHttp}
-                    service={service}
-                    connection={connection}
-                    byCertificate={byCertificate}
-                  />
-                ) : (
-                  <BrowserGatewayConnect
-                    name={reach.name!}
-                    terminal={
-                      ssh && service
-                        ? {
-                            port: reach.port || service.port || 22,
-                            title: service.name,
-                            service: service.id,
-                            byCertificate,
-                          }
-                        : undefined
-                    }
-                  />
-                )}
-                <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
-                  <Link onClick={() => setProxy(true)}>
-                    {t('serviceConnectButton.useProxy', 'Connect through the proxy instead')}
-                  </Link>
+          <Box
+            data-testid="connect-primary"
+            data-route={checking ? 'checking' : routes.primary}
+            sx={{ bgcolor: 'primaryHighlight.main', borderRadius: 2, paddingX: { xs: 2, sm: 2.5 }, paddingY: 2 }}
+          >
+            {checking ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+                <Skeleton variant="rounded" width={220} height={48} />
+                <Typography variant="body2" color="textSecondary">
+                  {t('serviceConnectButton.checking', 'Finding the best way to connect…')}
                 </Typography>
-                {portLink}
               </Box>
             ) : (
-              <>
-                <ErrorButton connection={connection} onClick={() => setShowError(!showError)} visible={showError} />
-                <ComboButton
-                  size="large"
-                  iconType="solid"
-                  service={service}
-                  connection={connection}
-                  permissions={instance?.permissions}
-                  fullWidth
-                />
-              </>
+              route(routes.primary, 'primary')
             )}
-          </Gutters>
-          {!onPort && !named && portLink && (
-            <Gutters size="md" top={null} bottom={null}>
-              {portLink}
-            </Gutters>
-          )}
-          {/* An app's ssh service that signs people in by certificate: our web SSH, an option beside the ways above. */}
-          {byCertificate && (
-            <Gutters size="md" top={null} bottom={null}>
-              <AppTerminalOption device={device} service={service} serving={serving} />
-            </Gutters>
-          )}
-          {/* The service's other ports here that this machine's daemon lists: the machine's, opened by someone else. */}
-          {localPort.offered && localPort.others.length > 0 && (
-            <Gutters size="md" top={null} bottom={null}>
-              <LocalPortsListed ports={localPort.others} />
-            </Gutters>
-          )}
+          </Box>
         </GuideBubble>
+        {offline && (
+          <Typography variant="caption" color="textSecondary" component="p" sx={{ paddingX: 2, marginTop: 1 }}>
+            {t(
+              'serviceConnectButton.offline',
+              '{{device}} is offline. Connecting works again once it is back online.',
+              {
+                device: device?.name,
+              }
+            )}
+          </Typography>
+        )}
         <ConnectionErrorMessage connection={connection} visible={showError} />
+        {!checking && (routes.others.length > 0 || appOption) && (
+          <Box sx={{ marginTop: 2.5 }} data-testid="connect-more">
+            <Typography variant="subtitle2" component="h3" sx={{ paddingLeft: 2, marginBottom: 0.5 }}>
+              {t('serviceConnectButton.moreWays', 'More ways to connect')}
+            </Typography>
+            <List dense disablePadding>
+              {routes.others.map(kind => route(kind, 'option'))}
+            </List>
+            {appOption && <AppTerminalOption device={device} service={service} serving={serving} />}
+          </Box>
+        )}
+        {localPort.offered && localPort.others.length > 0 && <LocalPortsListed ports={localPort.others} />}
       </Gutters>
     </Collapse>
   )
