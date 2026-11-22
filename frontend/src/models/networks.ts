@@ -299,15 +299,15 @@ export default createModel<RootModel>()({
       dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
     },
 
-    async addNetwork(params: INetwork, state) {
+    async addNetwork(params: INetwork, state): Promise<string | undefined> {
       const id = selectActiveAccountId(state)
       const response = await graphQLAddNetwork(params.name, id)
       if (response === 'ERROR') return
-      params.id = response?.data?.data?.createNetwork?.id
-      console.log('ADDING NETWORK', params)
-      await dispatch.networks.setNetwork(params)
+      const networkId: string | undefined = response?.data?.data?.createNetwork?.id
+      if (!networkId) return
+      await dispatch.networks.setNetwork({ ...params, id: networkId })
       await dispatch.networks.fetch()
-      dispatch.ui.set({ redirect: `/networks/${params.id}` })
+      return networkId
     },
 
     async updateNetwork(network: INetwork) {
