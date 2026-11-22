@@ -48,7 +48,7 @@ export const scriptAttributes: ScriptAttribute[] = [
   new ScriptAttribute({
     id: 'scriptDescription',
     label: 'Description',
-    defaultWidth: 400,
+    defaultWidth: 360,
     value: ({ file }) => file?.shortDesc,
   }),
   // What it stores, every version: what deleting it frees (only where the API says).
