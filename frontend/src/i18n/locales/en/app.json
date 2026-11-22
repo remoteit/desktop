@@ -659,6 +659,7 @@
     "leavesExit": "Stops carrying {{name}} when added",
     "leavesProxy": "Leaves {{name}} when added",
     "maxWait": "Wait for open connections (minutes)",
+    "maxWaitInvalid": "Enter a whole number of minutes, from 1 to 10080.",
     "noCandidates": "You have no device that can carry an exit yet. Add a device first.",
     "noCandidatesProxy": "You have no device that can run a proxy server yet. Add a device first.",
     "noDevice": "No device yet",
