@@ -121,7 +121,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             </Typography>
           </Route>
         )}
-        <Route path={['/devices', '/connections', '/networks']}>
+        <Route path="/devices">
           {!showSearch && !searched && (
             <IconButton
               size="md"
