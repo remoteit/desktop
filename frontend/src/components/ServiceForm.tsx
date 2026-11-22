@@ -297,7 +297,7 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
                         )}
                       </Typography>
                     ) : (
-                      <Typography variant="caption">
+                      <Typography variant="caption" sx={{ overflowWrap: 'anywhere' }}>
                         {t(
                           'serviceForm.serviceHostHelp',
                           'Enter a local network IP address or fully qualified domain name to configure this as a jump service to a system on your local network.'

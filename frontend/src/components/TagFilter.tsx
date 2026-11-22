@@ -24,6 +24,7 @@ import { TagEditor } from './TagEditor'
 import { ColorChip } from './ColorChip'
 import { Tags } from './Tags'
 import { Icon } from './Icon'
+import { spacing } from '../styling'
 // import { Pre } from './Pre'
 
 type Props = ListItemProps & {
@@ -100,7 +101,7 @@ export const TagFilter: React.FC<Props> = ({
           )}
           {form.deviceIds?.length && <MenuItem value="CUSTOM">{t('tagFilter.savedDevices', 'Saved Devices')}</MenuItem>}
         </TextField>
-        <ListItemSecondaryAction sx={{ marginRight: selectDevices ? 2 : 0 }}>
+        <ListItemSecondaryAction sx={{ marginRight: `${spacing.md}px` }}>
           {formAccess === 'CUSTOM' && form.deviceIds?.length ? (
             <Chip
               size="small"
