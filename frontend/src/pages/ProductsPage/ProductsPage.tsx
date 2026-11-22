@@ -59,7 +59,7 @@ export const ProductsPage: React.FC<{ select?: boolean }> = ({ select }) => {
       {!selected.length && (
         <ListToolbar
           left={
-            initialized &&
+            !!products.length &&
             !productId && (
               <Typography variant="caption" color="textSecondary" noWrap>
                 {t('productsPage.count', {
