@@ -1,25 +1,42 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { useHistory, useParams } from 'react-router-dom'
-import { List, ListItem, ListItemText, ListSubheader, MenuItem, TextField, Typography } from '@mui/material'
+import {
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  MenuItem,
+  TextField,
+  Typography,
+} from '@mui/material'
+import type { State } from '../store'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { refusalOf } from '../services/graphQL'
 import { graphQLAddExitDevice } from '../services/graphQLDeviceRuns'
 import {
   Exit,
+  OfferedExit,
   graphQLAccountExits,
   graphQLAddExitTag,
   graphQLDeleteExit,
+  graphQLDeviceExit,
   graphQLExit,
   graphQLLeaveExitShare,
   graphQLMoveExitUsers,
+  graphQLOfferedExits,
   graphQLRemoveExitTag,
   graphQLRenameExit,
+  graphQLSetDeviceExit,
   graphQLSetExitActivation,
   graphQLSetExitLan,
   graphQLSetNetworkExit,
 } from '../services/graphQLExits'
-import { availabilityLine, deleteExitLines, stillRunsLine, usersLine } from '../helpers/runsHelper'
+import { afterActionLine, deleteExitWords, exitSummary, routedLine } from '../helpers/exitWords'
+import { remoteitLine } from './ExitsPage'
 import { useAccountExits } from '../hooks/useAccountExits'
 import { RunDevicePicker, addEach } from '../components/RunDevicePicker'
 import { InlineTextFieldSetting } from '../components/InlineTextFieldSetting'
@@ -29,35 +46,31 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { ExitShareDialog } from '../components/ExitShareDialog'
 import { ExitTagEditor } from '../components/ExitTagEditor'
 import { SelectSetting } from '../components/SelectSetting'
-import { RunListItem } from '../components/RunListItem'
+import { CarrierRow } from '../components/CarrierRow'
 import { IconButton } from '../buttons/IconButton'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { Icon } from '../components/Icon'
 
-/* One exit (graphql-api docs/PROXY-GROUPS.md §13). For whoever manages it: its name and activation, whether its users
-   reach its devices' local networks — the exit's setting, asked before it is opened, and closed at once —, the devices
-   it runs on — each with its state and checks, its local network as its machine has it, its actions in this exit, and
-   what the device still runs after one — and adding more, saying first whose network that opens, the devices using it,
-   who it is shared with, its tags, the networks it is offered on, and, once no device runs it, moving its users to
-   another exit and deleting it, saying what goes. With no device in service it has no device available: those using it
-   go their usual way until one is. For someone it is shared with: whose it is, whether a device may choose it now,
-   whether it reaches its devices' networks, and leaving it. */
+/* One exit. For whoever manages it: its exit devices, each with Pause, Resume and Remove, and Add device; who can use
+   it (sharing, networks, local networks, tags); its name and how new devices start; deleting it. For someone it is
+   shared with: whose it is, whether it is ready, and leaving it. One of Remote.It's: where it is, run by Remote.It. */
 export const ExitPage: React.FC = () => {
   const { exitID } = useParams<{ exitID: string }>()
-  // All the page holds is one exit's — its dialogs, its picker, its answers —: another exit's address starts afresh, so
-  // a dialog opened on one never acts on the next.
   return <OneExit key={exitID} exitID={exitID} />
 }
 
 const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
   const { t } = useTranslation()
   const history = useHistory()
+  const thisId = useSelector((state: State) => state.backend.thisId)
   const [exit, setExit] = useState<Exit | null | 'ERROR' | typeof UNSUPPORTED>()
+  const [remoteit, setRemoteit] = useState<OfferedExit | null>()
   const [busy, setBusy] = useState(false)
-  const [notice, setNotice] = useState<{ severity: 'error' | 'info'; text: string }>()
+  const [notice, setNotice] = useState<{ severity: 'error' | 'info' | 'success'; text: string }>()
   const [adding, setAdding] = useState(false)
   const [refusals, setRefusals] = useState<ILookup<string>>({})
   const [sharing, setSharing] = useState(false)
@@ -65,17 +78,16 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
   const [leaving, setLeaving] = useState(false)
   const [moving, setMoving] = useState(false)
   const [openingLan, setOpeningLan] = useState(false)
+  const [thisRoutes, setThisRoutes] = useState<boolean>()
 
   const { reload: reloadList } = useAccountExits()
   const reads = useRef(0)
 
-  // Only the last read asked for is shown: one answered late never overwrites a newer one.
   const load = useCallback(async () => {
     const read = ++reads.current
     const answer = await graphQLExit(exitID)
     if (read === reads.current) setExit(answer)
   }, [exitID])
-  // The exit read again after a change, and the list beside it.
   const refresh = async () => {
     reloadList()
     await load()
@@ -85,14 +97,32 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
     load()
   }, [load])
 
-  if (exit === undefined) return <LoadingMessage />
+  // Remote.It's own exits are not read by id: they come from the exits offered to you.
+  useEffect(() => {
+    if (exit !== null) return
+    graphQLOfferedExits().then(offered =>
+      setRemoteit(Array.isArray(offered) ? offered.find(each => each.id === exitID && each.remoteit) ?? null : null)
+    )
+  }, [exit, exitID])
+
+  useEffect(() => {
+    if (!thisId) return
+    graphQLDeviceExit(thisId).then(read =>
+      setThisRoutes(!!read && typeof read === 'object' && read.usesExit?.id === exitID)
+    )
+  }, [thisId, exitID])
+
+  if (exit === undefined || (exit === null && remoteit === undefined)) return <LoadingMessage />
+  if (exit === null && remoteit) return <RemoteitExit exit={remoteit} />
+  if (exit && typeof exit === 'object' && exit.remoteit && !exit.manage)
+    return <RemoteitExit exit={{ ...exit, reasons: null }} />
   if (exit === UNSUPPORTED || exit === 'ERROR' || exit === null)
     return (
       <Gutters>
         <Notice severity={exit === 'ERROR' ? 'error' : 'info'} fullWidth>
           {exit === 'ERROR'
-            ? t('exitPage.failed', 'The exit could not be read.')
-            : t('exitPage.none', 'No such exit, or not one you may see.')}
+            ? t('exitPage.failed', 'Couldn’t load this exit. Try again.')
+            : t('exitPage.none', 'This exit doesn’t exist, or you can’t see it.')}
         </Notice>
       </Gutters>
     )
@@ -101,12 +131,12 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
   const own = !exit.remoteit
   const devices = exit.devices ?? []
   const shared = !manage && !!exit.access.length
+  const failed = t('exitPage.notChanged', 'Couldn’t save the change. Try again.')
 
-  // A change through graphql, then the exit read again: a refusal is said above, in graphql's words.
-  const change = async (run: () => Promise<Parameters<typeof refusalOf>[0]>, failed: string) => {
+  const change = async (run: () => Promise<Parameters<typeof refusalOf>[0]>, failedText: string) => {
     setBusy(true)
     const refused = refusalOf(await run())
-    setNotice(refused === undefined ? undefined : { severity: 'error', text: refused || failed })
+    setNotice(refused === undefined ? undefined : { severity: 'error', text: refused || failedText })
     await refresh()
     setBusy(false)
     return refused === undefined
@@ -121,33 +151,54 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
     setBusy(false)
   }
 
-  // Deleted or left, it is gone from here: the list opens, read again, and the exit is not.
-  const gone = async (run: () => ReturnType<typeof graphQLLeaveExitShare>, failed: string) => {
+  const gone = async (run: () => ReturnType<typeof graphQLLeaveExitShare>, failedText: string) => {
     setBusy(true)
     const refused = refusalOf(await run())
     setBusy(false)
     setDeleting(false)
     setLeaving(false)
-    if (refused !== undefined) return setNotice({ severity: 'error', text: refused || failed })
+    if (refused !== undefined) return setNotice({ severity: 'error', text: refused || failedText })
     reloadList()
     history.push('/exits')
   }
   const remove = () =>
-    gone(() => graphQLDeleteExit(exit.id, !!exit.users), t('exitPage.notDeleted', 'It was not deleted.'))
-  const leave = () => gone(() => graphQLLeaveExitShare(exit.id), t('exitPage.notLeft', 'It was not left.'))
+    gone(
+      () => graphQLDeleteExit(exit.id, !!exit.users),
+      t('exitPage.notDeleted', 'Couldn’t delete the exit. Try again.')
+    )
+  const leave = () =>
+    gone(() => graphQLLeaveExitShare(exit.id), t('exitPage.notLeft', 'Couldn’t leave the exit. Try again.'))
 
-  const failed = t('exitPage.notChanged', 'It was not changed: try again.')
+  const routeThis = async () => {
+    if (!thisId) return
+    setBusy(true)
+    const refused = refusalOf(await graphQLSetDeviceExit(thisId, exit.id))
+    setBusy(false)
+    if (refused !== undefined)
+      return setNotice({
+        severity: 'error',
+        text: refused || t('exitPage.routeFailed', 'Couldn’t route this device. Try again.'),
+      })
+    setThisRoutes(true)
+    setNotice({
+      severity: 'success',
+      text: t('exitPage.routed', 'This device now routes through {{exit}}.', { exit: exit.name }),
+    })
+  }
 
-  // Its devices' local networks: opened once asked, as everyone who may use the exit can then reach what is on them;
-  // closed at once. Why you may not open them is said beside it: off, as it stays off; on, as it could not be opened
-  // again.
   const setLan = (lan: boolean) => change(() => graphQLSetExitLan(exit.id, lan), failed)
-  const lanRefused = !exit.lanRefusal
-    ? ''
-    : exit.lan
-    ? t('exitPage.lanOnRefused', 'Once off, you can’t turn it on again: {{reason}}', { reason: exit.lanRefusal })
-    : t('exitPage.lanRefused', 'You can’t turn it on: {{reason}}', { reason: exit.lanRefusal })
+  const lanRefused = exit.lanRefusal
+    ? t('exitPage.lanRefused', 'You can’t turn this on: {{reason}}', { reason: exit.lanRefusal })
+    : ''
   const lanDevices = devices.map(device => device.name || device.id)
+  const subtitle = exit.remoteit
+    ? remoteitLine(t, exit)
+    : shared && exit.owner?.email
+    ? [
+        exit.offered ? t('carry.ready', 'Ready') : t('carry.notReadyShort', 'Not ready'),
+        t('exitPage.sharedBy', 'Shared with you by {{email}}', { email: exit.owner.email }),
+      ].join(' · ')
+    : [exitSummary(t, exit), routedLine(t, exit.users)].filter(Boolean).join(' · ')
 
   return (
     <Container
@@ -159,16 +210,8 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
             <Title>{exit.name}</Title>
           </Typography>
           <Gutters top={null} bottom="sm">
-            <Typography variant="body2" color="textSecondary">
-              {exit.remoteit
-                ? exit.provider || exit.location
-                  ? t('exitPage.remoteit', 'One of remote.it’s exits · {{provider}}', {
-                      provider: exit.provider || exit.location,
-                    })
-                  : t('exitPage.remoteitNowhere', 'One of remote.it’s exits')
-                : shared && exit.owner?.email
-                ? t('exitPage.sharedBy', 'Shared with you by {{email}}', { email: exit.owner.email })
-                : usersLine(t, exit.users)}
+            <Typography variant="body2" color="textSecondary" data-summary>
+              {subtitle}
             </Typography>
           </Gutters>
         </>
@@ -182,78 +225,67 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
             </Notice>
           </Gutters>
         )}
-        {availabilityLine(t, exit) && (
+        {manage && own && !devices.length && !adding && (
           <Gutters>
-            <Notice severity="warning" fullWidth>
-              {availabilityLine(t, exit)}
+            <Notice
+              fullWidth
+              button={
+                <Button size="small" variant="contained" onClick={() => setAdding(true)} data-add-first>
+                  {t('exitPage.addDevice', 'Add device')}
+                </Button>
+              }
+            >
+              {t('exitPage.needsDevice', 'Choose a device to carry this exit’s traffic.')}
             </Notice>
           </Gutters>
         )}
-        {manage && (
+        {manage && own && !!devices.length && exit.dormant && (
+          <Gutters>
+            <Notice severity="warning" fullWidth data-not-ready>
+              {t(
+                'exitPage.notReady',
+                'No device is carrying this exit right now. Devices routing through it go direct.'
+              )}
+            </Notice>
+          </Gutters>
+        )}
+        {thisId && exit.offered && thisRoutes !== undefined && (
           <List>
-            {own && (
-              <InlineTextFieldSetting
-                icon="tag"
-                label={t('exitPage.name', 'Name')}
-                value={exit.name}
-                maxLength={255}
-                disabled={busy}
-                onSave={name => change(() => graphQLRenameExit(exit.id, String(name).trim()), failed)}
-              />
-            )}
-            <SelectSetting
-              icon="right-to-bracket"
-              label={t('exitPage.activation', 'A device added goes into service')}
-              value={exit.activation}
-              values={[
-                { key: 'auto', name: t('exitPage.activationAuto', 'By itself, once its checks pass') },
-                { key: 'admin', name: t('exitPage.activationAdmin', 'When an admin puts it in service') },
-              ]}
-              disabled={busy}
-              onChange={activation =>
-                change(() => graphQLSetExitActivation(exit.id, activation as Exit['activation']), failed)
+            <ListItemSetting
+              icon="arrow-right-from-bracket"
+              label={
+                thisRoutes
+                  ? t('exitPage.thisRoutes', 'This device routes through it')
+                  : t('exitPage.routeThis', 'Route this device through it')
               }
+              button={thisRoutes ? undefined : t('exitPage.routeButton', 'Route through')}
+              secondaryContentWidth="100px"
+              buttonDisabled={busy}
+              onButtonClick={routeThis}
             />
-            {own && (
-              <ListItemSetting
-                icon="network-wired"
-                label={t('exitPage.lan', 'Its users reach its devices’ local networks')}
-                subLabel={
-                  <>
-                    {t('exitPage.lanHint', 'Each device’s network: printers, files, its router')}
-                    {lanRefused && (
-                      <Typography component="span" variant="caption" display="block" data-lan-refusal>
-                        {lanRefused}
-                      </Typography>
-                    )}
-                  </>
-                }
-                toggle={exit.lan}
-                disabled={busy || (!exit.lan && !!exit.lanRefusal)}
-                onClick={() => (exit.lan ? setLan(false) : setOpeningLan(true))}
-              />
-            )}
           </List>
         )}
         {manage && (
           <List data-runs-on>
             <ListSubheader>
-              {t('exitPage.runsOn', 'Runs on')}
-              {own && (
-                <IconButton
-                  icon={adding ? 'times' : 'plus'}
-                  title={adding ? t('exitPage.cancelAdd', 'Cancel') : t('exitPage.add', 'Add devices')}
-                  size="sm"
+              {t('exitPage.devices', 'Exit devices')}
+              {own && (devices.length > 0 || adding) && (
+                <Button
+                  size="small"
+                  startIcon={<Icon name={adding ? 'times' : 'plus'} size="sm" />}
                   disabled={busy}
                   onClick={() => {
                     setRefusals({})
                     setAdding(!adding)
                   }}
-                />
+                  data-add
+                >
+                  {adding ? t('exitPage.cancelAdd', 'Cancel') : t('exitPage.addDevice', 'Add device')}
+                </Button>
               )}
             </ListSubheader>
             {adding && exit.owner && (
-              <Gutters>
+              <Gutters top="xs">
                 <RunDevicePicker
                   kind="exit"
                   target={exit.id}
@@ -266,33 +298,29 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
               </Gutters>
             )}
             {devices.map(device => (
-              <RunListItem
+              <CarrierRow
                 key={device.id}
                 kind="exit"
                 run={device}
                 name={exit.name}
                 activation={exit.activation}
-                to={`/devices/${device.id}/runs`}
                 manage
-                lan={own}
                 onChanged={async (runs, which) => {
-                  setNotice({ severity: 'info', text: stillRunsLine(t, which.name, runs) })
+                  setNotice({ severity: 'info', text: afterActionLine(t, 'exit', exit, which.name, runs) })
                   await refresh()
                 }}
               />
             ))}
-            {!devices.length && (
+            {!devices.length && !adding && (
               <ListItem>
-                <ListItemText
-                  secondary={t('exitPage.runsOnNone', 'No device runs it: add one to carry its traffic.')}
-                />
+                <ListItemText secondary={t('exitPage.devicesNone', 'No device yet.')} />
               </ListItem>
             )}
           </List>
         )}
         {manage && own && (
-          <List>
-            <ListSubheader>{t('exitPage.sharing', 'Sharing')}</ListSubheader>
+          <List data-who>
+            <ListSubheader>{t('exitPage.who', 'Who can use it')}</ListSubheader>
             <ListItemSetting
               icon="user-group"
               label={
@@ -300,17 +328,69 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                   ? t('exitPage.sharedWith', 'Shared with {{emails}}', {
                       emails: exit.access.map(share => share.user.email || share.user.id).join(', '),
                     })
-                  : t('exitPage.sharedWithNone', 'Shared with no one')
+                  : t('exitPage.sharedWithNone', 'Only you')
               }
-              subLabel={t('exitPage.sharingHint', 'Those it is shared with may send a device of theirs out through it')}
+              subLabel={t('exitPage.sharingHint', 'People you share it with can route their devices through it.')}
               button={t('exitPage.share', 'Share')}
-              disabled={busy}
+              secondaryContentWidth="100px"
+              buttonDisabled={busy}
               onButtonClick={() => setSharing(true)}
             />
+            {exit.networks?.map(network => (
+              <ListItemLocation
+                key={network.id}
+                to={`/networks/${network.id}`}
+                icon="chart-network"
+                title={network.name}
+                subtitle={t('exitPage.networkHint', 'Devices on this network can use it')}
+                dense
+              >
+                <IconButton
+                  icon="times"
+                  title={t('exitPage.networkRemove', 'Remove from {{network}}', { network: network.name })}
+                  size="sm"
+                  disabled={busy}
+                  onClick={event => {
+                    event.stopPropagation()
+                    change(() => graphQLSetNetworkExit(network.id, exit.id, false), failed)
+                  }}
+                />
+              </ListItemLocation>
+            ))}
+            {exit.networks && !exit.networks.length && (
+              <ListItemSetting
+                icon="chart-network"
+                label={t('exitPage.networksNone', 'Not on any network')}
+                subLabel={t(
+                  'exitPage.networksHint',
+                  'Add it from a network’s page to let that network’s devices use it.'
+                )}
+              />
+            )}
+            <ListItemSetting
+              icon="network-wired"
+              label={t('exitPage.lan', 'Reach the exit devices’ local networks')}
+              subLabel={
+                <>
+                  {t('exitPage.lanHint', 'People using this exit can reach printers and files there.')}
+                  {lanRefused && (
+                    <Typography component="span" variant="caption" display="block" data-lan-refusal>
+                      {lanRefused}
+                    </Typography>
+                  )}
+                </>
+              }
+              toggle={exit.lan}
+              disabled={busy || (!exit.lan && !!exit.lanRefusal)}
+              onClick={() => (exit.lan ? setLan(false) : setOpeningLan(true))}
+            />
             <ListItem data-tags>
+              <ListItemIcon>
+                <Icon name="tags" size="md" fixedWidth />
+              </ListItemIcon>
               <ListItemText
                 primary={t('exitPage.tags', 'Tags')}
-                secondary={t('exitPage.tagsHint', 'A role scoped by tags reaches the exit by them')}
+                secondary={t('exitPage.tagsHint', 'Roles limited to these tags can use it.')}
               />
               <ExitTagEditor
                 exit={exit}
@@ -321,39 +401,32 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
             </ListItem>
           </List>
         )}
-        {manage && own && exit.networks && (
-          <List data-networks>
-            <ListSubheader>{t('exitPage.networks', 'Offered on networks')}</ListSubheader>
-            {exit.networks.map(network => (
-              <ListItemLocation
-                key={network.id}
-                to={`/networks/${network.id}`}
-                icon="chart-network"
-                title={network.name}
-                dense
-              >
-                <IconButton
-                  icon="times"
-                  title={t('exitPage.networkRemove', 'Stop offering it on {{network}}', { network: network.name })}
-                  size="sm"
-                  disabled={busy}
-                  onClick={event => {
-                    event.stopPropagation()
-                    change(() => graphQLSetNetworkExit(network.id, exit.id, false), failed)
-                  }}
-                />
-              </ListItemLocation>
-            ))}
-            {!exit.networks.length && (
-              <ListItem>
-                <ListItemText
-                  secondary={t(
-                    'exitPage.networksNone',
-                    'On no network: make it available from a network’s page, for the devices initiating there.'
-                  )}
-                />
-              </ListItem>
+        {manage && (
+          <List>
+            <ListSubheader>{t('exitPage.settings', 'Settings')}</ListSubheader>
+            {own && (
+              <InlineTextFieldSetting
+                icon="tag"
+                label={t('exitPage.name', 'Name')}
+                value={exit.name}
+                maxLength={255}
+                disabled={busy}
+                onSave={name => change(() => graphQLRenameExit(exit.id, String(name).trim()), failed)}
+              />
             )}
+            <SelectSetting
+              icon="right-to-bracket"
+              label={t('exitPage.activation', 'New exit devices start')}
+              value={exit.activation}
+              values={[
+                { key: 'auto', name: t('exitPage.activationAuto', 'Automatically') },
+                { key: 'admin', name: t('exitPage.activationAdmin', 'After you approve') },
+              ]}
+              disabled={busy}
+              onChange={activation =>
+                change(() => graphQLSetExitActivation(exit.id, activation as Exit['activation']), failed)
+              }
+            />
           </List>
         )}
         {manage && own && (
@@ -361,23 +434,22 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
             {!devices.length && !!exit.users && (
               <ListItemSetting
                 icon="arrow-right-arrow-left"
-                label={t('exitPage.move', 'Move its users to another exit')}
-                subLabel={usersLine(t, exit.users)}
+                label={t('exitPage.move', 'Move its devices to another exit')}
+                subLabel={routedLine(t, exit.users)}
                 button={t('exitPage.moveButton', 'Move')}
-                disabled={busy}
+                secondaryContentWidth="100px"
+                buttonDisabled={busy}
                 onButtonClick={() => setMoving(true)}
               />
             )}
             <ListItemSetting
               icon="trash"
-              label={t('exitPage.delete', 'Delete this exit')}
-              subLabel={
-                devices.length
-                  ? t('exitPage.deleteRunning', 'Take its devices out of it first')
-                  : t('exitPage.deleteHint', 'It is kept until it is deleted, with no device running it too')
-              }
+              iconColor="danger"
+              label={t('exitPage.delete', 'Delete exit')}
+              subLabel={devices.length ? t('exitPage.deleteRunning', 'Remove its exit devices first.') : undefined}
               button={t('exitPage.deleteButton', 'Delete')}
-              disabled={busy || !!devices.length}
+              secondaryContentWidth="100px"
+              buttonDisabled={busy || !!devices.length}
               onButtonClick={() => setDeleting(true)}
             />
           </List>
@@ -386,8 +458,8 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
           <List data-lan-reach>
             <ListItemSetting
               icon="network-wired"
-              label={t('exitPage.lanReach', 'Through it, you reach its devices’ local networks')}
-              subLabel={t('exitPage.lanHint', 'Each device’s network: printers, files, its router')}
+              label={t('exitPage.lanReach', 'You can reach the exit devices’ local networks')}
+              subLabel={t('exitPage.lanReachHint', 'Printers and files there, while you route through it.')}
             />
           </List>
         )}
@@ -395,10 +467,11 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
           <List>
             <ListItemSetting
               icon="arrow-right-from-bracket"
-              label={t('exitPage.leave', 'Leave this exit')}
-              subLabel={t('exitPage.leaveHint', 'A device of yours using it goes its usual way')}
+              label={t('exitPage.leave', 'Leave exit')}
+              subLabel={t('exitPage.leaveHint', 'Your devices routing through it go direct.')}
               button={t('exitPage.leaveButton', 'Leave')}
-              disabled={busy}
+              secondaryContentWidth="100px"
+              buttonDisabled={busy}
               onButtonClick={() => setLeaving(true)}
             />
           </List>
@@ -424,7 +497,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
         onConfirm={remove}
         onDeny={() => setDeleting(false)}
       >
-        {deleteExitLines(t, exit).map(line => (
+        {deleteExitWords(t, exit).map(line => (
           <Typography key={line} variant="body2" gutterBottom>
             {line}
           </Typography>
@@ -432,7 +505,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
       </Confirm>
       <Confirm
         open={openingLan}
-        title={t('exitPage.lanTitle', 'Open its devices’ local networks?')}
+        title={t('exitPage.lanTitle', 'Open the exit devices’ local networks?')}
         action={t('exitPage.lanOpen', 'Turn on')}
         disabled={busy}
         onConfirm={() => {
@@ -445,17 +518,22 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
           {lanDevices.length
             ? t(
                 'exitPage.lanOpenSays',
-                'Everyone who may use {{exit}} can then reach the local networks of {{devices}} — printers, files, routers — and of each device added later.',
-                { exit: exit.name, devices: lanDevices.join(', ') }
+                'Everyone who can use {{exit}} can then reach printers and files on the networks of {{devices}}.',
+                {
+                  exit: exit.name,
+                  devices: lanDevices.join(', '),
+                }
               )
             : t(
                 'exitPage.lanOpenSaysNone',
-                'Everyone who may use {{exit}} can then reach the local network of each device added to it — printers, files, routers.',
-                { exit: exit.name }
+                'Everyone who can use {{exit}} can then reach printers and files on its devices’ networks.',
+                {
+                  exit: exit.name,
+                }
               )}
         </Typography>
         <Typography variant="body2">
-          {t('exitPage.lanOpenMachines', 'Each machine’s administrator keeps the last word, on the machine.')}
+          {t('exitPage.lanOpenMachines', 'An administrator of each device can still turn this off there.')}
         </Typography>
       </Confirm>
       <Confirm
@@ -468,15 +546,57 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
         onDeny={() => setLeaving(false)}
       >
         <Typography variant="body2">
-          {t('exitPage.leaveBody', 'You can no longer use it as an exit: a device of yours using it goes its usual way.')}
+          {t('exitPage.leaveBody', 'You can no longer route through it. Your devices routing through it go direct.')}
         </Typography>
       </Confirm>
     </Container>
   )
 }
 
-/* The users of an exit no device runs, moved to another of its account's with a device in service: the move said
-   first — how many devices — and then made. */
+// One of Remote.It's exits: where it is, and that Remote.It runs it.
+export const RemoteitExit: React.FC<{ exit: OfferedExit }> = ({ exit }) => {
+  const { t } = useTranslation()
+  return (
+    <Container
+      gutterBottom
+      bodyProps={{ verticalOverflow: true }}
+      header={
+        <>
+          <Typography variant="h1">
+            <Title>{exit.name}</Title>
+          </Typography>
+          <Gutters top={null} bottom="sm">
+            <Typography variant="body2" color="textSecondary">
+              {t('exitPage.remoteitSummary', 'Run by Remote.It')}
+            </Typography>
+          </Gutters>
+        </>
+      }
+    >
+      <List data-remoteit-exit>
+        {exit.location && (
+          <ListItemSetting icon="location-dot" label={exit.location} subLabel={t('exitPage.location', 'Location')} />
+        )}
+        {exit.provider && exit.provider !== exit.location && (
+          <ListItemSetting icon="cloud" label={exit.provider} subLabel={t('exitPage.provider', 'Hosted on')} />
+        )}
+        <ListItemSetting
+          icon="shield-check"
+          label={t('exitPage.remoteitRuns', 'Remote.It runs and looks after this exit')}
+          subLabel={t(
+            'exitPage.remoteitPlan',
+            'Included in your plan. Traffic through it counts toward your monthly transfer.'
+          )}
+        />
+        <ListItemSetting
+          icon="arrow-right-from-bracket"
+          label={t('exitPage.remoteitHow', 'To use it, choose it under Route through on a device')}
+        />
+      </List>
+    </Container>
+  )
+}
+
 const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => void }> = ({
   exit,
   onClose,
@@ -488,7 +608,6 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
   const [preview, setPreview] = useState<number>()
   const [refusal, setRefusal] = useState<string>()
   const [busy, setBusy] = useState(false)
-  // The exit chosen last: what an earlier choice's answer says is not shown for it.
   const chosen = useRef('')
 
   useEffect(() => {
@@ -507,7 +626,7 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
     setRefusal(undefined)
     const said = await graphQLMoveExitUsers(exit.id, target, false)
     if (chosen.current !== target) return
-    if ('reason' in said) setRefusal(said.reason || t('exitPage.moveFailed', 'The move could not be said: try again.'))
+    if ('reason' in said) setRefusal(said.reason || t('exitPage.moveFailed', 'Couldn’t check the move. Try again.'))
     else setPreview(said.users)
   }
 
@@ -515,7 +634,7 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
     setBusy(true)
     const done = await graphQLMoveExitUsers(exit.id, to, true)
     setBusy(false)
-    if ('reason' in done) return setRefusal(done.reason || t('exitPage.moveNotMade', 'The move was not made: try again.'))
+    if ('reason' in done) return setRefusal(done.reason || t('exitPage.moveNotMade', 'Couldn’t move them. Try again.'))
     onMoved()
   }
 
@@ -523,7 +642,7 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
   return (
     <Confirm
       open
-      title={t('exitPage.moveTitle', 'Move the users of {{exit}}', { exit: exit.name })}
+      title={t('exitPage.moveTitle', 'Move the devices routing through {{exit}}', { exit: exit.name })}
       action={t('exitPage.moveButton', 'Move')}
       disabled={busy || preview === undefined || !!refusal}
       onConfirm={move}
@@ -533,12 +652,10 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
         <LoadingMessage />
       ) : targets === 'ERROR' ? (
         <Notice severity="error" fullWidth>
-          {t('exitPage.moveUnread', 'Its account’s exits could not be read: try again.')}
+          {t('exitPage.moveUnread', 'Couldn’t load your other exits. Try again.')}
         </Notice>
       ) : !targets.length ? (
-        <Typography variant="body2">
-          {t('exitPage.moveNone', 'No other exit of its account has a device in service to take them.')}
-        </Typography>
+        <Typography variant="body2">{t('exitPage.moveNone', 'You have no other exit that is ready.')}</Typography>
       ) : (
         <TextField
           select
@@ -560,8 +677,8 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
           {t('exitPage.movePreview', {
             count: preview,
             exit: target.name,
-            defaultValue_one: '{{count}} device goes out through {{exit}} from now on.',
-            defaultValue_other: '{{count}} devices go out through {{exit}} from now on.',
+            defaultValue_one: '{{count}} device will route through {{exit}}.',
+            defaultValue_other: '{{count}} devices will route through {{exit}}.',
           })}
         </Typography>
       )}

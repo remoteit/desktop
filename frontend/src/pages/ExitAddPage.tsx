@@ -6,45 +6,58 @@ import { Box, Button, TextField, Typography } from '@mui/material'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLAddExitDevice } from '../services/graphQLDeviceRuns'
 import { Exit, graphQLCreateExit } from '../services/graphQLExits'
-import { RunDevicePicker, addEach } from '../components/RunDevicePicker'
+import { RunDevicePicker } from '../components/RunDevicePicker'
+import { refusalWhy } from '../helpers/exitWords'
 import { useAccountExits } from '../hooks/useAccountExits'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 
-/* A new exit (graphql-api docs/PROXY-GROUPS.md §13, "No shortcuts"): made in the account by its name, then the devices
-   that run it are chosen and added — two steps, as graphql has them. One refused is said by name and left to choose
-   again; the exit is kept either way, and its page opens once its devices are added, or skipped. */
+/* Creating an exit in one step: its name and the device to carry its traffic, then Create exit. The exit is made, the
+   device added, and its page opens. A device refused is said here, the exit kept: choose another, or open the exit. */
 export const ExitAddPage: React.FC = () => {
   const { t } = useTranslation()
   const history = useHistory()
   const accountId = useSelector(selectActiveAccountId)
   const [name, setName] = useState('')
+  const [device, setDevice] = useState<string>()
   const [exit, setExit] = useState<Exit>()
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<string>()
-  const [refusals, setRefusals] = useState<ILookup<string>>({})
   const { reload } = useAccountExits()
 
   const create = async () => {
     setBusy(true)
-    const made = await graphQLCreateExit(name.trim(), accountId)
-    setBusy(false)
-    if ('reason' in made) return setRefusal(made.reason || t('exitAdd.notMade', 'It was not made: try again.'))
     setRefusal(undefined)
-    setExit(made)
-    reload()
-  }
-
-  const add = async (ids: string[]) => {
-    if (!exit) return
-    setBusy(true)
-    const refused = await addEach(ids, id => graphQLAddExitDevice(exit.id, id))
+    let made = exit
+    if (!made) {
+      const created = await graphQLCreateExit(name.trim(), accountId)
+      if ('reason' in created) {
+        setBusy(false)
+        return setRefusal(created.reason || t('exitAdd.notMade', 'Couldn’t create the exit. Try again.'))
+      }
+      made = created
+      setExit(created)
+      reload()
+    }
+    if (device) {
+      const added = await graphQLAddExitDevice(made.id, device)
+      if ('reason' in added) {
+        setBusy(false)
+        reload()
+        return setRefusal(
+          t('exitAdd.deviceRefused', 'Exit created, but that device couldn’t be added. {{reason}}', {
+            reason: added.reason
+              ? refusalWhy(t, 'exit', added.reason).reason
+              : t('exitAdd.tryAnother', 'Choose another device.'),
+          })
+        )
+      }
+    }
     setBusy(false)
-    setRefusals(refused)
     reload()
-    if (!Object.keys(refused).length) history.push(`/exits/${exit.id}`)
+    history.push(`/exits/${made.id}`)
   }
 
   return (
@@ -52,60 +65,59 @@ export const ExitAddPage: React.FC = () => {
       gutterBottom
       bodyProps={{ verticalOverflow: true }}
       header={
-        <Typography variant="h1">
-          <Title>{exit ? exit.name : t('exitAdd.title', 'New exit')}</Title>
-        </Typography>
+        <>
+          <Typography variant="h1">
+            <Title>{t('exitAdd.title', 'Create exit')}</Title>
+          </Typography>
+          <Gutters top={null} bottom="sm">
+            <Typography variant="body2" color="textSecondary">
+              {t('exitAdd.intro', 'Name the exit and choose the device that will carry its traffic.')}
+            </Typography>
+          </Gutters>
+        </>
       }
     >
       <Gutters>
-        {!exit ? (
-          <Box display="flex" flexDirection="column" gap={2}>
-            <Typography variant="body2" color="textSecondary">
-              {t(
-                'exitAdd.description',
-                'Name it, then choose the devices that run it. Those you allow — you, roles, people you share it with, networks — send their traffic out through it.'
-              )}
+        <Box display="flex" flexDirection="column" gap={3} maxWidth={560}>
+          <TextField
+            autoFocus
+            label={t('exitAdd.name', 'Name')}
+            placeholder={t('exitAdd.namePlaceholder', 'Home, Office, Lab')}
+            value={exit ? exit.name : name}
+            disabled={!!exit}
+            inputProps={{ maxLength: 255 }}
+            onChange={event => setName(event.target.value)}
+            data-name
+          />
+          <Box>
+            <Typography variant="subtitle2" gutterBottom>
+              {t('exitAdd.device', 'Exit device')}
             </Typography>
-            <TextField
-              autoFocus
-              size="small"
-              label={t('exitAdd.name', 'Name')}
-              value={name}
-              inputProps={{ maxLength: 255 }}
-              onChange={event => setName(event.target.value)}
-              onKeyDown={event => event.key === 'Enter' && name.trim() && !busy && create()}
-            />
-            <Box>
-              <Button variant="contained" size="small" disabled={busy || !name.trim()} onClick={create}>
-                {t('exitAdd.create', 'Make the exit')}
-              </Button>
-            </Box>
-          </Box>
-        ) : (
-          <>
-            <Typography variant="body2" color="textSecondary" gutterBottom>
-              {t(
-                'exitAdd.chooseDevices',
-                'Made. Now choose the devices that run it: each goes into service once its checks pass.'
-              )}
+            <Typography variant="caption" color="textSecondary" component="p" gutterBottom>
+              {t('exitAdd.deviceHint', 'Traffic routed through this exit leaves the internet from this device.')}
             </Typography>
             <RunDevicePicker
               kind="exit"
-              target={exit.id}
-              ownerId={exit.owner?.id || accountId}
-              busy={busy}
-              refusals={refusals}
-              lan={exit.lan}
-              onAdd={add}
-              onSkip={() => history.push(`/exits/${exit.id}`)}
+              target={exit?.id}
+              ownerId={exit?.owner?.id || accountId}
+              single
+              onChoose={setDevice}
             />
-          </>
-        )}
-        {refusal && (
-          <Notice severity="error" fullWidth gutterTop>
-            {refusal}
-          </Notice>
-        )}
+          </Box>
+          {refusal && (
+            <Notice severity="error" fullWidth>
+              {refusal}
+            </Notice>
+          )}
+          <Box display="flex" gap={1}>
+            <Button variant="contained" disabled={busy || (!exit && !name.trim())} onClick={create} data-create>
+              {exit ? t('exitAdd.addDevice', 'Add device') : t('exitAdd.create', 'Create exit')}
+            </Button>
+            <Button disabled={busy} onClick={() => history.push(exit ? `/exits/${exit.id}` : '/exits')}>
+              {exit ? t('exitAdd.openExit', 'Open exit') : t('exitAdd.cancel', 'Cancel')}
+            </Button>
+          </Box>
+        </Box>
       </Gutters>
     </Container>
   )

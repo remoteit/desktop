@@ -22,6 +22,10 @@ const {
   route,
   picker,
   after,
+  offered,
+  deviceExit,
+  setDeviceExit,
+  backend,
 } = vi.hoisted(() => ({
   readExit: vi.fn(async (_id: string) => null as any),
   accountExits: vi.fn(async (_accountId: string) => ({ own: [], shared: [] } as any)),
@@ -40,7 +44,12 @@ const {
   route: { exitID: 'xoffice' },
   picker: { chosen: [] as string[] },
   after: { runs: null as any },
+  offered: vi.fn(async (_deviceId?: string) => [] as any),
+  deviceExit: vi.fn(async (_deviceId: string) => ({ usesExit: null } as any)),
+  setDeviceExit: vi.fn(async (_deviceId: string, _via: string | null) => ({} as any)),
+  backend: { thisId: undefined as string | undefined },
 }))
+vi.mock('react-redux', () => ({ useSelector: (select: any) => select({ backend }) }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }), useParams: () => route }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
 vi.mock('../services/graphQL', () => ({
@@ -58,6 +67,9 @@ vi.mock('../services/graphQLExits', () => ({
   graphQLRemoveExitTag: removeTag,
   graphQLSetNetworkExit: setNetworkExit,
   graphQLSetExitLan: setLan,
+  graphQLOfferedExits: offered,
+  graphQLDeviceExit: deviceExit,
+  graphQLSetDeviceExit: setDeviceExit,
 }))
 vi.mock('../services/graphQLDeviceRuns', () => ({ graphQLAddExitDevice: addDevice }))
 // The list beside the page is the store's (hooks/useAccountStore.ts): here, its being read again.
@@ -78,27 +90,28 @@ vi.mock('../components/RunDevicePicker', async () => ({
         .map(([id, reason]) => `${id}: ${reason}`)
         .join('|')}
     >
-      <button data-add onClick={() => onAdd(picker.chosen)} />
+      <button data-picker-add onClick={() => onAdd(picker.chosen)} />
     </div>
   ),
 }))
-// A device it runs is RunListItem's own: here, what it was given, and one of its actions done — answering what the
-// device runs after, as RunActions does.
-vi.mock('../components/RunListItem', () => ({
-  RunListItem: ({ kind, run, name, activation, to, manage, onChanged, lan }: any) => (
+// A device of it is CarrierRow's own: here, what it was given, and one of its actions done — answering what the device
+// runs after, as RunActions does.
+vi.mock('../components/CarrierRow', () => ({
+  CarrierRow: ({ kind, run, name, activation, manage, onChanged }: any) => (
     <div
       data-run={run.id}
       data-kind={kind}
       data-name={name}
       data-activation={activation}
-      data-to={to}
       data-manage={manage ? 'yes' : 'no'}
-      data-lan={lan ? 'yes' : 'no'}
     >
       <button data-acted onClick={() => onChanged(after.runs, { id: run.id, name: run.name || run.id })} />
     </div>
   ),
 }))
+vi.mock('../hooks/useDeviceDisable', () => ({ useDisabledDevicesAccess: () => true }))
+vi.mock('../components/Tags', () => ({ Tags: () => null }))
+vi.mock('../components/Icon', () => ({ Icon: () => null }))
 // The share dialog and the tag editor are their own tests' (ExitShareDialog.test.tsx, ExitTagEditor.test.tsx): here,
 // what each was given, and their ways back.
 vi.mock('../components/ExitShareDialog', () => ({
@@ -143,12 +156,22 @@ vi.mock('../components/SelectSetting', () => ({
 }))
 // A setting row, by its icon: its label, its line, and its button — or its switch, on or off, clicked as the row is.
 vi.mock('../components/ListItemSetting', () => ({
-  ListItemSetting: ({ icon, label, subLabel, button, toggle, disabled, onButtonClick, onClick }: any) => (
+  ListItemSetting: ({
+    icon,
+    label,
+    subLabel,
+    button,
+    buttonDisabled,
+    toggle,
+    disabled,
+    onButtonClick,
+    onClick,
+  }: any) => (
     <div data-setting={icon}>
       <span data-label>{label}</span>
       <span data-sub-label>{subLabel}</span>
       {toggle === undefined ? (
-        <button disabled={disabled} onClick={onButtonClick}>
+        <button disabled={buttonDisabled ?? disabled} onClick={onButtonClick}>
           {button}
         </button>
       ) : (
@@ -206,7 +229,12 @@ vi.mock('../components/Title', () => ({ Title: ({ children }: any) => <span data
 vi.mock('../components/Gutters', () => ({ Gutters: ({ children }: any) => <>{children}</> }))
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
 vi.mock('../components/Notice', () => ({
-  Notice: ({ children, severity = 'info' }: any) => <div data-notice={severity}>{children}</div>,
+  Notice: ({ children, severity = 'info', button }: any) => (
+    <div data-notice={severity}>
+      {children}
+      {button}
+    </div>
+  ),
 }))
 vi.mock('../buttons/IconButton', () => ({
   IconButton: ({ title, icon, onClick, disabled }: any) => (
@@ -350,6 +378,10 @@ beforeEach(() => {
   for (const mock of [rename, setActivation, deleteExit, leaveShare, addTag, removeTag, setNetworkExit, setLan])
     mock.mockReset().mockResolvedValue({})
   readExit.mockReset().mockResolvedValue(null)
+  offered.mockReset().mockResolvedValue([])
+  deviceExit.mockReset().mockResolvedValue({ usesExit: null })
+  setDeviceExit.mockReset().mockResolvedValue({})
+  backend.thisId = undefined
   accountExits.mockReset().mockResolvedValue({ own: [], shared: [] })
   moveUsers.mockReset().mockResolvedValue({ users: 0, applied: false })
   addDevice.mockReset().mockResolvedValue({ runs: { proxy: null, exit: null } })
@@ -360,24 +392,27 @@ beforeEach(() => {
 })
 
 describe('one of your exits', () => {
-  it('is read by the id in its address, and says its name and the devices using it', async () => {
+  it('is read by the id in its address, and says its name, whether it is ready, and the devices routing through it', async () => {
     await render(OFFICE)
     expect(readExit).toHaveBeenCalledWith('xoffice')
     expect(find('[data-title]').textContent).toBe('Office')
-    expect(find('[data-header]').textContent).toContain('2 devices use it as their exit')
+    expect(find('[data-summary]').textContent).toBe('Ready · carried by Office Mac · 2 devices route through it')
     expect(find('[data-notice]')).toBeNull()
   })
 
-  it('with none of its devices carrying its traffic, warns there is no device available; with none taking traffic, says so', async () => {
+  it('with no device yet, asks for one; with devices but none carrying its traffic, warns that it is not ready', async () => {
     await render(IDLE)
-    expect(find('[data-notice="warning"]').textContent).toBe(
-      'No device available: none of its devices carries its traffic, so the devices using it go their usual way until one does.'
-    )
-    // Its device in service, carrying nothing — its exit node off on the machine —: dormant all the same.
+    expect(find('[data-notice="info"]').textContent).toContain('Choose a device to carry this exit’s traffic.')
+    expect(find('[data-notice="warning"]')).toBeNull()
+    await click(find('[data-add-first]'))
+    expect(find('[data-picker]').getAttribute('data-for')).toBe('xidle')
+    expect(find('[data-notice="info"]')).toBeNull()
     await render({ ...OFFICE, offered: false, dormant: true })
-    expect(find('[data-notice="warning"]').textContent).toContain('No device available: none of its devices carries')
+    expect(find('[data-notice="warning"]').textContent).toBe(
+      'No device is carrying this exit right now. Devices routing through it go direct.'
+    )
     await render({ ...OFFICE, offered: false })
-    expect(find('[data-notice="warning"]').textContent).toBe('None of its devices takes traffic now.')
+    expect(find('[data-notice]')).toBeNull()
   })
 
   it('is renamed, its name trimmed, then read again with the list beside it', async () => {
@@ -390,11 +425,12 @@ describe('one of your exits', () => {
     expect(find('[data-notice]')).toBeNull()
   })
 
-  it('sets how a device added goes into service, then is read again with the list beside it', async () => {
+  it('sets how new exit devices start, then is read again with the list beside it', async () => {
     await render(OFFICE)
     expect(find('[data-select]').getAttribute('data-select')).toBe('auto')
-    expect(find('[data-select]').textContent).toContain('A device added goes into service')
-    expect(find('[data-choose="admin"]').textContent).toBe('When an admin puts it in service')
+    expect(find('[data-select]').textContent).toContain('New exit devices start')
+    expect(find('[data-choose="auto"]').textContent).toBe('Automatically')
+    expect(find('[data-choose="admin"]').textContent).toBe('After you approve')
     await click(find('[data-choose="admin"]'))
     expect(setActivation).toHaveBeenCalledWith('xoffice', 'admin')
     expect(readExit).toHaveBeenCalledTimes(2)
@@ -409,7 +445,7 @@ describe('one of your exits', () => {
     expect(readExit).toHaveBeenCalledTimes(2)
     rename.mockResolvedValue('ERROR')
     await click(find('[data-rename]'))
-    expect(find('[data-notice="error"]').textContent).toBe('It was not changed: try again.')
+    expect(find('[data-notice="error"]').textContent).toBe('Couldn’t save the change. Try again.')
     await click(find('[data-choose="admin"]'))
     expect(find('[data-notice]')).toBeNull()
   })
@@ -421,10 +457,10 @@ describe('one of your exits', () => {
     await click(find('[data-rename]'))
     expect((find('[data-rename]') as HTMLButtonElement).disabled).toBe(true)
     expect((find('[data-choose="auto"]') as HTMLButtonElement).disabled).toBe(true)
-    expect(button('Add devices').disabled).toBe(true)
+    expect(button('Add device').disabled).toBe(true)
     expect(settingButton('user-group').disabled).toBe(true)
     expect(find('[data-tag-editor]').getAttribute('data-disabled')).toBe('yes')
-    expect(button('Stop offering it on Home').disabled).toBe(true)
+    expect(button('Remove from Home').disabled).toBe(true)
     expect((find('[data-toggle]') as HTMLButtonElement).disabled).toBe(true)
     await act(async () => renamed({}))
     expect((find('[data-rename]') as HTMLButtonElement).disabled).toBe(false)
@@ -432,26 +468,28 @@ describe('one of your exits', () => {
   })
 })
 
-describe('the devices it runs on', () => {
-  it('each with its actions in this exit, leading to the device’s runs', async () => {
+describe('its exit devices', () => {
+  it('each with its actions in this exit, as its activation has new devices start', async () => {
     await render(OFFICE)
+    expect(find('[data-runs-on]').textContent).toContain('Exit devices')
     const mac = find('[data-runs-on] [data-run="MAC"]')
     expect(mac.getAttribute('data-kind')).toBe('exit')
     expect(mac.getAttribute('data-name')).toBe('Office')
     expect(mac.getAttribute('data-activation')).toBe('auto')
-    expect(mac.getAttribute('data-to')).toBe('/devices/MAC/runs')
     expect(mac.getAttribute('data-manage')).toBe('yes')
     expect(find('[data-runs-on] [data-run="PI"]')).not.toBeNull()
-    expect(find('[data-runs-on]').textContent).not.toContain('No device runs it')
+    expect(find('[data-runs-on]').textContent).not.toContain('No device yet.')
+    await render({ ...OFFICE, activation: 'admin' })
+    expect(find('[data-run="MAC"]').getAttribute('data-activation')).toBe('admin')
   })
 
-  it('none: says to add one', async () => {
+  it('none: says so', async () => {
     await render(IDLE)
     expect(find('[data-run]')).toBeNull()
-    expect(find('[data-runs-on]').textContent).toContain('No device runs it: add one to carry its traffic.')
+    expect(find('[data-runs-on]').textContent).toContain('No device yet.')
   })
 
-  it('an action on one says what the device runs after, and the exit is read again with the list beside it', async () => {
+  it('an action on one says where the device stands after, and the exit is read again with the list beside it', async () => {
     await render(OFFICE)
     after.runs = {
       proxy: null,
@@ -461,20 +499,20 @@ describe('the devices it runs on', () => {
       },
     }
     await click(find('[data-run="MAC"] [data-acted]'))
-    expect(find('[data-notice="info"]').textContent).toBe('Office Mac runs the exit Office (draining).')
+    expect(find('[data-notice="info"]').textContent).toBe('Office Mac is now pausing.')
     expect(readExit).toHaveBeenCalledTimes(2)
     expect(reload).toHaveBeenCalledTimes(1)
     after.runs = { proxy: null, exit: null }
     await click(find('[data-run="PI"] [data-acted]'))
-    expect(find('[data-notice="info"]').textContent).toBe('Garage Pi runs no proxy or exit now.')
+    expect(find('[data-notice="info"]').textContent).toBe('Garage Pi was removed from Office.')
   })
 })
 
 describe('adding devices to it', () => {
-  it('Add devices opens the picker for its account’s devices, those running it already left out', async () => {
+  it('Add device opens the picker for its account’s devices, those running it already left out', async () => {
     await render(OFFICE)
     expect(find('[data-picker]')).toBeNull()
-    await click(button('Add devices'))
+    await click(button('Add device'))
     const shown = find('[data-picker]')
     expect(shown.getAttribute('data-picker')).toBe('exit')
     expect(shown.getAttribute('data-owner')).toBe('ACCOUNT')
@@ -484,9 +522,9 @@ describe('adding devices to it', () => {
 
   it('those chosen are added one after another; with none refused, the picker closes and the exit is read again', async () => {
     await render(OFFICE)
-    await click(button('Add devices'))
+    await click(button('Add device'))
     picker.chosen = ['D1', 'D2']
-    await click(find('[data-add]'))
+    await click(find('[data-picker-add]'))
     expect(addDevice.mock.calls).toEqual([
       ['xoffice', 'D1'],
       ['xoffice', 'D2'],
@@ -498,14 +536,14 @@ describe('adding devices to it', () => {
 
   it('one refused is passed back to the picker by its id in graphql’s words, and the picker stays to choose again', async () => {
     await render(OFFICE)
-    await click(button('Add devices'))
+    await click(button('Add device'))
     addDevice.mockImplementation(async (_exit: string, id: string) =>
       id === 'D2'
         ? { reason: 'Its daemon is not online to say whether it can be an exit' }
         : { runs: { proxy: null, exit: null } }
     )
     picker.chosen = ['D1', 'D2']
-    await click(find('[data-add]'))
+    await click(find('[data-picker-add]'))
     expect(addDevice).toHaveBeenCalledTimes(2)
     expect(find('[data-picker]').getAttribute('data-refusals')).toBe(
       'D2: Its daemon is not online to say whether it can be an exit'
@@ -516,14 +554,14 @@ describe('adding devices to it', () => {
 
   it('Cancel closes the picker, and it opens again with no refusals', async () => {
     await render(OFFICE)
-    await click(button('Add devices'))
+    await click(button('Add device'))
     addDevice.mockResolvedValue({ reason: 'It cannot be an exit (a client only)' })
     picker.chosen = ['D1']
-    await click(find('[data-add]'))
+    await click(find('[data-picker-add]'))
     expect(find('[data-picker]').getAttribute('data-refusals')).toBe('D1: It cannot be an exit (a client only)')
     await click(button('Cancel'))
     expect(find('[data-picker]')).toBeNull()
-    await click(button('Add devices'))
+    await click(button('Add device'))
     expect(find('[data-picker]').getAttribute('data-refusals')).toBe('')
   })
 })
@@ -544,7 +582,7 @@ describe('who it is shared with, its tags, and its networks', () => {
 
   it('shared with no one: said so', async () => {
     await render({ ...OFFICE, access: [] })
-    expect(setting('user-group').querySelector('[data-label]')?.textContent).toBe('Shared with no one')
+    expect(setting('user-group').querySelector('[data-label]')?.textContent).toBe('Only you')
   })
 
   it('a tag added or taken off is asked of graphql by its name, and the exit read again', async () => {
@@ -559,10 +597,10 @@ describe('who it is shared with, its tags, and its networks', () => {
 
   it('lists the networks it is offered on, each leading to its network; one taken off stops its being offered there', async () => {
     await render(OFFICE)
-    const networks = [...document.body.querySelectorAll('[data-networks] [data-location]')]
+    const networks = [...document.body.querySelectorAll('[data-who] [data-location]')]
     expect(networks.map(each => each.getAttribute('data-location'))).toEqual(['/networks/N1', '/networks/N2'])
     expect(networks[1].textContent).toContain('Shop')
-    await click(button('Stop offering it on Shop'))
+    await click(button('Remove from Shop'))
     expect(setNetworkExit).toHaveBeenCalledWith('N2', 'xoffice', false)
     expect(readExit).toHaveBeenCalledTimes(2)
     expect(reload).toHaveBeenCalledTimes(1)
@@ -570,23 +608,23 @@ describe('who it is shared with, its tags, and its networks', () => {
 
   it('offered on no network: says where it is made available', async () => {
     await render({ ...OFFICE, networks: [] })
-    expect(find('[data-networks] [data-location]')).toBeNull()
-    expect(find('[data-networks]').textContent).toContain(
-      'On no network: make it available from a network’s page, for the devices initiating there.'
+    expect(find('[data-who] [data-location]')).toBeNull()
+    expect(setting('chart-network').querySelector('[data-label]')?.textContent).toBe('Not on any network')
+    expect(setting('chart-network').querySelector('[data-sub-label]')?.textContent).toBe(
+      'Add it from a network’s page to let that network’s devices use it.'
     )
   })
 })
 
 describe('deleting it', () => {
-  it('is off while devices run it, saying to take them out first', async () => {
+  it('is off while it has exit devices, saying to remove them first', async () => {
     await render(OFFICE)
+    expect(setting('trash').querySelector('[data-label]')?.textContent).toBe('Delete exit')
     expect(settingButton('trash').disabled).toBe(true)
-    expect(setting('trash').querySelector('[data-sub-label]')?.textContent).toBe('Take its devices out of it first')
+    expect(setting('trash').querySelector('[data-sub-label]')?.textContent).toBe('Remove its exit devices first.')
     await render(IDLE)
     expect(settingButton('trash').disabled).toBe(false)
-    expect(setting('trash').querySelector('[data-sub-label]')?.textContent).toBe(
-      'It is kept until it is deleted, with no device running it too'
-    )
+    expect(setting('trash').querySelector('[data-sub-label]')?.textContent).toBe('')
   })
 
   it('says what goes with it; denied, nothing is deleted', async () => {
@@ -595,9 +633,9 @@ describe('deleting it', () => {
     await press('trash')
     expect(find('[data-confirm]').getAttribute('data-confirm')).toBe('Delete Old Mac?')
     expect(says()).toEqual([
-      'The 3 devices using it as their exit lose it, and go their usual way.',
-      'Its shares with sam@example.com end.',
-      'It is no longer offered on Home.',
+      '3 devices routing through it will go direct.',
+      'It stops being shared with sam@example.com.',
+      'It is removed from Home.',
     ])
     await click(find('[data-deny]'))
     expect(find('[data-confirm]')).toBeNull()
@@ -617,7 +655,7 @@ describe('deleting it', () => {
   it('one nothing uses is deleted unconfirmed: nothing else changes, as said', async () => {
     await render({ ...IDLE, users: 0, access: [], networks: [] })
     await press('trash')
-    expect(says()).toEqual(['Nothing else changes: nothing uses it.'])
+    expect(says()).toEqual(['Nothing else changes.'])
     readExit.mockResolvedValue(null)
     await click(confirmAction())
     expect(deleteExit).toHaveBeenCalledWith('xidle', false)
@@ -635,7 +673,7 @@ describe('deleting it', () => {
     deleteExit.mockResolvedValue('ERROR')
     await press('trash')
     await click(confirmAction())
-    expect(find('[data-notice="error"]').textContent).toBe('It was not deleted.')
+    expect(find('[data-notice="error"]').textContent).toBe('Couldn’t delete the exit. Try again.')
     expect(push).not.toHaveBeenCalled()
   })
 })
@@ -651,7 +689,7 @@ describe('moving its users to another exit', () => {
     expect(setting('arrow-right-arrow-left')).toBeNull()
     await render(IDLE)
     expect(setting('arrow-right-arrow-left').querySelector('[data-sub-label]')?.textContent).toBe(
-      '3 devices use it as their exit'
+      '3 devices route through it'
     )
   })
 
@@ -660,7 +698,7 @@ describe('moving its users to another exit', () => {
     await render(IDLE)
     await press('arrow-right-arrow-left')
     expect(accountExits).toHaveBeenCalledWith('ACCOUNT')
-    expect(find('[data-confirm]').getAttribute('data-confirm')).toBe('Move the users of Old Mac')
+    expect(find('[data-confirm]').getAttribute('data-confirm')).toBe('Move the devices routing through Old Mac')
     expect(targets()).toEqual(['xoffice'])
     expect(confirmAction().disabled).toBe(true)
   })
@@ -672,7 +710,7 @@ describe('moving its users to another exit', () => {
     moveUsers.mockResolvedValue({ users: 3, applied: false })
     await click(find('[data-target="xoffice"]'))
     expect(moveUsers).toHaveBeenCalledWith('xidle', 'xoffice', false)
-    expect(find('[data-move-preview]').textContent).toBe('3 devices go out through Office from now on.')
+    expect(find('[data-move-preview]').textContent).toBe('3 devices will route through Office.')
     expect(confirmAction().disabled).toBe(false)
     expect(readExit).toHaveBeenCalledTimes(1)
     moveUsers.mockResolvedValue({ users: 3, applied: true })
@@ -691,7 +729,7 @@ describe('moving its users to another exit', () => {
     await press('arrow-right-arrow-left')
     moveUsers.mockResolvedValue({ users: 1, applied: false })
     await click(find('[data-target="xoffice"]'))
-    expect(find('[data-move-preview]').textContent).toBe('1 device goes out through Office from now on.')
+    expect(find('[data-move-preview]').textContent).toBe('1 device will route through Office.')
   })
 
   it('a move refused as it is said is shown in graphql’s words, with no Move', async () => {
@@ -725,9 +763,7 @@ describe('moving its users to another exit', () => {
     await render(IDLE)
     await press('arrow-right-arrow-left')
     expect(targets()).toEqual([])
-    expect(find('[data-confirm]').textContent).toContain(
-      'No other exit of its account has a device in service to take them.'
-    )
+    expect(find('[data-confirm]').textContent).toContain('You have no other exit that is ready.')
     expect(confirmAction().disabled).toBe(true)
   })
 })
@@ -741,14 +777,9 @@ describe('an exit shared with you', () => {
     expect(find('[data-runs-on]')).toBeNull()
     expect(setting('user-group')).toBeNull()
     expect(find('[data-tag-editor]')).toBeNull()
-    expect(find('[data-networks]')).toBeNull()
+    expect(find('[data-who]')).toBeNull()
     expect(setting('trash')).toBeNull()
-    expect(setting('arrow-right-from-bracket').querySelector('[data-label]')?.textContent).toBe('Leave this exit')
-  })
-
-  it('says when a device of yours may not choose it now', async () => {
-    await render({ ...PATS, offered: false, dormant: true })
-    expect(find('[data-notice="warning"]').textContent).toContain('No device available')
+    expect(setting('arrow-right-from-bracket').querySelector('[data-label]')?.textContent).toBe('Leave exit')
   })
 
   it('leaving it is confirmed, then the list opens', async () => {
@@ -756,7 +787,7 @@ describe('an exit shared with you', () => {
     await press('arrow-right-from-bracket')
     expect(find('[data-confirm]').getAttribute('data-confirm')).toBe('Leave Pat’s exit?')
     expect(find('[data-confirm]').textContent).toContain(
-      'You can no longer use it as an exit: a device of yours using it goes its usual way.'
+      'You can no longer route through it. Your devices routing through it go direct.'
     )
     readExit.mockResolvedValue(null)
     await click(confirmAction())
@@ -775,7 +806,7 @@ describe('an exit shared with you', () => {
     leaveShare.mockResolvedValue('ERROR')
     await press('arrow-right-from-bracket')
     await click(confirmAction())
-    expect(find('[data-notice="error"]').textContent).toBe('It was not left.')
+    expect(find('[data-notice="error"]').textContent).toBe('Couldn’t leave the exit. Try again.')
     expect(push).not.toHaveBeenCalled()
   })
 
@@ -791,25 +822,48 @@ describe('an exit shared with you', () => {
   })
 })
 
-describe('one of remote.it’s exits', () => {
-  it('for a remote.it admin: where it is, its activation and devices; nothing of an own exit’s', async () => {
+describe('one of Remote.It’s exits', () => {
+  it('for a Remote.It admin: where it is, its activation and devices; nothing of an own exit’s', async () => {
     await render(PDX)
-    expect(find('[data-header]').textContent).toContain('One of remote.it’s exits · AWS')
+    expect(find('[data-summary]').textContent).toBe('pdx1a · Run by Remote.It')
     expect(find('[data-select]')).not.toBeNull()
     expect(find('[data-runs-on] [data-run="E1"]')).not.toBeNull()
     expect(find('[data-rename]')).toBeNull()
-    expect(button('Add devices')).toBeUndefined()
+    expect(button('Add device')).toBeUndefined()
     expect(setting('user-group')).toBeNull()
-    expect(find('[data-networks]')).toBeNull()
+    expect(find('[data-who]')).toBeNull()
     expect(setting('trash')).toBeNull()
   })
 
-  it('for anyone else: where it is, and nothing to change or leave', async () => {
+  it('for anyone else: run by Remote.It, where it is, how to use it; nothing to change or leave', async () => {
     await render({ ...PDX, manage: false, devices: null, users: null, networks: null })
-    expect(find('[data-header]').textContent).toContain('One of remote.it’s exits · AWS')
+    expect(find('[data-title]').textContent).toBe('remote.it pdx1a')
+    expect(find('[data-header]').textContent).toContain('Run by Remote.It')
+    expect(setting('location-dot').querySelector('[data-label]')?.textContent).toBe('pdx1a')
+    expect(setting('cloud').querySelector('[data-label]')?.textContent).toBe('AWS')
+    expect(find('[data-remoteit-exit]').textContent).toContain('To use it, choose it under Route through on a device')
     expect(find('[data-select]')).toBeNull()
     expect(find('[data-runs-on]')).toBeNull()
-    expect(setting('arrow-right-from-bracket')).toBeNull()
+    expect(setting('arrow-right-from-bracket').querySelector('button')?.textContent).toBe('')
+  })
+
+  it('one not read by its id is found among the exits offered to you, and shown the same', async () => {
+    offered.mockResolvedValue([
+      {
+        id: 'xpdx',
+        name: 'remote.it pdx1a',
+        remoteit: true,
+        location: 'pdx1a',
+        provider: 'AWS',
+        owner: null,
+        reasons: ['PLAN'],
+      },
+    ])
+    await render(null, 'xpdx')
+    expect(offered).toHaveBeenCalledWith()
+    expect(find('[data-title]').textContent).toBe('remote.it pdx1a')
+    expect(find('[data-remoteit-exit]')).not.toBeNull()
+    expect(find('[data-notice]')).toBeNull()
   })
 })
 
@@ -825,7 +879,7 @@ describe('the exit not to be had', () => {
     for (const read of [null, 'UNSUPPORTED']) {
       await render(read)
       expect(find('[data-notice]').getAttribute('data-notice')).toBe('info')
-      expect(find('[data-notice]').textContent).toBe('No such exit, or not one you may see.')
+      expect(find('[data-notice]').textContent).toBe('This exit doesn’t exist, or you can’t see it.')
       expect(find('[data-title]')).toBeNull()
     }
   })
@@ -833,7 +887,7 @@ describe('the exit not to be had', () => {
   it('one that could not be read: said as an error', async () => {
     await render('ERROR')
     expect(find('[data-notice]').getAttribute('data-notice')).toBe('error')
-    expect(find('[data-notice]').textContent).toBe('The exit could not be read.')
+    expect(find('[data-notice]').textContent).toBe('Couldn’t load this exit. Try again.')
   })
 })
 
@@ -842,7 +896,7 @@ describe('another exit’s address', () => {
     await render(OFFICE)
     rename.mockResolvedValue({ reason: 'Not now' })
     await click(find('[data-rename]'))
-    await click(button('Add devices'))
+    await click(button('Add device'))
     expect(find('[data-notice="error"]')).not.toBeNull()
     expect(find('[data-picker]')).not.toBeNull()
     route.exitID = 'xidle'
@@ -860,11 +914,11 @@ describe('its devices’ local networks: the exit’s setting', () => {
   const toggle = () => lan().querySelector('[data-toggle]') as HTMLButtonElement
   const GARAGE_PI = 'Garage Pi is not a device you manage'
 
-  it('one switch on an own exit, worded for people: whether its users reach its devices’ local networks', async () => {
+  it('one switch on an own exit, worded for people: whether its users reach the exit devices’ local networks', async () => {
     await render(OFFICE)
-    expect(lan().querySelector('[data-label]')?.textContent).toBe('Its users reach its devices’ local networks')
+    expect(lan().querySelector('[data-label]')?.textContent).toBe('Reach the exit devices’ local networks')
     expect(lan().querySelector('[data-sub-label]')?.textContent).toBe(
-      'Each device’s network: printers, files, its router'
+      'People using this exit can reach printers and files there.'
     )
     expect(toggle().getAttribute('data-toggle')).toBe('off')
     expect(toggle().disabled).toBe(false)
@@ -874,10 +928,10 @@ describe('its devices’ local networks: the exit’s setting', () => {
     await render(OFFICE)
     await click(toggle())
     expect(setLan).not.toHaveBeenCalled()
-    expect(find('[data-confirm]').getAttribute('data-confirm')).toBe('Open its devices’ local networks?')
+    expect(find('[data-confirm]').getAttribute('data-confirm')).toBe('Open the exit devices’ local networks?')
     expect(says()).toEqual([
-      'Everyone who may use Office can then reach the local networks of Office Mac, Garage Pi — printers, files, routers — and of each device added later.',
-      'Each machine’s administrator keeps the last word, on the machine.',
+      'Everyone who can use Office can then reach printers and files on the networks of Office Mac, Garage Pi.',
+      'An administrator of each device can still turn this off there.',
     ])
     expect(confirmAction().textContent).toBe('Turn on')
     await click(confirmAction())
@@ -890,9 +944,7 @@ describe('its devices’ local networks: the exit’s setting', () => {
   it('denied, nothing is set; with no device yet, it opens each device added to it', async () => {
     await render(SPARE)
     await click(toggle())
-    expect(says()[0]).toBe(
-      'Everyone who may use Spare can then reach the local network of each device added to it — printers, files, routers.'
-    )
+    expect(says()[0]).toBe('Everyone who can use Spare can then reach printers and files on its devices’ networks.')
     await click(find('[data-deny]'))
     expect(find('[data-confirm]')).toBeNull()
     expect(setLan).not.toHaveBeenCalled()
@@ -903,7 +955,7 @@ describe('its devices’ local networks: the exit’s setting', () => {
     expect(toggle().getAttribute('data-toggle')).toBe('on')
     expect(toggle().disabled).toBe(false)
     expect(lan().querySelector('[data-lan-refusal]')?.textContent).toBe(
-      'Once off, you can’t turn it on again: Garage Pi is not a device you manage'
+      'You can’t turn this on: Garage Pi is not a device you manage'
     )
     await click(toggle())
     expect(find('[data-confirm]')).toBeNull()
@@ -916,7 +968,7 @@ describe('its devices’ local networks: the exit’s setting', () => {
     expect(toggle().getAttribute('data-toggle')).toBe('off')
     expect(toggle().disabled).toBe(true)
     expect(lan().querySelector('[data-lan-refusal]')?.textContent).toBe(
-      'You can’t turn it on: Garage Pi is not a device you manage'
+      'You can’t turn this on: Garage Pi is not a device you manage'
     )
     await render(OFFICE)
     expect(lan().querySelector('[data-lan-refusal]')).toBeNull()
@@ -931,33 +983,26 @@ describe('its devices’ local networks: the exit’s setting', () => {
     await render({ ...OFFICE, lan: true })
     setLan.mockResolvedValue('ERROR')
     await click(toggle())
-    expect(find('[data-notice="error"]').textContent).toBe('It was not changed: try again.')
+    expect(find('[data-notice="error"]').textContent).toBe('Couldn’t save the change. Try again.')
   })
 
-  it('remote.it’s exits have no switch: they reach no network of their machines', async () => {
+  it('Remote.It’s exits have no switch: they reach no network of their machines', async () => {
     await render(PDX)
     expect(lan()).toBeNull()
   })
 
-  it('each device says its own read only — an own exit’s closed too —, remote.it’s only where open or not theirs', async () => {
-    await render(OFFICE)
-    expect(find('[data-run="MAC"]').getAttribute('data-lan')).toBe('yes')
-    await render(PDX)
-    expect(find('[data-run="E1"]').getAttribute('data-lan')).toBe('no')
-  })
-
   it('the picker is told whether it is open, to say first whose network an add opens', async () => {
     await render(OFFICE)
-    await click(button('Add devices'))
+    await click(button('Add device'))
     expect(find('[data-picker]').getAttribute('data-lan')).toBe('closed')
     await render({ ...OFFICE, lan: true })
-    await click(button('Add devices'))
+    await click(button('Add device'))
     expect(find('[data-picker]').getAttribute('data-lan')).toBe('open')
   })
 
   it('shared with you: that you reach its devices’ networks said, with nothing to set, where you do', async () => {
     await render({ ...PATS, lan: true })
-    expect(find('[data-lan-reach]').textContent).toContain('Through it, you reach its devices’ local networks')
+    expect(find('[data-lan-reach]').textContent).toContain('You can reach the exit devices’ local networks')
     expect(find('[data-lan-reach] [data-toggle]')).toBeNull()
     await render(PATS)
     expect(find('[data-lan-reach]')).toBeNull()
@@ -1028,7 +1073,7 @@ describe('the move said for the exit chosen last', () => {
     await click(find('[data-target="xbusy"]'))
     await act(async () => answers.xbusy({ users: 3, applied: false }))
     await act(async () => answers.xoffice({ reason: 'Office has no device in service' }))
-    expect(find('[data-move-preview]').textContent).toBe('3 devices go out through Busy from now on.')
+    expect(find('[data-move-preview]').textContent).toBe('3 devices will route through Busy.')
     expect(find('[data-confirm] [data-notice="error"]')).toBeNull()
     expect(confirmAction().disabled).toBe(false)
   })
@@ -1037,10 +1082,8 @@ describe('the move said for the exit chosen last', () => {
     accountExits.mockResolvedValue('ERROR')
     await render(IDLE)
     await press('arrow-right-arrow-left')
-    expect(find('[data-confirm] [data-notice="error"]').textContent).toBe(
-      'Its account’s exits could not be read: try again.'
-    )
-    expect(find('[data-confirm]').textContent).not.toContain('No other exit of its account')
+    expect(find('[data-confirm] [data-notice="error"]').textContent).toBe('Couldn’t load your other exits. Try again.')
+    expect(find('[data-confirm]').textContent).not.toContain('You have no other exit')
   })
 
   it('a move refused as it is made, with no words, says it was not made', async () => {
@@ -1051,17 +1094,46 @@ describe('the move said for the exit chosen last', () => {
     await click(find('[data-target="xoffice"]'))
     moveUsers.mockResolvedValue({ reason: '' })
     await click(confirmAction())
-    expect(find('[data-confirm] [data-notice="error"]').textContent).toBe('The move was not made: try again.')
+    expect(find('[data-confirm] [data-notice="error"]').textContent).toBe('Couldn’t move them. Try again.')
   })
 })
 
-describe('one of remote.it’s exits with no provider said', () => {
-  it('says where it is by its location, never a dot with nothing after it', async () => {
-    await render({ ...PDX, provider: '' })
-    expect(find('[data-header]').textContent).toContain('One of remote.it’s exits · pdx1a')
+describe('one of Remote.It’s exits with no location said', () => {
+  it('says where it is by its provider, never a dot with nothing before it', async () => {
+    await render({ ...PDX, location: null })
+    expect(find('[data-summary]').textContent).toBe('AWS · Run by Remote.It')
     await render({ ...PDX, provider: '', location: null })
-    expect(find('[data-header]').textContent).toContain('One of remote.it’s exits')
-    expect(find('[data-header]').textContent).not.toContain('·')
+    expect(find('[data-summary]').textContent).toBe('Run by Remote.It')
   })
 })
 
+describe('routing this device through it', () => {
+  it('in the app, offered on an exit that is ready; done, said so', async () => {
+    backend.thisId = 'THIS'
+    await render(OFFICE)
+    expect(deviceExit).toHaveBeenCalledWith('THIS')
+    expect(setting('arrow-right-from-bracket').querySelector('[data-label]')?.textContent).toBe(
+      'Route this device through it'
+    )
+    await press('arrow-right-from-bracket')
+    expect(setDeviceExit).toHaveBeenCalledWith('THIS', 'xoffice')
+    expect(find('[data-notice="success"]').textContent).toBe('This device now routes through Office.')
+    expect(setting('arrow-right-from-bracket').querySelector('[data-label]')?.textContent).toBe(
+      'This device routes through it'
+    )
+  })
+
+  it('refused: said in graphql’s words; not offered in the portal, or on an exit that is not ready', async () => {
+    backend.thisId = 'THIS'
+    setDeviceExit.mockResolvedValue({ reason: 'No device of it is in service' })
+    await render(OFFICE)
+    await press('arrow-right-from-bracket')
+    expect(find('[data-notice="error"]').textContent).toBe('No device of it is in service')
+    await render({ ...OFFICE, offered: false })
+    expect(setting('arrow-right-from-bracket')).toBeNull()
+    backend.thisId = undefined
+    await render(OFFICE)
+    expect(setting('arrow-right-from-bracket')).toBeNull()
+    expect(deviceExit).toHaveBeenCalledTimes(2)
+  })
+})

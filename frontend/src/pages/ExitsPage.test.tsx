@@ -4,12 +4,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { Exit } from '../services/graphQLExits'
 import type { ExitDevice } from '../services/graphQLDeviceRuns'
 
-const { store, offered, access, opened } = vi.hoisted(() => ({
+const { store, offered, access, opened, pushed } = vi.hoisted(() => ({
   store: { value: undefined as any },
   offered: vi.fn(async (_deviceId?: string) => [] as any),
   access: { manages: true },
   opened: vi.fn(),
+  pushed: vi.fn(),
 }))
+vi.mock('react-router-dom', () => ({ useHistory: () => ({ push: pushed }) }))
 // The account's exits are the store's (hooks/useAccountStore.ts): here, what it holds now.
 vi.mock('../hooks/useAccountExits', () => ({ useAccountExits: () => ({ value: store.value, reload: vi.fn() }) }))
 vi.mock('../hooks/useDeviceDisable', () => ({ useDisabledDevicesAccess: () => access.manages }))
@@ -21,6 +23,7 @@ vi.mock('../components/ListItemLocation', () => ({
     <div
       data-exit={props['data-exit']}
       data-shared={props['data-shared']}
+      data-remoteit={props['data-remoteit']}
       data-to={to}
       data-color={icon.props.color}
       onClick={() => opened(to)}
@@ -175,15 +178,15 @@ describe('the exits page', () => {
     expect(ownShown()).toEqual(['xoffice', 'xgarage', 'xspare'])
     expect(row('xoffice').getAttribute('data-to')).toBe('/exits/xoffice')
     expect(row('xoffice').querySelector('[data-name]')?.textContent).toBe('Office')
-    expect(lineOf(row('xoffice'))).toBe('Runs on Office Mac, PI · 2 devices use it as their exit')
-    expect(lineOf(row('xgarage'))).toBe('Runs on Garage Pi · No device uses it as its exit · Not taking traffic now')
+    expect(lineOf(row('xoffice'))).toBe('Ready · carried by Office Mac, PI · 2 devices route through it')
+    expect(lineOf(row('xgarage'))).toBe('Ready · carried by Garage Pi')
     expect(row('xoffice').querySelector('[data-tags]')?.getAttribute('data-tags')).toBe('lab|Prod')
     expect(row('xspare').querySelector('[data-tags]')).toBeNull()
   })
 
-  it('a dormant exit says it has no device available, its icon greyed', async () => {
+  it('an exit no device carries yet says so, its icon greyed', async () => {
     await render()
-    expect(lineOf(row('xspare'))).toBe('Runs on no device · 1 device uses it as its exit · No device available')
+    expect(lineOf(row('xspare'))).toBe('No device yet · 1 device routes through it')
     expect(row('xspare').getAttribute('data-color')).toBe('grayDark')
     expect(row('xoffice').getAttribute('data-color')).toBe('primary')
   })
@@ -200,25 +203,13 @@ describe('the exits page', () => {
     await render()
     expect(document.body.textContent).toContain('Shared with you')
     expect(sharedRow('xpat').getAttribute('data-to')).toBe('/exits/xpat')
-    expect(lineOf(sharedRow('xpat'))).toBe('Shared by pat@example.com · A device of yours may use it')
-    expect(lineOf(sharedRow('xold'))).toBe('Shared by pat@example.com · No device available')
+    expect(lineOf(sharedRow('xpat'))).toBe('Ready · Shared by pat@example.com')
+    expect(lineOf(sharedRow('xold'))).toBe('Not ready · Shared by pat@example.com')
     expect(sharedRow('xold').getAttribute('data-color')).toBe('grayDark')
-    expect(lineOf(sharedRow('xned'))).toBe('A device of yours may use it')
+    expect(lineOf(sharedRow('xned'))).toBe('Ready')
     expect(sharedRow('xned').getAttribute('data-color')).toBe('primary')
     // Not among your own.
     expect(ownShown()).toEqual(['xoffice'])
-  })
-
-  it('one whose users reach its devices’ local networks says so in its line, yours or shared with you', async () => {
-    store.value = { own: [{ ...OFFICE, lan: true }, SPARE], shared: [{ ...PATS, lan: true }] }
-    await render()
-    expect(lineOf(row('xoffice'))).toBe(
-      'Runs on Office Mac, PI · 2 devices use it as their exit · Its users reach its devices’ local networks'
-    )
-    expect(lineOf(row('xspare'))).not.toContain('local networks')
-    expect(lineOf(sharedRow('xpat'))).toBe(
-      'Shared by pat@example.com · A device of yours may use it · Its users reach its devices’ local networks'
-    )
   })
 
   it('none shared with you: no such list', async () => {
@@ -231,19 +222,22 @@ describe('the exits page', () => {
     store.value = { own: [], shared: [PATS] }
     await render()
     expect(ownShown()).toEqual([])
-    expect(document.body.textContent).toContain('None yet: make an exit, then add the devices that run it.')
+    expect(document.body.textContent).toContain(
+      'No exits yet. Create one to send a device’s traffic out through another of your devices.'
+    )
     expect(sharedRow('xpat')).not.toBeNull()
   })
 
-  it('remote.it’s: those offered to you that are remote.it’s, each by its provider, else by its location', async () => {
+  it('Remote.It’s: those offered to you that are Remote.It’s, labelled as run by Remote.It, each leading to its page', async () => {
     offered.mockResolvedValue([PDX, PATS_OFFERED, FRA])
     await render()
     expect(offered).toHaveBeenCalledWith()
-    expect(document.body.textContent).toContain('remote.it’s')
+    expect(document.body.textContent).toContain('Remote.It exits')
     const remoteit = (id: string) => find(`[data-remoteit="${id}"]`)
-    expect(remoteit('xpdx').querySelector('.MuiListItemText-primary')?.textContent).toBe('remote.it pdx1a')
-    expect(remoteit('xpdx').querySelector('.MuiListItemText-secondary')?.textContent).toBe('AWS')
-    expect(remoteit('xfra').querySelector('.MuiListItemText-secondary')?.textContent).toBe('fra1')
+    expect(remoteit('xpdx').querySelector('[data-name]')?.textContent).toBe('remote.it pdx1a')
+    expect(lineOf(remoteit('xpdx'))).toBe('pdx1a · Run by Remote.It')
+    expect(lineOf(remoteit('xfra'))).toBe('fra1 · Run by Remote.It')
+    expect(remoteit('xpdx').getAttribute('data-to')).toBe('/exits/xpdx')
     expect(remoteit('xpat')).toBeNull()
   })
 
@@ -251,7 +245,7 @@ describe('the exits page', () => {
     for (const answer of [[PATS_OFFERED], 'ERROR', 'UNSUPPORTED']) {
       offered.mockResolvedValue(answer)
       await render()
-      expect(document.body.textContent).not.toContain('remote.it’s')
+      expect(document.body.textContent).not.toContain('Remote.It exits')
       expect(find('[data-remoteit]')).toBeNull()
     }
   })
@@ -295,25 +289,26 @@ describe('your exits by tag', () => {
     store.value = { own: [{ ...OFFICE, tags: [PROD] }, GARAGE, SPARE], shared: [] }
     await rerender()
     expect(ownShown()).toEqual([])
-    expect(find('[data-tag-filter]').textContent).toContain('None of your exits carries it.')
-    expect(document.body.textContent).not.toContain('None yet')
+    expect(find('[data-tag-filter]').textContent).toContain('None of your exits has this tag.')
+    expect(document.body.textContent).not.toContain('No exits yet')
     await click(find('[data-tag-filter] [data-untag="lab"]'))
     expect(ownShown()).toEqual(['xoffice', 'xgarage', 'xspare'])
   })
 })
 
 describe('making an exit', () => {
-  it('New exit, for those who may manage devices here, opens the page that makes one', async () => {
+  it('Create exit, for those who may manage devices here, opens the page that makes one', async () => {
     await render()
-    const add = find('[data-icon="plus"]')
-    expect(add.textContent).toBe('New exit')
-    expect(add.getAttribute('data-to')).toBe('/exits/new')
+    const add = find('[data-create]')
+    expect(add.textContent).toBe('Create exit')
+    await click(add)
+    expect(pushed).toHaveBeenCalledWith('/exits/new')
   })
 
-  it('no New exit for anyone else, their exits listed still', async () => {
+  it('no Create exit for anyone else, their exits listed still', async () => {
     access.manages = false
     await render()
-    expect(find('[data-icon="plus"]')).toBeNull()
+    expect(find('[data-create]')).toBeNull()
     expect(ownShown()).toEqual(['xoffice', 'xgarage', 'xspare'])
   })
 })
@@ -333,7 +328,7 @@ describe('the exits not to be had', () => {
     offered.mockResolvedValue([PDX])
     await render()
     expect(find('[data-notice]').getAttribute('data-notice')).toBe('info')
-    expect(find('[data-notice]').textContent).toBe('This server does not have exits.')
+    expect(find('[data-notice]').textContent).toBe('Exits aren’t available on this server.')
     expect(find('[data-exit]')).toBeNull()
     expect(find('[data-remoteit]')).toBeNull()
   })
@@ -343,7 +338,7 @@ describe('the exits not to be had', () => {
     offered.mockResolvedValue([PDX])
     await render()
     expect(find('[data-notice]').getAttribute('data-notice')).toBe('error')
-    expect(find('[data-notice]').textContent).toBe('The exits could not be read.')
+    expect(find('[data-notice]').textContent).toBe('Couldn’t load your exits. Try again.')
     expect(find('[data-exit]')).toBeNull()
     expect(find('[data-remoteit]')).toBeNull()
   })
