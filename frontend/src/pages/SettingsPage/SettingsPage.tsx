@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, Typography } from '@mui/material'
+import { Box, List, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { State } from '../../store'
@@ -7,7 +7,6 @@ import { ListItemLocation } from '../../components/ListItemLocation'
 import { selectLimitsLookup } from '../../selectors/organizations'
 import { OutOfBand } from '../../components/OutOfBand'
 import { Container } from '../../components/Container'
-import { Gutters } from '../../components/Gutters'
 import { TestUI } from '../../components/TestUI'
 import { Title } from '../../components/Title'
 
@@ -22,12 +21,12 @@ export const SettingsPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <Gutters>
-          <Typography variant="h2">
+        <Box sx={{ paddingX: 4.5, paddingTop: 0.5, marginBottom: 1 }}>
+          <Typography variant="h2" component="h1">
             <Title>{t('settings.title', 'Settings')}</Title>
             <OutOfBand inline />
           </Typography>
-        </Gutters>
+        </Box>
       }
     >
       <List>
@@ -50,13 +49,13 @@ export const SettingsPage: React.FC = () => {
           dense
         />
         <ListItemLocation
-          title={t('settings.connectionDefaults', 'Connection Defaults')}
+          title={t('settings.connectionDefaults', 'Connection defaults')}
           to="/settings/defaults"
           icon="object-intersect"
           dense
         />
         <TestUI>
-          <ListItemLocation title={t('settings.testSettings', 'Test Settings')} to="/settings/test" icon="vial" dense />
+          <ListItemLocation title={t('settings.testSettings', 'Test settings')} to="/settings/test" icon="vial" dense />
         </TestUI>
       </List>
     </Container>
