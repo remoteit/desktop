@@ -5,7 +5,8 @@ import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Link as RouterLink } from 'react-router-dom'
-import { Box, List, ListItem, ListSubheader, Typography } from '@mui/material'
+import { Box, List, ListItem, ListItemButton, ListSubheader, Typography } from '@mui/material'
+import { historyPhrase } from '../helpers/deviceHistory'
 import { getAllDevices } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { useKnownCopies } from '../hooks/useDeviceIdentity'
@@ -21,6 +22,8 @@ import {
 } from '../services/graphQLDeviceAbout'
 import { Notice } from './Notice'
 import { Timestamp } from './Timestamp'
+import { DeviceSection } from './DeviceSection'
+import { spacing } from '../styling'
 
 type Row = [label: string, value: React.ReactNode]
 
@@ -29,7 +32,7 @@ type Row = [label: string, value: React.ReactNode]
    a change of hardware at the top. Behind the device-sessions flag; nothing where the API does not serve it or the
    device has said nothing (a legacy agent, or one from before `about`). Someone the device is shared with is served its
    OS, architecture and software alone: every other part is none, and is left out. */
-export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
+export const DeviceAbout: React.FC<{ deviceId: string; part?: 'about' | 'history' }> = ({ deviceId, part }) => {
   const { t } = useTranslation()
   const [read, setRead] = useState<DeviceAboutRead | 'ERROR' | typeof UNSUPPORTED>()
   const [details, setDetails] = useState(false)
@@ -116,9 +119,10 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
     [t('deviceAbout.package', 'Package'), [sw?.package, sw?.format && `(${sw.format})`].filter(Boolean).join(' ')],
   ]
 
+  const showAbout = part !== 'history'
   return (
     <>
-      {!!about?.adminsAdded?.length && (
+      {showAbout && !!about?.adminsAdded?.length && (
         <Notice severity="warning" fullWidth>
           {about.adminsAdded.map(added => (
             <Box key={`${added.name} ${added.at}`}>
@@ -128,7 +132,7 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
           ))}
         </Notice>
       )}
-      {about?.hardwareChanged && (
+      {showAbout && about?.hardwareChanged && (
         <Notice severity="warning" fullWidth>
           {t(
             'deviceAbout.hardwareChanged',
@@ -137,6 +141,8 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
           <Timestamp date={new Date(about.hardwareChanged)} variant="minutes" />
         </Notice>
       )}
+      {showAbout && (
+        <>
       <Section
         title={t('deviceAbout.system', 'System')}
         rows={system}
@@ -159,36 +165,9 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
         </Typography>
       )}
       {about?.data && <AboutDetails open={details} data={about.data} onClose={() => setDetails(false)} />}
-      {!!history.length && (
-        <List dense>
-          <ListSubheader disableGutters>{t('deviceAbout.history', 'History')}</ListSubheader>
-          {history.map((change, index) => (
-            <ListItem key={index} disableGutters sx={{ alignItems: 'flex-start' }}>
-              <Box component="span" sx={{ color: 'grayDark.main', minWidth: 160 }}>
-                <Timestamp date={new Date(change.at)} variant="minutes" />
-              </Box>
-              <Box
-                component="span"
-                sx={{
-                  minWidth: 180,
-                  color: change.kind === 'update' || change.kind === 'duplicate' ? 'danger.main' : undefined,
-                }}
-              >
-                {changeLabel(t, change)}
-              </Box>
-              <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', wordBreak: 'break-word' }}>
-                <DeviceMention text={changeText(t, change)} deviceId={otherDevice(change)} known={known} />
-                {change.detail && (
-                  <Typography component="span" variant="body2" color="grayDark.main">
-                    {' '}
-                    — {change.detail}
-                  </Typography>
-                )}
-              </Box>
-            </ListItem>
-          ))}
-        </List>
+        </>
       )}
+      {!!history.length && part !== 'about' && <DeviceHistory history={history} known={known} />}
     </>
   )
 }
@@ -394,126 +373,63 @@ export function natLabel(t: TFunction, mapping: string, filtering: string) {
   return how.length ? `${label} (${how.join(', ')})` : label
 }
 
-// What a history entry is: the field that changed, or what happened to the device.
-export function changeLabel(t: TFunction, change: DeviceAboutChange) {
-  switch (change.kind) {
-    case 'update':
-      return t('deviceAbout.upgrade', 'Upgrade')
-    case 'restore':
-      return t('deviceAbout.restored', 'Restored')
-    case 'boot':
-      return t('deviceAbout.boot', 'Boot')
-    case 'duplicate':
-      return t('deviceAbout.duplicate', 'Duplicate')
-    default:
-      return change.field.startsWith(ACCOUNT_FIELD)
-        ? t('deviceAbout.accountField', 'Account {{name}}', { name: change.field.slice(ACCOUNT_FIELD.length) })
-        : fieldLabel(change.field)
-  }
-}
-
-/* What changed, readably. graphql's entries (services/device-about.ts): an upgrade names its version in `after`; a
-   restore, roughly where from in `after`; a boot, the key's name in `before` and roughly where in `after`; a duplicate
-   says what in `field` — copy (`after` the copy's ID), copy-of (the original's), device-join-key or key (seen on another
-   machine, `after` roughly where), kept (`after` the original's ID), original (the machines swapped, `after` the other
-   device's ID). The address is the entry's detail, shown after it. */
-export function changeText(t: TFunction, change: DeviceAboutChange) {
-  const nothing = t('deviceAbout.nothing', 'nothing')
-  const where = change.after ?? ''
-  switch (change.kind) {
-    case 'update':
-      return change.field === 'refused'
-        ? t('deviceAbout.updateRefused', 'Refused the upgrade to {{version}}', { version: change.after })
-        : t('deviceAbout.updateFailed', 'The upgrade to {{version}} failed', { version: change.after })
-    case 'restore':
-      return where
-    case 'boot':
-      return [change.before && t('deviceAbout.bootKey', 'With key {{key}}', { key: change.before }), where]
-        .filter(Boolean)
-        .join(', ')
-    case 'duplicate':
-      switch (change.field) {
-        case 'copy':
-          return t('deviceAbout.duplicateCopy', 'A machine signed in as it, split off as {{device}}', {
-            device: change.after,
-          })
-        case 'copy-of':
-          return t('deviceAbout.duplicateCopyOf', 'Split off from {{device}}: this machine signed in as it', {
-            device: change.after,
-          })
-        case 'device-join-key':
-          return [t('deviceAbout.duplicateJoinKey', 'Its device join key in use on another machine, refused'), where]
-            .filter(Boolean)
-            .join(', ')
-        case 'key':
-          return [t('deviceAbout.duplicateKey', 'Another machine with its identity, refused'), where]
-            .filter(Boolean)
-            .join(', ')
-        case 'kept':
-          return change.after
-            ? t('deviceAbout.duplicateKeptFrom', 'Kept as a device of its own, split off from {{device}}', {
-                device: change.after,
-              })
-            : t('deviceAbout.duplicateKept', 'Kept as a device of its own')
-        case 'original':
-          return t('deviceAbout.duplicateOriginal', 'Its machine swapped with that of {{device}}', {
-            device: change.after,
-          })
-        default:
-          return [change.field, where].filter(Boolean).join(', ')
-      }
-    default:
-      // An account is its own field, its value the entry in one line (1001, local, admin, Jane Smith): one added is a
-      // row from nothing, one removed a row to nothing.
-      if (change.field.startsWith(ACCOUNT_FIELD) && (change.before == null) !== (change.after == null))
-        return change.before == null
-          ? t('deviceAbout.accountAdded', 'Added: {{entry}}', { entry: change.after })
-          : t('deviceAbout.accountRemoved', 'Removed: {{entry}}', { entry: change.before })
-      return `${change.before ?? nothing} → ${change.after ?? nothing}`
-  }
-}
-
-// A machine's account in its history: accounts.<name>.
-const ACCOUNT_FIELD = 'accounts.'
-
 const memory = (mb: number) => (mb >= 1024 ? `${Math.round((mb / 1024) * 10) / 10} GB` : `${mb} MB`)
 
-// A field's path, as a person reads it: os.version → "OS version"; the path itself for one not named here.
-export const fieldLabel = (field: string) => FIELD_LABELS[field] ?? field
-const FIELD_LABELS: ILookup<string> = {
-  'os.family': 'OS family',
-  'os.name': 'OS',
-  'os.id': 'OS id',
-  'os.version': 'OS version',
-  'os.build': 'OS build',
-  'os.kernel': 'Kernel',
-  'os.edition': 'OS edition',
-  'hardware.arch': 'Architecture',
-  'hardware.cpu': 'CPU',
-  'hardware.cores': 'Cores',
-  'hardware.memory_mb': 'Memory (MB)',
-  'hardware.manufacturer': 'Manufacturer',
-  'hardware.model': 'Model',
-  'hardware.board': 'Board',
-  'hardware.virtual': 'Virtual',
-  'ids.serial': 'Serial',
-  'ids.hardware_uuid': 'Hardware UUID',
-  'ids.machine_id': 'Machine ID',
-  'ids.macs': 'Network interfaces',
-  'ids.disk_serial': 'Boot disk serial',
-  'oem.product': 'Product',
-  'oem.product_name': 'Product name',
-  'oem.manufacturer': 'Product manufacturer',
-  'oem.model': 'Product model',
-  'oem.hardware_revision': 'Hardware revision',
-  'oem.firmware': 'Firmware',
-  'oem.serial': 'Product serial',
-  'software.connectd': 'Agent',
-  'software.package': 'Package',
-  'software.format': 'Package format',
-  'nat.mapping': 'NAT mapping',
-  'nat.filtering': 'NAT filtering',
-  'nat.since': 'NAT measured since',
-  'nat.note': 'NAT reading assumed',
-  'nat.why': 'NAT not measured',
+export const DeviceHistory: React.FC<{ history: DeviceAboutChange[]; known: Map<string, string> }> = ({
+  history,
+  known,
+}) => {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState<number>()
+  return (
+    <DeviceSection id="history" title={t('deviceHistory.title', 'Changes on the device')} list={false}>
+    <List dense disablePadding data-device-history sx={{ paddingX: `${spacing.xl}px` }}>
+      {history.map((change, index) => {
+        const phrase = historyPhrase(t, change)
+        const expanded = open === index
+        const content = (
+          <Box sx={{ display: 'flex', width: '100%', gap: 2, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+            <Typography variant="caption" color="grayDark.main" sx={{ minWidth: 150, paddingTop: 0.25 }}>
+              <Timestamp date={new Date(change.at)} variant="minutes" />
+            </Typography>
+            <Box sx={{ flex: 1, minWidth: 200 }}>
+              <Typography variant="body2" color={phrase.warning ? 'warning.main' : undefined} data-history-text>
+                <DeviceMention text={phrase.text} deviceId={otherDevice(change)} known={known} />
+              </Typography>
+              {phrase.detail && (
+                <Typography variant="caption" color="grayDark.main" component="div" sx={{ wordBreak: 'break-word' }}>
+                  {phrase.detail}
+                </Typography>
+              )}
+              {phrase.raw && expanded && (
+                <Typography
+                  variant="caption"
+                  component="div"
+                  data-history-raw
+                  sx={{ fontFamily: 'monospace', color: 'grayDark.main', wordBreak: 'break-all' }}
+                >
+                  {phrase.raw}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        )
+        return phrase.raw ? (
+          <ListItemButton
+            key={index}
+            disableGutters
+            onClick={() => setOpen(expanded ? undefined : index)}
+            title={expanded ? t('deviceHistory.hideRaw', 'Hide details') : t('deviceHistory.showRaw', 'Show details')}
+          >
+            {content}
+          </ListItemButton>
+        ) : (
+          <ListItem key={index} disableGutters>
+            {content}
+          </ListItem>
+        )
+      })}
+    </List>
+    </DeviceSection>
+  )
 }
