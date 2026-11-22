@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import brand from '@common/brand/config'
 import { useLocation } from 'react-router-dom'
 import { useMobile } from '../hooks/useMobile'
 import browser from '../services/browser'
@@ -305,6 +306,9 @@ const GroupedNav: React.FC = () => {
         <ResellerLogo reseller={reseller} marginLeft={4} size="small">
           <Divider />
         </ResellerLogo>
+        {brand.name === 'remoteit' && (
+          <ListItemLocation title={t('nav.connectAi', 'Connect AI')} to="/connect-ai" icon="remote-ai" dense />
+        )}
         <ListItemLocation
           title={t('nav.announcements', 'Announcements')}
           to="/announcements"
