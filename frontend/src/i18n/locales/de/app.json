@@ -238,6 +238,7 @@
     "typeSystem": "Systemaktualisierung"
   },
   "announcementsPage": {
+    "empty": "",
     "title": "Benachrichtigungen"
   },
   "apps": {

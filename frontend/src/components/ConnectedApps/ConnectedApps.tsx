@@ -23,7 +23,7 @@ export const ConnectedApps: React.FC = () => {
         <Notice severity="info" fullWidth>
           {t(
             'connectedApps.reauth',
-            'Sign in again to see your connected apps — your current session started before this page could ask for them.'
+            'Sign in again to see your connected apps. Your session started before this page could ask for them.'
           )}
         </Notice>
         <Button

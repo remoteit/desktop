@@ -36,11 +36,16 @@ export const AnnouncementsPage = () => {
       gutterBottom
       header={
         <Typography variant="h1">
-          <Title>{t('announcementsPage.title', 'Notifications')}</Title>
+          <Title>{t('announcementsPage.title', 'Announcements')}</Title>
         </Typography>
       }
     >
       <AnnouncementCardTest hide />
+      {!announcements.length && (
+        <Typography variant="body2" color="textSecondary" data-announcements-empty>
+          {t('announcementsPage.empty', 'No announcements yet.')}
+        </Typography>
+      )}
       {announcements.map((announcement, index) => (
         <AnnouncementCard
           key={index}

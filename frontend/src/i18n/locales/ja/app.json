@@ -236,6 +236,7 @@
     "typeSystem": "システムアップデート"
   },
   "announcementsPage": {
+    "empty": "",
     "title": "通知"
   },
   "apps": {

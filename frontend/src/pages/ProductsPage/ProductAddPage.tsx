@@ -74,7 +74,7 @@ export const ProductAddPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true }}
       header={
         <Typography variant="h1">
-          <Title>{t('productAddPage.title', 'Create Product')}</Title>
+          <Title>{t('productAddPage.title', 'Create product')}</Title>
         </Typography>
       }
     >
@@ -133,7 +133,7 @@ export const ProductAddPage: React.FC = () => {
                   {t('productAddPage.creating', 'Creating...')}
                 </>
               ) : (
-                t('productAddPage.title', 'Create Product')
+                t('productAddPage.title', 'Create product')
               )}
             </Button>
           </Gutters>

@@ -240,6 +240,7 @@
     "typeSystem": "Actualización del sistema"
   },
   "announcementsPage": {
+    "empty": "",
     "title": "Notificaciones"
   },
   "apps": {

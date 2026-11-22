@@ -238,7 +238,8 @@
     "typeSystem": "System Update"
   },
   "announcementsPage": {
-    "title": "Notifications"
+    "empty": "No announcements yet.",
+    "title": "Announcements"
   },
   "apps": {
     "accountChannel": "Account’s",
@@ -1028,7 +1029,7 @@
   "connectedApps": {
     "empty": "You have not authorized any apps yet.",
     "loading": "Loading…",
-    "reauth": "Sign in again to see your connected apps — your current session started before this page could ask for them.",
+    "reauth": "Sign in again to see your connected apps. Your session started before this page could ask for them.",
     "reauthAction": "Sign in again",
     "title": "Apps & AI agents"
   },
@@ -3798,7 +3799,7 @@
     "platform": "Platform",
     "platformRequired": "Platform is required",
     "productName": "Product Name",
-    "title": "Create Product"
+    "title": "Create product"
   },
   "productApps": {
     "asksBody": "{{app}}, published by {{publisher}}, runs restricted, with an account of its own on every device in this product, now and later.",
