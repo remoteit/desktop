@@ -705,11 +705,11 @@ describe('remote.it’s exits', () => {
     exits.mockResolvedValue([{ ...EXIT, lan: true }])
     await render(<AdminRemoteitExits onProblem={vi.fn()} />)
     expect($('[data-lan-warning]', exit('X1'))?.textContent).toBe(
-      'This exit lets its users reach its devices’ local networks: each device added opens its network to them.'
+      'People using this exit can reach its devices’ local networks. Each device you add opens its network to them.'
     )
     await click($('[data-pick="M3"]', exit('X1')))
     expect($('[data-lan-warning]', exit('X1'))?.textContent).toBe(
-      'This exit lets its users reach its devices’ local networks: adding spare opens its network to them.'
+      'People using this exit can reach its devices’ local networks. Adding spare opens its network to them.'
     )
     expect(addExitDevice).not.toHaveBeenCalled()
     await click(button('Add', exit('X1')))

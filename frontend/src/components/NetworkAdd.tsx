@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MAX_NAME_LENGTH } from '@common/constants'
 import { useHistory } from 'react-router-dom'
-import { TextField, Button } from '@mui/material'
+import { Box, TextField, Button } from '@mui/material'
 import { selectNetwork } from '../models/networks'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { reloadDeviceNetworks } from '../hooks/useDeviceNetworks'
@@ -39,29 +39,28 @@ export const NetworkAdd: React.FC = () => {
       }}
     >
       <Gutters>
-        <TextField
-          required
-          fullWidth
-          autoFocus
-          label={t('networkAdd.name', 'Name')}
-          value={name}
-          disabled={adding}
-          variant="filled"
-          onChange={event => setName(event.target.value.toString().substring(0, MAX_NAME_LENGTH))}
-        />
-      </Gutters>
-      {failed && (
-        <Gutters>
-          <Notice severity="error" fullWidth>
-            {t('networkAdd.failed', 'Couldn’t create the network. Try again.')}
-          </Notice>
-        </Gutters>
-      )}
-      <Gutters>
-        <Button color="primary" disabled={name.length < 2 || adding} variant="contained" type="submit">
-          {adding ? t('networkAdd.adding', 'Creating…') : t('networkAdd.add', 'Create network')}
-        </Button>
-        <Button onClick={() => history.goBack()}>{t('networkAdd.cancel', 'Cancel')}</Button>
+        <Box display="flex" flexDirection="column" gap={3} maxWidth={560}>
+          <TextField
+            required
+            fullWidth
+            autoFocus
+            label={t('networkAdd.name', 'Name')}
+            value={name}
+            disabled={adding}
+            onChange={event => setName(event.target.value.toString().substring(0, MAX_NAME_LENGTH))}
+          />
+          {failed && (
+            <Notice severity="error" fullWidth>
+              {t('networkAdd.failed', 'Couldn’t create the network. Try again.')}
+            </Notice>
+          )}
+          <Box display="flex" gap={1}>
+            <Button color="primary" disabled={name.length < 2 || adding} variant="contained" type="submit">
+              {adding ? t('networkAdd.adding', 'Creating…') : t('networkAdd.add', 'Create network')}
+            </Button>
+            <Button onClick={() => history.goBack()}>{t('networkAdd.cancel', 'Cancel')}</Button>
+          </Box>
+        </Box>
       </Gutters>
     </form>
   )

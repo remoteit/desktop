@@ -5,7 +5,6 @@ import {
   FormControl,
   FormControlLabel,
   FormHelperText,
-  FormLabel,
   Radio,
   RadioGroup,
   Typography,
@@ -25,7 +24,9 @@ export const ProxyKindChoice: React.FC<Props> = ({ local, disabled, onChange }) 
   const { t } = useTranslation()
   return (
     <FormControl disabled={disabled} data-proxy-kind={local ? 'local' : 'internet'}>
-      <FormLabel>{t('proxyKind.label', 'Reached from')}</FormLabel>
+      <Typography variant="subtitle2" component="legend" gutterBottom>
+        {t('proxyKind.label', 'Reached from')}
+      </Typography>
       <RadioGroup value={local ? 'local' : 'internet'} onChange={event => onChange(event.target.value === 'local')}>
         <FormControlLabel
           value="internet"
@@ -53,7 +54,7 @@ export const ProxyKindChoice: React.FC<Props> = ({ local, disabled, onChange }) 
           }
         />
       </RadioGroup>
-      <FormHelperText>{t('proxyKind.fixed', 'You can’t change this later.')}</FormHelperText>
+      <FormHelperText sx={{ marginLeft: 0 }}>{t('proxyKind.fixed', 'You can’t change this later.')}</FormHelperText>
     </FormControl>
   )
 }

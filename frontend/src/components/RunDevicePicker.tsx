@@ -167,11 +167,21 @@ export const RunDevicePicker: React.FC<Props> = ({
             : t('carry.noCandidatesProxy', 'You have no device that can run a proxy server yet. Add a device first.')}
         </Typography>
       ) : (
-        <List dense disablePadding sx={{ maxHeight: 340, overflowY: 'auto' }}>
+        <List
+          dense
+          disablePadding
+          sx={{
+            maxHeight: 340,
+            overflowY: 'auto',
+            '& .MuiListItemButton-root': { paddingLeft: 0.5 },
+            '& .MuiListItemIcon-root': { justifyContent: 'flex-start' },
+          }}
+        >
           {shown.map(candidate => (
             <ListItemButton
               key={candidate.id}
               dense
+              disableGutters
               disabled={!candidate.fit}
               data-candidate={candidate.id}
               data-fit={candidate.fit ? 'yes' : 'no'}

@@ -329,15 +329,15 @@ describe('adding devices to an exit whose users reach its devices’ local netwo
     const page = await render({ lan: true })
     expect(page.querySelector('[data-notice="warning"] [data-lan-warning]')).not.toBeNull()
     expect(warning(page)).toBe(
-      'This exit lets its users reach its devices’ local networks: each device added opens its network to them.'
+      'People using this exit can reach its devices’ local networks. Each device you add opens its network to them.'
     )
     await click(row(page, 'A1'))
     expect(warning(page)).toBe(
-      'This exit lets its users reach its devices’ local networks: adding Mac opens its network to them.'
+      'People using this exit can reach its devices’ local networks. Adding Mac opens its network to them.'
     )
     await click(row(page, 'B1'))
     expect(warning(page)).toBe(
-      'This exit lets its users reach its devices’ local networks: adding Mac, Pi opens their networks to them.'
+      'People using this exit can reach its devices’ local networks. Adding Mac, Pi opens their networks to them.'
     )
     expect(onAdd).not.toHaveBeenCalled()
     await click(add(page))

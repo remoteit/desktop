@@ -8,6 +8,7 @@ import { NetworkAddPage } from '../pages/NetworkAddPage'
 import { NetworkPage } from '../pages/NetworkPage'
 import { LanSharePage } from '../pages/LanSharePage'
 import { DynamicPanel } from '../components/DynamicPanel'
+import { ChooseOne } from '../components/ChooseOne'
 import { DeviceNetworksPage } from '../pages/DeviceNetworksPage'
 import { DeviceNetworkPage } from '../pages/DeviceNetworkPage'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
@@ -44,7 +45,7 @@ export const NetworkRouter: React.FC<{ layout: ILayout }> = ({ layout }) => {
           <Route path="/networks/:networkID">{deviceSessions ? <DeviceNetworkPage /> : <NetworkPage />}</Route>
 
           <Route path="/networks">
-            <ServiceRouter basename="/networks/:serviceID?/:sessionID?" />
+            {deviceSessions ? <ChooseOne kind="network" /> : <ServiceRouter basename="/networks/:serviceID?/:sessionID?" />}
           </Route>
         </Switch>
       }

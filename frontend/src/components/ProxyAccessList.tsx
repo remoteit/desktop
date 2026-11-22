@@ -40,7 +40,7 @@ export function outcomeLabel(t: TFunction, outcome: AccessOutcome | string): str
     case 'ticket-refused':
       return t('proxyAccess.outcome.ticketRefused', 'Sign-in refused')
     case 'unknown-endpoint':
-      return t('proxyAccess.outcome.unknownEndpoint', 'No such endpoint')
+      return t('proxyAccess.outcome.unknownEndpoint', 'No such public address')
     case 'abandoned':
       return t('proxyAccess.outcome.abandoned', 'Left before being served')
   }

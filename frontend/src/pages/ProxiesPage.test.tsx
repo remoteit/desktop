@@ -341,7 +341,7 @@ describe('the account’s base for its proxies’ names', () => {
       [BASE, 'Pending: 1 of 2 NS records found', 'warning'],
       [
         { ...BASE, state: 'verified', records: records(true, true) },
-        'Verified: its delegation to remote.it is seen',
+        'Verified. Remote.It sees your domain.',
         'warning',
       ],
       [

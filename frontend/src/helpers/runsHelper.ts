@@ -138,15 +138,15 @@ export function lanAddWarning(t: TFunction, devices: string[]): string {
   if (!devices.length)
     return t(
       'runs.lanAddAny',
-      'This exit lets its users reach its devices’ local networks: each device added opens its network to them.'
+      'People using this exit can reach its devices’ local networks. Each device you add opens its network to them.'
     )
   return t('runs.lanAdd', {
     count: devices.length,
     devices: devices.join(', '),
     defaultValue_one:
-      'This exit lets its users reach its devices’ local networks: adding {{devices}} opens its network to them.',
+      'People using this exit can reach its devices’ local networks. Adding {{devices}} opens its network to them.',
     defaultValue_other:
-      'This exit lets its users reach its devices’ local networks: adding {{devices}} opens their networks to them.',
+      'People using this exit can reach its devices’ local networks. Adding {{devices}} opens their networks to them.',
   })
 }
 
@@ -164,10 +164,10 @@ export function endpointsLine(t: TFunction, endpoints: number | null | undefined
   return endpoints
     ? t('proxies.endpoints', {
         count: endpoints,
-        defaultValue_one: '{{count}} endpoint',
-        defaultValue_other: '{{count}} endpoints',
+        defaultValue_one: '{{count}} public address',
+        defaultValue_other: '{{count}} public addresses',
       })
-    : t('proxies.endpointsNone', 'No endpoints')
+    : t('proxies.endpointsNone', 'No public addresses')
 }
 
 // What an action does to one proxy or exit a device runs: its state before and after — a deleted device keeps its
@@ -186,7 +186,7 @@ export function effectLines(t: TFunction, effect: DeviceActionEffect): string[] 
       ? t('runEffect.unchanged', 'unchanged')
       : runStateLabel(t, { state: after as DeviceActionEffect['state'], joining: false }).toLowerCase()
   const lines = [t('runEffect.state', '{{kind}} {{name}}: {{from}} → {{to}}', { kind, name: effect.name, from, to })]
-  if (effect.sessions === null) lines.push(t('runEffect.sessionsUnknown', 'Its daemon does not say what is open through it.'))
+  if (effect.sessions === null) lines.push(t('runEffect.sessionsUnknown', 'Its agent doesn’t say what is open through it.'))
   else if (effect.sessions && effect.ends)
     lines.push(
       t('runEffect.sessionsEnd', {
@@ -209,13 +209,13 @@ export function effectLines(t: TFunction, effect: DeviceActionEffect): string[] 
       effect.inService
         ? t('runEffect.endpointsServed', {
             count: effect.endpoints,
-            defaultValue_one: 'Its endpoint stays on the proxy, served by its other devices in service.',
-            defaultValue_other: 'Its {{count}} endpoints stay on the proxy, served by its other devices in service.',
+            defaultValue_one: 'Its public address stays on the proxy server, served by its other devices in service.',
+            defaultValue_other: 'Its {{count}} public addresses stay on the proxy server, served by its other devices in service.',
           })
         : t('runEffect.endpointsUnserved', {
             count: effect.endpoints,
-            defaultValue_one: 'Its endpoint stays on the proxy, served by no device until one is in service.',
-            defaultValue_other: 'Its {{count}} endpoints stay on the proxy, served by no device until one is in service.',
+            defaultValue_one: 'Its public address stays on the proxy server, served by no device until one is in service.',
+            defaultValue_other: 'Its {{count}} public addresses stay on the proxy server, served by no device until one is in service.',
           })
     )
   if (effect.kind === 'exit' && effect.moved)
@@ -301,7 +301,7 @@ export const deleteProxyLine = (t: TFunction, endpoints: number | null) =>
   endpoints
     ? t('proxies.deleteEndpoints', {
         count: endpoints,
-        defaultValue_one: 'Its endpoint is removed, for everyone using it.',
-        defaultValue_other: 'Its {{count}} endpoints are removed, for everyone using one.',
+        defaultValue_one: 'Its public address is removed, for everyone using it.',
+        defaultValue_other: 'Its {{count}} public addresses are removed, for everyone using one.',
       })
-    : t('proxies.deleteNothing', 'It has no endpoints: nothing else changes.')
+    : t('proxies.deleteNothing', 'It has no public addresses. Nothing else changes.')

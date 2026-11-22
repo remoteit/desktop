@@ -24,7 +24,7 @@ export function baseLine(t: TFunction, base: AccountProxyBase): BaseLine {
     return {
       icon: 'badge-check',
       color: 'success',
-      label: t('proxyBase.verified', 'Verified: its delegation to remote.it is seen'),
+      label: t('proxyBase.verified', 'Verified. Remote.It sees your domain.'),
       hint: t('proxyBase.verifiedHint', 'The account’s proxies move under it once you confirm'),
     }
   if (base.state === 'active')
@@ -78,22 +78,22 @@ export function baseMoveCertificateLine(
 ): string {
   if (mode === 'remove')
     return certificate === 'ready'
-      ? t('proxyBase.backReady', 'Their https endpoints are served with remote.it’s certificate for every proxy name.')
+      ? t('proxyBase.backReady', 'Their HTTPS public addresses use Remote.It’s certificate for every proxy name.')
       : t(
           'proxyBase.backPending',
-          'remote.it’s certificate for every proxy name is not issued yet: until it is, their https endpoints are not served.'
+          'Remote.It’s certificate for every proxy name isn’t issued yet. Their HTTPS public addresses don’t work until it is.'
         )
   if (certificate === 'ready')
-    return t('proxyBase.moveReady', 'Their https endpoints are served with the certificate for {{base}}.', { base })
+    return t('proxyBase.moveReady', 'Their HTTPS public addresses use the certificate for {{base}}.', { base })
   if (certificate === 'failed')
     return t(
       'proxyBase.moveFailed',
-      'The certificate for {{base}} could not be issued: until it is, their https endpoints are not served under it.',
+      'The certificate for {{base}} couldn’t be issued. Their HTTPS public addresses under it don’t work until it is.',
       { base }
     )
   return t(
     'proxyBase.movePending',
-    'The certificate for {{base}} is not issued yet: until it is, their https endpoints are not served under it.',
+    'The certificate for {{base}} isn’t issued yet. Their HTTPS public addresses under it don’t work until it is.',
     { base }
   )
 }

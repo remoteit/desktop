@@ -343,7 +343,6 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                 icon="chart-network"
                 title={network.name}
                 subtitle={t('exitPage.networkHint', 'Devices on this network can use it')}
-                dense
               >
                 <IconButton
                   icon="times"
@@ -384,7 +383,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
               disabled={busy || (!exit.lan && !!exit.lanRefusal)}
               onClick={() => (exit.lan ? setLan(false) : setOpeningLan(true))}
             />
-            <ListItem data-tags>
+            <ListItem data-tags sx={{ paddingRight: 2 }}>
               <ListItemIcon>
                 <Icon name="tags" size="md" fixedWidth />
               </ListItemIcon>

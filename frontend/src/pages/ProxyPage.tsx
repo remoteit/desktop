@@ -620,11 +620,11 @@ export function namesCertificateLine(t: TFunction, said: Pick<NamesMove, 'certif
   if (said.certificate === 'ready')
     return t(
       'proxyPage.namesReady',
-      'Its https endpoints are served with remote.it’s certificate for every proxy name.'
+      'Its HTTPS public addresses use Remote.It’s certificate for every proxy name.'
     )
   return t(
     'proxyPage.namesPending',
-    'remote.it’s certificate for every proxy name is not issued yet: until it is, its https endpoints are not served.'
+    'Remote.It’s certificate for every proxy name isn’t issued yet. Its HTTPS public addresses don’t work until it is.'
   )
 }
 

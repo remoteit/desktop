@@ -320,7 +320,7 @@ describe('the exits not to be had', () => {
     await render()
     expect(find('[data-loading]')).not.toBeNull()
     expect(find('[data-remoteit]')).toBeNull()
-    expect(find('[data-header]').textContent).toContain('Exits')
+    expect(find('[data-header]').textContent).toContain('Create exit')
   })
 
   it('a server without exits says so, nothing listed', async () => {

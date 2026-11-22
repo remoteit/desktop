@@ -128,8 +128,10 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, plain, 
           label={t('carry.maxWait', 'Wait for open connections (minutes)')}
           value={maxWait}
           error={!waitValid}
+          helperText={waitValid ? undefined : t('carry.maxWaitInvalid', 'Enter a whole number of minutes, from 1 to 10080.')}
           onChange={event => setMaxWait(event.target.value)}
-          sx={{ display: 'block', marginTop: 2 }}
+          fullWidth
+          sx={{ marginTop: 2 }}
         />
       )}
       {refusal && (

@@ -166,7 +166,7 @@ describe('making a device an exit: one action of two calls', () => {
     await act(async () => (find('input[value="existing"]') as HTMLInputElement).click())
     await act(async () => find('[data-pick="xlan"]').click())
     expect(find('[data-notice="warning"] [data-lan-warning]').textContent).toBe(
-      'This exit lets its users reach its devices’ local networks: adding Office Mac opens its network to them.'
+      'People using this exit can reach its devices’ local networks. Adding Office Mac opens its network to them.'
     )
     expect(addExit).not.toHaveBeenCalled()
     await act(async () => find('[data-pick="xha"]').click())

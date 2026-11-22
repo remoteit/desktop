@@ -94,7 +94,7 @@ const OwnNameClaim: React.FC<Props> = ({ proxy, busy, onBusy, onChanged }) => {
       ) : (
         <InlineTextFieldSetting
           icon="earth-americas"
-          label={t('ownName.label', 'DNS name')}
+          label={t('ownName.label', 'Address')}
           value={own?.name ?? ''}
           placeholder={t('ownName.placeholder', 'none: a name under your domain, as office.example.com')}
           filter={/[^a-zA-Z0-9.-]/g}
@@ -120,11 +120,11 @@ const OwnNameClaim: React.FC<Props> = ({ proxy, busy, onBusy, onChanged }) => {
             own?.state === 'active'
               ? t(
                   'ownName.keep',
-                  'Keep these records where your DNS is hosted: remote.it renews its certificate through them.'
+                  'Keep these records where your DNS is hosted. Remote.It renews its certificate through them.'
                 )
               : t(
                   'ownName.hint',
-                  'Use a name under a domain you control. Add these records where your DNS is hosted; remote.it checks them and keeps the certificate renewed.'
+                  'Use a name under a domain you control. Add these records where your DNS is hosted. Remote.It checks them and renews the certificate.'
                 )
           }
         />
@@ -156,7 +156,7 @@ const OwnNameClaim: React.FC<Props> = ({ proxy, busy, onBusy, onChanged }) => {
         <ListItemSetting
           icon="rotate-left"
           label={t('ownName.remove', 'Remove its own name')}
-          subLabel={t('ownName.removeHint', 'What moves back to remote.it’s names is said first')}
+          subLabel={t('ownName.removeHint', 'What moves back to Remote.It’s names is said first')}
           button={t('ownName.removeButton', 'Remove')}
           buttonDisabled={busy}
           secondaryContentWidth={BUTTON_ROOM}
@@ -240,7 +240,7 @@ const BaseGivenName: React.FC<{ proxy: Proxy; own: OwnName }> = ({ proxy, own })
         <ListItemText
           secondary={t(
             'ownName.baseHint',
-            'remote.it keeps its records and certificate under the account’s base: nothing to add where your DNS is hosted.'
+            'Remote.It keeps its records and certificate under your account’s domain. There is nothing to add where your DNS is hosted.'
           )}
         />
       </ListItem>
@@ -302,7 +302,7 @@ const StateLine: React.FC<{ t: TFunction; own: OwnName; busy: boolean; onCheck: 
     active: {
       icon: 'circle-check',
       color: 'success' as const,
-      label: t('ownName.active', 'Active: its endpoints are reached under it'),
+      label: t('ownName.active', 'Active. Its public addresses are reached under it.'),
       hint: '',
     },
     broken: {
@@ -347,10 +347,10 @@ const StateLine: React.FC<{ t: TFunction; own: OwnName; busy: boolean; onCheck: 
 
 // The own name's certificate, remote.it's to issue and renew through its records.
 export function ownCertificateLine(t: TFunction, certificate: OwnName['certificate']): string {
-  if (certificate === 'ready') return t('ownName.certificateReady', 'Issued: remote.it renews it')
+  if (certificate === 'ready') return t('ownName.certificateReady', 'Issued. Remote.It renews it.')
   if (certificate === 'failed')
-    return t('ownName.certificateFailed', 'Not issued: until it is, its https endpoints under it are not served')
-  return t('ownName.certificatePending', 'Not issued yet: until it is, its https endpoints under it are not served')
+    return t('ownName.certificateFailed', 'Not issued. Its HTTPS public addresses under it don’t work until it is.')
+  return t('ownName.certificatePending', 'Not issued yet. Its HTTPS public addresses under it don’t work until it is.')
 }
 
 // The certificate its https endpoints are served with after a move: the own name's moving under it, the stage's moving
@@ -363,22 +363,22 @@ export function moveCertificateLine(
 ): string {
   if (mode === 'remove')
     return certificate === 'ready'
-      ? t('proxyPage.namesReady', 'Its https endpoints are served with remote.it’s certificate for every proxy name.')
+      ? t('proxyPage.namesReady', 'Its HTTPS public addresses use Remote.It’s certificate for every proxy name.')
       : t(
           'proxyPage.namesPending',
-          'remote.it’s certificate for every proxy name is not issued yet: until it is, its https endpoints are not served.'
+          'Remote.It’s certificate for every proxy name isn’t issued yet. Its HTTPS public addresses don’t work until it is.'
         )
   if (certificate === 'ready')
-    return t('ownName.moveReady', 'Its https endpoints are served with the certificate for {{name}}.', { name })
+    return t('ownName.moveReady', 'Its HTTPS public addresses use the certificate for {{name}}.', { name })
   if (certificate === 'failed')
     return t(
       'ownName.moveFailed',
-      'The certificate for {{name}} could not be issued: until it is, its https endpoints are not served.',
+      'The certificate for {{name}} couldn’t be issued. Its HTTPS public addresses don’t work until it is.',
       { name }
     )
   return t(
     'ownName.movePending',
-    'The certificate for {{name}} is not issued yet: until it is, its https endpoints are not served.',
+    'The certificate for {{name}} isn’t issued yet. Its HTTPS public addresses don’t work until it is.',
     { name }
   )
 }
@@ -444,7 +444,7 @@ const OwnNameMoveDialog: React.FC<
               ))}
             </List>
           ) : (
-            <Typography variant="body2">{t('proxyPage.namesNoAddresses', 'No endpoint address moves.')}</Typography>
+            <Typography variant="body2">{t('proxyPage.namesNoAddresses', 'No public address moves.')}</Typography>
           )}
         </>
       )}

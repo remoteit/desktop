@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { useHistory } from 'react-router-dom'
-import { Button, List, ListSubheader, Typography } from '@mui/material'
+import { List, ListSubheader, Typography } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { AccountProxyBase, ListedProxy, ProxyChoice, ProxyOwnNameBrief, graphQLProxies } from '../services/graphQLProxy'
 import { outOfService } from '../helpers/runsHelper'
@@ -16,14 +15,13 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
-import { Title } from '../components/Title'
+import { NetworkSectionIntro } from '../components/NetworkSectionIntro'
 import { Icon } from '../components/Icon'
 
 /* Proxy servers: your own first, each saying whether it is ready and where it runs; Remote.It's, labelled; and last,
    for an admin of the account, the paid add-on that names public addresses under your own domain. */
 export const ProxiesPage: React.FC = () => {
   const { t } = useTranslation()
-  const history = useHistory()
   const manage = useDisabledDevicesAccess()
   const admin = useAccountAdmin()
   const { value: proxies } = useAccountProxies()
@@ -38,30 +36,14 @@ export const ProxiesPage: React.FC = () => {
       gutterBottom
       bodyProps={{ verticalOverflow: true }}
       header={
-        <>
-          <Typography variant="subtitle1">
-            <Title>{t('proxiesPage.title', 'Proxy servers')}</Title>
-            {manage && (
-              <Button
-                size="small"
-                variant="contained"
-                startIcon={<Icon name="plus" size="sm" />}
-                onClick={() => history.push('/proxies/new')}
-                data-create
-              >
-                {t('proxiesPage.create', 'Create proxy server')}
-              </Button>
-            )}
-          </Typography>
-          <Gutters top={null} bottom="sm">
-            <Typography variant="body2" color="textSecondary">
-              {t(
-                'proxiesPage.intro',
-                'Run public addresses for your services on your own devices. Remote.It’s proxy servers are always there too.'
-              )}
-            </Typography>
-          </Gutters>
-        </>
+        <NetworkSectionIntro
+          intro={t(
+            'proxiesPage.intro',
+            'Run public addresses for your services on your own devices. Remote.It’s proxy servers are always there too.'
+          )}
+          action={manage ? t('proxiesPage.create', 'Create proxy server') : undefined}
+          to="/proxies/new"
+        />
       }
     >
       {proxies === undefined ? (
@@ -82,6 +64,7 @@ export const ProxiesPage: React.FC = () => {
                 data-proxy={proxy.id}
                 to={`/proxies/${proxy.id}`}
                 match={`/proxies/${proxy.id}`}
+                sx={{ '& .MuiListItemText-secondary': { overflowWrap: 'anywhere' } }}
                 icon={<Icon name="server" size="md" color={serving(proxy) ? 'primary' : 'grayDark'} fixedWidth />}
                 title={
                   <>

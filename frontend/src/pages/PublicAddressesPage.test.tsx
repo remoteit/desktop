@@ -174,8 +174,8 @@ describe('public addresses', () => {
     await render()
     expect(host.querySelector('[data-empty]')?.textContent).toContain('No public addresses yet')
     const add = [...host.querySelectorAll('button')].filter(button => button.textContent === 'Add public address')
-    expect(add.length).toBe(2)
-    await act(async () => add[1].click())
+    expect(add.length).toBe(1)
+    await act(async () => add[0].click())
     expect(pushed).toHaveBeenCalledWith('/public-addresses/new')
   })
 

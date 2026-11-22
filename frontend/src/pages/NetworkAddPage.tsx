@@ -14,21 +14,23 @@ export const NetworkAddPage: React.FC = () => {
     <Container
       gutterBottom
       header={
-        <Typography variant="h1">
-          <Title>{t('networkAddPage.title', 'New network')}</Title>
-        </Typography>
+        <>
+          <Typography variant="h1">
+            <Title>{t('networkAddPage.title', 'Create network')}</Title>
+          </Typography>
+          {deviceSessions && (
+            <Gutters top={null} bottom="sm">
+              <Typography variant="body2" color="textSecondary">
+                {t(
+                  'networkAddPage.intro',
+                  'Devices in a network reach each other by name, with no connection to start. Name it, then add devices.'
+                )}
+              </Typography>
+            </Gutters>
+          )}
+        </>
       }
     >
-      {deviceSessions && (
-        <Gutters bottom={null}>
-          <Typography variant="body2" color="textSecondary">
-            {t(
-              'networkAddPage.intro',
-              'Devices in a network reach each other by name, with no connection to start. Name it, then add devices.'
-            )}
-          </Typography>
-        </Gutters>
-      )}
       <NetworkAdd />
     </Container>
   )
