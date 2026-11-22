@@ -495,12 +495,12 @@ export const AppPage: React.FC = () => {
           {updateRoot
             ? t(
                 'apps.updateRootBody',
-                'A new version of {{app}}, published by {{publisher}}, runs as root: it gets full control of each device selected — every file, account and program on it. Update only if you trust {{publisher}} with them.',
+                'A new version of {{app}}, published by {{publisher}}, gets full control of each device selected. Update only if you trust {{publisher}} with them.',
                 { app: app.name, publisher: app.publisher.name }
               )
             : t(
                 'apps.updateAsksBody',
-                'A new version of {{app}}, published by {{publisher}}, asks more of remote.it on each device selected. Update only if you trust {{publisher}} with them.',
+                'A new version of {{app}}, published by {{publisher}}, asks for more access on each device selected. Update only if you trust {{publisher}} with them.',
                 { app: app.name, publisher: app.publisher.name }
               )}
         </Typography>

@@ -4781,6 +4781,11 @@
     "upload": "Hochladen",
     "uploadShort": ""
   },
+  "scriptingTabs": {
+    "files": "",
+    "runs": "",
+    "scripts": ""
+  },
   "scriptPage": {
     "created": "Erstellt",
     "deviceCount_one": "{{count}} Gerät",
@@ -4807,6 +4812,9 @@
     "runNow": "Jetzt ausführen",
     "saveHint": "„Speichern“ erstellt einen vorbereiteten Lauf mit den ausgewählten Geräten, dem Tag und den Argumentwerten.",
     "targetDevices": "Zielgeräte"
+  },
+  "scriptRunPage": {
+    "runScript": ""
   },
   "scriptRunSummary": {
     "all": "ALLE",

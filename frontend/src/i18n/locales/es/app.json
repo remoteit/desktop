@@ -4887,6 +4887,11 @@
     "upload": "Subir",
     "uploadShort": ""
   },
+  "scriptingTabs": {
+    "files": "",
+    "runs": "",
+    "scripts": ""
+  },
   "scriptPage": {
     "created": "Creado",
     "deviceCount_one": "{{count}} dispositivo",
@@ -4916,6 +4921,9 @@
     "runNow": "Ejecutar ahora",
     "saveHint": "Guardar crea una ejecución preparada con los dispositivos, la etiqueta y los valores de argumento seleccionados.",
     "targetDevices": "Dispositivos de destino"
+  },
+  "scriptRunPage": {
+    "runScript": ""
   },
   "scriptRunSummary": {
     "all": "TODOS",

@@ -4675,6 +4675,11 @@
     "upload": "アップロード",
     "uploadShort": ""
   },
+  "scriptingTabs": {
+    "files": "",
+    "runs": "",
+    "scripts": ""
+  },
   "scriptPage": {
     "created": "作成日",
     "deviceCount_other": "{{count}}台のデバイス",
@@ -4698,6 +4703,9 @@
     "runNow": "今すぐ実行",
     "saveHint": "「保存」を実行すると、選択したデバイス、タグ、引数の値を使用した準備済みの実行が作成されます。",
     "targetDevices": "対象デバイス"
+  },
+  "scriptRunPage": {
+    "runScript": ""
   },
   "scriptRunSummary": {
     "all": "すべて",
