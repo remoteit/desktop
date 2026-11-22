@@ -18,7 +18,7 @@
   },
   "accountAccessKey": {
     "created": "Created",
-    "description": "Access keys are necessary for authenticating with our API. You have the option to create a new key, delete an existing one, or temporarily disable a key. It's advisable to download and save your keys in the .remoteit directory of your home folder:",
+    "description": "Use an access key to sign in to the Remote.It API. You can create, turn off or delete a key. Save your keys in this file in your home folder.",
     "generateCredentials": "Generate credentials",
     "keyLimit": "There is a limit of 2 access keys. Keep your keys safe.",
     "lastUsed": "Last used",
@@ -2488,7 +2488,7 @@
     "emailUsAt": "You can also email us at",
     "featureRequestHint": "If you have a feature request, please include why it’s important to you.",
     "includedData": "Included data",
-    "intro": "Get support or provide feedback on how can we improve Remote.It.",
+    "intro": "Get support, or tell us how we can improve Remote.It.",
     "message": "Message",
     "send": "Send",
     "subject": "Subject",
@@ -3719,6 +3719,11 @@
     "total": "Total",
     "users": "Users"
   },
+  "planEnterprise": {
+    "caption": "Large-scale solutions for unique and custom use cases.",
+    "changeCaption": "To change your plan, contact your administrator or us.",
+    "contact": "Contact us"
+  },
   "plans": {
     "billedMonthly": "billed monthly",
     "continue": "Continue",
@@ -3741,7 +3746,7 @@
     "removingResellerPrefix": "You are removing",
     "removingResellerSuffix": "as your reseller. This will remove your current plan and return you to the free plan.",
     "severWarning": "This will sever your reseller relationship!",
-    "title": "Subscriptions"
+    "title": "Subscription"
   },
   "platformAddPage": {
     "managePermissionRequired": "You must have the Manage permission to add a device to this organization.",
@@ -5035,9 +5040,9 @@
     "testSettings": "Test settings",
     "title": "Settings",
     "uploadPicture": "Upload picture",
-    "urlEndpoint": "URL endpoint",
+    "urlEndpoint": "Webhook URL",
     "visitWeb": "Visit Remote.It on the web",
-    "webhookHelp": "Use a public HTTPS URL. Endpoint must accept POST and return 200 within 5 seconds."
+    "webhookHelp": "Use a public HTTPS URL. Your server must accept a POST and answer 200 within 5 seconds."
   },
   "settingsDisableNetworkItem": {
     "description": "This will allow network access to the desktop UI on ports 29999 and 29998 in addition to sharing through Remote.It",

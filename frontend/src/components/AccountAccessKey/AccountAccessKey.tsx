@@ -41,7 +41,7 @@ export const AccountAccessKey: React.FC = () => {
         <Typography variant="body2" gutterBottom>
           {t(
             'accountAccessKey.description',
-            "Access keys are necessary for authenticating with our API. You have the option to create a new key, delete an existing one, or temporarily disable a key. It's advisable to download and save your keys in the .remoteit directory of your home folder:"
+            'Use an access key to sign in to the Remote.It API. You can create, turn off or delete a key. Save your keys in this file in your home folder.'
           )}
         </Typography>
         <CodeBlock>~/.remoteit/credentials</CodeBlock>

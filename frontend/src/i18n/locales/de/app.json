@@ -3719,6 +3719,11 @@
     "total": "Gesamt",
     "users": "Benutzer"
   },
+  "planEnterprise": {
+    "caption": "",
+    "changeCaption": "",
+    "contact": ""
+  },
   "plans": {
     "billedMonthly": "monatlich abgerechnet",
     "continue": "Weiter",

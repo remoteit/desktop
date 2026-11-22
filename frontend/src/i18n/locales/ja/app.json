@@ -3656,6 +3656,11 @@
     "total": "合計",
     "users": "ユーザー"
   },
+  "planEnterprise": {
+    "caption": "",
+    "changeCaption": "",
+    "contact": ""
+  },
   "plans": {
     "billedMonthly": "月払い",
     "continue": "続ける",

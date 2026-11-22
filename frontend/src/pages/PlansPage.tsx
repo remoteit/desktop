@@ -42,7 +42,7 @@ export const PlansPage: React.FC = () => {
       bodyProps={{ verticalOverflow: true, gutterTop: true }}
       header={
         <Typography variant="h1">
-          <Title>{t('plansPage.title', 'Subscriptions')}</Title>
+          <Title>{t('plansPage.title', 'Subscription')}</Title>
           {user.reseller && (
             <DeleteButton
               title={t('common.remove', 'Remove')}

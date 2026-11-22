@@ -80,9 +80,11 @@ export const OrganizationRolePage: React.FC = () => {
         }}
       >
         {systemRole && (
-          <Notice severity="info" gutterBottom>
-            {t('organizationRolePage.systemRoleNotice', 'System roles cannot be modified.')}
-          </Notice>
+          <Gutters top={null}>
+            <Notice severity="info" fullWidth>
+              {t('organizationRolePage.systemRoleNotice', 'System roles cannot be modified.')}
+            </Notice>
+          </Gutters>
         )}
         <ListItem>
           <ListItemIcon>

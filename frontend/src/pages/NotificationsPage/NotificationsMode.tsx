@@ -145,7 +145,7 @@ export const NotificationMode: React.FC = () => {
             disabled={!urlNotifications}
             onChange={e => changeWebHookUrl(e.currentTarget.value.trim())}
             value={webHookUrl}
-            label={t('settings.urlEndpoint', 'URL endpoint')}
+            label={t('settings.urlEndpoint', 'Webhook URL')}
             placeholder="https://example.com/webhooks/remoteit"
             required
             variant="filled"
@@ -156,7 +156,7 @@ export const NotificationMode: React.FC = () => {
           <Typography variant="caption" color="text.secondary" component="p" marginTop={2} marginBottom={1}>
             {t(
               'settings.webhookHelp',
-              'Use a public HTTPS URL. Endpoint must accept POST and return 200 within 5 seconds.'
+              'Use a public HTTPS URL. Your server must accept a POST and answer 200 within 5 seconds.'
             )}{' '}
             <Link href="https://docs.remote.it/developer-tools/webhooks">{t('settings.docs', 'Docs')}</Link>
           </Typography>
