@@ -97,9 +97,9 @@ export const ThisDeviceMain: React.FC<{
 const Section: React.FC<{ id: string; title: string; children: React.ReactNode }> = ({ id, title, children }) => (
   <Box component="section" data-block={id} marginBottom={3}>
     <Typography
-      variant="subtitle1"
+      variant="body1"
       component="h2"
-      sx={{ marginX: { xs: 1, sm: 2 }, marginBottom: 1, fontWeight: 500, color: 'text.secondary' }}
+      sx={{ marginX: { xs: 2, sm: 3 }, marginBottom: 1, fontWeight: 600, textTransform: 'none', letterSpacing: 0 }}
     >
       {title}
     </Typography>
@@ -246,7 +246,7 @@ const ControlRow: React.FC<{
           wide
             ? {
                 flexBasis: { xs: '100%', sm: 260 },
-                paddingLeft: { xs: ICON_COLUMN.xs, sm: 0 },
+                paddingLeft: { xs: `calc(${ICON_COLUMN.xs} + 8px)`, sm: 0 },
                 paddingTop: { xs: 1, sm: 0 },
               }
             : undefined
@@ -357,10 +357,8 @@ const RouteRow: React.FC<{
     <TextField
       select
       fullWidth
-      size="small"
       value={state.value}
       disabled={m.held || choosing || !status || locked || (!on && (!mayChoose || listed.length === 0))}
-      sx={{ '&& .MuiInputBase-sizeSmall': { height: 'auto', marginY: 0 } }}
       SelectProps={{
         displayEmpty: true,
         renderValue: value => {

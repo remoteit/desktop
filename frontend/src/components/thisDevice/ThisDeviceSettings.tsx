@@ -1,5 +1,5 @@
 import React from 'react'
-import { Divider } from '@mui/material'
+import { Box, Divider } from '@mui/material'
 import { ThisDeviceModel } from './model'
 import { Card } from './shared'
 import { LinkRow } from './ThisDeviceMain'
@@ -21,34 +21,36 @@ export const ThisDeviceSettings: React.FC<{ m: ThisDeviceModel; signedIn: boolea
     (has('exitNode') && !!status.exitNode)
   const page = signedIn && !!d?.uid
   return (
-    <Card section="settings-links">
-      <LinkRow
-        link="details"
-        href="#/this-device/details"
-        icon="info-circle"
-        primary={t('thisDevice.details', 'Details')}
-        secondary={t('thisDevice.detailsLine', 'Address, versions and what this {{kind}} shares', { kind })}
-      />
-      {advanced && <Divider component="li" />}
-      {advanced && (
+    <Box paddingTop={2}>
+      <Card section="settings-links">
         <LinkRow
-          link="advanced"
-          href="#/this-device/advanced"
-          icon="cog"
-          primary={t('thisDevice.advanced', 'Advanced')}
-          secondary={t('thisDevice.advancedLine', 'Relay, permissions, diagnostics and removal')}
+          link="details"
+          href="#/this-device/details"
+          icon="info-circle"
+          primary={t('thisDevice.details', 'Details')}
+          secondary={t('thisDevice.detailsLine', 'Address, versions and what this {{kind}} shares', { kind })}
         />
-      )}
-      {page && <Divider component="li" />}
-      {page && (
-        <LinkRow
-          link="device-page"
-          href={`#/devices/${d!.uid}`}
-          icon="hdd"
-          primary={t('thisDevice.devicePage', 'Device page')}
-          secondary={t('thisDevice.devicePageLine', 'Services, sharing and activity for {{name}}', { name: d!.name })}
-        />
-      )}
-    </Card>
+        {advanced && <Divider component="li" />}
+        {advanced && (
+          <LinkRow
+            link="advanced"
+            href="#/this-device/advanced"
+            icon="cog"
+            primary={t('thisDevice.advanced', 'Advanced')}
+            secondary={t('thisDevice.advancedLine', 'Relay, permissions, diagnostics and removal')}
+          />
+        )}
+        {page && <Divider component="li" />}
+        {page && (
+          <LinkRow
+            link="device-page"
+            href={`#/devices/${d!.uid}`}
+            icon="hdd"
+            primary={t('thisDevice.devicePage', 'Device page')}
+            secondary={t('thisDevice.devicePageLine', 'Services, sharing and activity for {{name}}', { name: d!.name })}
+          />
+        )}
+      </Card>
+    </Box>
   )
 }
