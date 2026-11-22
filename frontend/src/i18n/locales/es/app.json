@@ -2930,9 +2930,6 @@
     "team": "",
     "thisDevice": ""
   },
-  "navPage": {
-    "publicAddresses": ""
-  },
   "network": {
     "active": "Activo",
     "cloudProxy": "Proxy en la nube",

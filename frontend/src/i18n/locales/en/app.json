@@ -2875,9 +2875,6 @@
     "team": "Team",
     "thisDevice": "This device"
   },
-  "navPage": {
-    "publicAddresses": "Public addresses"
-  },
   "network": {
     "active": "Active",
     "cloudProxy": "Cloud Proxy",

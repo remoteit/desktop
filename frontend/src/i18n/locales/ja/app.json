@@ -2820,9 +2820,6 @@
     "team": "",
     "thisDevice": ""
   },
-  "navPage": {
-    "publicAddresses": ""
-  },
   "network": {
     "active": "アクティブ",
     "cloudProxy": "クラウドプロキシ",
