@@ -89,7 +89,11 @@ export const ScriptingHeader: React.FC<Props> = ({ children, subheader }) => {
                           component={RouteLink}
                         >
                           {location.pathname.startsWith('/files')
-                            ? t('scriptingHeader.upload', 'Upload file')
+                            ? mobile
+                              ? t('scriptingHeader.uploadShort', 'Upload')
+                              : t('scriptingHeader.upload', 'Upload file')
+                            : mobile
+                            ? t('scriptingHeader.addShort', 'Add')
                             : t('scriptingHeader.add', 'Add script')}
                         </Button>
                       </span>

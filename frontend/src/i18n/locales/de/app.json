@@ -4765,10 +4765,12 @@
   },
   "scriptingHeader": {
     "add": "Hinzufügen",
+    "addShort": "",
     "adminRequired": "Zum Hochladen sind Administratorrechte erforderlich",
     "feedback": "Feedback",
     "help": "",
-    "upload": "Hochladen"
+    "upload": "Hochladen",
+    "uploadShort": ""
   },
   "scriptPage": {
     "created": "Erstellt",

@@ -4871,10 +4871,12 @@
   },
   "scriptingHeader": {
     "add": "Añadir",
+    "addShort": "",
     "adminRequired": "Se requieren permisos de administrador para subir",
     "feedback": "Comentarios",
     "help": "",
-    "upload": "Subir"
+    "upload": "Subir",
+    "uploadShort": ""
   },
   "scriptPage": {
     "created": "Creado",

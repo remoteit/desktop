@@ -25,7 +25,7 @@ export const productAttributes: ProductAttribute[] = [
     required: true,
     defaultWidth: 300,
     value: ({ product, productOverview, mobile }: IDataOptions) => (
-      <>
+      <Box sx={{ minWidth: 0 }}>
         <Typography noWrap>{product?.name}</Typography>
         {mobile && productOverview && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -41,7 +41,7 @@ export const productAttributes: ProductAttribute[] = [
             <ProductIntakeChip overview={productOverview} />
           </Box>
         )}
-      </>
+      </Box>
     ),
   }),
   new ProductAttribute({

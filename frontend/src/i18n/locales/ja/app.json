@@ -4659,10 +4659,12 @@
   },
   "scriptingHeader": {
     "add": "追加",
+    "addShort": "",
     "adminRequired": "アップロードには管理者権限が必要です",
     "feedback": "フィードバック",
     "help": "",
-    "upload": "アップロード"
+    "upload": "アップロード",
+    "uploadShort": ""
   },
   "scriptPage": {
     "created": "作成日",

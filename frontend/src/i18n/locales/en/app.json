@@ -4765,10 +4765,12 @@
   },
   "scriptingHeader": {
     "add": "Add script",
+    "addShort": "Add",
     "adminRequired": "Admin permissions required to upload",
     "feedback": "Feedback",
     "help": "Help",
-    "upload": "Upload file"
+    "upload": "Upload file",
+    "uploadShort": "Upload"
   },
   "scriptPage": {
     "created": "Created",

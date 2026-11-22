@@ -7,7 +7,7 @@ export const PlanGutters: React.FC<GuttersProps> = ({ children, ...props }) => {
 
   return (
     <Gutters
-      size="lg"
+      size="xl"
       sx={{
         display: 'flex',
         justifyContent: 'center',
