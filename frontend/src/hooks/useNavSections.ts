@@ -50,7 +50,7 @@ export function useNavSections() {
   const defaultSelectedPage = useSelector(selectDefaultSelectedPage)
   const rootPaths = useSelector((state: State) => !browser.isElectron && state.ui.layout.hideSidebar)
   const chat = useChatToggle()
-  const sectionPage = useSelector((state: State) => state.ui.sectionPage)
+  const sectionPage = useSelector((state: State) => state.ui.sectionPage) ?? {}
   const sections = navSections(gates)
   const landing = (section: VisibleSection) => sectionLanding(section, { products }, sectionPage[section.id])
 
@@ -86,7 +86,7 @@ export function useRememberSectionPage() {
   const { pathname } = useLocation()
   const remoteUI = useSelector(isRemoteUI)
   const sections = navSections(useNavGates(remoteUI))
-  const sectionPage = useSelector((state: State) => state.ui.sectionPage)
+  const sectionPage = useSelector((state: State) => state.ui.sectionPage) ?? {}
   const page = navPageAt(sections, pathname)
   const section = navSectionAt(sections, pathname)
 
