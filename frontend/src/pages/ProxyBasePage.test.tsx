@@ -510,7 +510,7 @@ describe('pending', () => {
     expect(section()).toBe('verified')
     expect($('[data-confirm-title]')?.textContent).toBe('Move your proxy servers under proxies.example.com?')
     expect($('[data-proxy-base-certificate]')?.textContent).toBe(
-      'The certificate for proxies.example.com is not issued yet: until it is, their https endpoints are not served under it.'
+      'The certificate for proxies.example.com isn’t issued yet. Their HTTPS public addresses under it don’t work until it is.'
     )
     expect(preview()).toEqual([
       [
@@ -550,7 +550,7 @@ describe('verified', () => {
     expect(inline[LABEL]).toBeUndefined()
     expect(label('sitemap')).toBe(BASE)
     expect(sublabel('sitemap')).toBe('To use another domain, remove this one first')
-    expect(label('badge-check')).toBe('Verified: its delegation to remote.it is seen')
+    expect(label('badge-check')).toBe('Verified. Remote.It sees your domain.')
     expect(setting('badge-check')?.getAttribute('data-color')).toBe('success')
     expect(sublabel('badge-check')).toBe(
       'The account’s proxies move under it once you confirm · Checked 2026-11-08T23:00:00.000Z'
@@ -561,7 +561,7 @@ describe('verified', () => {
     await click(settingButton('circle-arrow-right'))
     expect(verify).toHaveBeenCalledWith('ACCOUNT', false)
     expect($('[data-proxy-base-certificate]')?.textContent).toBe(
-      'Their https endpoints are served with the certificate for proxies.example.com.'
+      'Their HTTPS public addresses use the certificate for proxies.example.com.'
     )
     expect(preview()).toHaveLength(2)
     reads(ACTIVE)
@@ -707,7 +707,7 @@ describe('removing it', () => {
     expect($('[data-confirm-title]')?.textContent).toBe('Remove proxies.example.com?')
     expect($('[data-confirm-action]')?.textContent).toBe('Remove')
     expect($('[data-proxy-base-certificate]')?.textContent).toBe(
-      'Their https endpoints are served with remote.it’s certificate for every proxy name.'
+      'Their HTTPS public addresses use Remote.It’s certificate for every proxy name.'
     )
     expect(preview()).toEqual([
       [
@@ -812,7 +812,7 @@ describe('said in words', () => {
 
   it('where it stands in a line, as the Proxies page says it', () => {
     expect(baseStateLine(t, PENDING as any)).toBe('Pending: 2 of 4 NS records found')
-    expect(baseStateLine(t, VERIFIED as any)).toBe('Verified: its delegation to remote.it is seen')
+    expect(baseStateLine(t, VERIFIED as any)).toBe('Verified. Remote.It sees your domain.')
     expect(baseStateLine(t, based('active', { proxies: 0 }) as any)).toBe('Active: 0 proxies named under it')
     expect(baseStateLine(t, based('broken', { records: records(true, true, true, null) }) as any)).toBe(
       'Broken: NS ns-4.awsdns-04.co.uk is missing'
@@ -821,19 +821,19 @@ describe('said in words', () => {
 
   it('the certificate after a move: the base’s, ready, pending or failed; remote.it’s for every proxy name moving back', () => {
     expect(baseMoveCertificateLine(t, 'verify', 'ready', BASE)).toBe(
-      'Their https endpoints are served with the certificate for proxies.example.com.'
+      'Their HTTPS public addresses use the certificate for proxies.example.com.'
     )
     expect(baseMoveCertificateLine(t, 'verify', 'pending', BASE)).toBe(
-      'The certificate for proxies.example.com is not issued yet: until it is, their https endpoints are not served under it.'
+      'The certificate for proxies.example.com isn’t issued yet. Their HTTPS public addresses under it don’t work until it is.'
     )
     expect(baseMoveCertificateLine(t, 'verify', 'failed', BASE)).toBe(
-      'The certificate for proxies.example.com could not be issued: until it is, their https endpoints are not served under it.'
+      'The certificate for proxies.example.com couldn’t be issued. Their HTTPS public addresses under it don’t work until it is.'
     )
     expect(baseMoveCertificateLine(t, 'remove', 'ready', BASE)).toBe(
-      'Their https endpoints are served with remote.it’s certificate for every proxy name.'
+      'Their HTTPS public addresses use Remote.It’s certificate for every proxy name.'
     )
     expect(baseMoveCertificateLine(t, 'remove', 'pending', BASE)).toBe(
-      'remote.it’s certificate for every proxy name is not issued yet: until it is, their https endpoints are not served.'
+      'Remote.It’s certificate for every proxy name isn’t issued yet. Their HTTPS public addresses don’t work until it is.'
     )
   })
 })

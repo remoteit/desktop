@@ -976,7 +976,7 @@ describe('a proxy’s host label, each move said first', () => {
       'gw2-acme-corp.dev.r3proxy.com:30001was gw-acme-corp.dev.r3proxy.com:30001'
     )
     expect($('[data-names-certificate]')?.textContent).toBe(
-      'remote.it’s certificate for every proxy name is not issued yet: until it is, its https endpoints are not served.'
+      'Remote.It’s certificate for every proxy name isn’t issued yet. Its HTTPS public addresses don’t work until it is.'
     )
     expect(renameProxy).not.toHaveBeenCalled()
     setLabel.mockResolvedValue(said({ applied: true }))

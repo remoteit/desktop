@@ -100,7 +100,7 @@ describe('an action on a device: what it does, said first', () => {
     expect(confirm().textContent).toBe('Stop now')
     expect(find('[data-effect="proxy"]').textContent).toContain('Proxy remote.it pdx1a: in service → retired')
     expect(find('[data-effect="proxy"]').textContent).toContain(
-      'Its 3 endpoints stay on the proxy, served by its other devices in service.'
+      'Its 3 public addresses stay on the proxy server, served by its other devices in service.'
     )
     expect(find('[data-effect="exit"]').textContent).toContain(
       '1 device going out through it now moves to another of its devices.'

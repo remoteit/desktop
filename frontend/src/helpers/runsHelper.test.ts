@@ -147,8 +147,8 @@ describe('an exit or a proxy in a line', () => {
     expect(usersLine(t, 3)).toBe('3 devices use it as their exit')
     expect(usersLine(t, 0)).toBe('No device uses it as its exit')
     expect(usersLine(t, null)).toBe('')
-    expect(endpointsLine(t, 2)).toBe('2 endpoints')
-    expect(endpointsLine(t, 0)).toBe('No endpoints')
+    expect(endpointsLine(t, 2)).toBe('2 public addresses')
+    expect(endpointsLine(t, 0)).toBe('No public addresses')
   })
 
   it('no device available for an exit none of whose devices carries its traffic; nothing to say of one offered', () => {
@@ -172,7 +172,7 @@ describe('what an action does to each proxy and exit, said first', () => {
       'Exit Office Mac: in service → draining',
       'The 1 connection open through it is kept until it closes.',
     ])
-    expect(effectLines(t, effect({ sessions: null }))[1]).toBe('Its daemon does not say what is open through it.')
+    expect(effectLines(t, effect({ sessions: null }))[1]).toBe('Its agent doesn’t say what is open through it.')
     expect(effectLines(t, effect({ after: 'gone' }))[0]).toBe('Exit Office Mac: in service → taken out of it')
     expect(effectLines(t, effect({ state: 'RETIRED', after: 'retired' }))[0]).toBe('Exit Office Mac: retired → unchanged')
   })
@@ -187,10 +187,10 @@ describe('what an action does to each proxy and exit, said first', () => {
     const proxy = effect({ kind: 'proxy', name: 'remote.it pdx1a', endpoints: 4 })
     expect(effectLines(t, proxy)).toEqual([
       'Proxy remote.it pdx1a: in service → retired',
-      'Its 4 endpoints stay on the proxy, served by its other devices in service.',
+      'Its 4 public addresses stay on the proxy server, served by its other devices in service.',
     ])
     expect(effectLines(t, { ...proxy, inService: 0 })[1]).toBe(
-      'Its 4 endpoints stay on the proxy, served by no device until one is in service.'
+      'Its 4 public addresses stay on the proxy server, served by no device until one is in service.'
     )
     // Undrained, it serves them itself.
     expect(effectLines(t, { ...proxy, state: 'DRAINING', after: 'active' })).toEqual([
@@ -265,9 +265,9 @@ describe('what deleting takes away', () => {
   })
 
   it('a proxy: its endpoints, for everyone using one', () => {
-    expect(deleteProxyLine(t, 3)).toBe('Its 3 endpoints are removed, for everyone using one.')
-    expect(deleteProxyLine(t, 1)).toBe('Its endpoint is removed, for everyone using it.')
-    expect(deleteProxyLine(t, 0)).toBe('It has no endpoints: nothing else changes.')
+    expect(deleteProxyLine(t, 3)).toBe('Its 3 public addresses are removed, for everyone using one.')
+    expect(deleteProxyLine(t, 1)).toBe('Its public address is removed, for everyone using it.')
+    expect(deleteProxyLine(t, 0)).toBe('It has no public addresses. Nothing else changes.')
   })
 })
 
@@ -298,13 +298,13 @@ describe('its devices’ local networks: the exit’s setting', () => {
 
   it('said before devices are added to an exit whose users reach them: those chosen by name, or any', () => {
     expect(lanAddWarning(t, [])).toBe(
-      'This exit lets its users reach its devices’ local networks: each device added opens its network to them.'
+      'People using this exit can reach its devices’ local networks. Each device you add opens its network to them.'
     )
     expect(lanAddWarning(t, ['Office Mac'])).toBe(
-      'This exit lets its users reach its devices’ local networks: adding Office Mac opens its network to them.'
+      'People using this exit can reach its devices’ local networks. Adding Office Mac opens its network to them.'
     )
     expect(lanAddWarning(t, ['Office Mac', 'Garage Pi'])).toBe(
-      'This exit lets its users reach its devices’ local networks: adding Office Mac, Garage Pi opens their networks to them.'
+      'People using this exit can reach its devices’ local networks. Adding Office Mac, Garage Pi opens their networks to them.'
     )
   })
 })

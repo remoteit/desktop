@@ -89,9 +89,9 @@ import { ProxyOwnName, moveCertificateLine, ownCertificateLine, ownNameProblem, 
 
 const t = ((_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')) as any
 
-const LABEL = 'DNS name'
+const LABEL = 'Address'
 const HINT =
-  'Use a name under a domain you control. Add these records where your DNS is hosted; remote.it checks them and keeps the certificate renewed.'
+  'Use a name under a domain you control. Add these records where your DNS is hosted. Remote.It checks them and renews the certificate.'
 const TOKEN = '3f9a1c2b4d5e6f70.challenge.dev.r3proxy.com'
 
 // Its three records, each found or not — and, not found, what DNS answered instead where it answered something.
@@ -241,26 +241,26 @@ describe('an own name, as it can be told here', () => {
   })
 
   it('its certificate issued and renewed, not yet, or not issued; a move’s, the name’s or remote.it’s after', () => {
-    expect(ownCertificateLine(t, 'ready')).toBe('Issued: remote.it renews it')
+    expect(ownCertificateLine(t, 'ready')).toBe('Issued. Remote.It renews it.')
     expect(ownCertificateLine(t, 'pending')).toBe(
-      'Not issued yet: until it is, its https endpoints under it are not served'
+      'Not issued yet. Its HTTPS public addresses under it don’t work until it is.'
     )
-    expect(ownCertificateLine(t, 'failed')).toBe('Not issued: until it is, its https endpoints under it are not served')
+    expect(ownCertificateLine(t, 'failed')).toBe('Not issued. Its HTTPS public addresses under it don’t work until it is.')
     const name = 'office.example.com'
     expect(moveCertificateLine(t, 'verify', 'ready', name)).toBe(
-      'Its https endpoints are served with the certificate for office.example.com.'
+      'Its HTTPS public addresses use the certificate for office.example.com.'
     )
     expect(moveCertificateLine(t, 'verify', 'pending', name)).toBe(
-      'The certificate for office.example.com is not issued yet: until it is, its https endpoints are not served.'
+      'The certificate for office.example.com isn’t issued yet. Its HTTPS public addresses don’t work until it is.'
     )
     expect(moveCertificateLine(t, 'verify', 'failed', name)).toBe(
-      'The certificate for office.example.com could not be issued: until it is, its https endpoints are not served.'
+      'The certificate for office.example.com couldn’t be issued. Its HTTPS public addresses don’t work until it is.'
     )
     expect(moveCertificateLine(t, 'remove', 'ready', name)).toBe(
-      'Its https endpoints are served with remote.it’s certificate for every proxy name.'
+      'Its HTTPS public addresses use Remote.It’s certificate for every proxy name.'
     )
     expect(moveCertificateLine(t, 'remove', 'pending', name)).toBe(
-      'remote.it’s certificate for every proxy name is not issued yet: until it is, its https endpoints are not served.'
+      'Remote.It’s certificate for every proxy name isn’t issued yet. Its HTTPS public addresses don’t work until it is.'
     )
   })
 })
@@ -410,7 +410,7 @@ describe('pending', () => {
     expect(section()).toBe('verified')
     expect($('[data-confirm-title]')?.textContent).toBe('Move Gateway under office.example.com?')
     expect($('[data-own-name-certificate]')?.textContent).toBe(
-      'The certificate for office.example.com is not issued yet: until it is, its https endpoints are not served.'
+      'The certificate for office.example.com isn’t issued yet. Its HTTPS public addresses don’t work until it is.'
     )
     expect(preview()).toEqual([
       ['https://ep1.office.example.com', 'was https://ep1-acme-corp.dev.r3proxy.com'],
@@ -444,7 +444,7 @@ describe('verified', () => {
     await click(settingButton('circle-arrow-right'))
     expect(verify).toHaveBeenCalledWith('P1', false)
     expect($('[data-own-name-certificate]')?.textContent).toBe(
-      'Its https endpoints are served with the certificate for office.example.com.'
+      'Its HTTPS public addresses use the certificate for office.example.com.'
     )
     expect(preview()).toHaveLength(2)
     readAgain.mockReturnValue(ACTIVE)
@@ -508,14 +508,14 @@ describe('active', () => {
     expect(inline[LABEL]).toBeUndefined()
     expect(label('earth-americas')).toBe('office.example.com')
     expect(sublabel('earth-americas')).toBe('Its own name: to use another, remove this one first')
-    expect(label('circle-check')).toBe('Active: its endpoints are reached under it')
+    expect(label('circle-check')).toBe('Active. Its public addresses are reached under it.')
     expect(setting('circle-check')?.getAttribute('data-color')).toBe('success')
     expect(sublabel('circle-check')).toBe('Checked 2026-11-08T23:00:00.000Z')
-    expect(label('file-certificate')).toBe('Issued: remote.it renews it')
+    expect(label('file-certificate')).toBe('Issued. Remote.It renews it.')
     expect(sublabel('file-certificate')).toBe('Its certificate under office.example.com')
     expect(setting('file-certificate')?.getAttribute('data-color')).toBe('success')
     expect($('[data-own-name]')?.textContent).toContain(
-      'Keep these records where your DNS is hosted: remote.it renews its certificate through them.'
+      'Keep these records where your DNS is hosted. Remote.It renews its certificate through them.'
     )
     expect($('[data-own-name]')?.textContent).not.toContain(HINT)
     expect(rows()).toHaveLength(3)
@@ -526,10 +526,10 @@ describe('active', () => {
 
   it('its certificate not issued yet, or not issued, with graphql’s problem', async () => {
     await render(named('active', { certificate: 'pending' }))
-    expect(label('file-certificate')).toBe('Not issued yet: until it is, its https endpoints under it are not served')
+    expect(label('file-certificate')).toBe('Not issued yet. Its HTTPS public addresses under it don’t work until it is.')
     expect(setting('file-certificate')?.getAttribute('data-color')).toBe('warning')
     await render(named('active', { certificate: 'failed', problem: 'Let’s Encrypt refused the order: rate limited' }))
-    expect(label('file-certificate')).toBe('Not issued: until it is, its https endpoints under it are not served')
+    expect(label('file-certificate')).toBe('Not issued. Its HTTPS public addresses under it don’t work until it is.')
     expect(setting('file-certificate')?.getAttribute('data-color')).toBe('danger')
     expect(sublabel('circle-check')).toBe(
       'Let’s Encrypt refused the order: rate limited · Checked 2026-11-08T23:00:00.000Z'
@@ -563,7 +563,7 @@ describe('broken', () => {
       ['*.office.example.com', 'missing'],
       ['_acme-challenge.office.example.com', 'wrong'],
     ])
-    expect(label('file-certificate')).toBe('Issued: remote.it renews it')
+    expect(label('file-certificate')).toBe('Issued. Remote.It renews it.')
     expect(label('earth-americas')).toBe('office.example.com')
     expect(inline[LABEL]).toBeUndefined()
     expect($('[data-own-name]')?.textContent).toContain(HINT)
@@ -581,13 +581,13 @@ describe('removing it', () => {
   it('what moves back to remote.it’s names said first, then removed, and the proxy read again', async () => {
     readAgain.mockReturnValue(GATEWAY)
     await render(ACTIVE)
-    expect(sublabel('rotate-left')).toBe('What moves back to remote.it’s names is said first')
+    expect(sublabel('rotate-left')).toBe('What moves back to Remote.It’s names is said first')
     await click(settingButton('rotate-left'))
     expect(remove).toHaveBeenCalledWith('P1', false)
     expect($('[data-confirm-title]')?.textContent).toBe('Remove office.example.com from Gateway?')
     expect($('[data-confirm-action]')?.textContent).toBe('Remove')
     expect($('[data-own-name-certificate]')?.textContent).toBe(
-      'Its https endpoints are served with remote.it’s certificate for every proxy name.'
+      'Its HTTPS public addresses use Remote.It’s certificate for every proxy name.'
     )
     expect(preview()).toEqual([
       ['https://ep1-acme-corp.dev.r3proxy.com', 'was https://ep1.office.example.com'],
@@ -604,7 +604,7 @@ describe('removing it', () => {
     remove.mockResolvedValue({ addresses: [], certificate: 'ready', applied: false })
     await render(PENDING)
     await click(settingButton('rotate-left'))
-    expect($('[data-confirm]')?.textContent).toContain('No endpoint address moves.')
+    expect($('[data-confirm]')?.textContent).toContain('No public address moves.')
     expect(($('[data-confirm-action]') as HTMLButtonElement).disabled).toBe(false)
     await click($('[data-deny]'))
     expect($('[data-confirm]')).toBeNull()
@@ -680,10 +680,10 @@ describe('a name given by the account’s base', () => {
     expect($('[data-own-name-base-link]')?.textContent).toBe(BASE)
     // Asked of the proxy's own account: the link is for an admin of that one.
     expect(admin.asked).toContain('ACCOUNT')
-    expect(label('file-certificate')).toBe('Issued: remote.it renews it')
+    expect(label('file-certificate')).toBe('Issued. Remote.It renews it.')
     expect(sublabel('file-certificate')).toBe('Its certificate under gw.proxies.example.com')
     expect($('[data-own-name]')?.textContent).toContain(
-      'remote.it keeps its records and certificate under the account’s base: nothing to add where your DNS is hosted.'
+      'Remote.It keeps its records and certificate under your account’s domain. There is nothing to add where your DNS is hosted.'
     )
     expect(inline[LABEL]).toBeUndefined()
     expect($('[data-own-name-records]')).toBeNull()
@@ -714,7 +714,7 @@ describe('a name given by the account’s base', () => {
     expect(label('triangle-exclamation')).toBe('Broken: the account’s base needs its records put right')
     expect(setting('triangle-exclamation')?.getAttribute('data-color')).toBe('danger')
     expect(sublabel('triangle-exclamation')).toBe('ns-2.awsdns-02.net is missing at proxies.example.com')
-    expect(label('file-certificate')).toBe('Issued: remote.it renews it')
+    expect(label('file-certificate')).toBe('Issued. Remote.It renews it.')
     expect(checkNow()).toBeNull()
   })
 
@@ -728,7 +728,7 @@ describe('a name given by the account’s base', () => {
 
   it('its certificate not issued yet, or not issued — why in graphql’s words', async () => {
     await render(given('active', { certificate: 'pending' }))
-    expect(label('file-certificate')).toBe('Not issued yet: until it is, its https endpoints under it are not served')
+    expect(label('file-certificate')).toBe('Not issued yet. Its HTTPS public addresses under it don’t work until it is.')
     expect(setting('file-certificate')?.getAttribute('data-color')).toBe('warning')
     await render(given('active', { certificate: 'failed', problem: 'Let’s Encrypt refused the order: rate limited' }))
     expect(setting('file-certificate')?.getAttribute('data-color')).toBe('danger')
