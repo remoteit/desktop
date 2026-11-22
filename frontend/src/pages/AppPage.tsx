@@ -481,7 +481,7 @@ export const AppPage: React.FC = () => {
         disabled={!updateKnown}
         title={
           updateRoot
-            ? t('apps.updateRootTitle', 'Update {{app}} to run as root?', { app: app.name })
+            ? t('apps.updateRootTitle', 'Update {{app}} and give it full control?', { app: app.name })
             : t('apps.updateAsksTitle', 'Update {{app}} to a version that asks more?', { app: app.name })
         }
         action={t('apps.updateRootAction', 'Consent and update')}

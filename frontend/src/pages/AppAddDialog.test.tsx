@@ -199,7 +199,7 @@ describe('the root consent', () => {
     catalog.mockResolvedValue(accountRelease({ root: true }))
     await render()
     await tick('D1')
-    expect($('[data-app-add-root]').textContent).toContain('Backup runs as root: full control of each device.')
+    expect($('[data-app-add-root]').textContent).toContain('Backup gets full control of each device.')
     expect($('[data-app-add-root]').textContent).toContain('I allow Acme’s Backup full control of these devices')
     expect(submit().disabled).toBe(true)
     await click($('[data-app-add-consent]'))

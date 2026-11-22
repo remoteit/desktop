@@ -64,9 +64,9 @@ export const FileAddPage: React.FC<Props> = ({ center }) => {
   return (
     <Body center={center} inset gutterTop gutterBottom>
       <FileEditorForm
-        title={t('fileAddPage.uploadFile', 'Upload File')}
+        title={t('fileAddPage.uploadFile', 'Upload file')}
         form={{ name: form.name, description: form.description }}
-        uploadLabel={t('fileAddPage.uploadFile', 'Upload File')}
+        uploadLabel={t('fileAddPage.uploadFile', 'Upload file')}
         uploadedFile={uploadedFile}
         onFormChange={changes => setForm(prev => ({ ...prev, ...changes }))}
         onUploadedFileChange={file => {
@@ -77,7 +77,7 @@ export const FileAddPage: React.FC<Props> = ({ center }) => {
           setUploadedFile(file)
           setForm(prev => ({ ...prev, name: file.name, file }))
         }}
-        actionLabel={t('fileAddPage.uploadFile', 'Upload File')}
+        actionLabel={t('fileAddPage.uploadFile', 'Upload file')}
         actionLoadingLabel={t('fileAddPage.uploading', 'Uploading...')}
         actionLoading={loading}
         actionDisabled={!uploadedFile || !form.name || loading}

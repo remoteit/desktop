@@ -14,7 +14,7 @@ export const ConnectedAppsPage: React.FC = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>{t('connectedAppsPage.title', 'Connected Apps')}</Title>
+            <Title>{t('connectedAppsPage.title', 'Connected apps')}</Title>
           </Typography>
           <Gutters top={null} bottom="lg">
             <Typography variant="body2" color="textSecondary">

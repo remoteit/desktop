@@ -52,7 +52,7 @@ export const OrganizationRolePage: React.FC = () => {
       gutterBottom
       header={
         <Typography variant="h1">
-          <Title>{role.name || t('organizationRolePage.newRole', 'New Role')}</Title>
+          <Title>{role.name || t('organizationRolePage.newRole', 'New role')}</Title>
           {!systemRole && role.id && (
             <DeleteButton
               warning={
@@ -103,7 +103,7 @@ export const OrganizationRolePage: React.FC = () => {
           />
         </ListItem>
         <Typography variant="subtitle1" gutterBottom>
-          {t('organizationRolePage.userPermissions', 'User Permissions')}
+          {t('organizationRolePage.userPermissions', 'User permissions')}
         </Typography>
         <PermissionsList
           locked={systemRole}

@@ -55,7 +55,7 @@ export const OrganizationAddPage = () => {
       header={
         <>
           <Typography variant="h1">
-            <Title>{t('organizationAddPage.title', 'Add Organization Members')}</Title>
+            <Title>{t('organizationAddPage.title', 'Add organization members')}</Title>
           </Typography>
           <Gutters top={null}>
             <ContactSelector contacts={contacts} selected={emails} onSelect={setEmails} />
@@ -63,7 +63,7 @@ export const OrganizationAddPage = () => {
         </>
       }
     >
-      <Typography variant="subtitle1">{t('organizationAddPage.roleAssignment', 'Role Assignment')}</Typography>
+      <Typography variant="subtitle1">{t('organizationAddPage.roleAssignment', 'Role assignment')}</Typography>
       <Gutters>
         <Box display="flex">
           <Box marginRight={2} minWidth={150}>

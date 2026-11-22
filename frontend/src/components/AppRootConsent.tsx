@@ -47,8 +47,8 @@ export const RootConsent: React.FC<{
       title={
         root
           ? product
-            ? t('productApps.rootTitle', 'Run {{app}} as root on this product’s devices?', words)
-            : t('deviceApps.rootTitle', 'Run {{app}} as root?', words)
+            ? t('productApps.rootTitle', 'Give {{app}} full control of this product’s devices?', words)
+            : t('deviceApps.rootTitle', 'Give {{app}} full control of this device?', words)
           : product
           ? t('productApps.asksTitle', 'Allow {{app}} what it asks on this product’s devices?', words)
           : t('deviceApps.asksTitle', 'Allow {{app}} what it asks?', words)
@@ -124,7 +124,7 @@ export const RootConsent: React.FC<{
       )}
       <AppCapabilities
         capabilities={asks?.capabilities ?? undefined}
-        title={root ? undefined : t('apps.capabilitiesAsks', 'It asks of remote.it:')}
+        title={root ? undefined : t('apps.capabilitiesAsks', 'It asks of Remote.It:')}
       />
       <Typography variant="body2">
         {product
@@ -186,7 +186,7 @@ export const AppCapabilities: React.FC<{ capabilities?: string[]; title?: string
   if (!capabilities?.length) return null
   return (
     <Box sx={{ marginBottom: 1 }} data-app-capabilities>
-      <Typography variant="body2">{title ?? t('apps.capabilitiesAlso', 'It also asks of remote.it:')}</Typography>
+      <Typography variant="body2">{title ?? t('apps.capabilitiesAlso', 'It also asks of Remote.It:')}</Typography>
       {capabilities.map(capability => (
         <Typography
           key={capability}

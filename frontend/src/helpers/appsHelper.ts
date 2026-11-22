@@ -27,7 +27,7 @@ export const publisherLine = (t: TFunction, app: { publisher: string; publisherV
 // How it runs, in full: as root, full control of the device; or restricted, an account of its own there.
 export const runsAsLine = (t: TFunction, root: boolean) =>
   root
-    ? t('deviceApps.runsAsRoot', 'Runs as root: full control of this device')
+    ? t('deviceApps.runsAsRoot', 'Has full control of this device')
     : t('deviceApps.runsRestricted', 'Runs restricted: an account of its own on this device')
 
 // What an app needs of the device, said plainly where it needs more than an account of its own.
@@ -64,7 +64,7 @@ export function appPurpose(
 
 // The same, for a row: Runs as root, or Restricted.
 export const runsAsWord = (t: TFunction, root: boolean) =>
-  root ? t('apps.runsAsRoot', 'Runs as root') : t('apps.restricted', 'Restricted')
+  root ? t('apps.runsAsRoot', 'Full control') : t('apps.restricted', 'Restricted')
 
 /* What an app asks of the platform beyond an ordinary app's (its capabilities), each in words: shown beside Runs as
    root wherever it is offered, and part of the consent to it (presence-contract docs/self-contained-apps.md,
@@ -320,19 +320,19 @@ export function consentLine(t: TFunction, consent: DeviceAppRootConsent): string
   const words = { by: consent.email || consent.by, when: when(consent.at) }
   switch (consent.via) {
     case 'product':
-      return t('deviceApps.consentedProduct', 'Runs as root by its product’s consent: {{by}}, {{when}}', words)
+      return t('deviceApps.consentedProduct', 'Has full control by its product’s consent: {{by}}, {{when}}', words)
     case 'registration':
-      return t('deviceApps.consentedRegistration', 'Runs as root since this device registered, {{when}}', words)
+      return t('deviceApps.consentedRegistration', 'Has full control since this device registered, {{when}}', words)
     case 'device':
-      return t('deviceApps.consentedDevice', 'Turned on as root on the device by {{by}}, {{when}}', words)
+      return t('deviceApps.consentedDevice', 'Given full control on the device by {{by}}, {{when}}', words)
     case 'carried':
       // To a release: switched by itself from its old install (ScreenView), which ran as root. To none: from before
       // consents were kept.
       return consent.version
-        ? t('deviceApps.consentedConverted', 'Runs as root, as its old install did: switched to the app by Remote.It, {{when}}', words)
-        : t('deviceApps.consentedCarried', 'Runs as root, as it did before consents were kept')
+        ? t('deviceApps.consentedConverted', 'Has full control, as its old install did. Switched to the app by Remote.It, {{when}}', words)
+        : t('deviceApps.consentedCarried', 'Has full control, as it did before consents were kept')
     default:
-      return t('deviceApps.consented', 'Consented to run as root by {{by}}, {{when}}', words)
+      return t('deviceApps.consented', 'Given full control by {{by}}, {{when}}', words)
   }
 }
 
@@ -355,7 +355,7 @@ export function allowLine(t: TFunction, root: boolean, product: boolean, publish
 // A release waiting for a consent, by what it asks: to run as root, or more of remote.it (its capabilities).
 export const heldConsentWords = (t: TFunction, root: boolean) =>
   root
-    ? t('apps.heldConsent', 'A new version needs to run as root')
+    ? t('apps.heldConsent', 'A new version needs full control')
     : t('apps.heldConsentAsks', 'A new version asks for more access')
 // Whether the release a consent is waited for runs as root, as graphql's words for it say (device-apps.ts
 // needsConsentOf: "… needs to run as root", else "… asks for <capabilities>"); none said: as before capabilities did.

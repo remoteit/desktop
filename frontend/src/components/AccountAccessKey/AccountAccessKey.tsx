@@ -56,7 +56,7 @@ export const AccountAccessKey: React.FC = () => {
               if (!(await dispatch.keys.createAccessKey())) setShowDialog(false)
             }}
           >
-            {t('accountAccessKey.generateCredentials', 'Generate Credentials')}
+            {t('accountAccessKey.generateCredentials', 'Generate credentials')}
           </Button>
         </Box>
       </Gutters>
@@ -65,7 +65,7 @@ export const AccountAccessKey: React.FC = () => {
           {accessKeys?.map((k, index) => (
             <Box marginBottom={4}>
               <CopyCodeBlock
-                label={t('accountAccessKey.publicKey', 'Public Key')}
+                label={t('accountAccessKey.publicKey', 'Public key')}
                 value={k.key}
                 hideCopyLabel
                 sx={{ '& .MuiTypography-root': { opacity: k.enabled ? 1 : 0.5 } }}

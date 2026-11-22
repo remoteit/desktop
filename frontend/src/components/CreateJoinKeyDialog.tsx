@@ -85,14 +85,14 @@ export const CreateJoinKeyDialog: React.FC<Props> = ({ product, onCreate, onClos
     <Dialog open onClose={created || creating ? undefined : onClose} maxWidth="sm" fullWidth>
       {created ? (
         <>
-          <DialogTitle>{t('createJoinKey.createdTitle', 'Join Key Created')}</DialogTitle>
+          <DialogTitle>{t('createJoinKey.createdTitle', 'Join key created')}</DialogTitle>
           <DialogContent>
             <Notice severity="warning" fullWidth gutterBottom>
               <strong>{t('createJoinKey.onceTitle', 'Copy or download this key now')}</strong>
               <em>
                 {t(
                   'createJoinKey.onceBody',
-                  'It will not be shown again: remote.it keeps only its public half. If it is lost, revoke it and create another.'
+                  'You will not see it again. Remote.It keeps only its public half. If you lose it, revoke it and create another.'
                 )}
               </em>
             </Notice>
@@ -102,7 +102,7 @@ export const CreateJoinKeyDialog: React.FC<Props> = ({ product, onCreate, onClos
                 env: JOIN_KEY_ENV,
                 file: JOIN_KEY_FILE_ENV,
                 defaultValue:
-                  'Give it to the machine as {{env}}, or save it in a file only the daemon can read and name the file in {{file}}.',
+                  'Give it to the machine as {{env}}, or save it in a file only the agent can read and name the file in {{file}}.',
               })}
             </Typography>
             <JoinKeyContainer
@@ -124,7 +124,7 @@ export const CreateJoinKeyDialog: React.FC<Props> = ({ product, onCreate, onClos
         </>
       ) : (
         <form onSubmit={create} noValidate>
-          <DialogTitle>{t('createJoinKey.title', 'Create Join Key')}</DialogTitle>
+          <DialogTitle>{t('createJoinKey.title', 'Create join key')}</DialogTitle>
           <DialogContent>
             <Typography variant="body2" color="textSecondary" gutterBottom>
               {t('createJoinKey.description', {

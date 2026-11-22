@@ -145,7 +145,7 @@ describe('the account’s app publisher', () => {
     expect(app.textContent).toContain('Backup (acme.backup)')
     expect(app.textContent).toContain('solo stable 1.1.0')
     expect(app.querySelector('[data-release="1.1.0"]')?.textContent).toBe('1.1.0 · restricted · signed by 0123456789abcdef')
-    expect(app.querySelector('[data-release="1.0.0"]')?.textContent).toBe('1.0.0 · runs as root · signed by ffffffffffffffff · withdrawn')
+    expect(app.querySelector('[data-release="1.0.0"]')?.textContent).toBe('1.0.0 · full control · signed by ffffffffffffffff · withdrawn')
     expect(page.querySelector('[data-publisher-verified]')).toBeNull()
   })
 

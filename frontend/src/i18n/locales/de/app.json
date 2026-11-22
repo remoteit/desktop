@@ -13,6 +13,9 @@
     "doNotShare": "Teilen Sie ihn mit niemandem.",
     "title": "Zugriffsschlüssel"
   },
+  "account": {
+    "title": ""
+  },
   "accountAccessKey": {
     "created": "Erstellt",
     "description": "Zugriffsschlüssel sind für die Authentifizierung bei unserer API erforderlich. Sie können einen neuen Schlüssel erstellen, einen vorhandenen löschen oder einen Schlüssel vorübergehend deaktivieren. Es empfiehlt sich, Ihre Schlüssel im Verzeichnis .remoteit Ihres Home-Ordners herunterzuladen und zu speichern:",
@@ -3817,6 +3820,10 @@
     "unset": "",
     "unsetRemoved": ""
   },
+  "productAttributes": {
+    "deviceCount_one": "",
+    "deviceCount_other": ""
+  },
   "productDevices": {
     "more_one": "",
     "more_other": "",
@@ -3844,6 +3851,11 @@
     "target": "",
     "title": "",
     "warningTitle": ""
+  },
+  "productIntake": {
+    "accepting": "",
+    "closed": "",
+    "full": ""
   },
   "productJoinKeys": {
     "by": "von {{email}}",
@@ -3934,19 +3946,39 @@
   "productOptionMenu": {
     "adminRequired": "Administratorrechte erforderlich",
     "cannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteConfirm": "",
     "deleteConfirmPrefix": "Möchten Sie das Produkt wirklich dauerhaft löschen",
     "deleteConfirmSuffix": "und alle zugehörigen Dienste?",
     "deleteProduct": "Produkt löschen",
+    "deleteTitle": "",
     "transferProduct": "Produkt übertragen"
   },
   "productPage": {
+    "addDevices": "",
+    "addDevicesHelp": "",
     "addService": "Dienst hinzufügen",
+    "createJoinKey": "",
+    "deviceCount_one": "",
+    "deviceCount_other": "",
+    "devices": "",
+    "keysAndLimits": "",
+    "keyShownOnce": "",
+    "keysInForce_one": "",
+    "keysInForce_other": "",
     "loadingProduct": "Produkt wird geladen...",
+    "manageKeys": "",
+    "noDevices": "",
     "noServicesDefined": "Keine Dienste definiert. Fügen Sie diesem Produkt mindestens einen Dienst hinzu.",
+    "ownership": "",
+    "platformDevices_one": "",
+    "platformDevices_other": "",
     "platformId": "Plattform {{id}}",
     "productNotFound": "Produkt nicht gefunden",
     "productNotFoundHint": "Das Produkt wurde möglicherweise gelöscht, oder Sie haben keinen Zugriff darauf.",
+    "registrationCommand": "",
     "service": "Dienst",
+    "services": "",
+    "settings": "",
     "unknown": "Unbekannt"
   },
   "productPolicy": {
@@ -4092,15 +4124,26 @@
     "websocketOn": ""
   },
   "productSettingsPage": {
+    "details": "",
+    "registrationCode": "",
+    "registrationCodeHelp": "",
+    "registrationCommand": "",
+    "registrationCommandHelp": "",
+    "title": "",
     "warningTitle": "Stellen Sie dieses Produkt auf Beitrittsschlüssel um"
   },
   "productsHeaderButtons": {
     "adminRequired": "Administratorrechte erforderlich"
   },
   "productsPage": {
+    "count_one": "",
+    "count_other": "",
+    "create": "",
     "createFirst": "Erstellen Sie Ihr erstes Produkt",
     "emptyHelp": "Produkte dienen der Massenregistrierung und -verwaltung von Geräten.",
+    "emptyHelpAdmin": "",
     "emptyHelpReadOnly": "Produkte dienen der Massenregistrierung und -verwaltung von Geräten. Sie benötigen Administratorrechte, um eines zu erstellen.",
+    "emptyTitle": "",
     "loading": "Produkte werden geladen..."
   },
   "productSync": {
@@ -4719,6 +4762,7 @@
     "add": "Hinzufügen",
     "adminRequired": "Zum Hochladen sind Administratorrechte erforderlich",
     "feedback": "Feedback",
+    "help": "",
     "upload": "Hochladen"
   },
   "scriptPage": {

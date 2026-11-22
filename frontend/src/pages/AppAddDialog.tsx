@@ -383,8 +383,8 @@ export const AppAddDialog: React.FC = () => {
                   {root && (
                     <Typography variant="body2">
                       {target === 'product'
-                        ? t('apps.rootProduct', '{{app}} runs as root: full control of every device in this product, now and later.', { app: ready.name })
-                        : t('apps.rootDevices', '{{app}} runs as root: full control of each device.', { app: ready.name })}
+                        ? t('apps.rootProduct', '{{app}} gets full control of every device in this product, now and later.', { app: ready.name })
+                        : t('apps.rootDevices', '{{app}} gets full control of each device.', { app: ready.name })}
                     </Typography>
                   )}
                   <AppCapabilities

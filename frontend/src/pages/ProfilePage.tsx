@@ -80,7 +80,7 @@ export const ProfilePage: React.FC = () => {
         />
         <SelectSetting
           icon="envelope"
-          label={t('settings.emailLanguage', 'Email Language')}
+          label={t('settings.emailLanguage', 'Email language')}
           value={user?.language}
           values={[
             { key: 'en', name: LANGUAGES.en },

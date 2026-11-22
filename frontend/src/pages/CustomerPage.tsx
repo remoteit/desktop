@@ -53,14 +53,14 @@ export const CustomerPage: React.FC = () => {
         <Title>{t('customerPage.license', 'License')}</Title>
         <BillingUI>
           <Button to={`/organization/customer/${userID}/plans`} size="small" variant="contained" component={Link}>
-            {t('customerPage.updatePlan', 'Update Plan')}
+            {t('customerPage.updatePlan', 'Update plan')}
           </Button>
         </BillingUI>
       </Typography>
       <LicensingSetting licenses={license ? [{ ...license, limits }] : []} />
       <FormDisplay
         icon={<Avatar email={customer?.reseller} size={28} />}
-        label={t('customerPage.salesRep', 'Sales Rep')}
+        label={t('customerPage.salesRep', 'Sales rep')}
         displayValue={customer?.reseller}
         displayOnly
       />

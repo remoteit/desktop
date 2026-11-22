@@ -108,7 +108,7 @@ afterEach(() => act(() => root.unmount()))
 describe('AppTerminalOption — the connect panel of an app’s ssh service', () => {
   it('offers web SSH while the app runs, opening it on its service’s port, titled by the app', async () => {
     const container = await render(<Option device={device()} service={shellService} />)
-    expect(container.textContent).toBe('Open in web SSH')
+    expect(container.textContent).toBe('Open terminal')
     await click(container.querySelector('a'))
     expect(openTerminal).toHaveBeenCalledWith({
       name: 'pi-evan.on.remote.it',
@@ -121,7 +121,7 @@ describe('AppTerminalOption — the connect panel of an app’s ssh service', ()
   it('says it opens in the browser from the desktop or mobile app', async () => {
     env.isNative = true
     const container = await render(<Option device={device()} service={shellService} />)
-    expect(container.textContent).toBe('Open in web SSH, in your browser')
+    expect(container.textContent).toBe('Open terminal in your browser')
   })
 
   it('only for an app whose service is ssh and that declares person-certificates', async () => {
@@ -157,7 +157,7 @@ describe('AppTerminalOption — the connect panel of an app’s ssh service', ()
   it('says the app is off, and turns it on — it runs as root — once the person says yes to that', async () => {
     apps.value.apps = [app('disabled')]
     const container = await render(<Option device={device()} service={shellService} />)
-    expect(container.textContent).toBe('Shell is disabled: enable it to open it in web SSH Enable it')
+    expect(container.textContent).toBe('Shell is off. Turn it on to open the terminal. Enable it')
     await click(container.querySelector('a'))
     expect(turn).not.toHaveBeenCalled()
     expect(container.querySelector('[data-confirm]')?.textContent).toContain(
@@ -181,7 +181,7 @@ describe('AppTerminalOption — the connect panel of an app’s ssh service', ()
     apps.value.apps = [app('disabled')]
     for (const permissions of [['CONNECT'], ['CONNECT', 'MANAGE'], ['CONNECT', 'SCRIPTING']]) {
       const container = await render(<Option device={device(permissions)} service={shellService} />)
-      expect(container.textContent).toBe('Shell is disabled: enable it to open it in web SSH')
+      expect(container.textContent).toBe('Shell is off. Turn it on to open the terminal.')
       expect(container.querySelector('a')).toBeNull()
       act(() => root.unmount())
     }
@@ -191,7 +191,7 @@ describe('AppTerminalOption — the connect panel of an app’s ssh service', ()
   it('says what the device is doing: starting, unavailable, or waited for', async () => {
     apps.value.apps = [app('starting')]
     expect((await render(<Option device={device()} service={shellService} />)).textContent).toBe(
-      'Shell is starting: web SSH opens it once it runs'
+      'Shell is starting. The terminal opens once it runs.'
     )
     act(() => root.unmount())
     apps.value.apps = [app('unavailable', { detail: 'no sshd' })]
@@ -215,7 +215,7 @@ describe('AppTerminalButton — the service’s row in the device’s services',
       </div>
     )
     const button = container.querySelector('[data-terminal]')
-    expect(button?.getAttribute('title')).toBe('Open in web SSH')
+    expect(button?.getAttribute('title')).toBe('Open terminal')
     await click(button)
     expect(openTerminal).toHaveBeenCalledWith(expect.objectContaining({ name: 'pi-evan.on.remote.it', port: 2222 }))
     expect(row).not.toHaveBeenCalled()

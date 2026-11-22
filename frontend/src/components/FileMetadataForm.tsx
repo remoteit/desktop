@@ -25,7 +25,7 @@ export const FileMetadataForm: React.FC<Props> = ({
   onUploadedFileChange,
 }) => {
   const { t } = useTranslation()
-  const resolvedUploadLabel = uploadLabel ?? t('fileMetadataForm.uploadFile', 'Upload File')
+  const resolvedUploadLabel = uploadLabel ?? t('fileMetadataForm.uploadFile', 'Upload file')
   return (
     <List disablePadding>
       <ListItem disableGutters>

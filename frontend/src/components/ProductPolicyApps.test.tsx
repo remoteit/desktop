@@ -191,7 +191,7 @@ describe('a product’s Apps block', () => {
       'acme.logs',
     ])
     expect(line(page, 'remoteit.console', 'about')).toBe('By remote.it · 1.4.0 · Stable')
-    expect(line(page, 'remoteit.console', 'root')).toBe('Runs as root: full control of this device')
+    expect(line(page, 'remoteit.console', 'root')).toBe('Has full control of this device')
     expect(row(page, 'remoteit.console').querySelector('[data-icon="terminal"]')).not.toBeNull()
     expect(line(page, 'remoteit.console', 'capabilities')).toBe(
       'Keeps accounts for the people you share with · Signs people in with their Remote.It certificate · Lets AI run commands you allow'
@@ -252,7 +252,7 @@ describe('a product’s Apps block', () => {
     expect(setApp).not.toHaveBeenCalled()
     const confirm = page.querySelector('[data-confirm]')!
     expect(confirm.querySelector('[data-confirm-title]')!.textContent).toBe(
-      'Run Console as root on this product’s devices?'
+      'Give Console full control of this product’s devices?'
     )
     const body = confirm.querySelector('[data-root-consent]')!.textContent
     expect(body).toContain('Console, published by remote.it')
@@ -316,7 +316,7 @@ describe('a product’s Apps block', () => {
     await pick(onOf(page, 'remoteit.console'), 'enabled')
     expect(setApp).not.toHaveBeenCalled()
     const confirm = page.querySelector('[data-confirm]')!
-    expect(confirm.querySelector('[data-confirm-title]')!.textContent).toBe('Run Console as root on this product’s devices?')
+    expect(confirm.querySelector('[data-confirm-title]')!.textContent).toBe('Give Console full control of this product’s devices?')
     expect([...confirm.querySelectorAll('[data-app-capability]')].map(c => c.getAttribute('data-app-capability'))).toEqual(CONSOLE_ALL)
     await click(confirm.querySelector('[data-confirm-ok]'))
     expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', { channel: 'stable', version: null, consentRoot: true })
@@ -331,7 +331,7 @@ describe('a product’s Apps block', () => {
     expect(confirm.querySelector('[data-root-consent]')!.textContent).toBe(
       'Logs, published by Acme, runs restricted, with an account of its own on every device in this product, now and later.'
     )
-    expect(confirm.textContent).toContain('It asks of remote.it:')
+    expect(confirm.textContent).toContain('It asks of Remote.It:')
     expect([...confirm.querySelectorAll('[data-app-capability]')].map(c => c.textContent)).toEqual([
       '· Signs people in with their Remote.It certificate',
     ])

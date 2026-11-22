@@ -65,7 +65,7 @@ function GlobalSignOut(): JSX.Element {
       </Gutters>
       <Gutters>
         <Button color="primary" variant="outlined" size="small" onClick={signedOut}>
-          {t('settings.signOutEverywhereButton', 'Sign Out Everywhere')}
+          {t('settings.signOutEverywhereButton', 'Sign out everywhere')}
         </Button>
       </Gutters>
     </>
@@ -77,7 +77,7 @@ function NoPassword(): JSX.Element {
   return (
     <>
       <Typography variant="subtitle1" gutterBottom>
-        {t('changePassword.title', 'Change Password')}
+        {t('changePassword.title', 'Change password')}
       </Typography>
       <Gutters bottom="xl">
         <Typography variant="body2" color="textSecondary" gutterBottom>

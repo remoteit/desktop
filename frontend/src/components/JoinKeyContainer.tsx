@@ -71,7 +71,7 @@ export const JoinKeyContainer: React.FC<Props> = ({ kind, prefix, name, ephemera
           : selfUpdate
           ? t(
               'joinKeyContainer.selfUpdateOn',
-              'It takes each remote.it release as it comes out, kept in its volume; pulling a newer image still wins.'
+              'It takes each Remote.It release as it comes out, kept in its volume. Pulling a newer image still wins.'
             )
           : t(
               'joinKeyContainer.selfUpdateOff',

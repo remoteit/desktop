@@ -20,7 +20,7 @@ export const ScriptDeleteButton: React.FC<Props> = ({  }) => {
 
   return (
     <DeleteButton
-      title={t('scriptDeleteButton.title', 'Delete Script')}
+      title={t('scriptDeleteButton.title', 'Delete script')}
       warning={
         <Notice severity="error" fullWidth>
           {t('scriptDeleteButton.warning', 'This can not be undone.')}

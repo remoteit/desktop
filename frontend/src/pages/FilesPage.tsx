@@ -61,7 +61,7 @@ export const FilesPage: React.FC<Props> = ({ scripts }) => {
         <>
           <Button onClick={handleDemo} variant="contained" color="primary" size="medium">
             <Icon name={loading ? 'spinner-third' : 'plus'} type="solid" spin={loading} inlineLeft />{' '}
-            {t('filesPage.demoScript', 'Demo Script')}
+            {t('filesPage.demoScript', 'Demo script')}
           </Button>
           <Typography variant="body2" align="center" color="textSecondary" sx={{ maxWidth: 500, padding: 3 }}>
             {t('filesPage.demoDescription', 'See how easy it is to run a script with our demo script.')}

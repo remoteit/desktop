@@ -46,7 +46,7 @@ export const ProductMaxDevicesSetting: React.FC<SettingProps> = ({ value, manage
   return (
     <Box marginTop={3} data-max-devices={current.maxDevices ?? 'none'}>
       <Typography variant="subtitle2" color="textSecondary">
-        {t('productMaxDevices.title', 'Device Limit')}
+        {t('productMaxDevices.title', 'Device limit')}
       </Typography>
       <List disablePadding>
         <InlineTextFieldSetting
