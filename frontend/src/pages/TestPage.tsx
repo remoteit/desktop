@@ -482,7 +482,7 @@ export const TestPage: React.FC = () => {
           )}
           value={proxyFleet || ''}
           values={[
-            { key: '', name: t('testPage.proxyFleetDefault', "The API stage's default") },
+            { key: '', name: t('testPage.proxyFleetDefault', "The API's default") },
             { key: 'LEGACY', name: t('testPage.proxyFleetLegacy', 'Legacy fleet') },
             { key: 'CONNECTD', name: t('testPage.proxyFleetConnectd', 'Go agent proxies') },
           ]}

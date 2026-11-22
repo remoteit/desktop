@@ -266,7 +266,7 @@ export const AppPage: React.FC = () => {
 
       <List dense data-app-channels>
         <ListSubheader sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {t('apps.channelsHere', 'Channels on this stage')}
+          {t('apps.channelsHere', 'Available channels')}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="caption" color="textSecondary">
               {t('apps.accountFollows', 'This account follows')}

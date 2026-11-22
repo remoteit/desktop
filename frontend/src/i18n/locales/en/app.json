@@ -282,7 +282,7 @@
     "channelCandidate": "{{channel}} candidate",
     "channelCandidateShare": "{{channel}} candidate, {{share}}% of its devices",
     "channelNotChanged": "The channel was not changed.",
-    "channelsHere": "Channels on this stage",
+    "channelsHere": "Available channels",
     "chooseProduct": "Choose a product",
     "consentedTo": "to {{version}}",
     "delivery": "Delivery",
@@ -4627,7 +4627,7 @@
     "networksCount_other": "{{count}} networks"
   },
   "roleSshAdmin": {
-    "description": "Admin (sudo) on their own SSH account on the devices this role reaches",
+    "description": "Admin rights on their own SSH account on the devices this role reaches",
     "title": "SSH admin"
   },
   "routeSetting": {
@@ -5278,7 +5278,7 @@
     "overrideLicensesAndLimits": "Override licenses and limits",
     "proxyFleet": "Proxy fleet",
     "proxyFleetConnectd": "Go agent proxies",
-    "proxyFleetDefault": "The API stage's default",
+    "proxyFleetDefault": "The API's default",
     "proxyFleetHint": "Which proxies new connections and connect links ask for. A link keeps the fleet it was set on. Needs an API that takes it (local).",
     "proxyFleetLegacy": "Legacy fleet",
     "reset": "Reset",
