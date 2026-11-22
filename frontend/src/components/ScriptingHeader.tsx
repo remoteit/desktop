@@ -48,6 +48,7 @@ export const ScriptingHeader: React.FC<Props> = ({ children, subheader }) => {
             <ScriptingActionBar />
           </Route>
           <ListToolbar
+            tabs
             left={<ScriptingTabBar />}
             right={
               !selectedIds.length && (

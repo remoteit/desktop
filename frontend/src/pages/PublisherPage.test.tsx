@@ -172,7 +172,7 @@ describe('the account’s app publisher', () => {
     expect(signer?.getAttribute('data-signer-publisher')).toBe('acme')
     await click(signer)
     expect(addKey).toHaveBeenCalledWith(MADE.publicKey, undefined)
-    expect(page.querySelector(`[data-key-kept="${MADE.keyId}"]`)?.textContent).toContain('remote.it cannot recover either')
+    expect(page.querySelector(`[data-key-kept="${MADE.keyId}"]`)?.textContent).toContain('Remote.It cannot recover either')
     expect(page.querySelector(`[data-key="${MADE.keyId}"]`)).not.toBeNull()
   })
 

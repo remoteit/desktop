@@ -100,7 +100,7 @@ export const NewAppForm: React.FC<Props> = ({ form, publisher, onChange }) => {
           label={t('newApp.args', 'Arguments, one a line')}
           helperText={t(
             'newApp.argsHelp',
-            'Values: ${setting.NAME} for a setting, ${remoteit.port} for the port remote.it picks, and the others the contract lists'
+            'Values: ${setting.NAME} for a setting, ${remoteit.port} for the port Remote.It picks, and the others the contract lists'
           )}
         />
         <TextField
@@ -153,7 +153,7 @@ export const NewAppForm: React.FC<Props> = ({ form, publisher, onChange }) => {
           <MenuItem value="none">{t('newApp.listenNone', 'Nothing: it serves no one (an agent)')}</MenuItem>
           <MenuItem value="tcp">{t('newApp.listenTcp', 'A TCP port on 127.0.0.1')}</MenuItem>
           <MenuItem value="udp">{t('newApp.listenUdp', 'A UDP port on 127.0.0.1')}</MenuItem>
-          <MenuItem value="unix">{t('newApp.listenUnix', 'A Unix socket remote.it gives it')}</MenuItem>
+          <MenuItem value="unix">{t('newApp.listenUnix', 'A Unix socket Remote.It gives it')}</MenuItem>
           <MenuItem value="stdio">
             {t('newApp.listenStdio', 'Standard input and output, run once a connection')}
           </MenuItem>
@@ -167,7 +167,7 @@ export const NewAppForm: React.FC<Props> = ({ form, publisher, onChange }) => {
               value={form.portMode}
               onChange={e => set({ portMode: e.target.value as AppForm['portMode'] })}
             >
-              <MenuItem value="auto">{t('newApp.portAuto', 'A free one remote.it picks: ${remoteit.port}')}</MenuItem>
+              <MenuItem value="auto">{t('newApp.portAuto', 'A free one Remote.It picks: ${remoteit.port}')}</MenuItem>
               <MenuItem value="fixed">{t('newApp.portFixed', 'A fixed port the program always binds')}</MenuItem>
               <MenuItem value="setting">
                 {t('newApp.portSetting', 'A port the owner sets (an int setting with min and max)')}
@@ -262,7 +262,7 @@ export const NewAppForm: React.FC<Props> = ({ form, publisher, onChange }) => {
         <Typography variant="caption" color="textSecondary" component="p" gutterBottom>
           {t(
             'newApp.capabilitiesIntro',
-            'What the app asks of remote.it beyond an ordinary app. Shown where it is offered, and part of the owner’s consent.'
+            'What the app asks of Remote.It beyond an ordinary app. Shown where it is offered, and part of the owner’s consent.'
           )}
         </Typography>
         <FormControlLabel
@@ -273,7 +273,7 @@ export const NewAppForm: React.FC<Props> = ({ form, publisher, onChange }) => {
           control={
             <Checkbox checked={form.personCertificates} onChange={e => set({ personCertificates: e.target.checked })} />
           }
-          label={t('newApp.personCertificates', 'Certificates remote.it signs for people, for its ssh service')}
+          label={t('newApp.personCertificates', 'Certificates Remote.It signs for people, for its ssh service')}
         />
         <FormControlLabel
           control={<Checkbox checked={form.sshExec} onChange={e => set({ sshExec: e.target.checked })} />}

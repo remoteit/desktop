@@ -120,13 +120,14 @@ export const AppCatalogRow: React.FC<AppCatalogRowProps> = ({
     <ListItem disablePadding data-catalog-app={id} secondaryAction={beside} sx={{ alignItems: 'flex-start' }}>
       {onOpen ? (
         <ListItemButton
+          disableGutters
           onClick={onOpen}
           sx={{ alignItems: 'flex-start', paddingY: 1, paddingRight: beside ? '140px !important' : undefined }}
         >
           {body}
         </ListItemButton>
       ) : (
-        <Box sx={{ display: 'flex', width: '100%', paddingX: 2, paddingY: 1 }}>{body}</Box>
+        <Box sx={{ display: 'flex', width: '100%', paddingY: 1 }}>{body}</Box>
       )}
     </ListItem>
   )

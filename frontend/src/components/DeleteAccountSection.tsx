@@ -83,7 +83,7 @@ export const DeleteAccountSection: React.FC<DeleteAccountSectionProps> = ({
           <Typography variant="body2" color="GrayText" gutterBottom>
             {t(
               'deleteAccountSection.description',
-              'If you no longer want/need your Remote.It account, you can request an account deletion. Once your delete request is processed, all your account information is removed permanently.'
+              'You can ask us to delete your Remote.It account. Once we process the request, all your account information is removed for good.'
             )}
           </Typography>
           <Box pb={2}>

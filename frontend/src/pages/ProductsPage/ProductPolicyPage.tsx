@@ -36,9 +36,11 @@ export const ProductPolicyPage: React.FC = () => {
   if (served && !served.product)
     return (
       <Container gutterBottom>
-        <Typography variant="body2" color="textSecondary">
-          {t('productPolicyPage.unsupported', 'Product policy is not available here.')}
-        </Typography>
+        <Gutters>
+          <Typography variant="body2" color="textSecondary">
+            {t('productPolicyPage.unsupported', 'Product policy is not available here.')}
+          </Typography>
+        </Gutters>
       </Container>
     )
 

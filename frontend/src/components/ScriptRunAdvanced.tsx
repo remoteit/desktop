@@ -91,7 +91,7 @@ export const ScriptRunAdvanced: React.FC<Props> = ({ fields, value = {}, errors,
               t('jobRunOptions.seconds', 'seconds'),
               t(
                 'jobRunOptions.timeoutHint',
-                'How long the script may run on each device before it is stopped, at most {{maxHours}} hours. Default: {{defaultHours}} hour. A device’s administrator may set a shorter limit there.',
+                'How long the script may run on each device before it stops, at most {{maxHours}} hours. Default: {{defaultHours}} hour. Devices may set less.',
                 { maxHours: MAX_RUN_SECONDS / 3600, defaultHours: DEFAULT_RUN_SECONDS / 3600 }
               ),
               MAX_RUN_SECONDS

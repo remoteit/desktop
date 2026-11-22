@@ -240,6 +240,7 @@
     "typeSystem": "Actualización del sistema"
   },
   "announcementsPage": {
+    "empty": "",
     "title": "Notificaciones"
   },
   "apps": {
@@ -621,9 +622,11 @@
     "claimLink": "",
     "intro": "",
     "key": "",
+    "keyAccess": "",
     "keyTitle": "",
     "newAppLink": "",
     "publish": "",
+    "publishRelease": "",
     "publishTitle": "",
     "starter": "",
     "starterDownload": "",
@@ -3874,6 +3877,7 @@
     "consentedAllAsks": "Consentido por {{by}}, {{when}}: para todos los dispositivos de este producto, ahora y en el futuro",
     "hintEnforcedStates": "",
     "hintStates": "",
+    "hintUnset": "",
     "lockedEnforced": "",
     "lockedSynced": "",
     "needsConsentAsks": "Una nueva versión necesita tu consentimiento: sus dispositivos no se activan hasta que des tu consentimiento",
@@ -4548,10 +4552,12 @@
     "buildApp": "",
     "cancel": "",
     "claim": "Reclamar",
+    "claimIds": "",
     "claimIntro": "Publique sus propias apps para sus propios dispositivos. Elija un id de editor: cada app que publique se llama <id>.<app>. Los ids se asignan por orden de llegada; los nombres de remote.it y los nombres conocidos están reservados, y un id es suyo para siempre.",
     "close": "",
     "createKey": "",
     "createKeyIntro": "",
+    "createKeyPublic": "",
     "createKeyTitle": "",
     "domainLapsed": "Caducado el {{when}}: el registro faltó durante tres días. Añádalo de nuevo y verifique.",
     "domainPending": "Aún sin verificar: añada este registro TXT y pulse Verificar",
@@ -4563,6 +4569,7 @@
     "idHelp": "De 1 a 32 caracteres de a–z, 0–9 y -",
     "ids": "Sus apps son {{id}}.<app>",
     "keepKey": "",
+    "keepKeyLost": "",
     "keyLine": "Añadida {{added}} · certificada hasta {{until}}",
     "keys": "Claves de firma",
     "name": "Nombre que se muestra con sus apps",
@@ -4887,6 +4894,11 @@
     "upload": "Subir",
     "uploadShort": ""
   },
+  "scriptingTabs": {
+    "files": "",
+    "runs": "",
+    "scripts": ""
+  },
   "scriptPage": {
     "created": "Creado",
     "deviceCount_one": "{{count}} dispositivo",
@@ -4916,6 +4928,9 @@
     "runNow": "Ejecutar ahora",
     "saveHint": "Guardar crea una ejecución preparada con los dispositivos, la etiqueta y los valores de argumento seleccionados.",
     "targetDevices": "Dispositivos de destino"
+  },
+  "scriptRunPage": {
+    "runScript": ""
   },
   "scriptRunSummary": {
     "all": "TODOS",

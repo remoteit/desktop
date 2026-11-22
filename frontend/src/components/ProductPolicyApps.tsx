@@ -130,10 +130,13 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, accountId, apps,
               'productApps.hintEnforcedStates',
               'An app set here is locked on its devices. One not listed is removed from them, as the product is enforced.'
             )
-          : t(
+          : `${t(
               'productApps.hintStates',
-              'Enabled adds and runs it on the product’s devices, Disabled adds it stopped, Removed takes it off them. One left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.'
-            )}
+              'Enabled adds and runs it on the product’s devices. Disabled adds it stopped. Removed takes it off them.'
+            )} ${t(
+              'productApps.hintUnset',
+              'One left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.'
+            )}`}
       </Typography>
       <List dense disablePadding>
         {apps.map(app => {
@@ -169,12 +172,12 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, accountId, apps,
                           {app.awaitingRoot && app.version
                             ? t(
                                 'productApps.needsConsentAsksStay',
-                                'A new version ({{version}}) needs your consent: its devices stay on {{current}} until you consent',
+                                'A new version ({{version}}) needs your consent. Its devices stay on {{current}} until you consent',
                                 { version: app.awaitingRoot, current: app.version }
                               )
                             : t(
                                 'productApps.needsConsentAsks',
-                                'A new version needs your consent: its devices are not turned on until you consent'
+                                'A new version needs your consent. Its devices stay off until you consent'
                               )}
                         </Line>
                       )}
@@ -304,10 +307,10 @@ const ProductRemovedSettingRow: React.FC<{
         primary={`${removed.name}: ${JSON.stringify(removed.value)}`}
         secondary={
           removed.removedIn
-            ? t('productApps.removedIn', 'Removed in {{version}}: no effect on devices that run it', {
+            ? t('productApps.removedIn', 'Removed in {{version}}. No effect on devices that run it', {
                 version: removed.removedIn,
               })
-            : t('productApps.removed', 'Removed: no effect on its devices')
+            : t('productApps.removed', 'Removed. No effect on its devices')
         }
         primaryTypographyProps={{ variant: 'body2', color: 'textSecondary' }}
         secondaryTypographyProps={{ variant: 'caption' }}
@@ -438,12 +441,12 @@ function consentedLine(t: TFunction, root: boolean, consent: ProductRootConsent)
   return root
     ? t(
         'productApps.consentedAll',
-        'Consented to run as root by {{by}}, {{when}}: for every device in this product, now and later',
+        'Given full control by {{by}}, {{when}}. Covers every device in this product, now and later',
         words
       )
     : t(
         'productApps.consentedAllAsks',
-        'Consented by {{by}}, {{when}}: for every device in this product, now and later',
+        'Consented by {{by}}, {{when}}. Covers every device in this product, now and later',
         words
       )
 }
@@ -459,8 +462,8 @@ function settingLockLine(t: TFunction, setting: ProductAppSetting, sync: Product
   if (setting.locked) return lockedLine(t, sync)
   if (setting.value === null || sync === 'template') return undefined
   return setting.type === 'bool'
-    ? t('productApps.notLockedBool', 'Given to its devices, not locked: this setting can’t be forced on')
-    : t('productApps.notLocked', 'Given to its devices, not locked: this setting can’t be fixed')
+    ? t('productApps.notLockedBool', 'Given to its devices, not locked. This setting can’t be forced on')
+    : t('productApps.notLocked', 'Given to its devices, not locked. This setting can’t be fixed')
 }
 
 // A consent's time as the person reads it, as Timestamp says a time.

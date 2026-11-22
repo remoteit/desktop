@@ -45,10 +45,10 @@ export function productLockNote(t: TFunction, locked: SettingLock): string {
 // The role a product's devices take on a network it grants.
 export const roleName = (t: TFunction, role: NetworkDeviceRole) =>
   role === 'INITIATOR'
-    ? t('productGrants.initiator', 'Initiator')
+    ? t('productGrants.initiator', 'Can reach')
     : role === 'BOTH'
-    ? t('productGrants.both', 'Initiator and target')
-    : t('productGrants.target', 'Target')
+    ? t('productGrants.both', 'Can reach and be reached')
+    : t('productGrants.target', 'Can be reached')
 
 // "3 tags", "1 network": a count of a kind of item, as graphql names the kind.
 export function itemCount(t: TFunction, kind: string, count: number): string {

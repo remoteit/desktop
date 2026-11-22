@@ -238,6 +238,7 @@
     "typeSystem": "Systemaktualisierung"
   },
   "announcementsPage": {
+    "empty": "",
     "title": "Benachrichtigungen"
   },
   "apps": {
@@ -613,9 +614,11 @@
     "claimLink": "",
     "intro": "",
     "key": "",
+    "keyAccess": "",
     "keyTitle": "",
     "newAppLink": "",
     "publish": "",
+    "publishRelease": "",
     "publishTitle": "",
     "starter": "",
     "starterDownload": "",
@@ -3810,6 +3813,7 @@
     "consentedAllAsks": "Zugestimmt von {{by}}, {{when}}: für jedes Gerät in diesem Produkt, jetzt und künftig",
     "hintEnforcedStates": "",
     "hintStates": "",
+    "hintUnset": "",
     "lockedEnforced": "",
     "lockedSynced": "",
     "needsConsentAsks": "Eine neue Version braucht Ihre Zustimmung: Seine Geräte werden erst eingeschaltet, wenn Sie zustimmen",
@@ -4457,10 +4461,12 @@
     "buildApp": "",
     "cancel": "",
     "claim": "Beanspruchen",
+    "claimIds": "",
     "claimIntro": "Veröffentlichen Sie eigene Apps für Ihre eigenen Geräte. Wählen Sie eine Herausgeber-ID: Jede App, die Sie veröffentlichen, heißt <id>.<app>. IDs werden in der Reihenfolge der Anmeldung vergeben; die Namen von remote.it und bekannte Namen sind reserviert, und eine ID gehört dauerhaft Ihnen.",
     "close": "",
     "createKey": "",
     "createKeyIntro": "",
+    "createKeyPublic": "",
     "createKeyTitle": "",
     "domainLapsed": "Erloschen am {{when}}: Der Eintrag fehlte drei Tage lang. Fügen Sie ihn wieder hinzu und prüfen Sie erneut.",
     "domainPending": "Noch nicht verifiziert: Fügen Sie diesen TXT-Eintrag hinzu und klicken Sie dann auf Prüfen",
@@ -4472,6 +4478,7 @@
     "idHelp": "1 bis 32 Zeichen aus a–z, 0–9 und -",
     "ids": "Ihre Apps heißen {{id}}.<app>",
     "keepKey": "",
+    "keepKeyLost": "",
     "keyLine": "Hinzugefügt {{added}} · zertifiziert bis {{until}}",
     "keys": "Signaturschlüssel",
     "name": "Name, der bei Ihren Apps angezeigt wird",
@@ -4781,6 +4788,11 @@
     "upload": "Hochladen",
     "uploadShort": ""
   },
+  "scriptingTabs": {
+    "files": "",
+    "runs": "",
+    "scripts": ""
+  },
   "scriptPage": {
     "created": "Erstellt",
     "deviceCount_one": "{{count}} Gerät",
@@ -4807,6 +4819,9 @@
     "runNow": "Jetzt ausführen",
     "saveHint": "„Speichern“ erstellt einen vorbereiteten Lauf mit den ausgewählten Geräten, dem Tag und den Argumentwerten.",
     "targetDevices": "Zielgeräte"
+  },
+  "scriptRunPage": {
+    "runScript": ""
   },
   "scriptRunSummary": {
     "all": "ALLE",

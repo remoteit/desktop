@@ -101,7 +101,7 @@ describe('SignInApp', () => {
   it('says how far off the clock is and how to fix it when the sign-in service refused its time', () => {
     render(screens.clock)
     expect(container.textContent).toContain("This computer's clock is about 60 minutes off")
-    expect(container.textContent).toContain('Set the date and time to update automatically')
+    expect(container.textContent).toContain('Set the time to update automatically')
   })
 
   it('still names the clock when it could not measure how far off it is', () => {

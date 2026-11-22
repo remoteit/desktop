@@ -35,11 +35,11 @@ export const ServicePortsField: React.FC<Props> = ({ value, error, more, disable
         {more
           ? t(
               'multiPort.morePortsHelp',
-              "Ports and ranges the application also uses beside the URL's, like 5004-5005, reached on the device subnet. Optional."
+              "Ports and ranges the application also uses beside the URL's, like 5004-5005, reached through Access. Optional."
             )
           : t(
               'multiPort.portsHelp',
-              'Ports and ranges the application uses, like 5900, 5901-5910. Connections and launch use the first; the device subnet reaches them all.'
+              'Ports and ranges the application uses, like 5900, 5901-5910. Connections and launch use the first. Access reaches them all.'
             )}
       </Typography>
     </ListItem>

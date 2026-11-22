@@ -98,7 +98,7 @@ export const BuildAppPage: React.FC = () => {
             <Typography variant="caption" color="textSecondary" component="p" sx={{ marginTop: 1 }}>
               {t(
                 'buildApp.toolCheck',
-                'Its manifest names its version and SHA-256, and is signed with the same release key remote.it signs device packages with:'
+                'Its manifest names its version and SHA-256. Remote.It signs it with the same release key as its agent packages.'
               )}{' '}
               <a href={toolManifestUrl(downloads)} target="_blank" rel="noreferrer" data-build-tool-manifest>
                 remoteit-app.json
@@ -112,7 +112,7 @@ export const BuildAppPage: React.FC = () => {
           </>
         ) : (
           <Notice severity="info">
-            {t('buildApp.toolNotHere', 'This stage does not host the publishing tool. Ask remote.it for it.')}
+            {t('buildApp.toolNotHere', 'This server does not have the publishing tool. Ask Remote.It for it.')}
           </Notice>
         )}
       </Gutters>
@@ -122,7 +122,11 @@ export const BuildAppPage: React.FC = () => {
         <Typography variant="body2" color="textSecondary">
           {t(
             'buildApp.key',
-            'Use the key file you downloaded with Create key on the Publisher page. Its passphrase is asked for on the terminal; in CI, put it in REMOTEIT_APP_KEY_PASSPHRASE as a secret. The tool speaks for your account with an access key (Account, Access Keys), kept in ~/.remoteit/credentials as the remote.it CLI keeps it.'
+            'Use the key file from Create key on the Publisher page. The terminal asks for its passphrase. In CI, set REMOTEIT_APP_KEY_PASSPHRASE as a secret.'
+          )}{' '}
+          {t(
+            'buildApp.keyAccess',
+            'The tool signs in with an access key from Account, Access keys. It keeps it in ~/.remoteit/credentials, as the Remote.It CLI does.'
           )}
         </Typography>
         {code(
@@ -167,7 +171,11 @@ export const BuildAppPage: React.FC = () => {
         <Typography variant="body2" color="textSecondary">
           {t(
             'buildApp.publish',
-            'build packs a .tar.gz per platform (linux-arm64=out/arm64/ windows-amd64=out/win/ …) and checks it as remote.it does; sign signs the manifest with your key; upload puts the files on remote.it; release makes it the release your devices with the app are given. The app is private: this account’s devices only.'
+            'build packs a .tar.gz per platform (linux-arm64=out/arm64/ windows-amd64=out/win/ …) and checks it as Remote.It does. sign signs the manifest with your key.'
+          )}{' '}
+          {t(
+            'buildApp.publishRelease',
+            "upload puts the files on Remote.It. release gives that release to your devices with the app. The app is private to this account's devices."
           )}
         </Typography>
       </Gutters>

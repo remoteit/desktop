@@ -14,6 +14,7 @@ import {
   FormControlLabel,
   List,
   ListItem,
+  InputAdornment,
   ListItemIcon,
   ListItemText,
   Radio,
@@ -32,6 +33,7 @@ import { graphQLFetchDeviceCount } from '../services/graphQLDevice'
 import { AppChangeResults } from '../components/AppChangeResults'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
+import { Icon } from '../components/Icon'
 import { AppCapabilities } from '../components/AppRootConsent'
 import { addAsks, adminControlLine, allowLine, appName, asksConsent, channelName } from '../helpers/appsHelper'
 
@@ -215,6 +217,13 @@ export const AppAddDialog: React.FC = () => {
                   placeholder={t('apps.searchDevices', 'Search devices…')}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Icon name="search" size="sm" />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
                 {devices === undefined ? (
                   <LoadingMessage />

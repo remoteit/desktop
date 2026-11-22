@@ -40,7 +40,7 @@ export function uploadRefusal(t: TFunction, storage: FileStorage | null | undefi
   if (storage.used + size > storage.quota)
     return t(
       'fileStorage.overQuota',
-      'This file would take the account past its file storage quota: {{used}} of {{quota}} used, and this file is {{size}}. Delete files or old versions of files you no longer need, then try again.',
+      'This file is {{size}}, and the account has used {{used}} of {{quota}}. Delete files or old versions you no longer need, then try again.',
       { used: megabytes(storage.used), quota: megabytes(storage.quota), size: megabytes(size) }
     )
   return undefined

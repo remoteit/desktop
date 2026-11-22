@@ -68,7 +68,7 @@ export const RootConsent: React.FC<{
             ? product
               ? t(
                   'productApps.rootUpdate',
-                  '{{app}} {{version}} needs to run as root. Its devices stay on the version they run until you consent.',
+                  '{{app}} {{version}} needs full control. Its devices stay on the version they run until you agree.',
                   words
                 )
               : t(
@@ -79,12 +79,12 @@ export const RootConsent: React.FC<{
             : product
             ? t(
                 'productApps.asksUpdate',
-                '{{app}} {{version}} asks more of remote.it. Its devices stay on the version they run until you consent.',
+                '{{app}} {{version}} asks for more access. Its devices stay on the version they run until you consent.',
                 words
               )
             : t(
                 'deviceApps.asksUpdate',
-                '{{app}} {{version}} asks more of remote.it. This device stays on the version it runs until you consent.',
+                '{{app}} {{version}} asks for more access. This device stays on the version it runs until you consent.',
                 words
               )}
         </Typography>
@@ -94,7 +94,7 @@ export const RootConsent: React.FC<{
           ? product
             ? t(
                 'productApps.rootBody',
-                '{{app}}, published by {{publisher}}, runs as root: it gets full control of this device — every file, account and program on it — on every device in this product, now and later.',
+                '{{app}}, published by {{publisher}}, gets full control of every device in this product, now and later. That is every file, account and program on them.',
                 words
               )
             : t(

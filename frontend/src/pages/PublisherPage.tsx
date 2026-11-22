@@ -141,7 +141,11 @@ export const PublisherPage: React.FC = () => {
           <Typography variant="body2" gutterBottom>
             {t(
               'publisherPage.claimIntro',
-              'Publish your own apps for your own devices. Choose a publisher id: every app you publish is named <id>.<app>. Ids are first come, first served; remote.it’s and well-known names are reserved, and an id is yours for good.'
+              'Publish your own apps for your own devices. Choose a publisher id. Every app you publish is named <id>.<app>.'
+            )}{' '}
+            {t(
+              'publisherPage.claimIds',
+              'Ids are first come, first served, and an id is yours for good. Remote.It’s and well-known names are reserved.'
             )}
           </Typography>
           <TextField
@@ -214,7 +218,7 @@ export const PublisherPage: React.FC = () => {
           <Typography variant="subtitle1">{t('publisherPage.keys', 'Signing keys')}</Typography>
           {!read?.publishing.certifies && (
             <Notice severity="warning" gutterBottom>
-              {t('publisherPage.noCatalogueKey', 'This stage cannot certify keys yet, so its devices take no published app.')}
+              {t('publisherPage.noCatalogueKey', 'This server cannot certify keys yet, so its devices take no published app.')}
             </Notice>
           )}
           {kept && (
@@ -222,8 +226,12 @@ export const PublisherPage: React.FC = () => {
               <span data-key-kept={kept}>
                 {t(
                   'publisherPage.keepKey',
-                  'Key {{id}} is registered. Keep its file and passphrase: remote.it cannot recover either. Without them you cannot sign releases with this key — create a new key instead, and revoke this one if the file may be in someone else’s hands.',
+                  'Key {{id}} is registered. Keep its file and passphrase. Remote.It cannot recover either.',
                   { id: kept }
+                )}{' '}
+                {t(
+                  'publisherPage.keepKeyLost',
+                  'Without them you cannot sign releases with this key. If someone else may have the file, create a new key and revoke this one.'
                 )}
               </span>
             </Notice>
@@ -259,7 +267,11 @@ export const PublisherPage: React.FC = () => {
             <Typography variant="body2" color="textSecondary" gutterBottom>
               {t(
                 'publisherPage.createKeyIntro',
-                'Create a key here: it is made in your browser and saved to a file encrypted with a passphrase you choose. Only its public half is sent to remote.it. The same file signs releases here and with the publishing tool.'
+                'Create a key here. Your browser makes it and saves it to a file, encrypted with a passphrase you choose.'
+              )}{' '}
+              {t(
+                'publisherPage.createKeyPublic',
+                'Only its public half is sent to Remote.It. The same file signs releases here and with the publishing tool.'
               )}
             </Typography>
             <Button variant="contained" size="small" disabled={busy} onClick={openCreate} data-create-key sx={{ marginBottom: 2 }}>
@@ -370,7 +382,7 @@ export const PublisherPage: React.FC = () => {
               <Typography variant="body2" color="textSecondary" gutterBottom>
                 {t(
                   'publisherPage.noAppsYet',
-                  'No apps yet. Make one here, signed in your browser with your key file, or with the publishing tool: its files are hosted by remote.it, and it reaches this account’s own devices.'
+                  'No apps yet. Make one here with your key file, or with the publishing tool. Only this account’s devices get it.'
                 )}
               </Typography>
             )}

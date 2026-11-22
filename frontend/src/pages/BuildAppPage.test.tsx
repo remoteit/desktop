@@ -106,7 +106,7 @@ describe('Build it yourself', () => {
     read.mockResolvedValue({ publisher: null, publishing: { certifies: false, downloads: null } })
     const page = await render()
     expect(page.querySelector('[data-build-tool] [data-notice]')?.textContent).toContain(
-      'does not host the publishing tool'
+      'does not have the publishing tool'
     )
   })
 })

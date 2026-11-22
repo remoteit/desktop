@@ -30,6 +30,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
   const manager = role.permissions.includes('MANAGE')
   const script = useSelector((state: State) => (fileID ? selectScript(state, undefined, fileID) : undefined))
   const scriptFormFromState = useSelector((state: State) => state.ui.scriptForm)
+  const singlePanel = useSelector((state: State) => state.ui.layout.singlePanel)
 
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -204,7 +205,13 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
       bodyProps={{ inset: true, verticalOverflow: true, gutterBottom: true }}
       header={
         <Typography variant="h1">
-          <Box sx={{ flex: 1 }}>{isNew ? t('scriptEditPage.addScript', 'Add script') : script?.name}</Box>
+          <Box sx={{ flex: 1 }}>
+            {isNew
+              ? t('scriptEditPage.addScript', 'Add script')
+              : singlePanel
+              ? script?.name
+              : t('scriptEditPage.editScript', 'Edit script')}
+          </Box>
           {!isNew && <ScriptDeleteButton />}
         </Typography>
       }
@@ -269,9 +276,11 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
         </Box>
       }
     >
-      <Typography variant="subtitle2">
-        <Title>{t('scriptEditPage.editScript', 'Edit script')}</Title>
-      </Typography>
+      {(isNew || singlePanel) && (
+        <Typography variant="subtitle2">
+          <Title>{t('scriptEditPage.editScript', 'Edit script')}</Title>
+        </Typography>
+      )}
       {editForm && (
         <>
           <List disablePadding>

@@ -441,10 +441,10 @@ export const TestPage: React.FC = () => {
       <List>
         <ListItemSetting
           hideIcon
-          label={t('testPage.deviceSessions', 'Control Link devices')}
+          label={t('testPage.deviceSessions', 'New agent devices')}
           subLabel={t(
             'testPage.deviceSessionsHint',
-            "Exits, proxies, and the device agent's status and upgrades. On by default where the API serves Control Link devices to every account (solo); for local or dev, turn it on here."
+            "Exits, proxies, and the agent's status and updates. On by default where the API serves them. Turn it on here for local or dev."
           )}
           toggle={deviceSessions}
           onClick={() => dispatch.ui.setPersistent({ deviceSessions: !deviceSessions })}
@@ -454,7 +454,7 @@ export const TestPage: React.FC = () => {
           label={t('testPage.virtualDevices', 'Virtual devices')}
           subLabel={t(
             'testPage.virtualDevicesHint',
-            'Devices with no daemon, hosted by a gateway. Shows sample devices where the API does not serve them yet.'
+            'Devices with no agent, reached through a gateway. Shows sample devices where the API does not serve them yet.'
           )}
           toggle={virtualDevices}
           onClick={() => {
@@ -482,7 +482,7 @@ export const TestPage: React.FC = () => {
           )}
           value={proxyFleet || ''}
           values={[
-            { key: '', name: t('testPage.proxyFleetDefault', "The API stage's default") },
+            { key: '', name: t('testPage.proxyFleetDefault', "The API's default") },
             { key: 'LEGACY', name: t('testPage.proxyFleetLegacy', 'Legacy fleet') },
             { key: 'CONNECTD', name: t('testPage.proxyFleetConnectd', 'Go agent proxies') },
           ]}

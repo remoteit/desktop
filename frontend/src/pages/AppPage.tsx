@@ -265,10 +265,14 @@ export const AppPage: React.FC = () => {
       </Gutters>
 
       <List dense data-app-channels>
-        <ListSubheader sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {t('apps.channelsHere', 'Channels on this stage')}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="caption" color="textSecondary">
+        <ListSubheader
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', columnGap: 2 }}
+        >
+          <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+            {t('apps.channelsHere', 'Available channels')}
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+            <Typography variant="caption" color="textSecondary" noWrap>
               {t('apps.accountFollows', 'This account follows')}
             </Typography>
             <TextField
@@ -495,12 +499,12 @@ export const AppPage: React.FC = () => {
           {updateRoot
             ? t(
                 'apps.updateRootBody',
-                'A new version of {{app}}, published by {{publisher}}, runs as root: it gets full control of each device selected — every file, account and program on it. Update only if you trust {{publisher}} with them.',
+                'A new version of {{app}}, published by {{publisher}}, gets full control of each device selected. Update only if you trust {{publisher}} with them.',
                 { app: app.name, publisher: app.publisher.name }
               )
             : t(
                 'apps.updateAsksBody',
-                'A new version of {{app}}, published by {{publisher}}, asks more of remote.it on each device selected. Update only if you trust {{publisher}} with them.',
+                'A new version of {{app}}, published by {{publisher}}, asks for more access on each device selected. Update only if you trust {{publisher}} with them.',
                 { app: app.name, publisher: app.publisher.name }
               )}
         </Typography>

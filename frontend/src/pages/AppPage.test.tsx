@@ -276,7 +276,7 @@ describe('your devices', () => {
     await check(page, 'nas')
     await click(page.querySelector('[data-fleet-update]'))
     expect(setMany).not.toHaveBeenCalled()
-    expect(page.querySelector('[data-fleet-consent]')?.textContent).toContain('runs as root: it gets full control of each device selected')
+    expect(page.querySelector('[data-fleet-consent]')?.textContent).toContain('gets full control of each device selected')
     await click(page.querySelector('[data-confirm-ok]'))
     expect(setMany).toHaveBeenCalledWith('acme.backup', ['80:00:00:00:01:00:00:02'], { version: '', consentRoot: true })
   })

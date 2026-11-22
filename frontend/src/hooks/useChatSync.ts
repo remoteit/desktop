@@ -125,7 +125,7 @@ export const useChatPopoutSync = (): void => {
   useChatBoot(true)
 
   useEffect(() => {
-    document.title = t('chat.windowTitle', 'remote.it chat')
+    document.title = t('chat.windowTitle', 'Remote.It chat')
     const unsubscribe = initChatPopoutWindow({
       adopt: payload => dispatch.chat.adoptHandoff(payload),
       getHandoff: currentHandoff,

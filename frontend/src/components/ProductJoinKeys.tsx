@@ -73,7 +73,7 @@ export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, on
           env: JOIN_KEY_ENV,
           file: JOIN_KEY_FILE_ENV,
           defaultValue:
-            'Put a key on each machine as {{env}}, or in a file named by {{file}}. A key only creates devices of this product. You see it once, when you create it.',
+            'Put a key on each machine as {{env}}, or in a file named by {{file}}. A key only creates devices of this product. You see it once.',
         })}
       </Typography>
       {keys.length ? (
@@ -101,7 +101,7 @@ export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, on
                           <Notice severity="error" gutterBottom fullWidth>
                             {t(
                               'productJoinKeys.revokeBody',
-                              'No device can join with this key from now on. Devices that already joined stay. If the key leaked, delete them separately. You cannot undo this.'
+                              'No device can join with this key from now on. Devices that already joined stay. If the key leaked, delete them too. You cannot undo this.'
                             )}
                           </Notice>
                         ),

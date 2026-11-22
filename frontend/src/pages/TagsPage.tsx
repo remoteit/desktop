@@ -17,11 +17,9 @@ import { REGEX_TAG_SAFE } from '../constants'
 import { useLocation } from 'react-router-dom'
 import { canEditTags } from '../models/tags'
 import { selectTags } from '../selectors/tags'
-import { useLabel } from '../hooks/useLabel'
 
 export const TagsPage: React.FC = () => {
   const { t } = useTranslation()
-  const getColor = useLabel()
   const location = useLocation()
   const dispatch = useDispatch<Dispatch>()
   const [confirm, setConfirm] = useState<{ tag: ITag; name: string }>()
@@ -75,7 +73,6 @@ export const TagsPage: React.FC = () => {
           <InlineTextFieldSetting
             key={index}
             value={tag.name}
-            color={getColor(tag.color)}
             icon={
               updating === tag.name ? (
                 <Icon name="spinner-third" spin />

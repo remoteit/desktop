@@ -256,7 +256,7 @@ describe('a product’s Apps block', () => {
     )
     const body = confirm.querySelector('[data-root-consent]')!.textContent
     expect(body).toContain('Console, published by remote.it')
-    expect(body).toContain('full control of this device')
+    expect(body).toContain('full control of every device in this product')
     expect(body).toContain('every device in this product, now and later')
     expect(confirm.textContent).toContain('Turn it on only if you trust remote.it with every device in this product.')
     // What else it asks of remote.it is part of the consent.
@@ -295,7 +295,7 @@ describe('a product’s Apps block', () => {
     const page = await render([
       consoleApp({ state: 'disabled', rootConsent: { by: 'evan@example.com', at: '2026-11-12T18:00:00Z', version: '1.4.0' } }),
     ])
-    expect(line(page, 'remoteit.console', 'consent')).toMatch(/^Consented to run as root by evan@example.com, .*2026/)
+    expect(line(page, 'remoteit.console', 'consent')).toMatch(/^Given full control by evan@example.com, .*2026/)
     await pick(onOf(page, 'remoteit.console'), 'enabled')
     expect(catalog).toHaveBeenCalledWith('remoteit.console', { accountId: 'A1', releases: 100 })
     expect(page.querySelector('[data-confirm]')).toBeNull()
@@ -350,7 +350,7 @@ describe('a product’s Apps block', () => {
       }),
     ])
     expect(line(page, 'remoteit.console', 'needs-consent')).toBe(
-      'A new version needs your consent: its devices are not turned on until you consent'
+      'A new version needs your consent. Its devices stay off until you consent'
     )
     expect(line(page, 'remoteit.console', 'consent')).toBeUndefined()
     await click(row(page, 'remoteit.console').querySelector('[data-product-app-consent-action]'))
@@ -418,7 +418,7 @@ describe('a product’s Apps block', () => {
     const ai = settingOf(page, 'remoteit.console', 'ai_commands')
     expect(ai.getAttribute('data-value')).toBe('on')
     expect(ai.querySelector('[data-helper]')!.textContent).toContain(
-      'Given to its devices, not locked: this setting can’t be forced on'
+      'Given to its devices, not locked. This setting can’t be forced on'
     )
     expect(settingOf(page, 'acme.logs', 'level').querySelector('[data-helper]')!.textContent).toBe(
       'Locked on its devices (synced)'
@@ -498,7 +498,7 @@ describe('root, and a release that newly asks for it', () => {
       }),
     ])
     expect(line(page, 'remoteit.console', 'consent')).toMatch(
-      /^Consented to run as root by pat@example.com, .*: for every device in this product, now and later$/
+      /^Given full control by pat@example.com, .*\. Covers every device in this product, now and later$/
     )
   })
 
@@ -517,15 +517,15 @@ describe('root, and a release that newly asks for it', () => {
     expect(line(page, 'remoteit.console', 'root')).toBeUndefined()
     expect(line(page, 'remoteit.console', 'about')).toBe('By remote.it · 1.4.0 · Stable')
     expect(line(page, 'remoteit.console', 'needs-consent')).toBe(
-      'A new version (1.5.0) needs your consent: its devices stay on 1.4.0 until you consent'
+      'A new version (1.5.0) needs your consent. Its devices stay on 1.4.0 until you consent'
     )
     await click(row(page, 'remoteit.console').querySelector('[data-product-app-consent-action]'))
     const confirm = page.querySelector('[data-confirm]')!
     expect(confirm.querySelector('[data-root-consent-update]')?.textContent).toBe(
-      'Console 1.5.0 needs to run as root. Its devices stay on the version they run until you consent.'
+      'Console 1.5.0 needs full control. Its devices stay on the version they run until you agree.'
     )
     expect(catalog).toHaveBeenCalledWith('remoteit.console', { accountId: 'A1', releases: 100 })
-    expect(confirm.textContent).toContain('on every device in this product, now and later')
+    expect(confirm.textContent).toContain('of every device in this product, now and later')
     await click(confirm.querySelector('[data-confirm-ok]'))
     expect(setApp).toHaveBeenCalledWith('P1', 'remoteit.console', 'enabled', {
       channel: 'stable',
@@ -544,9 +544,9 @@ describe('a removed setting the product still sets', () => {
     ])
     const item = row(page, 'remoteit.console').querySelector('[data-product-app-removed="colour"]')!
     expect(item.textContent).toContain('colour: true')
-    expect(item.textContent).toContain('Removed in 1.5.0: no effect on devices that run it')
+    expect(item.textContent).toContain('Removed in 1.5.0. No effect on devices that run it')
     expect(row(page, 'remoteit.console').querySelector('[data-product-app-removed="quiet"]')?.textContent).toContain(
-      'Removed: no effect on its devices'
+      'Removed. No effect on its devices'
     )
     await click(item.querySelector('[data-product-app-removed-clear="colour"]'))
     expect(setAppSetting).toHaveBeenCalledWith('P1', 'remoteit.console', 'colour', null)

@@ -11,6 +11,8 @@ import {
   ListItemText,
   ListItemIcon,
   ListItemSecondaryAction,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectRemoteitLicense } from '../selectors/organizations'
@@ -37,6 +39,35 @@ export const OrganizationMembershipPage: React.FC = () => {
   }))
   const { accounts } = useDispatch<Dispatch>()
   const { t } = useTranslation()
+  const narrow = useMediaQuery(useTheme().breakpoints.down('sm'))
+  const textSx = { paddingRight: narrow ? 0 : '220px' }
+  const chips = (role: React.ReactNode, license: React.ReactNode) => (
+    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+      {role}
+      {narrow ? (
+        license
+      ) : (
+        <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
+          {license}
+        </Box>
+      )}
+    </Box>
+  )
+  const ownerChip = organization && (
+    <Chip label={organization.roles.find(r => r.id === 'OWNER')?.name} size="small" />
+  )
+  const ownerLicense = <LicenseChip license={license?.valid ? 'LICENSED' : 'UNLICENSED'} />
+  const below = (secondary: React.ReactNode, role: React.ReactNode, license: React.ReactNode) =>
+    narrow ? (
+      <>
+        {secondary}
+        <Box component="span" sx={{ display: 'block', marginTop: 0.5 }}>
+          {chips(role, license)}
+        </Box>
+      </>
+    ) : (
+      secondary
+    )
 
   return (
     <Container
@@ -55,14 +86,17 @@ export const OrganizationMembershipPage: React.FC = () => {
                   <Avatar email={email} title={organization.name} size={AVATAR_SIZE} />
                 </ListItemIcon>
                 <ListItemText
+                  sx={textSx}
                   primary={organization.name}
-                  secondary={t('organizationMembershipPage.yourOrganization', 'Your organization')}
+                  secondary={below(
+                    t('organizationMembershipPage.yourOrganization', 'Your organization'),
+                    ownerChip,
+                    ownerLicense
+                  )}
+                  secondaryTypographyProps={{ component: 'div' }}
                 />
                 <ListItemSecondaryAction>
-                  <Chip label={organization.roles.find(r => r.id === 'OWNER')?.name} size="small" />
-                  <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
-                    <LicenseChip license={license?.valid ? 'LICENSED' : 'UNLICENSED'} />
-                  </Box>
+                  {!narrow && chips(ownerChip, ownerLicense)}
                   <IconButton
                     icon="pencil"
                     title={t('organizationMembershipPage.editOrganization', 'Edit organization')}
@@ -79,25 +113,26 @@ export const OrganizationMembershipPage: React.FC = () => {
                 <Avatar email={m.account.email} fallback={m.name} size={AVATAR_SIZE} />
               </ListItemIcon>
               <ListItemText
+                sx={textSx}
                 primary={m.name}
-                secondary={
+                secondaryTypographyProps={{ component: 'div' }}
+                secondary={below(
                   <>
                     {m.account.email && (
                       <>
                         {t('organizationMembershipPage.owner', 'Owner')} <b>{m.account.email}</b>
-                        &nbsp; -{' '}
+                        {' · '}
                       </>
                     )}
                     {t('organizationMembershipPage.joined', 'Joined')}{' '}
                     <Duration startTime={m.created.getTime()} ago />
-                  </>
-                }
+                  </>,
+                  <Chip label={m.roleName} size="small" />,
+                  <LicenseChip license={m.license} />
+                )}
               />
               <ListItemSecondaryAction>
-                <Chip label={m.roleName} size="small" />
-                <Box width={100} display="inline-block" textAlign="right" marginRight={`${spacing.md}px`}>
-                  <LicenseChip license={m.license} />
-                </Box>
+                {!narrow && chips(<Chip label={m.roleName} size="small" />, <LicenseChip license={m.license} />)}
                 <ConfirmIconButton
                   confirm
                   icon="sign-out"

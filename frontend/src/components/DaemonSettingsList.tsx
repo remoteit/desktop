@@ -47,7 +47,7 @@ export const DaemonSettingsList: React.FC<{ accountId?: string }> = ({ accountId
       <ListItemSetting
         icon="arrows-rotate"
         label={t('daemonSettings.autoUpdate', 'Automatic updates')}
-        subLabel={t('daemonSettings.autoUpdateHint', "Devices upgrade themselves to their channel's release")}
+        subLabel={t('daemonSettings.autoUpdateHint', "Devices update themselves to their channel's release")}
         toggle={settings.autoUpdate}
         disabled={saving}
         onClick={() => save({ autoUpdate: !settings.autoUpdate })}

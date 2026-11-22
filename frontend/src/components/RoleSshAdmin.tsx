@@ -36,7 +36,7 @@ export const RoleSshAdmin: React.FC<{ roleId: string; disabled?: boolean }> = ({
         primary={t('roleSshAdmin.title', 'SSH admin')}
         secondary={t(
           'roleSshAdmin.description',
-          'Admin (sudo) on their own SSH account on the devices this role reaches'
+          'Admin rights on their own SSH account on the devices this role reaches'
         )}
       />
       <Switch checked={on} disabled={disabled || saving} onChange={e => change(e.target.checked)} />
