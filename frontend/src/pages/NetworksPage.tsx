@@ -64,7 +64,7 @@ export const NetworksPage: React.FC = () => {
               >
                 <IconButton
                   icon="plus"
-                  title={t('networksPage.newNetwork', 'New Network')}
+                  title={t('networksPage.newNetwork', 'Create network')}
                   to="/networks/add"
                   type="solid"
                   size="md"

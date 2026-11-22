@@ -61,7 +61,7 @@ export const NetworkHeaderMenu: React.FC<{
                 <>
                   <ShareButton to={`/networks/${network.id}/share`} title={t('networkHeaderMenu.shareAccess', 'Share access')} />
                   <DeleteButton
-                    title={t('networkHeaderMenu.deleteNetwork', 'Delete Network')}
+                    title={t('networkHeaderMenu.deleteNetwork', 'Delete network')}
                     warning={
                       <>
                         <Notice severity="error" fullWidth gutterBottom>

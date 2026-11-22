@@ -99,7 +99,7 @@ export const SetupDevice: React.FC<Props> = ({ os }) => {
             disabled={!name || disableRegister}
             type="submit"
           >
-            {t('setupDevice.addDevice', 'Add Device')}
+            {t('setupDevice.addDevice', 'Add device')}
           </Button>
         </Box>
         <LocalhostScanForm onSelect={setSelected} />

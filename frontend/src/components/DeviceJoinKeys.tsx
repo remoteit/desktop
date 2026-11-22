@@ -102,7 +102,7 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
               confirm
               confirmProps={{
                 color: 'error',
-                action: t('deviceJoinKeys.revokeAllAction', 'Revoke All'),
+                action: t('deviceJoinKeys.revokeAllAction', 'Revoke all'),
                 title: t('deviceJoinKeys.revokeAllTitle', {
                   name: device.name,
                   defaultValue: 'Revoke every join key of "{{name}}"?',
@@ -128,7 +128,7 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
             <DynamicButton
               size="small"
               icon="plus"
-              title={t('deviceJoinKeys.issue', 'Issue Key')}
+              title={t('deviceJoinKeys.issue', 'Create join key')}
               disabled={full || !!busy}
               onClick={() => setIssuing(true)}
             />
@@ -179,7 +179,7 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
                       confirm
                       confirmProps={{
                         color: 'error',
-                        action: t('deviceJoinKeys.revokeAction', 'Revoke Key'),
+                        action: t('deviceJoinKeys.revokeAction', 'Revoke key'),
                         title: t('deviceJoinKeys.revokeTitle', {
                           name: key.name,
                           defaultValue: 'Revoke join key "{{name}}"?',
@@ -199,7 +199,7 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
                         ),
                       }}
                       name="ban"
-                      title={t('deviceJoinKeys.revoke', 'Revoke Key')}
+                      title={t('deviceJoinKeys.revoke', 'Revoke key')}
                       loading={busy === key.id}
                       disabled={!!busy}
                       onClick={() => revoke(key.id)}
