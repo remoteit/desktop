@@ -35,7 +35,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
       <ListItemSetting
         icon="globe"
         disabled={disabled}
-        label={t('connectLinkSetting.label', 'Persistent public url')}
+        label={t('connectLinkSetting.permanentLabel', 'Permanent public address')}
         subLabel={
           <Typography
             variant="caption"
@@ -44,9 +44,9 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
           >
             {canManage
               ? disabled
-                ? t('connectLinkSetting.disabledSubLabel', 'Fixed public endpoints are only available for http(s) services.')
-                : t('connectLinkSetting.enabledSubLabel', 'Create a fixed public endpoint for anyone to connect to')
-              : t('connectLinkSetting.permissionSubLabel', "Requires device 'Manage' permission")}
+                ? t('connectLinkSetting.webOnly', 'Only web services can have a permanent public address.')
+                : t('connectLinkSetting.anyoneSubLabel', 'A fixed web address anyone can open')
+              : t('connectLinkSetting.manageNeeded', 'Needs Manage permission on the device')}
           </Typography>
         }
         toggle={!!connection.connectLink}
@@ -57,29 +57,26 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
         confirm={!connection.connectLink}
         confirmProps={{
           color: connection.password ? undefined : 'warning',
-          action: t('connectLinkSetting.makePublicAction', 'Make Public'),
+          action: t('connectLinkSetting.createAction', 'Create public address'),
           title: t('common.areYouSure', 'Are you sure?'),
           children: (
             <>
               {connection.password ? (
                 <Notice severity="info" gutterBottom fullWidth>
-                  {t('connectLinkSetting.passwordProtectedNotice', 'This endpoint has password protection.')}
+                  {t('connectLinkSetting.hasPassword', 'This address asks for a password.')}
                 </Notice>
               ) : (
                 <Notice severity="warning" gutterBottom fullWidth>
-                  {t('connectLinkSetting.noPasswordNotice', 'This endpoint has no password protection.')}
+                  {t('connectLinkSetting.noPassword', 'This address has no password.')}
                 </Notice>
               )}
               <Typography variant="body2">
                 {connection.password
                   ? t(
-                      'connectLinkSetting.confirmBodyWithPassword',
-                      'This will create a fixed public endpoint for anyone with the password to connect to.'
+                      'connectLinkSetting.anyoneWithPassword',
+                      'Anyone with the address and password can open this service.'
                     )
-                  : t(
-                      'connectLinkSetting.confirmBody',
-                      'This will create a fixed public endpoint for anyone to connect to.'
-                    )}
+                  : t('connectLinkSetting.anyoneOpens', 'Anyone with the address can open this service.')}
               </Typography>
             </>
           ),
@@ -90,7 +87,7 @@ export const ConnectLinkSetting: React.FC<Props> = ({ connection, permissions, r
           <SelectSetting
             hideIcon
             disabled={connection.updating || disabled}
-            label={t('connectLinkSetting.webAuthenticationLabel', 'Web Authentication')}
+            label={t('connectLinkSetting.signInLabel', 'Web sign-in')}
             value={security}
             values={[
               { name: t('connectLinkSetting.authNone', 'None'), key: 'OPEN' },

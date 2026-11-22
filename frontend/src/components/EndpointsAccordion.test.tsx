@@ -77,7 +77,7 @@ vi.mock('react-i18next', () => ({
 import { EndpointsAccordion } from './EndpointsAccordion'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
-const NEAREST = "remote.it's, nearest the device"
+const NEAREST = "Remote.It's, nearest the device"
 
 async function openForm() {
   const container = document.createElement('div')
@@ -85,16 +85,18 @@ async function openForm() {
   const root = createRoot(container)
   const device = { id: 'DEVICE', permissions: ['MANAGE'] } as any
   await act(async () => root.render(<EndpointsAccordion device={device} service={{ id: 'SERVICE' } as any} />))
-  const add = [...container.querySelectorAll('button')].find(b => b.textContent === 'Add an endpoint')!
+  const add = [...container.querySelectorAll('button')].find(b => b.textContent === 'Add public address')!
   await act(async () => add.click())
   return container
 }
 
 const proxyField = (container: HTMLElement) =>
-  [...container.querySelectorAll('.MuiFormControl-root')].find(f => f.querySelector('label')?.textContent === 'Proxy')!
+  [...container.querySelectorAll('.MuiFormControl-root')].find(
+    f => f.querySelector('label')?.textContent === 'Proxy server'
+  )!
 
 const makeIt = async (container: HTMLElement) => {
-  const button = [...container.querySelectorAll('button')].find(b => b.textContent === 'Make the endpoint')!
+  const button = [...container.querySelectorAll('button')].find(b => b.textContent === 'Create public address')!
   await act(async () => button.click())
 }
 
@@ -137,6 +139,51 @@ describe('the endpoint form’s proxy choice', () => {
     const options = [...document.querySelectorAll('[role="option"]')].map(o => o.textContent)
     expect(options).toContain('Printers · printers-acme.solo.r3proxy.com · Local network')
     expect(options).toContain('Office gateway · gw-acme.solo.r3proxy.com')
+  })
+})
+
+const field = (container: HTMLElement, label: string) =>
+  [...container.querySelectorAll('.MuiFormControl-root')].find(f => f.querySelector('label')?.textContent === label)!
+
+describe('a new public address: who may use it', () => {
+  beforeEach(() => {
+    create.mockClear()
+    document.body.innerHTML = ''
+  })
+
+  it('defaults to people who may connect, signed in, even for whoever manages the service', async () => {
+    const container = await openForm()
+    expect(field(container, 'Who may use it').querySelector('.MuiSelect-select')?.textContent).toBe(
+      'People who may connect, signed in'
+    )
+    await makeIt(container)
+    expect((create.mock.calls[0] as any[])[1]).toMatchObject({
+      kind: 'https',
+      access: 'signed-in',
+      lifetime: 'temporary',
+    })
+  })
+
+  it('lists open to anyone last, and never falls back to it where signing in is not possible', async () => {
+    const container = await openForm()
+    await act(async () =>
+      (field(container, 'Who may use it').closest('.MuiListItemButton-root') as HTMLElement).click()
+    )
+    const options = [...document.querySelectorAll('[role="option"]')].map(o => o.textContent)
+    expect(options[0]).toBe('People who may connect, signed in')
+    expect(options[options.length - 1]).toBe('Anyone with the address')
+    await act(async () => (document.querySelector('[role="option"]') as HTMLElement).click())
+
+    await act(async () => (field(container, 'Kind').closest('.MuiListItemButton-root') as HTMLElement).click())
+    const tcp = [...document.querySelectorAll('[role="option"]')].find(
+      o => o.textContent === 'TCP (a port)'
+    ) as HTMLElement
+    await act(async () => tcp.click())
+    expect(field(container, 'Who may use it').querySelector('.MuiSelect-select')?.textContent).toBe(
+      'Only the first person to use it'
+    )
+    await makeIt(container)
+    expect((create.mock.calls[0] as any[])[1]).toMatchObject({ kind: 'tcp', access: 'latch' })
   })
 })
 
