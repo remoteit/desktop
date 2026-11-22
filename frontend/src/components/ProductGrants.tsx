@@ -71,7 +71,7 @@ export const ProductGrants: React.FC<Props> = ({
       <Typography variant="caption" color="textSecondary" component="p" gutterBottom>
         {t(
           'productGrants.hint',
-          'What its devices are given while they belong to it. A grant needs you to manage what it grants, as adding a device to it does.'
+          'What its devices get while they belong to it. To change a grant, you must be able to manage what it grants.'
         )}
       </Typography>
       {registrationWarning && (

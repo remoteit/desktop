@@ -69,7 +69,7 @@ export const SshHandleSetting: React.FC = () => {
           {problem ??
             t(
               'sshHandle.about',
-              'Names your own account on the devices you are given SSH access to. Accounts already made keep their names; a device admin may name yours on their device.'
+              'Names your own account on the devices you can reach with SSH. Accounts already made keep their names. A device admin may rename yours.'
             )}
         </Typography>
       </Gutters>

@@ -118,7 +118,7 @@ export const NewAppPublish: React.FC<Props> = ({ built, publisher, keys, onPubli
               control={<Checkbox checked={rootOk} onChange={e => setRootOk(e.target.checked)} data-root-ok />}
               label={t(
                 'newApp.rootConfirm',
-                'I am publishing an app that runs as root: full control of every device it is added to. Each account that adds it is asked to consent too.'
+                'I am publishing an app with full control of every device it is added to. Each account that adds it must consent too.'
               )}
             />
           </Notice>

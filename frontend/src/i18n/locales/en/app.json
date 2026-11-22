@@ -18,7 +18,7 @@
   },
   "accountAccessKey": {
     "created": "Created",
-    "description": "Use an access key to sign in to the Remote.It API. You can create, turn off or delete a key. Save your keys in this file in your home folder.",
+    "description": "Use an access key to sign in to the Remote.It API. You can create, turn off or delete a key. Save keys in this file in your home folder.",
     "generateCredentials": "Generate credentials",
     "keyLimit": "There is a limit of 2 access keys. Keep your keys safe.",
     "lastUsed": "Last used",
@@ -1033,7 +1033,7 @@
     "title": "Apps & AI agents"
   },
   "connectedAppsPage": {
-    "description": "Apps and AI agents you have signed in to your Remote.It account. Select one to limit which devices it can reach, or to revoke its access.",
+    "description": "Apps and AI agents signed in to your Remote.It account. Select one to limit the devices it reaches, or to revoke its access.",
     "title": "Connected apps"
   },
   "connectionDefaultsForm": {
@@ -1249,7 +1249,7 @@
     "confirmTitle": "Why do you want to delete your account?",
     "contactMeLabel": "I'm open to having someone contact me about my feedback.",
     "deleteButton": "Delete my account",
-    "description": "If you no longer want/need your Remote.It account, you can request an account deletion. Once your delete request is processed, all your account information is removed permanently.",
+    "description": "You can ask us to delete your Remote.It account. Once we process the request, all your account information is removed for good.",
     "otherReasonLabel": "Other Reason",
     "paidPlanDowngrade": "Please downgrade to Personal to request an account deletion.",
     "paidPlanNotice": "You have a paid subscription plan.",
@@ -2529,7 +2529,7 @@
     "full": "Storage is full. Delete files or old versions of files to upload more.",
     "label": "File storage",
     "near": "Storage is nearly full. Delete files or old versions of files you no longer need.",
-    "overQuota": "This file would take the account past its file storage quota: {{used}} of {{quota}} used, and this file is {{size}}. Delete files or old versions of files you no longer need, then try again.",
+    "overQuota": "This file is {{size}}, and the account has used {{used}} of {{quota}}. Delete files or old versions you no longer need, then try again.",
     "tooLarge": "A file may be at most {{max}}; this one is {{size}}",
     "used": "{{used}} of {{quota}} used"
   },
@@ -2739,7 +2739,7 @@
     "seconds": "seconds",
     "secondsRange": "Whole seconds, 1 to {{max}}",
     "timeout": "Run time limit",
-    "timeoutHint": "How long the script may run on each device before it is stopped, at most {{maxHours}} hours. Default: {{defaultHours}} hour. A device’s administrator may set a shorter limit there."
+    "timeoutHint": "How long the script may run on each device before it stops, at most {{maxHours}} hours. Default: {{defaultHours}} hour. Devices may set less."
   },
   "jobsPage": {
     "runScriptToStart": "Run a script to get started"
@@ -2961,7 +2961,7 @@
     "codesTitle": "Save your recovery codes — each manages one change when your phone or key is gone. They will not be shown again.",
     "emailSent": "We emailed you a code to confirm your first factor. It works for 10 minutes, only in this browser.",
     "failed": "Something went wrong — try again.",
-    "federated": "You sign in with an identity provider (like Google), so there is no Remote.It password to change. You can set one up to use alongside your provider.",
+    "federated": "You sign in with an identity provider, like Google, so you have no Remote.It password to change. You can add one beside your provider.",
     "kind": {
       "passkey": "Passkey",
       "sms": "Text message",
@@ -3301,7 +3301,7 @@
     "reviewFiles": "Files: {{files}}",
     "reviewIntro": "This is the manifest you sign, byte for byte. Devices check its signature, and each file by the SHA-256 it names.",
     "root": "Root: full control of the device",
-    "rootConfirm": "I am publishing an app that runs as root: full control of every device it is added to. Each account that adds it is asked to consent too.",
+    "rootConfirm": "I am publishing an app with full control of every device it is added to. Each account that adds it must consent too.",
     "runsTitle": "How it runs",
     "serviceName": "Service name (empty: the app’s name)",
     "servicePort": "Port people use",
@@ -3851,7 +3851,7 @@
     "add": "Add",
     "addNetwork": "Add a network",
     "both": "Can reach and be reached",
-    "hint": "What its devices are given while they belong to it. A grant needs you to manage what it grants, as adding a device to it does.",
+    "hint": "What its devices get while they belong to it. To change a grant, you must be able to manage what it grants.",
     "initiator": "Can reach",
     "networkNotChanged": "Its networks were not changed.",
     "networks": "Networks",
@@ -3877,7 +3877,7 @@
     "by": "by {{email}}",
     "create": "Create join key",
     "created": "Created",
-    "description": "Put a key on each machine as {{env}}, or in a file named by {{file}}. A key only creates devices of this product. You see it once, when you create it.",
+    "description": "Put a key on each machine as {{env}}, or in a file named by {{file}}. A key only creates devices of this product. You see it once.",
     "expired": "Expired",
     "expires": "Expires",
     "full": "All joins used",
@@ -3889,7 +3889,7 @@
     "none": "No join keys yet.",
     "revoke": "Revoke key",
     "revokeAction": "Revoke key",
-    "revokeBody": "No device can join with this key from now on. Devices that already joined stay. If the key leaked, delete them separately. You cannot undo this.",
+    "revokeBody": "No device can join with this key from now on. Devices that already joined stay. If the key leaked, delete them too. You cannot undo this.",
     "revoked": "Revoked",
     "revokeTitle": "Revoke join key \"{{name}}\"?",
     "title": "Join keys",
@@ -4124,7 +4124,7 @@
     "serviceNotFound": "Service not found"
   },
   "productSettings": {
-    "hint": "A setting left to each device is the device’s to choose. One set here is locked on its devices while the product is synced or enforced.",
+    "hint": "A setting left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.",
     "notChanged": "The setting was not changed.",
     "off": "Off",
     "on": "On",
@@ -4477,7 +4477,7 @@
     "idHelp": "1 to 32 of a–z, 0–9 and -",
     "ids": "Your apps are {{id}}.<app>",
     "keepKey": "Key {{id}} is registered. Keep its file and passphrase. Remote.It cannot recover either.",
-    "keepKeyLost": "Without them you cannot sign releases with this key. If the file may be in someone else’s hands, create a new key and revoke this one.",
+    "keepKeyLost": "Without them you cannot sign releases with this key. If someone else may have the file, create a new key and revoke this one.",
     "keyLine": "Added {{added}} · certified until {{until}}",
     "keys": "Signing keys",
     "name": "Name shown with your apps",
@@ -5143,9 +5143,9 @@
     "cancel": "Cancel",
     "continueEmail": "Continue with email",
     "continueInBrowser": "Continue in your browser",
-    "errorClock": "This computer's date or time is wrong, so the sign-in service can't accept the request. Set the date and time to update automatically, then try again.",
-    "errorClockOffset_one": "This computer's clock is about a minute off, so the sign-in service can't accept the request. Set the date and time to update automatically, then try again.",
-    "errorClockOffset_other": "This computer's clock is about {{count}} minutes off, so the sign-in service can't accept the request. Set the date and time to update automatically, then try again.",
+    "errorClock": "This computer's date or time is wrong, so sign-in can't accept the request. Set the time to update automatically, then try again.",
+    "errorClockOffset_one": "This computer's clock is about a minute off, so sign-in can't accept the request. Set the time to update automatically, then try again.",
+    "errorClockOffset_other": "This computer's clock is about {{count}} minutes off, so sign-in can't accept the request. Set the time to update automatically, then try again.",
     "errorExpired": "That sign-in attempt expired before it finished. Please try again.",
     "errorRateLimited": "Too many sign-in attempts from this network. Please wait a few minutes and try again.",
     "errorRateLimitedWait_one": "Too many sign-in attempts from this network. Please try again in about a minute.",
@@ -5166,7 +5166,7 @@
     "waiting": "Waiting for your browser… finish signing in there."
   },
   "sshHandle": {
-    "about": "Names your own account on the devices you are given SSH access to. Accounts already made keep their names; a device admin may name yours on their device.",
+    "about": "Names your own account on the devices you can reach with SSH. Accounts already made keep their names. A device admin may rename yours.",
     "emailName": "your email's name",
     "failed": "Could not set your handle",
     "hint": "Your own account on a device: the r3 prefix, then {{handle}}",

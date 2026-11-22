@@ -231,7 +231,7 @@ export const PublisherPage: React.FC = () => {
                 )}{' '}
                 {t(
                   'publisherPage.keepKeyLost',
-                  'Without them you cannot sign releases with this key. If the file may be in someone else’s hands, create a new key and revoke this one.'
+                  'Without them you cannot sign releases with this key. If someone else may have the file, create a new key and revoke this one.'
                 )}
               </span>
             </Notice>

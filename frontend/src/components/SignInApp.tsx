@@ -114,13 +114,13 @@ export const SignInError: React.FC<{
           ? t('signIn.errorClockOffset', {
               count: Math.max(1, Math.round(Math.abs(clockOffset) / 60)),
               defaultValue_one:
-                "This computer's clock is about a minute off, so the sign-in service can't accept the request. Set the date and time to update automatically, then try again.",
+                "This computer's clock is about a minute off, so sign-in can't accept the request. Set the time to update automatically, then try again.",
               defaultValue_other:
-                "This computer's clock is about {{count}} minutes off, so the sign-in service can't accept the request. Set the date and time to update automatically, then try again.",
+                "This computer's clock is about {{count}} minutes off, so sign-in can't accept the request. Set the time to update automatically, then try again.",
             })
           : t(
               'signIn.errorClock',
-              "This computer's date or time is wrong, so the sign-in service can't accept the request. Set the date and time to update automatically, then try again."
+              "This computer's date or time is wrong, so sign-in can't accept the request. Set the time to update automatically, then try again."
             )
       case 'expired':
         return t('signIn.errorExpired', 'That sign-in attempt expired before it finished. Please try again.')

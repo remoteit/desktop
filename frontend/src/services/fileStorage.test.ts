@@ -47,7 +47,7 @@ describe('file storage', () => {
   it('refuses a file past the largest, or past what is left, in the API’s words (FILE_TOO_LARGE, STORAGE_QUOTA_EXCEEDED)', () => {
     expect(uploadRefusal(t, storage, 300 * MB)).toBe('A file may be at most 200 MB; this one is 300 MB')
     expect(uploadRefusal(t, { ...storage, used: 2003 * MB, quota: 2048 * MB }, 50 * MB)).toBe(
-      'This file would take the account past its file storage quota: 2003 MB of 2048 MB used, and this file is 50 MB. Delete files or old versions of files you no longer need, then try again.'
+      'This file is 50 MB, and the account has used 2003 MB of 2048 MB. Delete files or old versions you no longer need, then try again.'
     )
     expect(uploadRefusal(t, storage, 100 * MB)).toBeUndefined()
   })

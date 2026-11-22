@@ -83,7 +83,7 @@ function NoPassword(): JSX.Element {
         <Typography variant="body2" color="textSecondary" gutterBottom>
           {t(
             'mfa.federated',
-            'You sign in with an identity provider (like Google), so there is no Remote.It password to change. You can set one up to use alongside your provider.'
+            'You sign in with an identity provider, like Google, so you have no Remote.It password to change. You can add one beside your provider.'
           )}
         </Typography>
         <Button variant="contained" size="small" href={setPasswordUrl()} target="_blank">

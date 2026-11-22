@@ -20,7 +20,7 @@ export const ConnectedAppsPage: React.FC = () => {
             <Typography variant="body2" color="textSecondary">
               {t(
                 'connectedAppsPage.description',
-                'Apps and AI agents you have signed in to your Remote.It account. Select one to limit which devices it can reach, or to revoke its access.'
+                'Apps and AI agents signed in to your Remote.It account. Select one to limit the devices it reaches, or to revoke its access.'
               )}
             </Typography>
           </Gutters>
