@@ -8,9 +8,9 @@ import { List, ListSubheader, ListItem, TextField } from '@mui/material'
 import { Icon } from '../components/Icon'
 
 const CLAIM_CODE_LENGTH = 8
-type Props = { className?: string }
+type Props = { className?: string; compact?: boolean }
 
-export const ClaimDevice: React.FC<Props> = ({ className }) => {
+export const ClaimDevice: React.FC<Props> = ({ className, compact }) => {
   const { t } = useTranslation()
   const buttonRef = useRef<HTMLButtonElement>(null)
   const { devices } = useDispatch<Dispatch>()
@@ -42,8 +42,8 @@ export const ClaimDevice: React.FC<Props> = ({ className }) => {
 
   return (
     <List className={className} dense disablePadding>
-      <ListSubheader disableGutters>{t('claimDevice.title', 'Claim a device')}</ListSubheader>
-      <ListItem sx={{ paddingTop: 3 }} disablePadding>
+      {!compact && <ListSubheader disableGutters>{t('claimDevice.title', 'Claim a device')}</ListSubheader>}
+      <ListItem sx={{ paddingTop: compact ? 0 : 3 }} disablePadding>
         <form
           style={{
             width: 160,
@@ -55,7 +55,7 @@ export const ClaimDevice: React.FC<Props> = ({ className }) => {
           }}
         >
           <TextField
-            label={t('claimDevice.claimCode', 'Claim Code')}
+            label={t('claimDevice.code', 'Claim code')}
             value={code}
             variant="filled"
             disabled={claiming}

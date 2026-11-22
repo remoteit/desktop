@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Typography } from '@mui/material'
-import { CopyIconButton } from '../buttons/CopyIconButton'
-import { IconButton } from '../buttons/IconButton'
+import { Typography } from '@mui/material'
+import useClipboard from '../hooks/useClipboard'
 import { openServiceURL } from '../services/browser'
 import { emit } from '../services/Controller'
 import { LocalSubnetName, subnetWebURL } from '../services/localSubnet'
@@ -14,7 +13,7 @@ import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { graphQLDetectedSchemes, redirectLoops } from '../services/graphQLDetectedScheme'
 import { sshCommand } from '../helpers/sshHelper'
 import { formatPorts, isMultiPort } from '../services/multiPortServices'
-import { Icon } from './Icon'
+import { ConnectRoute, ConnectRouteVariant } from './ConnectRoute'
 
 /* A service reached by its name on this machine: the device daemon here resolves it (services/localSubnet), so there
    is nothing to start — the name and port are the connection. Copy it into ssh, a browser, a database client, or
@@ -37,6 +36,7 @@ type Props = {
   service?: IService
   connection?: IConnection
   byCertificate?: boolean
+  variant?: ConnectRouteVariant
 }
 
 export const LocalSubnetConnect: React.FC<Props> = ({
@@ -46,8 +46,10 @@ export const LocalSubnetConnect: React.FC<Props> = ({
   service,
   connection,
   byCertificate,
+  variant = 'primary',
 }) => {
   const { t } = useTranslation()
+  const clipboard = useClipboard()
   const port = namePort || service?.port
   const ssh = service?.typeID === 28
   // The service's connection with the name in place of the proxy's address: never saved, only launched from.
@@ -103,52 +105,54 @@ export const LocalSubnetConnect: React.FC<Props> = ({
     else emit('launch/app', Object.keys(tokens).length ? command : app.sshConfigString, app.launchType)
   }
 
+  const copyOnly = !launchable || (ssh && !app.canLaunch)
+  const label = copyOnly
+    ? clipboard.copied
+      ? t('connectRoute.copied', 'Copied')
+      : ssh
+      ? t('connectRoute.copySsh', 'Copy ssh command')
+      : t('connectRoute.copyAddress', 'Copy address')
+    : web
+    ? t('connectRoute.openBrowser', 'Open in browser')
+    : ssh
+    ? t('connectRoute.openTerminal', 'Open terminal')
+    : t('connectRoute.openApp', 'Open in {{app}}', { app: app.title })
+
+  const run = () => {
+    if (copyOnly) return clipboard.copy(endpoint)
+    if (!web && app.prompt) return setPrompt(true)
+    if (web && loopPort) return setLoopWarning(true)
+    launch()
+  }
+
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-        paddingX: 2,
-        paddingY: 1.25,
-        borderRadius: 1,
-        bgcolor: 'primaryHighlight.main',
-      }}
+    <ConnectRoute
+      variant={variant}
+      icon={copyOnly ? 'copy' : web ? 'globe' : ssh ? 'terminal' : 'launch'}
+      label={label}
+      how={t('localSubnetConnect.how', 'Through Access on this computer. No connection to start.')}
+      address={endpoint}
+      onClick={run}
+      details={
+        <>
+          {isMultiPort(service) && (
+            <Typography variant="caption" color="textSecondary" component="div">
+              {t('localSubnetConnect.allPorts', 'Ports: {{ports}}', { ports: formatPorts(service?.ports) })}
+            </Typography>
+          )}
+          {local.address && (
+            <Typography variant="caption" color="textSecondary" component="div">
+              {t('localSubnetConnect.resolves', 'Resolves here to {{address}}', { address: local.address })}
+            </Typography>
+          )}
+          {byCertificate && (
+            <Typography variant="caption" color="textSecondary" component="div">
+              {t('localSubnetConnect.certificateHint', 'Works from any computer signed in to the Remote.It app.')}
+            </Typography>
+          )}
+        </>
+      }
     >
-      <Icon name="laptop" color="primary" />
-      <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography variant="caption" color="textSecondary" component="div">
-          {t('localSubnetConnect.title', 'On this machine — no connection to start')}
-        </Typography>
-        <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap title={endpoint}>
-          {endpoint}
-        </Typography>
-        {isMultiPort(service) && (
-          <Typography variant="caption" color="textSecondary" component="div">
-            {t('localSubnetConnect.ports', 'Every port of the service: {{ports}}', {
-              ports: formatPorts(service?.ports),
-            })}
-          </Typography>
-        )}
-        {local.address && (
-          <Typography variant="caption" color="textSecondary" component="div">
-            {t('localSubnetConnect.address', 'resolves here to {{address}}', { address: local.address })}
-          </Typography>
-        )}
-        {byCertificate && (
-          <Typography variant="caption" color="textSecondary" component="div">
-            {t('localSubnetConnect.sshHint', 'Works from a machine signed in on its remote.it device app')}
-          </Typography>
-        )}
-      </Box>
-      {launchable && (
-        <IconButton
-          icon="launch"
-          color="primary"
-          title={web ? t('localSubnetConnect.launch', 'Open in the browser') : app.contextTitle}
-          onClick={() => (!web && app.prompt ? setPrompt(true) : web && loopPort ? setLoopWarning(true) : launch())}
-        />
-      )}
       {loopPort && (
         <Confirm
           open={loopWarning}
@@ -165,7 +169,6 @@ export const LocalSubnetConnect: React.FC<Props> = ({
         </Confirm>
       )}
       {launchable && <PromptModal app={app} open={prompt} onClose={() => setPrompt(false)} onSubmit={launch} />}
-      <CopyIconButton value={endpoint} color="primary" />
-    </Box>
+    </ConnectRoute>
   )
 }

@@ -33,6 +33,10 @@ export function downloadJoinKey(prefix: string, name: string, key: string) {
 
 export type JoinKeyKind = 'device' | 'product'
 
+// What a container needs to be an exit and to use Access (device-package docs/container-image.md, "The subnet"):
+// without them its agent turns both off.
+export const CONTAINER_ACCESS_FLAGS = '--cap-add NET_ADMIN --device /dev/net/tun'
+
 /* The container that runs with a downloaded join key (device-package docs/container-image.md), the key read from its
    file — never on the command line, where it would land in the shell's history and the container's inspect output.
    - A device join key brings its one device back at every start, its identity in memory: no volume.
@@ -46,9 +50,11 @@ export function joinKeyContainerCommand(
   kind: JoinKeyKind,
   file: string,
   ephemeral = false,
-  selfUpdate = false
+  selfUpdate = false,
+  access = true
 ): string {
   const lines = ['docker run -d --name remoteit --restart unless-stopped --network host']
+  if (access) lines.push(CONTAINER_ACCESS_FLAGS)
   if (kind === 'product')
     lines.push(ephemeral ? '-e R3_ALLOW_NO_VOLUME=1' : `-v remoteit-device:${DEVICE_CONTAINER_STATE}`)
   if (selfUpdate && selfUpdatable(kind, ephemeral)) lines.push(`-e ${DEVICE_CONTAINER_SELF_UPDATE_ENV}=1`)

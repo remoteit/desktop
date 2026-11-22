@@ -9,12 +9,10 @@ import { OutOfBand } from './OutOfBand'
 import { Typography, ButtonBase, Box } from '@mui/material'
 import { LicensingNotice } from './LicensingNotice'
 import { DeviceOptionMenu } from './DeviceOptionMenu'
-import { ServiceConnectButton } from '../buttons/ServiceConnectButton'
 import { ShareButton } from '../buttons/ShareButton'
 import { Container } from './Container'
 import { MobileUI } from './MobileUI'
 import { Gutters } from './Gutters'
-import { Diagram } from './Diagram'
 import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
 
@@ -89,7 +87,7 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
             </MobileUI>
           )}
           {service.license === 'UNLICENSED' && <LicensingNotice instance={device} fullWidth />}
-          {displayThisDevice ? (
+          {displayThisDevice && (
             <Gutters top={null} bottom="lg" size="xxs">
               <Notice gutterTop solid severity="info" onClose={() => dispatch.ui.set({ connectThisDevice: true })}>
                 <strong>{t('serviceHeaderMenu.runningOnThisDevice', 'This service is running on this device.')}</strong>
@@ -103,13 +101,6 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
                 </em>
               </Notice>
             </Gutters>
-          ) : (
-            <>
-              <ServiceConnectButton />
-              <Gutters top="xs" bottom="md">
-                <Diagram />
-              </Gutters>
-            </>
           )}
         </>
       }

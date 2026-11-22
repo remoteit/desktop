@@ -4,6 +4,7 @@ import { Box, FormControlLabel, Switch, Typography } from '@mui/material'
 import { JOIN_KEY_FILE_ENV } from '../constants'
 import { JoinKeyKind, joinKeyContainerCommand, joinKeyFileName, selfUpdatable } from '../helpers/joinKeyFile'
 import { CopyCodeBlock } from './CopyCodeBlock'
+import { ContainerAccessOption } from './ContainerAccessOption'
 
 type Props = {
   kind: JoinKeyKind
@@ -22,6 +23,7 @@ export const JoinKeyContainer: React.FC<Props> = ({ kind, prefix, name, ephemera
   // the Home Assistant add-on's auto_update); a device join key's container, or an ephemeral product's, has none.
   const canSelfUpdate = selfUpdatable(kind, ephemeral)
   const [selfUpdate, setSelfUpdate] = useState(true)
+  const [access, setAccess] = useState(true)
   return (
     <Box marginTop={2} data-join-key-container={kind}>
       <Typography variant="subtitle2" color="textSecondary" gutterBottom>
@@ -49,7 +51,10 @@ export const JoinKeyContainer: React.FC<Props> = ({ kind, prefix, name, ephemera
                 'Download the key, then run this beside {{file}}. The container reads it from the file named by {{env}} to register a new device, which keeps its own key in the volume from then on: one volume per device.',
             })}
       </Typography>
-      <CopyCodeBlock value={joinKeyContainerCommand(kind, file, ephemeral, canSelfUpdate && selfUpdate)} />
+      <CopyCodeBlock value={joinKeyContainerCommand(kind, file, ephemeral, canSelfUpdate && selfUpdate, access)} />
+      <Box marginBottom={1}>
+        <ContainerAccessOption checked={access} onChange={setAccess} />
+      </Box>
       <FormControlLabel
         disabled={!canSelfUpdate}
         control={

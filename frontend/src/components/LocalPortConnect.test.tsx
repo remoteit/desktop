@@ -26,7 +26,13 @@ vi.mock('../buttons/CopyIconButton', () => ({
 }))
 vi.mock('./PromptModal', () => ({ PromptModal: () => null }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
-vi.mock('./Link', () => ({ Link: ({ onClick, children }: any) => <a onClick={onClick}>{children}</a> }))
+vi.mock('./Link', () => ({
+  Link: ({ onClick, children, ...props }: any) => (
+    <a onClick={onClick} data-testid={props['data-testid']}>
+      {children}
+    </a>
+  ),
+}))
 
 import { LocalPortConnect } from './LocalPortConnect'
 import type { LocalPortState } from '../hooks/useLocalPort'
@@ -120,7 +126,7 @@ describe('LocalPortConnect', () => {
 
   it('disconnect closes it; a port of the person\'s own opens it there', async () => {
     await render()
-    act(() => container.querySelector<HTMLButtonElement>('[data-testid="power-off"]')!.click())
+    act(() => container.querySelector<HTMLElement>('[data-testid="local-port-disconnect"]')!.click())
     expect(state.close).toHaveBeenCalled()
 
     act(() => [...container.querySelectorAll('a')].find(a => a.textContent === 'Change port')!.click())
@@ -143,7 +149,7 @@ describe('LocalPortConnect', () => {
     act(() => container.querySelector<HTMLButtonElement>('[data-testid="launch"]')!.click())
     expect(openServiceURL).toHaveBeenCalledExactlyOnceWith('https://ui-pi.at.remote.it:33000')
     expect(link('Use https')).toBeUndefined()
-    act(() => link('Does not open? Use http instead')!.click())
+    act(() => link("Doesn't open? Use http")!.click())
     expect(state.open).toHaveBeenCalledWith(undefined, false)
   })
 
@@ -157,13 +163,13 @@ describe('LocalPortConnect', () => {
     state.local = { ...LOCAL }
     await render()
     expect(link('Use https')).toBeUndefined()
-    expect(link('Does not open? Use http instead')).toBeUndefined()
+    expect(link("Doesn't open? Use http")).toBeUndefined()
   })
 
   it('https, then localhost: the certificate names the name alone, so plain from there', async () => {
     state.local = { ...LOCAL, https: true, httpsAvailable: true }
     await render()
-    act(() => link('Name does not open? Use localhost')!.click())
+    act(() => link("Name doesn't open? Use localhost")!.click())
     expect(state.open).toHaveBeenCalledWith(undefined, false)
   })
 
@@ -231,9 +237,7 @@ describe('LocalPortConnect', () => {
     state.local = { ...LOCAL, scope: 'ACCOUNT' }
     state.listed = null
     await render()
-    expect(whose()).toBe(
-      'Does not answer this account on the computer: it answers only the accounts its person is signed in on'
-    )
+    expect(whose()).toBe("Your account on this computer can't use it. Sign in to Remote.It there first.")
     state.local = { ...LOCAL, state: 'pending', scope: 'ACCOUNT' }
     await render()
     expect(whose()).toBeUndefined()

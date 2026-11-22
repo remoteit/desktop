@@ -18,7 +18,6 @@ import { AccordionMenuItem } from './AccordionMenuItem'
 import { SelectSetting } from './SelectSetting'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { CopyIconButton } from '../buttons/CopyIconButton'
-import { IconButton } from '../buttons/IconButton'
 import { ProxyAccessList } from './ProxyAccessList'
 import { EndpointLocalAddresses } from './EndpointLocalAddresses'
 import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
@@ -28,6 +27,11 @@ import { Icon } from './Icon'
 const KIND_ICON: Record<EndpointKind, string> = { https: 'globe', tcp: 'arrow-right-arrow-left', udp: 'wave-pulse' }
 
 type Props = { device: IDevice; service: IService }
+
+const changed = new Set<(serviceId: string) => void>()
+
+/** A public address made elsewhere on the page (the Connect button's): the section lists it at once. */
+export const refreshEndpoints = (serviceId: string) => changed.forEach(listener => listener(serviceId))
 
 /* A service's endpoints on proxies (presence-server docs/proxy-plan.md): its addresses through remote.it's proxies or
    one of yours — a name for https, a port for tcp and udp, at graphql's address for each, under its proxy's own name
@@ -40,6 +44,7 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
   const [endpoints, setEndpoints] = useState<Endpoint[] | 'ERROR' | typeof UNSUPPORTED>()
   const [proxies, setProxies] = useState<ProxyChoice[]>([])
   const [adding, setAdding] = useState(false)
+  const [open, setOpen] = useState(true)
   const [busy, setBusy] = useState(false)
   const manage = device.permissions.includes('MANAGE')
   // Public-proxy transfer is charged to the account whose service it is, and only on remote.it's proxies.
@@ -57,6 +62,14 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
     setEndpoints(undefined)
     load()
   }, [load])
+
+  useEffect(() => {
+    const listener = (id: string) => id === service.id && load()
+    changed.add(listener)
+    return () => {
+      changed.delete(listener)
+    }
+  }, [load, service.id])
 
   useEffect(() => {
     if (adding && !proxies.length)
@@ -82,7 +95,7 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
       case 'ip-locked':
         return t('endpoints.ipLocked', 'Only {{ip}}', { ip: endpoint.lockedIp })
       case 'latch':
-        return t('endpoints.latch', 'Only its first user')
+        return t('endpoints.firstUserOnly', 'Only the first person to use it')
       case 'cidr':
         return t('endpoints.cidr', 'Only {{allow}}', { allow: endpoint.allow?.join(', ') })
     }
@@ -91,28 +104,34 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
   return (
     <AccordionMenuItem
       gutters
-      subtitle={t('endpoints.title', 'Proxy endpoints')}
-      defaultExpanded
+      subtitle={t('endpoints.publicAddress', 'Public address')}
+      expanded={open}
+      onClick={setOpen}
       elevation={0}
       action={
-        <IconButton
-          icon={adding ? 'times' : 'plus'}
-          title={adding ? t('endpoints.cancel', 'Cancel') : t('endpoints.add', 'Add an endpoint')}
+        <Button
+          size="small"
+          variant="text"
+          color="primary"
+          startIcon={<Icon name={adding ? 'times' : 'plus'} size="sm" />}
           onClick={event => {
             event.stopPropagation()
+            setOpen(true)
             setAdding(!adding)
           }}
-        />
+        >
+          {adding ? t('endpoints.cancel', 'Cancel') : t('endpoints.addPublicAddress', 'Add public address')}
+        </Button>
       }
     >
       {endpoints === 'ERROR' && (
         <Typography variant="body2" color="error" paddingX={2}>
-          {t('endpoints.error', 'Could not read the endpoints.')}
+          {t('endpoints.readError', "Couldn't load public addresses. Reload the page to try again.")}
         </Typography>
       )}
       {Array.isArray(endpoints) && !endpoints.length && !adding && (
         <Typography variant="body2" color="textSecondary" paddingX={2} paddingBottom={1}>
-          {t('endpoints.none', 'None yet: an address for this service through a proxy, for anyone you choose.')}
+          {t('endpoints.noneYet', 'No public address yet. Add one to share this service with a web link.')}
         </Typography>
       )}
       {Array.isArray(endpoints) && endpoints.length > 0 && (
@@ -124,17 +143,24 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
               sx={{ paddingRight: 14 }}
               secondaryAction={
                 <Box display="flex">
-                  <CopyIconButton value={endpointAddress(endpoint)} title={t('endpoints.copy', 'Copy the address')} />
+                  <CopyIconButton
+                    value={endpointAddress(endpoint)}
+                    title={t('endpoints.copyAddress', 'Copy address')}
+                  />
                   <ConfirmIconButton
                     icon="trash"
                     title={t('endpoints.remove', 'Remove')}
                     disabled={busy}
                     confirm
                     confirmProps={{
-                      title: t('endpoints.removeConfirm', 'Remove this endpoint?'),
-                      children: t('endpoints.removeConfirmBody', '{{address}} stops working for everyone using it.', {
-                        address: endpointAddress(endpoint),
-                      }),
+                      title: t('endpoints.removeAddress', 'Remove this public address?'),
+                      children: t(
+                        'endpoints.removeAddressBody',
+                        '{{address}} stops working for everyone who uses it.',
+                        {
+                          address: endpointAddress(endpoint),
+                        }
+                      ),
                     }}
                     onClick={() => remove(endpoint.id)}
                   />
@@ -156,8 +182,7 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
                       t('endpoints.permanent', 'permanent')
                     ) : endpoint.expires ? (
                       <>
-                        {t('endpoints.idleUntil', 'unless used, released')}{' '}
-                        <Timestamp date={new Date(endpoint.expires)} />
+                        {t('endpoints.endsIfUnused', 'ends if unused')} <Timestamp date={new Date(endpoint.expires)} />
                       </>
                     ) : (
                       t('endpoints.temporary', 'temporary')
@@ -222,22 +247,22 @@ type FormProps = {
 const EndpointForm: React.FC<FormProps> = ({ proxies, manage, busy, onCreate }) => {
   const { t } = useTranslation()
   const [kind, setKind] = useState<EndpointKind>('https')
-  const [access, setAccess] = useState<EndpointAccess>(manage ? 'public' : 'signed-in')
+  const [access, setAccess] = useState<EndpointAccess>('signed-in')
   const [lifetime, setLifetime] = useState<EndpointLifetime>('temporary')
   const [proxyId, setProxyId] = useState('')
   const [lockedIp, setLockedIp] = useState('')
   const [allow, setAllow] = useState('')
 
   // Who may use it: public only for whoever manages the service; signed-in only on https, where there is a page to
-  // sign in on.
+  // sign in on. Open to anyone is listed last and never chosen for the person.
   const accesses: { key: EndpointAccess; name: string }[] = [
-    ...(manage ? [{ key: 'public' as const, name: t('endpoints.public', 'Anyone with the address') }] : []),
     ...(kind === 'https'
       ? [{ key: 'signed-in' as const, name: t('endpoints.signedIn', 'People who may connect, signed in') }]
       : []),
-    { key: 'latch', name: t('endpoints.latchChoice', 'Its first user only') },
-    { key: 'ip-locked', name: t('endpoints.ipLockedChoice', 'One address') },
-    { key: 'cidr', name: t('endpoints.cidrChoice', 'Addresses I list') },
+    { key: 'latch', name: t('endpoints.firstUserChoice', 'Only the first person to use it') },
+    { key: 'ip-locked', name: t('endpoints.oneIpChoice', 'One IP address') },
+    { key: 'cidr', name: t('endpoints.listedIpsChoice', 'IP addresses I list') },
+    ...(manage ? [{ key: 'public' as const, name: t('endpoints.public', 'Anyone with the address') }] : []),
   ]
   const chosenAccess = accesses.some(a => a.key === access) ? access : accesses[0].key
   const usable = proxies.filter(p => p.publicEndpoints || chosenAccess !== 'public')
@@ -247,10 +272,10 @@ const EndpointForm: React.FC<FormProps> = ({ proxies, manage, busy, onCreate }) 
       <List disablePadding>
         <SelectSetting
           icon="server"
-          label={t('endpoints.proxy', 'Proxy')}
+          label={t('endpoints.proxyServer', 'Proxy server')}
           value={proxyId}
           values={[
-            { key: '', name: t('endpoints.nearest', "remote.it's, nearest the device") },
+            { key: '', name: t('endpoints.nearestRemoteit', "Remote.It's, nearest the device") },
             ...usable.map(p => ({
               key: p.id,
               name: p.remoteit
@@ -265,9 +290,9 @@ const EndpointForm: React.FC<FormProps> = ({ proxies, manage, busy, onCreate }) 
           label={t('endpoints.kind', 'Kind')}
           value={kind}
           values={[
-            { key: 'https', name: t('endpoints.https', 'HTTPS — a name') },
-            { key: 'tcp', name: t('endpoints.tcp', 'TCP — a port') },
-            { key: 'udp', name: t('endpoints.udp', 'UDP — a port') },
+            { key: 'https', name: t('endpoints.httpsAddress', 'HTTPS (a web address)') },
+            { key: 'tcp', name: t('endpoints.tcpPort', 'TCP (a port)') },
+            { key: 'udp', name: t('endpoints.udpPort', 'UDP (a port)') },
           ]}
           onChange={value => setKind(value as EndpointKind)}
         />
@@ -283,10 +308,10 @@ const EndpointForm: React.FC<FormProps> = ({ proxies, manage, busy, onCreate }) 
           label={t('endpoints.lifetime', 'Lifetime')}
           value={lifetime}
           values={[
-            { key: 'temporary', name: t('endpoints.temporaryChoice', 'Temporary — released after 15 idle minutes') },
-            { key: 'permanent', name: t('endpoints.permanentChoice', 'Permanent — kept until removed') },
+            { key: 'temporary', name: t('endpoints.temporaryIdle', 'Temporary (ends after 15 idle minutes)') },
+            { key: 'permanent', name: t('endpoints.permanentKept', 'Permanent (kept until you remove it)') },
           ]}
-          helpMessage={t('endpoints.lifetimeHelp', 'Chosen now: an endpoint is not made permanent later.')}
+          helpMessage={t('endpoints.lifetimeFixed', "A temporary address can't be made permanent later.")}
           onChange={value => setLifetime(value as EndpointLifetime)}
         />
       </List>
@@ -294,7 +319,7 @@ const EndpointForm: React.FC<FormProps> = ({ proxies, manage, busy, onCreate }) 
         <TextField
           fullWidth
           size="small"
-          label={t('endpoints.lockedIp', 'The address allowed')}
+          label={t('endpoints.allowedIp', 'The IP address allowed')}
           value={lockedIp}
           onChange={event => setLockedIp(event.target.value.trim())}
           sx={{ marginTop: 1 }}
@@ -304,7 +329,7 @@ const EndpointForm: React.FC<FormProps> = ({ proxies, manage, busy, onCreate }) 
         <TextField
           fullWidth
           size="small"
-          label={t('endpoints.allow', 'Addresses allowed, as 203.0.113.0/24, comma separated')}
+          label={t('endpoints.allowedIps', 'IP addresses allowed, like 203.0.113.0/24, separated by commas')}
           value={allow}
           onChange={event => setAllow(event.target.value)}
           sx={{ marginTop: 1 }}
@@ -332,7 +357,7 @@ const EndpointForm: React.FC<FormProps> = ({ proxies, manage, busy, onCreate }) 
           })
         }
       >
-        {t('endpoints.create', 'Make the endpoint')}
+        {t('endpoints.createPublicAddress', 'Create public address')}
       </Button>
     </Box>
   )
