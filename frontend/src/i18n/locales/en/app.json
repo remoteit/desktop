@@ -2804,6 +2804,13 @@
     "totalDevices": "Total Devices",
     "totalNetworks": "Total Networks"
   },
+  "navGroup": {
+    "devices": "Devices",
+    "fleet": "Fleet",
+    "network": "Network",
+    "team": "Team",
+    "thisDevice": "This device"
+  },
   "network": {
     "active": "Active",
     "cloudProxy": "Cloud Proxy",
@@ -4809,6 +4816,10 @@
     "localPortsOnPhone": "Local ports on iPhone",
     "localPortsOnPhoneHint": "Offer \"Connect on a local port\" on an iPhone whose app does not say it works there yet: for testing whether Safari and other apps reach it.",
     "mintError": "This target was refused at token mint: {{error}}",
+    "navVariant": "Sidebar layout",
+    "navVariantClassic": "Classic",
+    "navVariantGrouped": "Grouped",
+    "navVariantHint": "Classic lists every page. Grouped puts pages in groups you can open and close.",
     "overrideDefaultAPIs": "Override default APIs",
     "overrideLicensesAndLimits": "Override licenses and limits",
     "proxyFleet": "Proxy fleet",

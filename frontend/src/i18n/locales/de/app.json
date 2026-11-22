@@ -2804,6 +2804,13 @@
     "totalDevices": "Geräte insgesamt",
     "totalNetworks": "Netzwerke insgesamt"
   },
+  "navGroup": {
+    "devices": "",
+    "fleet": "",
+    "network": "",
+    "team": "",
+    "thisDevice": ""
+  },
   "network": {
     "active": "Aktiv",
     "cloudProxy": "Cloud-Proxy",
@@ -4809,6 +4816,10 @@
     "localPortsOnPhone": "",
     "localPortsOnPhoneHint": "",
     "mintError": "Dieses Ziel wurde beim Token-Mint abgelehnt: {{error}}",
+    "navVariant": "",
+    "navVariantClassic": "",
+    "navVariantGrouped": "",
+    "navVariantHint": "",
     "overrideDefaultAPIs": "Standard-APIs überschreiben",
     "overrideLicensesAndLimits": "Lizenzen und Limits überschreiben",
     "proxyFleet": "",

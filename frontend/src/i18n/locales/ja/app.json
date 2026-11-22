@@ -2752,6 +2752,13 @@
     "totalDevices": "合計デバイス数",
     "totalNetworks": "合計ネットワーク数"
   },
+  "navGroup": {
+    "devices": "",
+    "fleet": "",
+    "network": "",
+    "team": "",
+    "thisDevice": ""
+  },
   "network": {
     "active": "アクティブ",
     "cloudProxy": "クラウドプロキシ",
@@ -4700,6 +4707,10 @@
     "localPortsOnPhone": "",
     "localPortsOnPhoneHint": "",
     "mintError": "このターゲットはトークン発行時に拒否されました: {{error}}",
+    "navVariant": "",
+    "navVariantClassic": "",
+    "navVariantGrouped": "",
+    "navVariantHint": "",
     "overrideDefaultAPIs": "デフォルトのAPIをオーバーライド",
     "overrideLicensesAndLimits": "ライセンスと制限をオーバーライド",
     "proxyFleet": "",
