@@ -175,7 +175,13 @@ export function endpointsLine(t: TFunction, endpoints: number | null | undefined
 // users, whether an exit is left with no device available, and a refusal.
 export function effectLines(t: TFunction, effect: DeviceActionEffect): string[] {
   const kind = effect.kind === 'proxy' ? t('runs.proxy', 'Proxy') : t('runs.exit', 'Exit')
-  const from = runStateLabel(t, { state: effect.state, joining: false }).toLowerCase()
+  const carrying = (state: string) =>
+    state === 'ACTIVE'
+      ? t('carry.on', 'On')
+      : state === 'DRAINING'
+      ? t('carry.pausing', 'Pausing')
+      : t('carry.paused', 'Paused')
+  const from = carrying(effect.state).toLowerCase()
   const after = effect.after.toUpperCase()
   const to =
     after === 'DISABLED'
@@ -184,7 +190,7 @@ export function effectLines(t: TFunction, effect: DeviceActionEffect): string[] 
       ? t('runEffect.gone', 'taken out of it')
       : after === effect.state
       ? t('runEffect.unchanged', 'unchanged')
-      : runStateLabel(t, { state: after as DeviceActionEffect['state'], joining: false }).toLowerCase()
+      : carrying(after).toLowerCase()
   const lines = [t('runEffect.state', '{{kind}} {{name}}: {{from}} → {{to}}', { kind, name: effect.name, from, to })]
   if (effect.sessions === null) lines.push(t('runEffect.sessionsUnknown', 'Its agent doesn’t say what is open through it.'))
   else if (effect.sessions && effect.ends)
@@ -209,13 +215,13 @@ export function effectLines(t: TFunction, effect: DeviceActionEffect): string[] 
       effect.inService
         ? t('runEffect.endpointsServed', {
             count: effect.endpoints,
-            defaultValue_one: 'Its public address stays on the proxy server, served by its other devices in service.',
-            defaultValue_other: 'Its {{count}} public addresses stay on the proxy server, served by its other devices in service.',
+            defaultValue_one: 'Its public address stays on the proxy server, served by its other devices.',
+            defaultValue_other: 'Its {{count}} public addresses stay on the proxy server, served by its other devices.',
           })
         : t('runEffect.endpointsUnserved', {
             count: effect.endpoints,
-            defaultValue_one: 'Its public address stays on the proxy server, served by no device until one is in service.',
-            defaultValue_other: 'Its {{count}} public addresses stay on the proxy server, served by no device until one is in service.',
+            defaultValue_one: 'Its public address stays on the proxy server. No device serves it until another one is on.',
+            defaultValue_other: 'Its {{count}} public addresses stay on the proxy server. No device serves them until another one is on.',
           })
     )
   if (effect.kind === 'exit' && effect.moved)

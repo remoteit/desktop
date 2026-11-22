@@ -1,7 +1,8 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
-import { Box, Tab, Tabs, Typography } from '@mui/material'
+import { Box, Tab, Typography } from '@mui/material'
+import { PageTabs } from './PageTabs'
 import { NAV_PAGES, subNavShown } from '../helpers/navSections'
 import { useNavSections } from '../hooks/useNavSections'
 import { useCounts } from '../hooks/useCounts'
@@ -15,33 +16,18 @@ export const SectionNav: React.FC<{ panels?: number }> = ({ panels = 1 }) => {
   const nav = useNavSections()
   const { page, section } = nav
 
-  if (nav.remoteUI || !page || !section || section.pages.length < 2 || !subNavShown(page, pathname, panels))
-    return null
+  if (nav.remoteUI || !page || !section || section.pages.length < 2 || !subNavShown(page, pathname, panels)) return null
 
   return (
-    <Box component="nav" aria-label={section.label(t)} sx={{ paddingX: 4.5, paddingTop: 0.5, marginBottom: 1 }}>
+    <Box
+      component="nav"
+      aria-label={section.label(t)}
+      sx={{ paddingX: 4.5, paddingTop: 0.5, marginBottom: 1, flexShrink: 0 }}
+    >
       <Typography variant="h2" component="h1" sx={{ marginBottom: 0.75 }}>
         {section.label(t)}
       </Typography>
-      <Tabs
-        value={page}
-        variant="scrollable"
-        scrollButtons={false}
-        sx={theme => ({
-          borderBottom: `1px solid ${theme.palette.grayLighter.main}`,
-          '&::after': { display: 'none' },
-          '& .MuiTabs-indicator': { height: 2, backgroundColor: theme.palette.primary.main },
-          '& .MuiTab-root': {
-            fontSize: theme.typography.body2.fontSize,
-            color: theme.palette.grayDarker.main,
-            padding: '6px 0 8px',
-            marginRight: 3,
-            borderRadius: 0,
-            '&:hover': { backgroundColor: 'transparent', color: theme.palette.black.main },
-            '&.Mui-selected': { backgroundColor: 'transparent', color: theme.palette.black.main },
-          },
-        })}
-      >
+      <PageTabs value={page}>
         {section.pages.map(id => (
           <Tab
             key={id}
@@ -61,7 +47,7 @@ export const SectionNav: React.FC<{ panels?: number }> = ({ panels = 1 }) => {
             onClick={() => nav.open(id)}
           />
         ))}
-      </Tabs>
+      </PageTabs>
     </Box>
   )
 }

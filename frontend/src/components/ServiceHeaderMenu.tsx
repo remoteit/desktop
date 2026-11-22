@@ -47,36 +47,33 @@ export const ServiceHeaderMenu: React.FC<Props> = ({ footer, backgroundColor, ch
       header={
         <>
           <OutOfBand />
-          <Box display="flex" alignItems="flex-start" paddingRight={2}>
-            <Box flexGrow={1}>
-              {layout.mobile && (
-                <Box marginLeft={5} marginTop={2}>
-                  <ButtonBase onClick={() => history.push(`/devices/${device.id}`)}>
-                    <Typography variant="caption" onClick={() => history.push(`/devices/${device.id}`)}>
-                      <Icon size="sm" platform={device?.targetPlatform} platformIcon inlineLeft />
-                      {deviceName}
-                    </Typography>
-                  </ButtonBase>
-                </Box>
-              )}
-              <Typography
-                variant="h1"
-                gutterBottom={!layout.mobile && !!service?.attributes.description}
-                paddingRight="0 !important"
-              >
-                <Title>{service.name || t('serviceHeaderMenu.unknown', 'unknown')}</Title>
-              </Typography>
+          {layout.mobile && (
+            <Box marginLeft={4.5} marginTop={2}>
+              <ButtonBase onClick={() => history.push(`/devices/${device.id}`)}>
+                <Typography variant="caption">
+                  <Icon size="sm" platform={device?.targetPlatform} platformIcon inlineLeft />
+                  {deviceName}
+                </Typography>
+              </ButtonBase>
             </Box>
-            <MobileUI hide>
-              <ShareButton
-                to={`/devices/${device.id}/${service.id}/share`}
-                hide={!device.permissions.includes('MANAGE')}
-                title={t('serviceHeaderMenu.shareAccess', 'Share access')}
-                size="md"
-              />
-            </MobileUI>
-            <DeviceOptionMenu device={device} service={service} />
-          </Box>
+          )}
+          <Typography
+            variant="h1"
+            gutterBottom={!layout.mobile && !!service?.attributes.description}
+            sx={{ alignItems: 'center', width: '100%', gap: 1 }}
+          >
+            <Title>{service.name || t('serviceHeaderMenu.unknown', 'unknown')}</Title>
+            <Box display="flex" alignItems="center">
+              <MobileUI hide>
+                <ShareButton
+                  to={`/devices/${device.id}/${service.id}/share`}
+                  hide={!device.permissions.includes('MANAGE')}
+                  title={t('serviceHeaderMenu.shareAccess', 'Share access')}
+                />
+              </MobileUI>
+              <DeviceOptionMenu device={device} service={service} />
+            </Box>
+          </Typography>
           {service.attributes.description && (
             <MobileUI hide>
               <Gutters top="xs" bottom="xs">

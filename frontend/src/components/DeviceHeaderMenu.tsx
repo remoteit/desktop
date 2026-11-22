@@ -1,7 +1,7 @@
 import React, { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useLocation } from 'react-router-dom'
-import { Box, Tab, Tabs, Typography } from '@mui/material'
+import { Box, Tab, Typography } from '@mui/material'
 import { DeviceContext } from '../services/Context'
 import { useDeviceCarries } from '../hooks/useDeviceCarries'
 import { DeviceTab, deviceTabs, tabLabel } from '../helpers/deviceTabs'
@@ -11,6 +11,7 @@ import { Container } from './Container'
 import { MobileUI } from './MobileUI'
 import { Gutters } from './Gutters'
 import { Title } from './Title'
+import { PageTabs } from './PageTabs'
 
 export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNode }> = ({ header, children }) => {
   const { t } = useTranslation()
@@ -27,6 +28,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
 
   return (
     <Container
+      integrated
       gutterBottom
       bodyProps={{ verticalOverflow: true }}
       header={
@@ -50,14 +52,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
               </Typography>
             </Gutters>
           )}
-          <Tabs
-            value={value}
-            variant="scrollable"
-            scrollButtons={false}
-            TabIndicatorProps={{ sx: { display: 'none' } }}
-            sx={{ marginX: 3, marginTop: 1, marginBottom: 1 }}
-            data-device-tabs
-          >
+          <PageTabs value={value} sx={{ marginX: 4.5, marginTop: 1 }} data-device-tabs>
             {tabs.map(tab => (
               <Tab
                 key={tab}
@@ -67,7 +62,7 @@ export const DeviceHeaderMenu: React.FC<{ header?: any; children?: React.ReactNo
                 onClick={() => history.push(`/devices/${device.id}/${tab}`)}
               />
             ))}
-          </Tabs>
+          </PageTabs>
           {header}
         </>
       }

@@ -257,7 +257,7 @@ export const attributes: Attribute[] = [
   // names a field that query already has. Behind the device-sessions flag (selectAttributeFeatures).
   new DeviceAttribute({
     id: 'subnetName',
-    label: 'DNS Name',
+    label: 'Address',
     query: 'deviceName',
     defaultWidth: 240,
     details: false,
@@ -266,7 +266,7 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceSubnetName',
-    label: 'DNS Name',
+    label: 'Address',
     column: false,
     feature: 'deviceSessions',
     value: ({ service }) => <SubnetName deviceId={service?.deviceID} serviceId={service?.id} copy />,
@@ -282,7 +282,7 @@ export const attributes: Attribute[] = [
   }),
   new DeviceAttribute({
     id: 'subnetNameDetail',
-    label: 'DNS Name',
+    label: 'Address',
     query: 'deviceName',
     column: false,
     feature: 'deviceSessions',
@@ -471,7 +471,7 @@ export const attributes: Attribute[] = [
   }),
   new DeviceAttribute({
     id: 'version',
-    label: 'Daemon version',
+    label: 'Agent version',
     defaultWidth: 80,
     value: ({ device }) => (device?.virtual ? '–' : device?.version),
   }),

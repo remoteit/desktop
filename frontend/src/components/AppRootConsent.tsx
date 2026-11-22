@@ -48,7 +48,7 @@ export const RootConsent: React.FC<{
         root
           ? product
             ? t('productApps.rootTitle', 'Run {{app}} as root on this product’s devices?', words)
-            : t('deviceApps.rootTitle', 'Run {{app}} as root?', words)
+            : t('deviceApps.rootTitle', 'Give {{app}} full control?', words)
           : product
           ? t('productApps.asksTitle', 'Allow {{app}} what it asks on this product’s devices?', words)
           : t('deviceApps.asksTitle', 'Allow {{app}} what it asks?', words)
@@ -73,7 +73,7 @@ export const RootConsent: React.FC<{
                 )
               : t(
                   'deviceApps.rootUpdate',
-                  '{{app}} {{version}} needs to run as root. This device stays on the version it runs until you consent.',
+                  '{{app}} {{version}} needs full control. This device stays on the version it runs until you agree.',
                   words
                 )
             : product
@@ -99,7 +99,7 @@ export const RootConsent: React.FC<{
               )
             : t(
                 'deviceApps.rootBody',
-                '{{app}}, published by {{publisher}}, runs as root: it gets full control of this device — every file, account and program on it.',
+                '{{app}}, published by {{publisher}}, gets full control of this device. That is every file, account and program on it.',
                 words
               )
           : product

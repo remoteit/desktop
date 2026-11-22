@@ -46,6 +46,7 @@ vi.mock('../pages/SignInPage', () => ({ SignInPage: mark('signIn') }))
 vi.mock('./ThisDeviceApp', () => ({ ThisDeviceApp: mark('thisDevice') }))
 vi.mock('./BottomMenu', () => ({ BottomMenu: mark('bottomMenu') }))
 vi.mock('./Sidebar', () => ({ Sidebar: mark('sidebar') }))
+vi.mock('../hooks/useNavSections', () => ({ useRememberSectionPage: () => {} }))
 vi.mock('../routers/Router', () => ({ Router: mark('router') }))
 vi.mock('../pages/Page', () => ({
   Page: ({ children, offlineDialog = true }: any) => <div data-offline-dialog={String(offlineDialog)}>{children}</div>,

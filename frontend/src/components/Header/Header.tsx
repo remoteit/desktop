@@ -73,6 +73,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
           alignItems: 'center',
           height: 45,
           maxHeight: 45,
+          flexShrink: 0,
           width: '100%',
           zIndex: 14,
           paddingX: 2.25,
@@ -120,7 +121,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             </Typography>
           </Route>
         )}
-        <Route path={['/devices', '/connections', '/networks']}>
+        <Route path="/devices">
           {!showSearch && !searched && (
             <IconButton
               size="md"

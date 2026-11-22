@@ -245,6 +245,12 @@ export const DevicePage: React.FC = () => {
             )
           })}
         </GuideBubble>
+        {!services.length && !(editable && closed) && !setupAddingService && (
+          <ListItemText
+            sx={{ paddingLeft: 4.5, paddingY: 1 }}
+            secondary={t('deviceServices.none', 'No services yet.')}
+          />
+        )}
       </List>
       {!device.virtual && <RestoreModal device={device} />}
     </Container>

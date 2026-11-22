@@ -156,7 +156,7 @@ export const AddPage: React.FC = () => {
         width: '100%',
         alignItems: 'center',
         gap: 2,
-        paddingX: 2,
+        paddingX: { xs: 2, sm: 3 },
         paddingY: 1.25,
         borderRadius: 1,
         textAlign: 'left',
@@ -258,6 +258,7 @@ export const AddPage: React.FC = () => {
             onClick={() => setMore(!more)}
             aria-expanded={more}
             data-testid="more-ways"
+            sx={{ marginLeft: -2.25 }}
             endIcon={<Icon name={more ? 'chevron-up' : 'chevron-down'} size="sm" />}
           >
             {t('addPage.moreWays', 'More ways to add a device')}
@@ -268,7 +269,7 @@ export const AddPage: React.FC = () => {
               <AndroidSetup />
               <DeviceSetupItem />
               {otherPlatforms.length > 0 && (
-                <Box sx={{ paddingX: 2, paddingY: 1 }}>
+                <Box sx={{ paddingX: { xs: 2, sm: 3 }, paddingY: 1 }}>
                   <Typography variant="subtitle2" component="h3" sx={{ marginBottom: 1 }}>
                     {t('addPage.otherPlatforms', 'Other computers and phones')}
                   </Typography>
@@ -345,8 +346,9 @@ export const AddPage: React.FC = () => {
                   display: 'flex',
                   flexDirection: { xs: 'column', sm: 'row' },
                   alignItems: { sm: 'center' },
-                  gap: { xs: 0, sm: 2 },
-                  paddingX: 2,
+                  gap: { xs: 1, sm: 2 },
+                  paddingX: { xs: 2, sm: 3 },
+                  paddingY: 1.25,
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>

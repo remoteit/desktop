@@ -280,7 +280,7 @@ describe('the switch enables and disables', () => {
     const page = await render(<DeviceApps device={device()} />)
     await click(switchOf(appRow(page, 'remoteit.console')))
     expect(turn).not.toHaveBeenCalled()
-    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Console as root?')
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Give Console full control?')
     expect(page.querySelector('[data-root-consent]')?.textContent).toContain('published by remote.it')
     await click(page.querySelector('[data-confirm-ok]'))
     expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.console' }), true, true)
@@ -315,7 +315,7 @@ describe('the switch enables and disables', () => {
     page = await render(<DeviceApps device={device()} />)
     await click(switchOf(appRow(page, 'remoteit.console')))
     expect(turn).not.toHaveBeenCalled()
-    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run Console as root?')
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Give Console full control?')
   })
 
   it('a restricted app at once; any app disabled at once', async () => {
@@ -416,7 +416,7 @@ describe('build step 9: ScreenView installed the old way', () => {
     expect(offer.textContent).toContain('ScreenView was installed the old way.')
     await click(offer.querySelector('[data-screenview-switch-action]'))
     expect(turn).not.toHaveBeenCalled()
-    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Run ScreenView as root?')
+    expect(page.querySelector('[data-confirm-title]')?.textContent).toBe('Give ScreenView full control?')
     await click(page.querySelector('[data-confirm-ok]'))
     expect(turn).toHaveBeenCalledWith(expect.objectContaining({ id: 'remoteit.screenview' }), true, true)
   })

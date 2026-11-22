@@ -138,6 +138,18 @@ describe('navSections', () => {
     expect(sectionLanding(navSections({ ...none, agent: true }).find(s => s.id === 'ai')!, {})).toBe('agent')
   })
 
+  it('returns a section to the sub-link last used there, when it is still shown', () => {
+    const sections = navSections(shapes['a fleet operator'])
+    const section = (id: string) => sections.find(s => s.id === id)!
+    expect(sectionLanding(section('devices'), {}, 'connections')).toBe('connections')
+    expect(sectionLanding(section('fleet'), { products: 2 }, 'apps')).toBe('apps')
+    expect(sectionLanding(section('devices'), {}, 'exits')).toBe('devices')
+    expect(sectionLanding(section('network'), {}, 'partnerStats')).toBe('networks')
+    expect(
+      sectionLanding(navSections({ ...none, connectAi: true, agent: true }).find(s => s.id === 'ai')!, {}, 'agent')
+    ).toBe('connectAi')
+  })
+
   it('finds no section for pages outside them', () => {
     const sections = navSections(shapes['a fleet operator'])
     for (const path of ['/settings', '/account', '/add', '/announcements', '/feedback', '/admin/users'])

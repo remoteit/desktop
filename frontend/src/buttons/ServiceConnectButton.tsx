@@ -214,7 +214,12 @@ export const ServiceConnectButton: React.FC = () => {
           </Box>
         </GuideBubble>
         {offline && (
-          <Typography variant="caption" color="textSecondary" component="p" sx={{ paddingX: 2, marginTop: 1 }}>
+          <Typography
+            variant="caption"
+            color="textSecondary"
+            component="p"
+            sx={{ paddingX: { xs: 2, sm: 2.5 }, marginTop: 1 }}
+          >
             {t(
               'serviceConnectButton.offline',
               '{{device}} is offline. Connecting works again once it is back online.',
@@ -227,7 +232,7 @@ export const ServiceConnectButton: React.FC = () => {
         <ConnectionErrorMessage connection={connection} visible={showError} />
         {!checking && (routes.others.length > 0 || appOption) && (
           <Box sx={{ marginTop: 2.5 }} data-testid="connect-more">
-            <Typography variant="subtitle2" component="h3" sx={{ paddingLeft: 2, marginBottom: 0.5 }}>
+            <Typography variant="subtitle2" component="h3" sx={{ paddingLeft: { xs: 2, sm: 2.5 }, marginBottom: 0.5 }}>
               {t('serviceConnectButton.moreWays', 'More ways to connect')}
             </Typography>
             <List dense disablePadding>

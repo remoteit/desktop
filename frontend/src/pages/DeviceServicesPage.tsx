@@ -75,6 +75,7 @@ export const DeviceServicesPage: React.FC = () => {
                 to={`/devices/${device.id}/${service.id}/connect`}
                 icon={<Icon name={service.state === 'active' ? 'circle-play' : 'circle-pause'} size="md" />}
                 onClick={() => dispatch.ui.setDefaultService({ deviceId: device.id, serviceId: service.id })}
+                sx={{ paddingRight: 4.5 }}
                 dense
               >
                 <ListItemText

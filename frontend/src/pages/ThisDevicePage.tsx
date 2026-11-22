@@ -60,7 +60,7 @@ export const ThisDevicePage: React.FC = () => {
           <CircularProgress size={28} />
         </Box>
       ) : device === null ? (
-        <Box paddingX={4} paddingY={2}>
+        <Box paddingX={4.5} paddingY={2}>
           <Typography variant="body2" color="textSecondary">
             {t('thisDevice.absent', 'This page shows the computer or phone running the Remote.It app. Open it in the app.')}
           </Typography>

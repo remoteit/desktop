@@ -165,36 +165,36 @@ describe('an exit or a proxy in a line', () => {
 describe('what an action does to each proxy and exit, said first', () => {
   it('its state before and after, and the connections it ends or keeps', () => {
     expect(effectLines(t, effect({ sessions: 2 }))).toEqual([
-      'Exit Office Mac: in service → retired',
+      'Exit Office Mac: on → paused',
       'The 2 connections open through it end.',
     ])
     expect(effectLines(t, effect({ after: 'draining', ends: false, sessions: 1 }))).toEqual([
-      'Exit Office Mac: in service → draining',
+      'Exit Office Mac: on → pausing',
       'The 1 connection open through it is kept until it closes.',
     ])
     expect(effectLines(t, effect({ sessions: null }))[1]).toBe('Its agent doesn’t say what is open through it.')
-    expect(effectLines(t, effect({ after: 'gone' }))[0]).toBe('Exit Office Mac: in service → taken out of it')
-    expect(effectLines(t, effect({ state: 'RETIRED', after: 'retired' }))[0]).toBe('Exit Office Mac: retired → unchanged')
+    expect(effectLines(t, effect({ after: 'gone' }))[0]).toBe('Exit Office Mac: on → taken out of it')
+    expect(effectLines(t, effect({ state: 'RETIRED', after: 'retired' }))[0]).toBe('Exit Office Mac: paused → unchanged')
   })
 
   it('a deleted device keeps its place, serving nothing while it is disabled', () => {
     expect(effectLines(t, effect({ after: 'disabled' }))[0]).toBe(
-      'Exit Office Mac: in service → serving nothing while it is disabled'
+      'Exit Office Mac: on → serving nothing while it is disabled'
     )
   })
 
   it('a proxy’s endpoints stay on it, served by its other devices in service, or by none until one is', () => {
     const proxy = effect({ kind: 'proxy', name: 'remote.it pdx1a', endpoints: 4 })
     expect(effectLines(t, proxy)).toEqual([
-      'Proxy remote.it pdx1a: in service → retired',
-      'Its 4 public addresses stay on the proxy server, served by its other devices in service.',
+      'Proxy remote.it pdx1a: on → paused',
+      'Its 4 public addresses stay on the proxy server, served by its other devices.',
     ])
     expect(effectLines(t, { ...proxy, inService: 0 })[1]).toBe(
-      'Its 4 public addresses stay on the proxy server, served by no device until one is in service.'
+      'Its 4 public addresses stay on the proxy server. No device serves them until another one is on.'
     )
     // Undrained, it serves them itself.
     expect(effectLines(t, { ...proxy, state: 'DRAINING', after: 'active' })).toEqual([
-      'Proxy remote.it pdx1a: draining → in service',
+      'Proxy remote.it pdx1a: pausing → on',
     ])
   })
 

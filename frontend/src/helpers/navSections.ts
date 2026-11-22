@@ -212,7 +212,8 @@ export function navSections(gates: NavGates): VisibleSection[] {
   })).filter(section => section.pages.length)
 }
 
-export function sectionLanding(section: VisibleSection, signals: NavSignals): NavPageId {
+export function sectionLanding(section: VisibleSection, signals: NavSignals, last?: NavPageId): NavPageId {
+  if (last && section.pages.includes(last) && NAV_PAGES[last].to) return last
   return section.landing ? section.landing(section.pages, signals) : section.pages[0]
 }
 

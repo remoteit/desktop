@@ -1,8 +1,9 @@
 import brand from '@common/brand/config'
 import browser from '../services/browser'
-import { useSelector } from 'react-redux'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
-import { State } from '../store'
+import { Dispatch, State } from '../store'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { getHasPartner } from '../models/partnerStats'
 import { getProductModel } from '../selectors/products'
@@ -49,7 +50,9 @@ export function useNavSections() {
   const defaultSelectedPage = useSelector(selectDefaultSelectedPage)
   const rootPaths = useSelector((state: State) => !browser.isElectron && state.ui.layout.hideSidebar)
   const chat = useChatToggle()
+  const sectionPage = useSelector((state: State) => state.ui.sectionPage) ?? {}
   const sections = navSections(gates)
+  const landing = (section: VisibleSection) => sectionLanding(section, { products }, sectionPage[section.id])
 
   const pageTo = (id: NavPageId): string | undefined => {
     const { to, remember } = NAV_PAGES[id]
@@ -73,7 +76,22 @@ export function useNavSections() {
     section: navSectionAt(sections, pathname),
     pageTo,
     open,
-    landing: (section: VisibleSection) => sectionLanding(section, { products }),
-    openSection: (section: VisibleSection) => open(sectionLanding(section, { products })),
+    landing,
+    openSection: (section: VisibleSection) => open(landing(section)),
   }
+}
+
+export function useRememberSectionPage() {
+  const { ui } = useDispatch<Dispatch>()
+  const { pathname } = useLocation()
+  const remoteUI = useSelector(isRemoteUI)
+  const sections = navSections(useNavGates(remoteUI))
+  const sectionPage = useSelector((state: State) => state.ui.sectionPage) ?? {}
+  const page = navPageAt(sections, pathname)
+  const section = navSectionAt(sections, pathname)
+
+  useEffect(() => {
+    if (!page || !section || section.pages.length < 2 || sectionPage[section.id] === page) return
+    ui.setPersistent({ sectionPage: { ...sectionPage, [section.id]: page } })
+  }, [page, section?.id])
 }

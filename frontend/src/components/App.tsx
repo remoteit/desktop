@@ -21,6 +21,7 @@ import { SignInPage } from '../pages/SignInPage'
 import { ThisDeviceApp } from './ThisDeviceApp'
 import { useThisDevice } from '../hooks/useThisDevice'
 import { BottomMenu } from './BottomMenu'
+import { useRememberSectionPage } from '../hooks/useNavSections'
 import { Sidebar } from './Sidebar'
 import { useChatEnabled, useChatDocked, useSidebarWidth, useLayoutBreakpoints } from '../hooks/useChatEnabled'
 import { Router } from '../routers/Router'
@@ -208,6 +209,7 @@ export const App: React.FC = () => {
                 >
                   {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
                   <Router layout={layout} />
+                  <SectionMemory />
                 </Box>
                 {showBottomMenu && chatDocked && <BottomMenu layout={layout} />}
               </Box>
@@ -224,4 +226,9 @@ export const App: React.FC = () => {
       </PersistGate>
     </Page>
   )
+}
+
+const SectionMemory: React.FC = () => {
+  useRememberSectionPage()
+  return null
 }
