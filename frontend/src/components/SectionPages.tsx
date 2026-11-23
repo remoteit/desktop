@@ -13,7 +13,7 @@ import { selectDeviceModelAttributes, selectVisibleDevices } from '../selectors/
 import { getProductModel } from '../selectors/products'
 import { selectScripts } from '../selectors/scripting'
 import { selectOrganization } from '../selectors/organizations'
-import { NAV_PAGES, NavPageId, VisibleSection } from '../helpers/navSections'
+import { NAV_PAGES, NavPageId, VisibleSection, navPageLabel } from '../helpers/navSections'
 
 function useDevicesState() {
   const { t } = useTranslation()
@@ -130,7 +130,7 @@ const PageRow: React.FC<{ id: NavPageId; onOpen: () => void }> = ({ id, onOpen }
   return (
     <ListItemLocation
       icon={page.icon}
-      title={page.label(t)}
+      title={navPageLabel(id, t)}
       subtitle={state}
       to={current ? undefined : nav.pageTo(id)}
       match={page.segments.map(segment => `/${segment}`)}

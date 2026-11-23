@@ -36,6 +36,8 @@ export type NavSignals = { products?: number }
 
 export type NavPage = {
   label: (t: TFunction) => string
+  /* The page's row in the sidebar and the phone's page list, where it differs from the page's title. */
+  navLabel?: (t: TFunction) => string
   icon: string
   /* Where the page link goes; none for the agent, which opens the chat instead. */
   to?: string
@@ -62,6 +64,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   devices: {
     label: t => t('nav.devices', 'Devices'),
+    navLabel: t => t('nav.devicesAll', 'All devices'),
     icon: 'router',
     to: '/devices',
     segments: ['devices', 'add'],
@@ -86,6 +89,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   networks: {
     label: t => t('nav.networks', 'Networks'),
+    navLabel: t => t('nav.networksAll', 'All networks'),
     icon: 'chart-network',
     to: '/networks',
     segments: ['networks'],
@@ -178,6 +182,8 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
     gate: 'agent',
   },
 }
+
+export const navPageLabel = (id: NavPageId, t: TFunction): string => (NAV_PAGES[id].navLabel ?? NAV_PAGES[id].label)(t)
 
 export type NavSection = {
   id: NavSectionId

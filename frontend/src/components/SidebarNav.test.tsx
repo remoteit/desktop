@@ -17,7 +17,9 @@ const flags = vi.hoisted(() => ({
 const push = vi.hoisted(() => vi.fn())
 const toggle = vi.hoisted(() => vi.fn())
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string, text?: unknown) => (typeof text === 'string' ? text : key) }) }))
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string, text?: unknown) => (typeof text === 'string' ? text : key) }),
+}))
 vi.mock('react-redux', () => ({
   useSelector: (select: (s: any) => any) =>
     select({
@@ -54,11 +56,32 @@ vi.mock('@mui/material', () => ({
       {children}
     </a>
   ),
+  ListItemIcon: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   ListItemText: ({ primary }: { primary: string }) => <span>{primary}</span>,
 }))
+vi.mock('./Icon', () => ({ Icon: ({ name }: { name: string }) => <i data-icon={name} /> }))
+vi.mock('./Quote', () => ({
+  Quote: ({ indent, children }: { indent?: string; children?: React.ReactNode }) => (
+    <div data-quote={indent}>{children}</div>
+  ),
+}))
 vi.mock('./ListItemLocation', () => ({
-  ListItemLocation: ({ title, to, match, children }: { title: string; to?: string; match?: string | string[]; children?: React.ReactNode }) => (
-    <li data-nav={title} data-to={to} data-selected={String([match ?? to ?? []].flat().some(m => flags.pathname.startsWith(m)))}>
+  ListItemLocation: ({
+    title,
+    to,
+    match,
+    children,
+  }: {
+    title: string
+    to?: string
+    match?: string | string[]
+    children?: React.ReactNode
+  }) => (
+    <li
+      data-nav={title}
+      data-to={to}
+      data-selected={String([match ?? to ?? []].flat().some(m => flags.pathname.startsWith(m)))}
+    >
       {children}
     </li>
   ),
@@ -84,7 +107,7 @@ vi.mock('../selectors/products', () => ({ getProductModel: () => ({ all: new Arr
 vi.mock('../selectors/organizations', () => ({ selectLimitsLookup: () => ({}) }))
 vi.mock('../selectors/ui', () => ({ selectDefaultSelectedPage: () => ({}) }))
 vi.mock('../helpers/dateHelper', () => ({ getLocale: () => 'en-US' }))
-vi.mock('../styling', () => ({ spacing: { sm: 4, md: 8, lg: 16 } }))
+vi.mock('../styling', () => ({ spacing: { xs: 2, sm: 4, md: 8, lg: 16 } }))
 
 import { SidebarNav } from './SidebarNav'
 
@@ -144,11 +167,20 @@ describe('SidebarNav', () => {
 
   it('opens only the section you are in, its pages beneath it', () => {
     render({ pathname: '/exits', deviceSessions: true })
-    expect(pages()).toEqual(['Networks', 'Exits', 'Public addresses', 'Proxy servers'])
+    expect(pages()).toEqual(['All networks', 'Exits', 'Public addresses', 'Proxy servers'])
     render({ pathname: '/scripts' })
     expect(pages()).toEqual(['Products', 'Scripts', 'Apps'])
     render({ pathname: '/devices/abc/details', services: true })
-    expect(pages()).toEqual(['Devices', 'Connections', 'Services'])
+    expect(pages()).toEqual(['All devices', 'Connections', 'Services'])
+  })
+
+  it("shows each page's icon, the pages set off by a line under their section", () => {
+    render({ pathname: '/exits', deviceSessions: true })
+    const icons = () => [...container.querySelectorAll('[data-page] [data-icon]')].map(i => i.getAttribute('data-icon'))
+    expect(icons()).toEqual(['chart-network', 'door-open', 'globe', 'server'])
+    expect(container.querySelectorAll('[data-quote="listIcon"] [data-page]')).toHaveLength(4)
+    render({ pathname: '/connect-ai' })
+    expect(container.querySelector('[data-quote]')).toBeNull()
   })
 
   it('opens no pages under a section with one page', () => {
@@ -164,15 +196,15 @@ describe('SidebarNav', () => {
     const selected = () => [...container.querySelectorAll('[data-selected="true"]')].map(i => i.textContent)
     render({ pathname: '/exits/e1', deviceSessions: true })
     expect(page('Exits').getAttribute('aria-current')).toBe('page')
-    expect(page('Networks').getAttribute('aria-current')).toBeNull()
+    expect(page('All networks').getAttribute('aria-current')).toBeNull()
     expect(selected()).toEqual(['Exits'])
     render({ pathname: '/add' })
-    expect(page('Devices').getAttribute('aria-current')).toBe('page')
+    expect(page('All devices').getAttribute('aria-current')).toBe('page')
   })
 
   it('links each page to its address, and Connections shows how many are open', () => {
     render({ pathname: '/connections', active: 2 })
-    expect(page('Devices').getAttribute('data-to')).toBe('/devices')
+    expect(page('All devices').getAttribute('data-to')).toBe('/devices')
     expect(page('Connections').getAttribute('data-to')).toBe('/connections')
     expect(page('Connections').querySelector('[data-chip]')?.getAttribute('data-chip')).toBe('2')
   })
@@ -208,7 +240,8 @@ describe('SidebarNav', () => {
   })
 
   it('selects a section with one page, and the footer, as before', () => {
-    const selected = () => [...container.querySelectorAll('li[data-selected="true"]')].map(i => i.getAttribute('data-nav'))
+    const selected = () =>
+      [...container.querySelectorAll('li[data-selected="true"]')].map(i => i.getAttribute('data-nav'))
     render({ pathname: '/connect-ai' })
     expect(selected()).toEqual(['AI'])
     render({ pathname: '/runs/job/j1' })
