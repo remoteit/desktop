@@ -393,6 +393,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
             {adding && proxy.owner && (
               <>
                 <RunDevicePicker
+                  inList
                   kind="proxy"
                   target={proxy.id}
                   ownerId={proxy.owner.id}

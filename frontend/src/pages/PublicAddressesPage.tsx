@@ -174,6 +174,7 @@ const AddressRow: React.FC<{ address: PublicAddress; busy: boolean; onRemove: ()
         primary={shown}
         primaryTypographyProps={{ sx: { wordBreak: 'break-all' } }}
         secondaryTypographyProps={{ component: 'div' }}
+        sx={{ paddingRight: 2 }}
         secondary={
           <>
             <Typography variant="caption" component="div" color="textSecondary">

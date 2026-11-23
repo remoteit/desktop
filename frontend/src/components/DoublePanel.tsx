@@ -6,18 +6,20 @@ import { useLocation } from 'react-router-dom'
 import { Box } from '@mui/material'
 import { Header } from './Header'
 import { PanelHandle } from './PanelHandle'
+import { BesideDetailContext } from '../services/Context'
 
 type Props = {
   left: React.ReactNode
   right?: React.ReactNode
   layout: ILayout
   header?: boolean
+  top?: boolean
 }
 
 const MIN_WIDTH = 250
 const PADDING = 9
 
-export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = true }) => {
+export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = true, top }) => {
   const [panelWidth, setPanelWidth] = usePanelWidth()
   const location = useLocation()
   const routeKey = location.pathname.match(REGEX_FIRST_PATH)?.[0].substring(1) || ''
@@ -58,8 +60,8 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
         style={{ minWidth: drag.width, width: drag.width }}
         ref={primaryRef}
       >
-        {header && <Header panels={2} />}
-        {left}
+        {header && <Header panels={2} top={top} />}
+        <BesideDetailContext.Provider value>{left}</BesideDetailContext.Provider>
       </Box>
       <Box sx={{ position: 'relative', height: '100%' }}>
         <PanelHandle onMouseDown={drag.onDown} grab={drag.grab} />

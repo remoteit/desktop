@@ -6,11 +6,18 @@ import { Attribute } from './Attributes'
 type Props<TOptions = IDataOptions> = {
   attribute: Attribute<TOptions>
   sticky?: boolean
+  resizable?: boolean
   onMouseDown: (event: React.MouseEvent<HTMLSpanElement, MouseEvent>, attribute: Attribute<TOptions>) => void
   children?: React.ReactNode
 }
 
-export const GridListHeaderTitle = <TOptions,>({ attribute, sticky, onMouseDown, children }: Props<TOptions>) => {
+export const GridListHeaderTitle = <TOptions,>({
+  attribute,
+  sticky,
+  resizable = true,
+  onMouseDown,
+  children,
+}: Props<TOptions>) => {
   const justifyContent =
     attribute?.align === 'center' ? 'center' : attribute?.align === 'right' ? 'flex-end' : undefined
 
@@ -56,34 +63,36 @@ export const GridListHeaderTitle = <TOptions,>({ attribute, sticky, onMouseDown,
         {children}
         {attribute.label}
       </Box>
-      <Box
-        component="span"
-        sx={theme => ({
-          right: 0,
-          height: '100%',
-          position: 'absolute',
-          width: `${spacing.md}px`,
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-          '&:hover': {
-            cursor: 'col-resize',
-          },
-          '&::after': {
-            content: '""',
-            width: '1px',
-            height: `${spacing.sm}px`,
-            display: 'block',
-            background: theme.palette.grayLight.main,
-          },
-          '&:hover::after': {
-            width: '3px',
+      {resizable && (
+        <Box
+          component="span"
+          sx={theme => ({
+            right: 0,
             height: '100%',
-            background: theme.palette.primary.main,
-          },
-        })}
-        onMouseDown={event => onMouseDown(event, attribute)}
-      />
+            position: 'absolute',
+            width: `${spacing.md}px`,
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            '&:hover': {
+              cursor: 'col-resize',
+            },
+            '&::after': {
+              content: '""',
+              width: '1px',
+              height: `${spacing.sm}px`,
+              display: 'block',
+              background: theme.palette.grayLight.main,
+            },
+            '&:hover::after': {
+              width: '3px',
+              height: '100%',
+              background: theme.palette.primary.main,
+            },
+          })}
+          onMouseDown={event => onMouseDown(event, attribute)}
+        />
+      )}
     </Box>
   )
 }

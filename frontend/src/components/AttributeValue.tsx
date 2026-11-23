@@ -22,7 +22,7 @@ export const AttributeValue: React.FC<IDataOptions & { attribute?: Attribute; cl
       width={justifyContent ? '100%' : undefined}
       marginRight={attribute?.align === 'right' ? `${spacing.md}px` : undefined}
     >
-      {value}
+      {typeof value === 'string' && !attribute?.multiline ? <span title={value}>{value}</span> : value}
     </Box>
   )
 }

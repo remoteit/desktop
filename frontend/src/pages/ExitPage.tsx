@@ -287,6 +287,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
             {adding && exit.owner && (
               <>
                 <RunDevicePicker
+                  inList
                   kind="exit"
                   target={exit.id}
                   ownerId={exit.owner.id}

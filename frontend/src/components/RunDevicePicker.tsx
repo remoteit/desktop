@@ -45,6 +45,7 @@ type Props = {
   onAdd?: (deviceIds: string[]) => void
   onSkip?: () => void
   skip?: string
+  inList?: boolean
 }
 
 /* Devices to run a proxy or an exit (graphql-api docs/PROXY-GROUPS.md §13, "No shortcuts"; graphql exitCandidates and
@@ -67,6 +68,7 @@ export const RunDevicePicker: React.FC<Props> = ({
   onAdd,
   onSkip,
   skip,
+  inList,
 }) => {
   const { t } = useTranslation()
   const devices = useSelector(getAllDevices)
@@ -174,7 +176,11 @@ export const RunDevicePicker: React.FC<Props> = ({
             : t('carry.noCandidatesProxy', 'You have no device that can run a proxy server yet. Add a device first.')}
         </Typography>
       ) : (
-        <List dense disablePadding sx={{ ...choiceListSx, maxHeight: 340, overflowY: 'auto' }}>
+        <List
+          dense
+          disablePadding
+          sx={{ ...choiceListSx, ...(inList ? { paddingLeft: 0 } : {}), maxHeight: 340, overflowY: 'auto' }}
+        >
           {shown.map(candidate => (
             <ListItemButton
               key={candidate.id}

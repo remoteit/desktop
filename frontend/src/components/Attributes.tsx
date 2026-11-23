@@ -1,5 +1,5 @@
 import { IP_PRIVATE } from '@common/constants'
-import { Chip, ListItemText, Typography } from '@mui/material'
+import { Box, Chip, ListItemText, Typography } from '@mui/material'
 import React from 'react'
 import i18n from '../i18n'
 import { RestoreButton } from '../buttons/RestoreButton'
@@ -150,19 +150,35 @@ export const attributes: Attribute[] = [
     defaultWidth: 400,
     required: true,
     details: false,
-    value: ({ device, connection }) => (
-      <ListItemText
-        primary={<DeviceName device={device} connection={connection} />}
-        secondary={
-          device?.thisDevice ? (
-            i18n.t('attributeValue.thisSystem', { defaultValue: 'This system' })
-          ) : device?.virtual ? (
-            <HostedByLine device={device} />
-          ) : undefined
-        }
-        sx={{ marginRight: 1, opacity: device?.state === 'active' ? 1 : 0.4 }}
-      />
-    ),
+    value: ({ device, connection, connections, mobile }) => {
+      const line = device?.thisDevice ? (
+        i18n.t('attributeValue.thisSystem', { defaultValue: 'This system' })
+      ) : device?.virtual ? (
+        <HostedByLine device={device} />
+      ) : undefined
+      return (
+        <ListItemText
+          primary={<DeviceName device={device} connection={connection} />}
+          secondary={
+            mobile ? (
+              <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                <StatusChip device={device} connections={connections} />
+                {line && (
+                  <Box component="span" sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {line}
+                  </Box>
+                )}
+              </Box>
+            ) : (
+              line
+            )
+          }
+          primaryTypographyProps={mobile ? { sx: { opacity: device?.state === 'active' ? 1 : 0.4 } } : undefined}
+          secondaryTypographyProps={mobile ? { component: 'div' } : undefined}
+          sx={{ marginRight: 1, opacity: mobile || device?.state === 'active' ? 1 : 0.4 }}
+        />
+      )
+    },
   }),
   new ServiceAttribute({
     id: 'serviceStatus',

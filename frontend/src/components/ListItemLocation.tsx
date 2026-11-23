@@ -109,7 +109,9 @@ export const ListItemLocation: React.FC<ListItemLocationProps> = ({
   const Contents = (
     <>
       {icon && <ListItemIcon>{iconNode}</ListItemIcon>}
-      {(title || subtitle) && <ListItemText primary={title} secondary={subtitle} />}
+      {(title || subtitle) && (
+        <ListItemText primary={title} secondary={subtitle} sx={children ? undefined : { paddingRight: 2 }} />
+      )}
       {children}
     </>
   )

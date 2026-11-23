@@ -47,7 +47,7 @@ export const RunActions: React.FC<Props> = ({ device, scope, run, activation, di
       display="flex"
       flexWrap="wrap"
       marginTop={0.5}
-      marginLeft={-1}
+      marginLeft={-2}
       data-run-actions={scope === 'device' ? 'device' : scope.kind}
     >
       {choices.map(each => (

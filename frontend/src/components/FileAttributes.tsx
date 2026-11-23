@@ -17,7 +17,7 @@ export const scriptAttributes: ScriptAttribute[] = [
     defaultWidth: 350,
     value: ({ file }) =>
       file?.name ? (
-        <Typography>{file.name}</Typography>
+        <Typography title={file.name}>{file.name}</Typography>
       ) : (
         <Typography variant="body2" color="gray.main" fontStyle="italic">
           Script Deleted&nbsp;
