@@ -26,6 +26,7 @@ import {
   resetLocalPorts,
   setNamesResolve,
   thisMachine,
+  thisMachineNow,
 } from './localPorts'
 
 const MAC = '80:00:00:00:00:00:00:A1'
@@ -74,6 +75,29 @@ describe('this machine', () => {
     const people = [{ sub: 'U1', email: 'u@example.com' }, { sub: 'U2' }]
     shell.value = shellOf('mac', [], people[0], people)
     expect(await thisMachine()).toEqual({ id: MAC, platform: 'mac', localPorts: false, signIns: ['U1', 'U2'] })
+  })
+
+  it('who is signed in on it now: asked of the shell again, an account added since the first read among them', async () => {
+    const people = [{ sub: 'U1', email: 'u@example.com' }, { sub: 'U2' }]
+    shell.value = shellOf('mac', [], people[0])
+    expect((await thisMachine())?.signIns).toEqual(['U1'])
+    shell.value = shellOf('mac', [], people[0], people)
+    // Kept as first read until asked as it is now; from then on what is kept is that.
+    expect((await thisMachine())?.signIns).toEqual(['U1'])
+    expect(scopeFor(await thisMachineNow(), 'u2')).toBe('ACCOUNT')
+    expect((await thisMachine())?.signIns).toEqual(['U1', 'U2'])
+    shell.value = shellOf('mac', [], people[0])
+    expect(scopeFor(await thisMachineNow(), 'u2')).toBeUndefined()
+  })
+
+  it('as it is now, with no shell to ask or one that does not answer: what was known', async () => {
+    beacon.mockResolvedValue(MAC)
+    expect(await thisMachineNow()).toEqual({ id: MAC, platform: undefined })
+    resetLocalPorts()
+    shell.value = shellOf('mac', [], { sub: 'U1' })
+    await thisMachine()
+    shell.value = { ...shellOf('mac'), call: async () => Promise.reject(new Error('gone')) }
+    expect((await thisMachineNow())?.signIns).toEqual(['U1'])
   })
 
   it('a browser: the device the beacon was seen by; none, asked again later', async () => {

@@ -3,15 +3,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // One events socket per sign-in (services/cloudController, "ONE SOCKET PER SIGN-IN"): each subscribed with its own
 // token, opened and closed as sign-ins join and leave, and an event two of them see handled once.
 
-const { sockets, signIns, listeners, state, notify, setSession, getToken } = vi.hoisted(() => ({
-  sockets: [] as any[],
-  signIns: { list: [] as { sub: string; primary: boolean }[] },
-  listeners: new Set<() => void>(),
-  state: {} as Record<string, any>,
-  notify: vi.fn(),
-  setSession: vi.fn(),
-  getToken: vi.fn(async (sub?: string) => `Bearer token-of:${sub ?? 'primary'}`),
-}))
+const { sockets, signIns, listeners, state, notify, setSession, getToken, devices, held, dispatched } = vi.hoisted(
+  () => ({
+    devices: { fetchSingleFull: vi.fn(), cleanup: vi.fn() },
+    held: { device: undefined as { id: string } | undefined },
+    dispatched: { removeDevice: vi.fn(), setDevice: vi.fn(), set: vi.fn() },
+    sockets: [] as any[],
+    signIns: { list: [] as { sub: string; primary: boolean }[] },
+    listeners: new Set<() => void>(),
+    state: {} as Record<string, any>,
+    notify: vi.fn(),
+    setSession: vi.fn(),
+    getToken: vi.fn(async (sub?: string) => `Bearer token-of:${sub ?? 'primary'}`),
+  })
+)
 
 vi.mock('reconnecting-websocket', () => ({
   default: class FakeSocket {
@@ -38,7 +43,10 @@ vi.mock('reconnecting-websocket', () => ({
 vi.mock('./Network', () => ({ default: { on: vi.fn(), off: vi.fn() } }))
 vi.mock('../selectors/scripting', () => ({ selectJob: () => undefined }))
 vi.mock('../models/applicationTypes', () => ({ isReverseProxy: () => false }))
-vi.mock('../models/accounts', () => ({ getAccountIds: () => ['personal', 'work'], accountFromDevice: () => 'work' }))
+vi.mock('../models/accounts', () => ({
+  getAccountIds: () => ['personal', 'acme', 'work'],
+  accountFromDevice: () => 'work',
+}))
 vi.mock('../helpers/apiHelper', () => ({ getWebSocketURL: () => 'wss://events.test', getTestHeader: () => ({}) }))
 vi.mock('../helpers/versionHelper', () => ({ version: '0.0.0' }))
 vi.mock('./remoteit', () => ({ getToken }))
@@ -52,11 +60,19 @@ vi.mock('./oidc', () => ({
 }))
 vi.mock('../constants', () => ({ resourceForEventsURL: () => undefined }))
 vi.mock('../store', () => ({
-  store: { getState: () => state, dispatch: { sessions: { setSession, removeSession: vi.fn() } } },
+  store: {
+    getState: () => state,
+    dispatch: {
+      sessions: { setSession, removeSession: vi.fn() },
+      devices,
+      accounts: { removeDevice: dispatched.removeDevice, setDevice: dispatched.setDevice },
+      ui: { set: dispatched.set },
+    },
+  },
 }))
 vi.mock('./Notifications', () => ({ notify }))
 vi.mock('./productMaxDevices', () => ({ productFullEventFields: async () => '' }))
-vi.mock('../selectors/devices', () => ({ selectById: () => [undefined, undefined] }))
+vi.mock('../selectors/devices', () => ({ selectById: () => [undefined, held.device] }))
 vi.mock('../helpers/connectionHelper', () => ({
   setConnection: vi.fn(),
   findLocalConnection: () => undefined,
@@ -103,10 +119,13 @@ beforeEach(() => {
   notify.mockClear()
   setSession.mockClear()
   getToken.mockClear()
+  Object.values({ ...devices, ...dispatched }).forEach(mock => mock.mockClear())
+  held.device = undefined
   Object.assign(state, {
     auth: { authenticated: true, user: { id: 'personal' } },
+    user: { email: 'personal@x.test' },
     accounts: {
-      membership: [],
+      membership: [{ account: { id: 'acme', email: '' } }],
       signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
     },
   })
@@ -194,5 +213,82 @@ describe('an event', () => {
     sockets[0].handlers.message({ data: connected('session-1') })
     sockets[0].handlers.message({ data: connected('session-1') })
     expect(notify).toHaveBeenCalledTimes(2)
+  })
+})
+
+/* Personal and Work are both signed in here, so both are told of what passes between them — and only the copy that
+   comes first is handled. What is done cannot rest on which that is. */
+describe('an event between two people signed in here', () => {
+  const DEVICE = { id: 'dev-1', name: 'pi', application: 35, device: { id: 'dev-1', name: 'pi' } }
+  const event = (more: object) =>
+    JSON.stringify({ data: { event: { timestamp: '2026-11-22T00:00:00.000Z', target: [], ...more } } })
+  const transfer = (to: string) =>
+    event({
+      type: 'DEVICE_TRANSFER',
+      actor: { id: 'personal', email: 'personal@x.test' },
+      target: [{ ...DEVICE, owner: { id: to } }],
+    })
+  const share = (action: string, by: string, to: string) =>
+    event({
+      type: 'DEVICE_SHARE',
+      action,
+      actor: { id: by, email: `${by}@x.test` },
+      users: [{ id: to, email: `${to}@x.test` }],
+      target: [{ ...DEVICE, owner: { id: by } }],
+    })
+  const both = (first: number, data: string) => {
+    inUse('sub-work')
+    cloudController.init()
+    sockets[first].handlers.message({ data })
+    sockets[1 - first].handlers.message({ data })
+  }
+
+  for (const first of [0, 1])
+    it(`a transfer from one to the other reaches the new owner, whose copy comes ${
+      first ? 'first' : 'second'
+    }`, async () => {
+      held.device = { id: 'dev-1' }
+      both(first, transfer('work'))
+      await vi.waitFor(() => expect(devices.fetchSingleFull).toHaveBeenCalledTimes(1))
+      expect(devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'dev-1', newDevice: true, accountId: 'work' })
+      // Out of the old owner's list, into the new owner's — never dropped as if it had left.
+      expect(dispatched.removeDevice).toHaveBeenCalledWith('dev-1')
+      expect(devices.cleanup).not.toHaveBeenCalled()
+      expect(notify).toHaveBeenCalledTimes(1)
+      expect(notify).toHaveBeenCalledWith(expect.objectContaining({ authUserIds: ['personal', 'work'] }))
+    })
+
+  it('a transfer to someone who is not here takes the device away, as ever', () => {
+    held.device = { id: 'dev-1' }
+    both(0, transfer('someone'))
+    expect(devices.cleanup).toHaveBeenCalledWith(['dev-1'])
+    expect(devices.fetchSingleFull).not.toHaveBeenCalled()
+  })
+
+  for (const first of [0, 1])
+    it(`a share from one to the other reaches the one shared with, whose copy comes ${
+      first ? 'first' : 'second'
+    }`, () => {
+      both(first, share('add', 'personal', 'work'))
+      expect(devices.fetchSingleFull).toHaveBeenCalledTimes(1)
+      expect(devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'dev-1', newDevice: true, accountId: 'work' })
+    })
+
+  it('an unshare from one to the other leaves the owner’s list alone', () => {
+    both(1, share('remove', 'personal', 'work'))
+    expect(dispatched.setDevice).toHaveBeenCalledWith({ id: 'dev-1', accountId: 'work' })
+    expect(devices.cleanup).not.toHaveBeenCalled()
+  })
+
+  it('a share someone here made with an account they reach themselves is their own doing: not handled', () => {
+    both(1, share('add', 'personal', 'acme'))
+    expect(devices.fetchSingleFull).not.toHaveBeenCalled()
+  })
+
+  it('a share by someone who is not here is handled for whoever it is with', () => {
+    both(0, share('add', 'someone', 'personal'))
+    expect(devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'dev-1', newDevice: true, accountId: 'personal' })
+    both(0, share('remove', 'someone', 'work'))
+    expect(devices.cleanup).toHaveBeenCalledWith(['dev-1'])
   })
 })

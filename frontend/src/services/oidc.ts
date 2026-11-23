@@ -1268,13 +1268,19 @@ export async function oidcEndSession(): Promise<number | undefined> {
   }
   const hint = stored()?.id_token
   if (!hint || oidcActor()) return undefined
-  const r = await fetch(`${OAUTH_ISSUER}/session/end`, {
+  return (await endSessionAt(hint)).status
+}
+
+// How long the AS is given to end a session. A sign-out never waits on it longer: the request is given up, not left
+// open behind a caller that stopped waiting.
+const SESSION_END_WAIT_MS = 5000
+const endSessionAt = (hint: string) =>
+  fetch(`${OAUTH_ISSUER}/session/end`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ id_token_hint: hint }),
+    signal: timeoutSignal(SESSION_END_WAIT_MS),
   })
-  return r.status
-}
 
 /** Local teardown: clears the ACTIVE account's tokens (and its registry entry) and NOTHING
  * else. It never touches the AS — the failure paths land here and a dead refresh token is not
@@ -1639,8 +1645,8 @@ export function oidcSignIns(): OidcSignIn[] {
 
 /** Signs out ONE sign-in beside the primary and leaves the rest: its session at the AS is ended on its own
  *  id_token (under the shell, by the shell), and its tokens and registry entry go. The primary's sign-out is the
- *  app's (models/auth signOut). False when `sub` is not such a sign-in. A refused or unreachable AS still signs it
- *  out here: the person asked for it gone from this app. */
+ *  app's (models/auth signOut). False when `sub` is not such a sign-in. A refused, unreachable or silent AS still
+ *  signs it out here: the person asked for it gone from this app. */
 export async function oidcSignOutAccount(sub: string): Promise<boolean> {
   if (!who(sub)) return false
   if (shell) {
@@ -1652,24 +1658,21 @@ export async function oidcSignOutAccount(sub: string): Promise<boolean> {
     signInsChanged()
     return true
   }
-  const entry = readRegistry()[sub]
-  if (!entry?.refresh_token) return false
-  if (entry.id_token) {
-    try {
-      const r = await fetch(`${OAUTH_ISSUER}/session/end`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ id_token_hint: entry.id_token }),
-      })
-      if (r.status !== 204) console.warn('SIGN OUT: AS session end refused', r.status)
-    } catch (error) {
-      console.warn('SIGN OUT: AS session end failed — signing the account out here', error)
-    }
-  }
   const reg = readRegistry()
+  const entry = reg[sub]
+  if (!entry?.refresh_token) return false
+  // Gone from here first, before anything is waited on: an AS that never answers cannot leave it signed in.
   delete reg[sub]
   dropAccess(sub)
   writeRegistry(reg)
+  if (entry.id_token) {
+    try {
+      const r = await endSessionAt(entry.id_token)
+      if (r.status !== 204) console.warn('SIGN OUT: AS session end refused', r.status)
+    } catch (error) {
+      console.warn('SIGN OUT: AS session end failed — the account is signed out here', error)
+    }
+  }
   return true
 }
 

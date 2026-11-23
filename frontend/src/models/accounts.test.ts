@@ -1,12 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
 
-const { graphQLBasicRequest, oidcSignIns } = vi.hoisted(() => ({
+const { graphQLBasicRequest, graphQLLeaveMembership, oidcSignIns } = vi.hoisted(() => ({
   graphQLBasicRequest: vi.fn(),
+  graphQLLeaveMembership: vi.fn(),
   oidcSignIns: vi.fn(() => [] as any[]),
 }))
 vi.mock('../services/graphQL', () => ({ graphQLBasicRequest }))
 vi.mock('../services/oidc', () => ({ oidcSignIns }))
-vi.mock('../services/graphQLMutation', () => ({}))
+vi.mock('../services/graphQLMutation', () => ({ graphQLLeaveMembership }))
 vi.mock('../selectors/devices', () => ({}))
 vi.mock('./devices', () => ({}))
 vi.mock('../selectors/accounts', () => ({
@@ -87,6 +88,7 @@ describe('the sign-ins beside the page’s own person', () => {
     }
     const effects = (accounts as any).effects(dispatch)
     dispatch.accounts.setSignIns = vi.fn((signIns: object) => effects.setSignIns(signIns, state))
+    dispatch.accounts.readAgain = vi.fn((ids: string[]) => effects.readAgain(ids, state))
     return { dispatch, effects, run: (effect: string, payload?: unknown) => effects[effect](payload, state) }
   }
   const inUse = (...subs: string[]) =>
@@ -164,6 +166,84 @@ describe('the sign-ins beside the page’s own person', () => {
     const { dispatch, run } = effectsWith(signedIn({ 'sub-work': both }))
     await run('fetchSignIns')
     expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['work', 'labs'])
+  })
+
+  /* Two sign-ins reach Labs, and Work serves it. What is stored for it was read as Work — in Work's role, seeing what
+     Work sees — so when Work leaves and Third serves it, it is read again rather than kept. */
+  describe('reaching an organization another sign-in also reaches', () => {
+    const third = { sub: 'sub-third', id: 'third', email: 'third@x.test', membership: [member('labs')] }
+
+    it('hand it to the other when the one serving it is no longer used, and what was stored for it is read again', async () => {
+      inUse('sub-third')
+      graphQLBasicRequest.mockReset().mockResolvedValue(answer('third', ['labs']))
+      const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work, 'sub-third': third }, { activeId: 'labs' }))
+      await run('fetchSignIns')
+      expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['work']], [['labs']]])
+      expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
+      // Selected, and still a row: it stays selected, its lists read again as the sign-in that serves it now.
+      expect(dispatch.accounts.select.mock.calls).toEqual([['labs']])
+    })
+
+    it('read nothing again for a row that is not selected, beyond its organization', async () => {
+      inUse('sub-third')
+      graphQLBasicRequest.mockReset().mockResolvedValue(answer('third', ['labs']))
+      const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work, 'sub-third': third }))
+      await run('fetchSignIns')
+      expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['labs'])
+      expect(dispatch.accounts.select).not.toHaveBeenCalled()
+    })
+
+    it('hand it back to the page’s person when the sign-in picked for it leaves', async () => {
+      inUse()
+      const both = { ...work, membership: [member('labs'), member('acme')] }
+      const { dispatch, run } = effectsWith(
+        signedIn({ 'sub-work': both }, { activeId: 'acme', via: { acme: 'sub-work' } })
+      )
+      await run('fetchSignIns')
+      expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['work', 'labs']], [['acme']]])
+      expect(dispatch.accounts.select.mock.calls).toEqual([['acme']])
+    })
+
+    it('hand it over when one joins that is put before the one serving it', async () => {
+      const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
+      await run('setSignIns', { 'sub-third': third, 'sub-work': work })
+      expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['labs']]])
+      expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('keep what is stored for it while the same sign-in serves it', async () => {
+      inUse('sub-work')
+      graphQLBasicRequest.mockReset().mockResolvedValue(answer('work', ['labs']))
+      const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work, 'sub-third': third }))
+      await run('fetchSignIns')
+      expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['third']]])
+      expect(dispatch.accounts.readAgain).not.toHaveBeenCalled()
+    })
+
+    it('hand it over when the page’s person is found to belong to it no longer', async () => {
+      const both = { ...work, membership: [member('labs'), member('acme')] }
+      const { dispatch, effects } = effectsWith(signedIn({ 'sub-work': both }, { activeId: 'acme' }))
+      dispatch.ui = { set: vi.fn() }
+      await effects.parse(
+        { data: { data: { login: { membership: [] } } } },
+        signedIn({ 'sub-work': both }, { activeId: 'acme' })
+      )
+      expect(dispatch.accounts.set).toHaveBeenCalledWith({ membership: [] })
+      expect(dispatch.accounts.readAgain).toHaveBeenCalledWith(['acme'])
+      expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['acme'])
+    })
+
+    it('hand it over when the page’s person leaves it', async () => {
+      graphQLLeaveMembership.mockReset().mockResolvedValue({})
+      const both = { ...work, membership: [member('labs'), member('acme')] }
+      const { dispatch, run } = effectsWith(signedIn({ 'sub-work': both }, { activeId: 'acme' }))
+      dispatch.ui = { set: vi.fn() }
+      await run('leaveMembership', 'acme')
+      expect(dispatch.accounts.set).toHaveBeenCalledWith({ membership: [] })
+      expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['acme'])
+      expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
+      expect(dispatch.accounts.select.mock.calls).toEqual([['personal']])
+    })
   })
 
   it('do not put back one that signed out while it was being asked', async () => {

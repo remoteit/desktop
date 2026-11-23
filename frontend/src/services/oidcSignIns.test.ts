@@ -318,6 +318,33 @@ describe('signing one account out', () => {
     expect(registry().b).toBeUndefined()
   })
 
+  it('is signed out here at once, and the login server given only so long, when it never answers', async () => {
+    signedIn()
+    const oidc = await load()
+    await oidc.oidcAccessToken(API, 'b')
+    let signal: AbortSignal | null | undefined
+    fetchSpy.mockImplementationOnce((_input, init) => {
+      signal = init?.signal
+      return new Promise<Response>((_resolve, reject) =>
+        signal?.addEventListener('abort', () => reject(new Error('aborted')))
+      )
+    })
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockImplementation(() => {
+      const controller = new AbortController()
+      setTimeout(() => controller.abort(), 20)
+      return controller.signal
+    })
+    const signingOut = oidc.oidcSignOutAccount('b')
+    // Nothing waited on yet: the stalled request is still out, and the account is already gone from here.
+    expect(signal?.aborted).toBe(false)
+    expect(registry().b).toBeUndefined()
+    expect(oidc.oidcSignIns().map(signIn => signIn.sub)).toEqual(['a'])
+    expect(await oidc.oidcAccessToken(API, 'b')).toBe('')
+    expect(await signingOut).toBe(true)
+    expect(signal?.aborted).toBe(true)
+    timeout.mockRestore()
+  })
+
   it('is not how the page’s own person signs out, nor an account that is not signed in', async () => {
     signedIn()
     const oidc = await load()

@@ -74,6 +74,19 @@ export const selectAccountRoutes = createSelector(
 export const selectSignInSub = (state: State, accountId?: string): string | undefined =>
   accountId ? selectAccountRoutes(state)[accountId]?.sub : undefined
 
+/** Everyone signed in here, by their own account id: the page's own person, then each sign-in beside them. */
+export const selectPersonIds = createSelector([getUserId, getSignIns], (userId, signIns): string[] =>
+  [userId, ...Object.values(signIns).map(signIn => signIn.id)].filter(Boolean)
+)
+
+/** The sign-in of a person signed in here, by their own account id: '' the primary; undefined, no one here. */
+export const selectPersonSub = (state: State, personId?: string): string | undefined =>
+  !personId
+    ? undefined
+    : personId === getUserId(state)
+    ? ''
+    : Object.values(getSignIns(state)).find(signIn => signIn.id === personId)?.sub
+
 /* What each account's stored lists hold, by id — devices and their services, networks, scripts' jobs, files and
    products — so a request that names only such an id is made as the sign-in that serves the account holding it. */
 type Held = { id: string }[] | undefined

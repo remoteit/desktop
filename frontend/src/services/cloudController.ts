@@ -10,7 +10,14 @@ import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
 import { DEVICE_TYPE } from '@common/applications'
 import { getToken } from './remoteit'
 import { oidcAccessToken, oidcSignIns, oidcSubscribe } from './oidc'
-import { getSignIns, requestSignIn, RequestFor } from '../selectors/signIns'
+import {
+  getSignIns,
+  requestSignIn,
+  RequestFor,
+  selectAccountRoutes,
+  selectPersonIds,
+  selectPersonSub,
+} from '../selectors/signIns'
 import { resourceForEventsURL } from '../constants'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
@@ -55,7 +62,9 @@ const SEEN_FOR_MS = 60_000
    in use has a socket of its own, subscribed with its own token: the controller the app uses is the page's own
    person's (`sub` ''), and it keeps one more of itself for every sign-in beside them (`others`), opened and closed as
    they join and leave. Every socket's events go through the one pipeline into the same state, kept by account id; an
-   event two sign-ins both see (a device shared with both, an organization both belong to) is handled once. */
+   event two sign-ins both see (a device shared with both, an organization both belong to) is handled once — so what
+   is done with one never rests on whose copy came first: where it matters who "you" are (a share, a transfer, a
+   notice), it is everyone signed in here (authUserIds), not the one person whose socket brought it. */
 class CloudController {
   initialized: boolean = false
   socket?: ReconnectingWebSocket
@@ -459,6 +468,7 @@ ${await productFullEventFields()}
         owner: event.owner,
         // The person who saw it: the sign-in whose socket it came on. "You" in what follows is that person.
         authUserId: this.viewerId(state),
+        authUserIds: selectPersonIds(state),
         platform: event.platform,
         sessionId: event.session,
         source: event.source,
@@ -616,17 +626,23 @@ ${await productFullEventFields()}
         break
 
       case 'DEVICE_SHARE':
-        // don't handle actions you've done
-        if (event.authUserId === event.actor.id) break
-
         const state = store.getState()
         const accountIds = getAccountIds(state)
-        const accountTo = event.users.find(u => accountIds.includes(u.id))
+        // don't handle actions you've done — but an account here that the sign-in who did it does not reach (another
+        // person signed in beside them) learns of it from this event alone
+        const actorSub = selectPersonSub(state, event.actor.id)
+        const routes = actorSub === undefined ? {} : selectAccountRoutes(state)
+        const doneFor = (id: string) =>
+          actorSub !== undefined && (routes[id]?.reach.some(who => who.sub === actorSub) ?? true)
+        const accountTo = event.users.find(u => accountIds.includes(u.id) && !doneFor(u.id))
 
         // device unshared from me or my org
         if (accountTo && event.action === 'remove') {
           event.target.forEach(target => {
-            if (target.typeID === DEVICE_TYPE) dispatch.devices.cleanup([target.id])
+            if (target.typeID !== DEVICE_TYPE) return
+            // Unshared by someone signed in here: it stays theirs, and leaves only the list it was shared into
+            if (actorSub !== undefined) dispatch.accounts.setDevice({ id: target.id, accountId: accountTo.id })
+            else dispatch.devices.cleanup([target.id])
           })
         }
 
@@ -634,7 +650,11 @@ ${await productFullEventFields()}
         else if (accountTo && ['add', 'update'].includes(event.action)) {
           event.target.forEach(target => {
             if (target.typeID === DEVICE_TYPE)
-              dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: event.action === 'add' })
+              dispatch.devices.fetchSingleFull({
+                id: target.deviceId,
+                newDevice: event.action === 'add',
+                accountId: accountTo.id,
+              })
           })
         }
         break
@@ -710,14 +730,17 @@ ${await productFullEventFields()}
       case 'DEVICE_TRANSFER':
         event.target.forEach(async target => {
           const newOwnerId = target.owner?.id
-          const isReceiving = newOwnerId === event.authUserId
+          // To any of the people signed in here: the old owner's copy may be the one handled, the new owner's passed over
+          const isReceiving = !!newOwnerId && event.authUserIds.includes(newOwnerId)
 
-          this.log('DEVICE TRANSFER EVENT', { isReceiving, newOwnerId, authUserId: event.authUserId }, event)
+          this.log('DEVICE TRANSFER EVENT', { isReceiving, newOwnerId, authUserIds: event.authUserIds }, event)
 
           if (isReceiving) {
+            // Held here already — by the old owner signed in beside the new, or shared before: out of that list first
+            if (target.device) await dispatch.accounts.removeDevice(target.deviceId)
             // NEW OWNER: Refresh device list to show transferred device
             dispatch.ui.set({ successMessage: `${target.name} was transferred to you!` })
-            dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: true })
+            dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: true, accountId: newOwnerId })
           } else {
             // OLD OWNER or ORG MEMBER: Remove from local list
             if (target.device) {

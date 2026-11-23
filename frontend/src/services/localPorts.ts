@@ -101,20 +101,33 @@ export function thisMachine(): Promise<Machine | null> {
   return machine
 }
 
-async function findMachine(): Promise<Machine | null> {
+/* The machine as it is now. Which machine this is does not change while the page lives; who is signed in on it does —
+   an account added or signed out in the app, the page left as it was — so before whose a port is rests on it
+   (scopeFor), the shell is asked again. A shell that cannot be asked, or no shell: what was known. */
+export async function thisMachineNow(): Promise<Machine | null> {
+  const now = await shellMachine()
+  if (!now) return thisMachine()
+  machine = Promise.resolve(now)
+  return now
+}
+
+async function shellMachine(): Promise<Machine | null> {
   const shell = await thisDevice()
-  if (shell?.compatible) {
-    const status = await shell.call('status', {}).catch(() => undefined)
-    if (status?.device?.uid) {
-      const signIns = machineSignIns(status)
-      return {
-        id: status.device.uid,
-        platform: shell.info.platform,
-        localPorts: shell.has('localPorts'),
-        ...(signIns.length && { signIns }),
-      }
-    }
+  if (!shell?.compatible) return null
+  const status = await shell.call('status', {}).catch(() => undefined)
+  if (!status?.device?.uid) return null
+  const signIns = machineSignIns(status)
+  return {
+    id: status.device.uid,
+    platform: shell.info.platform,
+    localPorts: shell.has('localPorts'),
+    ...(signIns.length && { signIns }),
   }
+}
+
+async function findMachine(): Promise<Machine | null> {
+  const found = await shellMachine()
+  if (found) return found
   const id = await beaconDevice()
   return id ? { id, platform: isIOSBrowser() ? 'ios' : undefined } : null
 }

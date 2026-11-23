@@ -201,8 +201,11 @@ export default createModel<RootModel>()({
 
     async setOrganization(params: IOrganizationSettings, state) {
       let organization = selectOrganization(state)
-      await dispatch.organization.setActive({ ...params, id: organization.id || state.auth.user?.id })
-      const result = await graphQLSetOrganization({ ...params, accountId: organization.id })
+      // No organization yet: it is created for the selected account, by the sign-in that serves it — named, since a
+      // request that names no account is the page's own person's.
+      const accountId = organization.id || selectActiveAccountId(state)
+      await dispatch.organization.setActive({ ...params, id: accountId })
+      const result = await graphQLSetOrganization({ ...params, accountId })
       if (result !== 'ERROR') {
         if (!organization.id)
           dispatch.ui.set({
@@ -248,7 +251,7 @@ export default createModel<RootModel>()({
       const member = members[0]
       const result = await graphQLSetMembers(
         members.map(member => member.user.email),
-        organization.id,
+        organization.id || selectActiveAccountId(state),
         member.roleId,
         member.license
       )
@@ -265,7 +268,7 @@ export default createModel<RootModel>()({
 
     async removeMember(member: IOrganizationMember, state) {
       const organization = selectOrganization(state)
-      const result = await graphQLRemoveMembers([member.user.email], organization.id)
+      const result = await graphQLRemoveMembers([member.user.email], organization.id || selectActiveAccountId(state))
       if (result !== 'ERROR') {
         dispatch.organization.setActive({
           members: organization.members.filter(m => m.user.email !== member.user.email),

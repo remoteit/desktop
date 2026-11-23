@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const api = vi.hoisted(() => ({
   machine: { id: '80:00:00:00:00:00:00:A1', platform: 'mac' } as any,
+  first: undefined as any, // the machine as first read, where it has changed since
   read: vi.fn(),
   open: vi.fn(),
   close: vi.fn(),
@@ -23,7 +24,8 @@ vi.mock('../services/localSubnet', () => ({ beaconDevice: async () => null }))
 vi.mock('../services/graphQL', () => ({ graphQLBasicRequest: vi.fn(), graphQLRequestWithReason: vi.fn() }))
 vi.mock('../services/localPorts', async importOriginal => ({
   ...(await importOriginal<typeof import('../services/localPorts')>()),
-  thisMachine: async () => api.machine,
+  thisMachine: async () => api.first ?? api.machine,
+  thisMachineNow: async () => api.machine,
   graphQLLocalPort: (...args: unknown[]) => api.read(...args),
   openLocalPort: (...args: unknown[]) => api.open(...args),
   closeLocalPort: (...args: unknown[]) => api.close(...args),
@@ -51,6 +53,7 @@ describe('useLocalPort', () => {
   beforeEach(() => {
     root = createRoot(document.createElement('div'))
     api.machine = { id: '80:00:00:00:00:00:00:A1', platform: 'mac' }
+    api.first = undefined
     api.ui = {}
     api.auth = { user: { id: 'U1' } }
     api.accounts = undefined
@@ -129,6 +132,22 @@ describe('useLocalPort', () => {
       await render()
       await act(() => seen.open())
       expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, 'ACCOUNT')
+    })
+
+    it("that person signed in on this machine since the page loaded: their account's, read at the open", async () => {
+      api.first = { ...api.machine, signIns: ['U1'] }
+      await render()
+      api.machine = { ...api.machine, signIns: ['U1', 'work'] }
+      await act(() => seen.open())
+      expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, 'ACCOUNT')
+    })
+
+    it("that person signed out of this machine since: the machine's", async () => {
+      api.first = { ...api.machine, signIns: ['U1', 'work'] }
+      await render()
+      api.machine = { ...api.machine, signIns: ['U1'] }
+      await act(() => seen.open())
+      expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, undefined)
     })
 
     it("only the page's own person signed in on this machine: the machine's", async () => {

@@ -40,6 +40,18 @@ function membershipFrom(data): IMembership {
   }
 }
 
+/* What a change to the sign-ins or the memberships does to the rows: those `gone`, and those `moved` — still rows, but
+   served by another sign-in than the one their stored data was read as. */
+function rowsAfter(state: State, change: Partial<IAccountsState>) {
+  const before = selectAccountRoutes(state)
+  const after = selectAccountRoutes({ ...state, accounts: { ...state.accounts, ...change } } as State)
+  const ids = Object.keys(before)
+  return {
+    gone: ids.filter(id => !after[id]),
+    moved: ids.filter(id => after[id] && after[id].sub !== before[id].sub),
+  }
+}
+
 const accountsState: IAccountsState = {
   membership: [],
   activeId: undefined,
@@ -118,7 +130,10 @@ export default createModel<RootModel>()({
       const stale =
         !!activeId && activeId !== userId && !others && !memberships.some(m => m.account.id === activeId)
       if (stale) dispatch.ui.set({ selected: [], selectionAnchor: undefined })
+      // An organization the primary no longer belongs to, that another sign-in still reaches, is that sign-in's now.
+      const { moved } = rowsAfter(state, { membership: memberships })
       dispatch.accounts.set({ membership: memberships, ...(stale ? { activeId: undefined } : {}) })
+      if (moved.length) await dispatch.accounts.readAgain(moved)
     },
     /* Every further sign-in's own account and organizations, asked with that sign-in's token: its rows join the
        switcher, and requests about them are made as it. A sign-in no longer in use loses its rows and what was
@@ -147,19 +162,28 @@ export default createModel<RootModel>()({
       await dispatch.accounts.setSignIns(signIns)
     },
     async setSignIns(signIns: ILookup<ISignIn>, state) {
-      const before = Object.keys(selectAccountRoutes(state))
+      const { gone, moved } = rowsAfter(state, { signIns })
       const added = Object.keys(signIns).some(sub => !getSignIns(state)[sub])
       await dispatch.accounts.set({ signIns })
-      const routes = selectAccountRoutes({ ...state, accounts: { ...state.accounts, signIns } } as State)
-      const gone = before.filter(id => !routes[id])
       if (gone.length) {
         if (state.accounts.activeId && gone.includes(state.accounts.activeId)) {
           await dispatch.accounts.select(state.auth.user?.id || state.user.id)
         }
         dispatch.accounts.forgetData(gone)
       }
+      // A row two sign-ins reach, whose serving one left or was put behind another: the other's from now on.
+      if (moved.length) await dispatch.accounts.readAgain(moved)
       // The new rows' organizations (names, licenses, limits) are read as the sign-in that serves them.
-      if (added) void dispatch.organization.fetch()
+      else if (added) void dispatch.organization.fetch()
+    },
+    /** Rows now served by another sign-in: what was stored for them was read as the one before — maybe in another
+     *  role, or seeing other devices — so it is dropped and read again as the one that serves them now. */
+    async readAgain(accountIds: string[], state) {
+      dispatch.accounts.forgetData(accountIds)
+      void dispatch.organization.fetch()
+      // Selected: its lists are read again, now that nothing is stored for it.
+      const active = selectActiveAccountId(state)
+      if (accountIds.includes(active)) await dispatch.accounts.select(active)
     },
     /** What is stored for accounts that are no longer rows: dropped from every list kept by account id. */
     forgetData(accountIds: string[]) {
@@ -179,10 +203,7 @@ export default createModel<RootModel>()({
     async setVia({ accountId, sub }: { accountId: string; sub: string }, state) {
       if ((selectSignInSub(state, accountId) || '') === sub) return
       await dispatch.accounts.set({ via: { ...state.accounts.via, [accountId]: sub } })
-      dispatch.accounts.forgetData([accountId])
-      void dispatch.organization.fetch()
-      // Selected: its lists are read again, now that nothing is stored for it.
-      if (selectActiveAccountId(state) === accountId) await dispatch.accounts.select(accountId)
+      await dispatch.accounts.readAgain([accountId])
     },
     async fetchOrganizationClosures() {
       const result = await graphQLBasicRequest(
@@ -236,7 +257,14 @@ export default createModel<RootModel>()({
       const { membership } = state.accounts
       const result = await graphQLLeaveMembership(id)
       if (result !== 'ERROR') {
-        dispatch.accounts.set({ membership: membership.filter(m => m.account.id !== id) })
+        const remaining = membership.filter(m => m.account.id !== id)
+        // Left as the primary, and still a row through another sign-in: read as that one from now on.
+        const { moved } = rowsAfter(state, { membership: remaining })
+        dispatch.accounts.set({ membership: remaining })
+        if (moved.length) {
+          dispatch.accounts.forgetData(moved)
+          void dispatch.organization.fetch()
+        }
         if (selectSignInSub(state, id)) await dispatch.accounts.fetchSignIns()
         await dispatch.accounts.select(state.user.id)
         dispatch.ui.set({

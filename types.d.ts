@@ -878,6 +878,8 @@ declare global {
     users: IUserRef[]
     platform: number
     authUserId: string
+    // Everyone signed in here, the one whose socket brought the event among them: "you" is any of them.
+    authUserIds: string[]
     geo?: IGeo
     reverseProxy: boolean
     manufacturer?: number
