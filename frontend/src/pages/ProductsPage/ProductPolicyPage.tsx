@@ -51,13 +51,15 @@ export const ProductPolicyPage: React.FC = () => {
 
   return (
     <ProductHeaderMenu product={product} title={t('productPolicyLink.title', 'Policy')}>
-      <Gutters>
+      <>
         {!served || policy === undefined ? (
           <LoadingMessage message={t('productPolicyPage.loading', 'Loading its policy...')} />
         ) : !policy ? (
-          <Typography variant="body2" color="textSecondary">
-            {t('productPolicyPage.failed', 'Its policy could not be read.')}
-          </Typography>
+          <Gutters>
+            <Typography variant="body2" color="textSecondary">
+              {t('productPolicyPage.failed', 'Its policy could not be read.')}
+            </Typography>
+          </Gutters>
         ) : (
           <>
             <ProductSyncLevel
@@ -98,7 +100,7 @@ export const ProductPolicyPage: React.FC = () => {
             {policy.devices && <ProductDevices devices={policy.devices} count={policy.deviceCount} />}
           </>
         )}
-      </Gutters>
+      </>
     </ProductHeaderMenu>
   )
 }

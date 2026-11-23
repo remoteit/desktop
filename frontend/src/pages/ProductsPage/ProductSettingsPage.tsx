@@ -56,12 +56,14 @@ export const ProductSettingsPage: React.FC = () => {
 
   return (
     <ProductHeaderMenu product={product} title={t('productSettingsPage.title', 'Join keys and settings')}>
-      <Gutters>
+      <>
         {product.registrationWarning && (
-          <Notice severity="warning" fullWidth gutterBottom>
-            <strong>{t('productSettingsPage.warningTitle', 'Move this product to join keys')}</strong>
-            <em>{product.registrationWarning}</em>
-          </Notice>
+          <Gutters>
+            <Notice severity="warning" fullWidth>
+              <strong>{t('productSettingsPage.warningTitle', 'Move this product to join keys')}</strong>
+              <em>{product.registrationWarning}</em>
+            </Notice>
+          </Gutters>
         )}
 
         {detailed && (
@@ -72,21 +74,29 @@ export const ProductSettingsPage: React.FC = () => {
         )}
 
         {product.registrationCode && (
-          <Box sx={{ marginTop: detailed ? 3 : 0 }}>
-            <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+          <Box sx={{ marginTop: detailed ? 2 : 0 }}>
+            <Typography variant="subtitle1">
               {registrationCommand
                 ? t('productSettingsPage.registrationCommand', 'Older registration command')
                 : t('productSettingsPage.registrationCode', 'Older registration code')}
             </Typography>
-            <Typography variant="body2" color="textSecondary" gutterBottom sx={{ marginBottom: 2 }}>
-              {registrationCommand
-                ? t('productSettingsPage.registrationCommandHelp', 'Devices installed with this command join this product.')
-                : t('productSettingsPage.registrationCodeHelp', 'Devices installed with this code join this product.')}
-            </Typography>
-            <CopyCodeBlock
-              value={registrationCommand || product.registrationCode}
-              code={registrationCommand ? product.registrationCode : undefined}
-            />
+            <Gutters top={null}>
+              <Typography variant="caption" component="p" gutterBottom>
+                {registrationCommand
+                  ? t(
+                      'productSettingsPage.registrationCommandHelp',
+                      'Devices installed with this command join this product.'
+                    )
+                  : t(
+                      'productSettingsPage.registrationCodeHelp',
+                      'Devices installed with this code join this product.'
+                    )}
+              </Typography>
+              <CopyCodeBlock
+                value={registrationCommand || product.registrationCode}
+                code={registrationCommand ? product.registrationCode : undefined}
+              />
+            </Gutters>
           </Box>
         )}
 
@@ -95,15 +105,14 @@ export const ProductSettingsPage: React.FC = () => {
         <ProductLifecycle product={product} />
 
         <ProductMaxDevices product={product} />
-
-      </Gutters>
+      </>
       <ProductRevokedCodes product={product} />
-      <Gutters>
-        <Typography variant="subtitle2" color="textSecondary" gutterBottom sx={{ marginTop: 3 }}>
-          {t('productSettingsPage.details', 'Details')}
-        </Typography>
-        <DataDisplay product={product} attributes={productDetailAttributes} />
-      </Gutters>
+      <Box sx={{ marginTop: 2 }}>
+        <Typography variant="subtitle1">{t('productSettingsPage.details', 'Details')}</Typography>
+        <Gutters top={null}>
+          <DataDisplay product={product} attributes={productDetailAttributes} />
+        </Gutters>
+      </Box>
     </ProductHeaderMenu>
   )
 }

@@ -6,6 +6,7 @@ import { ProductSetting, graphQLSetDeviceProductSetting } from '../services/prod
 import { ListItemSetting } from './ListItemSetting'
 import { SelectSetting } from './SelectSetting'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
 
 type Props = {
   productId: string
@@ -15,7 +16,7 @@ type Props = {
 }
 
 // The settings a product may set on its devices, with the values each takes: on or off, the reflector's modes.
-type Offered = { name: string; label: string; choices: { key: string; name: string; value: any }[] }
+type Offered = { name: string; label: string; icon: string; choices: { key: string; name: string; value: any }[] }
 
 const UNSET = ''
 
@@ -25,12 +26,18 @@ function offered(t: TFunction): Offered[] {
     { key: 'off', name: t('productSettings.off', 'Off'), value: false },
   ]
   return [
-    { name: 'services', label: t('productSettings.services', 'Share this device'), choices: onOff },
-    { name: 'subnet', label: t('productSettings.subnet', 'Access'), choices: onOff },
-    { name: 'scripts', label: t('productSettings.scripts', 'Allow scripts'), choices: onOff },
+    {
+      name: 'services',
+      label: t('productSettings.services', 'Share this device'),
+      icon: 'network-wired',
+      choices: onOff,
+    },
+    { name: 'subnet', label: t('productSettings.subnet', 'Access'), icon: 'chart-network', choices: onOff },
+    { name: 'scripts', label: t('productSettings.scripts', 'Allow scripts'), icon: 'scroll', choices: onOff },
     {
       name: 'websocket',
       label: t('productSettings.websocket', 'Relay'),
+      icon: 'arrows-repeat',
       choices: [
         { key: 'auto', name: t('productSettings.websocketAuto', 'Automatic'), value: 'auto' },
         { key: 'on', name: t('productSettings.websocketOn', 'Always'), value: 'on' },
@@ -69,16 +76,16 @@ export const ProductPolicySettings: React.FC<Props> = ({ productId, settings, ma
   }
 
   return (
-    <Box marginTop={3} data-product-settings>
-      <Typography variant="subtitle2" color="textSecondary">
-        {t('productSettings.title', 'Device Settings')}
-      </Typography>
-      <Typography variant="caption" color="textSecondary" component="p">
-        {t(
-          'productSettings.hint',
-          'A setting left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.'
-        )}
-      </Typography>
+    <Box marginTop={2} data-product-settings>
+      <Typography variant="subtitle1">{t('productSettings.title', 'Device Settings')}</Typography>
+      <Gutters top={null} bottom="xs">
+        <Typography variant="caption" component="p">
+          {t(
+            'productSettings.hint',
+            'A setting left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.'
+          )}
+        </Typography>
+      </Gutters>
       <List disablePadding>
         {rows.map(row => {
           const current = settings.find(s => s.name === row.name)
@@ -87,12 +94,11 @@ export const ProductPolicySettings: React.FC<Props> = ({ productId, settings, ma
             <SelectSetting
               key={row.name}
               data-product-setting={row.name}
+              icon={row.icon}
               label={row.label}
               value={value}
               values={[{ key: UNSET, name: t('productSettings.unset', 'Each device’s own') }, ...row.choices]}
               disabled={!manage || saving === row.name}
-              disableGutters
-              hideIcon
               onChange={key =>
                 key !== value && set(row.name, key === UNSET ? null : row.choices.find(c => c.key === key)?.value)
               }
@@ -106,16 +112,17 @@ export const ProductPolicySettings: React.FC<Props> = ({ productId, settings, ma
             subLabel={JSON.stringify(setting.value)}
             button={manage ? t('productSettings.unsetButton', 'Unset') : undefined}
             buttonDisabled={saving === setting.name}
-            disableGutters
-            hideIcon
+            icon="sliders-h"
             onButtonClick={() => set(setting.name, null)}
           />
         ))}
       </List>
       {refusal && (
-        <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
-          {refusal}
-        </Notice>
+        <Gutters>
+          <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
+            {refusal}
+          </Notice>
+        </Gutters>
       )}
     </Box>
   )

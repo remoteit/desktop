@@ -18,6 +18,7 @@ import { deprecatedLine } from './DeviceSettingRow'
 import { SelectSetting } from './SelectSetting'
 import { timeOptions } from './Timestamp'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
 import { asksConsent, capabilitiesLine, consentCovers, productRelease } from '../helpers/appsHelper'
 import { graphQLCatalogApp } from '../services/graphQLAppCatalog'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
@@ -120,31 +121,31 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, accountId, apps,
       : t('productApps.unset', 'Unset: each device’s own')
 
   return (
-    <Box marginTop={3} data-product-apps>
-      <Typography variant="subtitle2" color="textSecondary">
-        {t('productApps.title', 'Apps')}
-      </Typography>
-      <Typography variant="caption" color="textSecondary" component="p">
-        {sync === 'enforced'
-          ? t(
-              'productApps.hintEnforcedStates',
-              'An app set here is locked on its devices. One not listed is removed from them, as the product is enforced.'
-            )
-          : `${t(
-              'productApps.hintStates',
-              'Enabled adds and runs it on the product’s devices. Disabled adds it stopped. Removed takes it off them.'
-            )} ${t(
-              'productApps.hintUnset',
-              'One left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.'
-            )}`}
-      </Typography>
+    <Box marginTop={2} data-product-apps>
+      <Typography variant="subtitle1">{t('productApps.title', 'Apps')}</Typography>
+      <Gutters top={null} bottom="xs">
+        <Typography variant="caption" component="p">
+          {sync === 'enforced'
+            ? t(
+                'productApps.hintEnforcedStates',
+                'An app set here is locked on its devices. One not listed is removed from them, as the product is enforced.'
+              )
+            : `${t(
+                'productApps.hintStates',
+                'Enabled adds and runs it on the product’s devices. Disabled adds it stopped. Removed takes it off them.'
+              )} ${t(
+                'productApps.hintUnset',
+                'One left unset is each device’s own. One set here is locked on its devices while the product is synced or enforced.'
+              )}`}
+        </Typography>
+      </Gutters>
       <List dense disablePadding>
         {apps.map(app => {
           const settings = app.settings.filter(setting => !setting.deprecated || setting.value !== null)
           const value = app.state ?? UNSET
           return (
             <Box component="li" key={app.id} data-product-app={app.id} sx={{ listStyle: 'none' }}>
-              <ListItem component="div" disableGutters sx={{ alignItems: 'flex-start' }}>
+              <ListItem component="div" sx={{ alignItems: 'flex-start' }}>
                 <ListItemIcon sx={{ marginTop: 0.5 }}>
                   <AppIcon icon={app.icon} protocol={app.protocol} size="md" />
                 </ListItemIcon>
@@ -214,7 +215,6 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, accountId, apps,
                     { key: 'removed', name: t('productApps.stateRemoved', 'Removed') },
                   ]}
                   disabled={!manage || saving === app.id}
-                  disableGutters
                   hideIcon
                   onChange={key => key !== value && setApp(app, key === UNSET ? null : (key as ProductAppState))}
                 />
@@ -243,9 +243,11 @@ export const ProductPolicyApps: React.FC<Props> = ({ productId, accountId, apps,
         })}
       </List>
       {refusal && (
-        <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
-          {refusal}
-        </Notice>
+        <Gutters>
+          <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
+            {refusal}
+          </Notice>
+        </Gutters>
       )}
       <RootConsent
         product
@@ -293,7 +295,6 @@ const ProductRemovedSettingRow: React.FC<{
   const { t } = useTranslation()
   return (
     <ListItem
-      disableGutters
       dense
       sx={{ paddingLeft: `${spacing.sm}px` }}
       data-product-app-removed={removed.name}
@@ -352,7 +353,6 @@ const ProductAppSettingRow: React.FC<{
         values={[unset, ...choices]}
         helperText={note || undefined}
         disabled={disabled}
-        disableGutters
         hideIcon
         onChange={key => key !== value && onChange(key === UNSET ? null : choices.find(c => c.key === key)?.value)}
       />
@@ -395,7 +395,7 @@ const ProductAppSettingField: React.FC<{
   }
 
   return (
-    <ListItem disableGutters dense sx={{ paddingLeft: `${spacing.sm}px` }} data-product-app-setting={setting.name}>
+    <ListItem dense sx={{ paddingLeft: `${spacing.sm}px` }} data-product-app-setting={setting.name}>
       <TextField
         fullWidth
         variant="standard"

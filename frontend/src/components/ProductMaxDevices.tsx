@@ -15,6 +15,8 @@ import { selectActiveAccountId } from '../selectors/accounts'
 import { selectPermissions } from '../selectors/organizations'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
+import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 
 type SettingProps = {
   value: MaxDevices
@@ -44,10 +46,8 @@ export const ProductMaxDevicesSetting: React.FC<SettingProps> = ({ value, manage
   const counted = current.devicesCounted
 
   return (
-    <Box marginTop={3} data-max-devices={current.maxDevices ?? 'none'}>
-      <Typography variant="subtitle2" color="textSecondary">
-        {t('productMaxDevices.title', 'Device limit')}
-      </Typography>
+    <Box marginTop={2} data-max-devices={current.maxDevices ?? 'none'}>
+      <Typography variant="subtitle1">{t('productMaxDevices.title', 'Device limit')}</Typography>
       <List disablePadding>
         <InlineTextFieldSetting
           icon="hashtag"
@@ -58,7 +58,6 @@ export const ProductMaxDevicesSetting: React.FC<SettingProps> = ({ value, manage
           }
           placeholder={t('productMaxDevices.placeholder', 'No maximum')}
           disabled={!manage}
-          disableGutters
           maxLength={7}
           validate={typed =>
             parseMaxDevices(typed) === undefined
@@ -87,29 +86,35 @@ export const ProductMaxDevicesSetting: React.FC<SettingProps> = ({ value, manage
         />
       </List>
       {counted != null && (
-        <Typography variant="caption" color="textSecondary" component="p">
-          {t(
-            'productMaxDevices.aboutLive',
-            'Devices that count toward the limit: {{counted}}. Disabled devices do not count. At the limit, a new device waits and tries again later. We email you the first time, then at most once a day.',
-            { counted }
-          )}
-        </Typography>
+        <Box sx={{ marginLeft: `${spacing.md + LIST_ITEM_ICON_WIDTH}px`, marginRight: `${spacing.xl}px` }}>
+          <Typography variant="caption" color="textSecondary" component="p">
+            {t(
+              'productMaxDevices.aboutLive',
+              'Devices that count toward the limit: {{counted}}. Disabled devices do not count. At the limit, a new device waits and tries again later. We email you the first time, then at most once a day.',
+              { counted }
+            )}
+          </Typography>
+        </Box>
       )}
       {over > 0 && (
-        <Notice severity="warning" fullWidth>
-          {t(
-            'productMaxDevices.overLive',
-            '{{over}} over: no device joins or comes back on until {{over}} are removed or disabled.',
-            {
-              over,
-            }
-          )}
-        </Notice>
+        <Gutters>
+          <Notice severity="warning" fullWidth>
+            {t(
+              'productMaxDevices.overLive',
+              '{{over}} over: no device joins or comes back on until {{over}} are removed or disabled.',
+              {
+                over,
+              }
+            )}
+          </Notice>
+        </Gutters>
       )}
       {refusal !== undefined && (
-        <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
-          {refusal || t('productMaxDevices.notChanged', 'The maximum was not changed.')}
-        </Notice>
+        <Gutters>
+          <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
+            {refusal || t('productMaxDevices.notChanged', 'The maximum was not changed.')}
+          </Notice>
+        </Gutters>
       )}
     </Box>
   )

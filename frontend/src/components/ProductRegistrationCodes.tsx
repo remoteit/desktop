@@ -114,10 +114,13 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
       color="danger"
       title={
         code === current && locked
-          ? t('productRegistrationCodes.revokeLastCredential', 'Rotate the code or create a join key first: this is the only code in force')
+          ? t(
+              'productRegistrationCodes.revokeLastCredential',
+              'Rotate the code or create a join key first: this is the only code in force'
+            )
           : modern
-            ? t('productRegistrationCodes.revokeAction', 'Revoke code')
-            : t('productRegistrationCodes.revoke', 'Revoke')
+          ? t('productRegistrationCodes.revokeAction', 'Revoke code')
+          : t('productRegistrationCodes.revoke', 'Revoke')
       }
       loading={revoking === code.code}
       disabled={busy || (modern && !admin) || (code === current && locked)}
@@ -125,17 +128,20 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
     />
   )
 
-  const lastUse = (code: IDeviceProductCode) => modern && (
-    <>
-      {' · '}
-      {code.lastUsed ? (
-        <>
-          {t('productRegistrationCodes.lastUsed', 'Last used')}{' '}
-          <Timestamp date={new Date(code.lastUsed)} variant="minutes" />
-        </>
-      ) : t('productRegistrationCodes.noUse', 'No use recorded')}
-    </>
-  )
+  const lastUse = (code: IDeviceProductCode) =>
+    modern && (
+      <>
+        {' · '}
+        {code.lastUsed ? (
+          <>
+            {t('productRegistrationCodes.lastUsed', 'Last used')}{' '}
+            <Timestamp date={new Date(code.lastUsed)} variant="minutes" />
+          </>
+        ) : (
+          t('productRegistrationCodes.noUse', 'No use recorded')
+        )}
+      </>
+    )
 
   const replaceButton = (
     <ConfirmButton
@@ -172,15 +178,17 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
                 {endsServiceIds}
               </Notice>
             )}
-            {current && <List disablePadding>
-              <ListItemCheckbox
-                checked={revokePrevious}
-                label={t('productRegistrationCodes.revokeNow', 'Revoke the current code now too')}
-                subLabel={t('productRegistrationCodes.revokeNowHelp', 'If it leaked.')}
-                onClick={setRevokePrevious}
-                disableGutters
-              />
-            </List>}
+            {current && (
+              <List disablePadding>
+                <ListItemCheckbox
+                  checked={revokePrevious}
+                  label={t('productRegistrationCodes.revokeNow', 'Revoke the current code now too')}
+                  subLabel={t('productRegistrationCodes.revokeNowHelp', 'If it leaked.')}
+                  onClick={setRevokePrevious}
+                  disableGutters
+                />
+              </List>
+            )}
           </>
         ),
       }}
@@ -197,28 +205,33 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
   )
 
   return (
-    <Box sx={{ marginTop: 3 }}>
-      <Typography variant="subtitle2" color="textSecondary">
+    <Box sx={{ marginTop: 2 }}>
+      <Typography variant="subtitle1">
         {modern
           ? t('productRegistrationCodes.reusableTitle', 'Reusable codes')
           : t('productRegistrationCodes.title', 'Codes in use')}
       </Typography>
-      {modern && !current && replaceButton}
-      <Typography variant="body2" color="textSecondary" gutterBottom>
-        {modern
-          ? t(
-              'productRegistrationCodes.soloDescription',
-              'Replacing the code updates the registration command. Earlier codes keep registering devices until you revoke them.'
-            )
-          : t(
-              'productRegistrationCodes.description',
-              "Replacing the code updates the command above. Devices already registered aren't affected."
-            )}
-      </Typography>
+      {modern && !current && (
+        <Gutters top={null} bottom="xs">
+          {replaceButton}
+        </Gutters>
+      )}
+      <Gutters top={null} bottom="xs">
+        <Typography variant="caption" component="p">
+          {modern
+            ? t(
+                'productRegistrationCodes.soloDescription',
+                'Replacing the code updates the registration command. Earlier codes keep registering devices until you revoke them.'
+              )
+            : t(
+                'productRegistrationCodes.description',
+                "Replacing the code updates the command above. Devices already registered aren't affected."
+              )}
+        </Typography>
+      </Gutters>
       <List dense disablePadding>
         {current && (
           <ListItem
-            disableGutters
             sx={{ paddingRight: modern ? 28 : 16 }}
             secondaryAction={
               <>
@@ -240,12 +253,7 @@ export const ProductRegistrationCodes: React.FC<Props> = ({ product }) => {
           </ListItem>
         )}
         {previous.map(code => (
-          <ListItem
-            key={code.code}
-            disableGutters
-            sx={{ paddingRight: 16 }}
-            secondaryAction={revokeButton(code)}
-          >
+          <ListItem key={code.code} sx={{ paddingRight: 16 }} secondaryAction={revokeButton(code)}>
             {chipColumn(t('productRegistrationCodes.previous', 'Previous'), 'grayDark')}
             <ListItemText
               primary={codeText(code)}

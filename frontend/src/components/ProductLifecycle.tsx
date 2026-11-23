@@ -7,6 +7,7 @@ import { ProductLifecycle as Lifecycle } from '../services/graphQLDeviceProducts
 import { selectPermissions } from '../selectors/organizations'
 import { ListItemSetting } from './ListItemSetting'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
 import { dispatch } from '../store'
 
 type SettingProps = {
@@ -43,10 +44,8 @@ export const ProductLifecycleSetting: React.FC<SettingProps> = ({ name, lifecycl
   }
 
   return (
-    <Box marginTop={3} data-lifecycle={lifecycle}>
-      <Typography variant="subtitle2" color="textSecondary">
-        {t('productLifecycle.title', 'Device lifecycle')}
-      </Typography>
+    <Box marginTop={2} data-lifecycle={lifecycle}>
+      <Typography variant="subtitle1">{t('productLifecycle.title', 'Device lifecycle')}</Typography>
       <List disablePadding>
         <ListItemSetting
           icon="recycle"
@@ -61,7 +60,6 @@ export const ProductLifecycleSetting: React.FC<SettingProps> = ({ name, lifecycl
           }
           toggle={ephemeral}
           disabled={!manage || saving}
-          disableGutters
           confirm
           confirmProps={{
             title: ephemeral
@@ -96,9 +94,11 @@ export const ProductLifecycleSetting: React.FC<SettingProps> = ({ name, lifecycl
         />
       </List>
       {refusal !== undefined && (
-        <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
-          {refusal || t('productLifecycle.notChanged', 'The lifecycle was not changed.')}
-        </Notice>
+        <Gutters>
+          <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
+            {refusal || t('productLifecycle.notChanged', 'The lifecycle was not changed.')}
+          </Notice>
+        </Gutters>
       )}
     </Box>
   )
