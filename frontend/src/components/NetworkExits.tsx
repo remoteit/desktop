@@ -81,6 +81,7 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
       {adding && (
         <Gutters>
           <TextField
+            variant="filled"
             select
             fullWidth
             size="small"

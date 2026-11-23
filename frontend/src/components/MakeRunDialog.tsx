@@ -112,6 +112,7 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
           />
           {mode === 'new' && (
             <TextField
+              variant="filled"
               size="small"
               label={t('makeRun.name', 'Name')}
               value={name}
@@ -137,6 +138,7 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
           />
           {mode === 'existing' && (
             <TextField
+              variant="filled"
               select
               size="small"
               label={kind === 'exit' ? t('makeRun.exit', 'Exit') : t('makeRun.proxy', 'Proxy')}

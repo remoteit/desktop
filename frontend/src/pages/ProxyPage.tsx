@@ -691,6 +691,7 @@ const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved:
         </Typography>
       ) : (
         <TextField
+          variant="filled"
           select
           fullWidth
           size="small"
