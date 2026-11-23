@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Autocomplete,
-  Box,
   Button,
   Checkbox,
   Chip,
@@ -20,6 +19,8 @@ import { Dispatch, State } from '../store'
 import { MAX_NAME_LENGTH } from '@common/constants'
 import { TargetPlatform } from './TargetPlatform'
 import { Notice } from './Notice'
+import { FormField } from './FormField'
+import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 import { useGateways } from '../hooks/useGateways'
 import { isAddressOnly } from '../helpers/virtualDeviceHelper'
@@ -122,10 +123,9 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
   return (
     <form onSubmit={submit}>
       <List>
-        <ListItem>
+        <FormField>
           <TextField
             required
-            fullWidth
             autoFocus={!prefill.name}
             label={t('virtualDeviceForm.name', 'Name')}
             value={name}
@@ -133,166 +133,162 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
             inputProps={{ maxLength: MAX_NAME_LENGTH }}
             onChange={event => setName(event.target.value)}
           />
-        </ListItem>
-        <ListItem sx={{ flexDirection: 'column', alignItems: 'stretch' }}>
+        </FormField>
+        <FormField
+          help={
+            prefill.addresses?.filter(a => a !== host).length
+              ? t('virtualDeviceForm.addressAlternatives', {
+                  addresses: prefill.addresses.filter(a => a !== host).join(', '),
+                  defaultValue: 'or {{addresses}}',
+                })
+              : t('virtualDeviceForm.addressHint', 'Its .local name, or its IP address. Its services use it.')
+          }
+        >
           <TextField
             required
-            fullWidth
             label={t('virtualDeviceForm.address', 'Address')}
             value={host}
             variant="filled"
             disabled={converting}
             placeholder="nas.local"
             InputLabelProps={{ shrink: true }}
-            helperText={
-              prefill.addresses?.filter(a => a !== host).length
-                ? t('virtualDeviceForm.addressAlternatives', {
-                    addresses: prefill.addresses.filter(a => a !== host).join(', '),
-                    defaultValue: 'or {{addresses}}',
-                  })
-                : t('virtualDeviceForm.addressHint', 'Its .local name, or its IP address. Its services use it.')
-            }
             onChange={event => setHost(event.target.value)}
           />
-          {isAddressOnly(host) && (
-            <Notice severity="warning" gutterTop>
-              {t(
-                'virtualDeviceForm.dhcpHint',
-                "This address can change if your router assigns a new one. Reserve it in the router's DHCP settings to keep this device reachable."
-              )}
-            </Notice>
-          )}
-        </ListItem>
-        <ListItem sx={{ flexDirection: 'column', alignItems: 'stretch' }}>
-          <Typography variant="caption" color="textSecondary" gutterBottom>
-            {t('virtualDeviceForm.platform', 'Platform')}
-          </Typography>
-          <Stack direction="row" flexWrap="wrap" gap={0.75}>
-            {choices.list.map(choice => (
-              <PlatformChip
-                key={choice.type}
-                choice={choice}
-                selected={platform === choice.type}
-                suggested={choice.type === prefill.platform}
-                onClick={() => setPlatform(platform === choice.type ? undefined : choice.type)}
-              />
-            ))}
-            {!more && (
-              <Chip
-                label={t('virtualDeviceForm.morePlatforms', 'More…')}
-                variant="outlined"
-                onClick={() => setMore(true)}
-              />
+        </FormField>
+      </List>
+      {isAddressOnly(host) && (
+        <Gutters top={null}>
+          <Notice severity="warning" fullWidth>
+            {t(
+              'virtualDeviceForm.dhcpHint',
+              "This address can change if your router assigns a new one. Reserve it in the router's DHCP settings to keep this device reachable."
             )}
-          </Stack>
-          {more && (
-            <Autocomplete<PlatformChoice>
-              options={choices.all}
-              getOptionLabel={option => option.name}
-              value={choices.all.find(c => c.type === platform) || null}
-              onChange={(_, value) => setPlatform(value?.type)}
-              sx={{ marginTop: 1 }}
-              renderOption={(props, option) => (
-                <li {...props} key={option.type}>
-                  <TargetPlatform id={option.type} inlineLeft />
-                  {option.name}
-                </li>
-              )}
-              renderInput={params => (
-                <TextField
-                  {...params}
-                  variant="filled"
-                  label={t('virtualDeviceForm.searchPlatforms', 'Any platform')}
-                />
-              )}
+          </Notice>
+        </Gutters>
+      )}
+      <Typography variant="subtitle1">{t('virtualDeviceForm.platform', 'Platform')}</Typography>
+      <Gutters top={null}>
+        <Stack direction="row" flexWrap="wrap" gap={0.75}>
+          {choices.list.map(choice => (
+            <PlatformChip
+              key={choice.type}
+              choice={choice}
+              selected={platform === choice.type}
+              suggested={choice.type === prefill.platform}
+              onClick={() => setPlatform(platform === choice.type ? undefined : choice.type)}
+            />
+          ))}
+          {!more && (
+            <Chip
+              label={t('virtualDeviceForm.morePlatforms', 'More…')}
+              variant="outlined"
+              onClick={() => setMore(true)}
             />
           )}
-        </ListItem>
-        <ListItem sx={{ flexDirection: 'column', alignItems: 'stretch' }}>
-          <Typography variant="caption" color="textSecondary">
-            {t('virtualDeviceForm.services', 'Services')}
+        </Stack>
+      </Gutters>
+      {more && (
+        <FormField>
+          <Autocomplete<PlatformChoice>
+            options={choices.all}
+            getOptionLabel={option => option.name}
+            value={choices.all.find(c => c.type === platform) || null}
+            onChange={(_, value) => setPlatform(value?.type)}
+            renderOption={(props, option) => (
+              <li {...props} key={option.type}>
+                <TargetPlatform id={option.type} inlineLeft />
+                {option.name}
+              </li>
+            )}
+            renderInput={params => (
+              <TextField {...params} variant="filled" label={t('virtualDeviceForm.searchPlatforms', 'Any platform')} />
+            )}
+          />
+        </FormField>
+      )}
+      <Typography variant="subtitle1">{t('virtualDeviceForm.services', 'Services')}</Typography>
+      {converting && (
+        <Gutters top={null} bottom="xs">
+          <Typography variant="caption">
+            {t(
+              'virtualDeviceForm.convertHint',
+              'These services move from the gateway to the new device, with their shares and grants.'
+            )}
           </Typography>
-          {converting && (
-            <Typography variant="body2" color="textSecondary" gutterBottom>
-              {t(
-                'virtualDeviceForm.convertHint',
-                'These services move from the gateway to the new device, with their shares and grants.'
-              )}
-            </Typography>
-          )}
-          <List dense disablePadding>
-            {services.map((s, index) => (
-              <ListItem key={index} disableGutters dense>
-                <ListItemIcon>
-                  <Checkbox
-                    edge="start"
-                    checked={!!s.checked}
-                    disabled={converting}
-                    onChange={event =>
-                      setServices(services.map((o, i) => (i === index ? { ...o, checked: event.target.checked } : o)))
-                    }
-                  />
-                </ListItemIcon>
-                <ListItemText primary={s.name} />
-                <Typography variant="caption" fontFamily="monospace" color="textSecondary">
-                  {typeName(s.application) || s.protocol || 'TCP'} :{s.port}
-                  {s.host && s.host !== host ? ` · ${s.host}` : ''}
-                </Typography>
-              </ListItem>
-            ))}
-          </List>
-          {!converting && (
-            <Stack direction="row" gap={1} alignItems="center" marginTop={1}>
-              <TextField
-                select
-                size="small"
-                variant="filled"
-                label={t('virtualDeviceForm.serviceType', 'Add a service')}
-                InputLabelProps={{ shrink: true }}
-                value={newType}
-                sx={{ minWidth: 180 }}
-                onChange={event => {
-                  const id = Number(event.target.value)
-                  setNewType(id)
-                  setNewPort(String(applicationTypes.find(a => a.id === id)?.port || ''))
-                }}
-              >
-                {applicationTypes
-                  .filter(a => a.port)
-                  .map(a => (
-                    <MenuItem key={a.id} value={a.id}>
-                      {a.name}
-                    </MenuItem>
-                  ))}
-              </TextField>
-              <TextField
-                size="small"
-                variant="filled"
-                label={t('virtualDeviceForm.port', 'Port')}
-                InputLabelProps={{ shrink: true }}
-                value={newPort}
-                sx={{ width: 100 }}
-                onChange={event => setNewPort(event.target.value.replace(/\D/g, ''))}
+        </Gutters>
+      )}
+      <List dense disablePadding>
+        {services.map((s, index) => (
+          <ListItem key={index} dense>
+            <ListItemIcon>
+              <Checkbox
+                checked={!!s.checked}
+                disabled={converting}
+                onChange={event =>
+                  setServices(services.map((o, i) => (i === index ? { ...o, checked: event.target.checked } : o)))
+                }
               />
-              <Button size="small" disabled={newType === ''} onClick={addService}>
-                {t('virtualDeviceForm.addService', 'Add')}
-              </Button>
-            </Stack>
+            </ListItemIcon>
+            <ListItemText primary={s.name} />
+            <Typography variant="caption" fontFamily="monospace" color="textSecondary">
+              {typeName(s.application) || s.protocol || 'TCP'} :{s.port}
+              {s.host && s.host !== host ? ` · ${s.host}` : ''}
+            </Typography>
+          </ListItem>
+        ))}
+      </List>
+      {!converting && (
+        <Gutters top="xs">
+          <Stack direction="row" gap={1} alignItems="center">
+            <TextField
+              select
+              variant="filled"
+              label={t('virtualDeviceForm.serviceType', 'Add a service')}
+              InputLabelProps={{ shrink: true }}
+              value={newType}
+              sx={{ minWidth: 180 }}
+              onChange={event => {
+                const id = Number(event.target.value)
+                setNewType(id)
+                setNewPort(String(applicationTypes.find(a => a.id === id)?.port || ''))
+              }}
+            >
+              {applicationTypes
+                .filter(a => a.port)
+                .map(a => (
+                  <MenuItem key={a.id} value={a.id}>
+                    {a.name}
+                  </MenuItem>
+                ))}
+            </TextField>
+            <TextField
+              variant="filled"
+              label={t('virtualDeviceForm.port', 'Port')}
+              InputLabelProps={{ shrink: true }}
+              value={newPort}
+              sx={{ width: 100 }}
+              onChange={event => setNewPort(event.target.value.replace(/\D/g, ''))}
+            />
+            <Button disabled={newType === ''} onClick={addService}>
+              {t('virtualDeviceForm.addService', 'Add')}
+            </Button>
+          </Stack>
+        </Gutters>
+      )}
+      <List>
+        <FormField
+          help={t(
+            'virtualDeviceForm.gatewayHint',
+            'A device you manage on the same network. Connections reach the virtual device through it.'
           )}
-        </ListItem>
-        <ListItem sx={{ flexDirection: 'column', alignItems: 'stretch' }}>
+        >
           <TextField
             select
             required
-            fullWidth
             variant="filled"
             label={t('virtualDeviceForm.gateway', 'Gateway')}
             value={gatewayId}
             disabled={converting}
-            helperText={t(
-              'virtualDeviceForm.gatewayHint',
-              'A device you manage on the same network. Connections reach the virtual device through it.'
-            )}
             onChange={event => setGatewayId(event.target.value)}
           >
             {gateways.map(g => (
@@ -302,18 +298,19 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
               </MenuItem>
             ))}
           </TextField>
-          {!gateways.length && (
-            <Notice severity="info" gutterTop>
-              {t(
-                'virtualDeviceForm.noGatewaysYet',
-                'None of your devices can be a gateway yet. Install Remote.It on a device on the same network first.'
-              )}
-            </Notice>
-          )}
-        </ListItem>
+        </FormField>
       </List>
-      <Box display="flex" justifyContent="flex-end" gap={1} paddingX={2}>
-        <Button onClick={onCancel}>{t('common.cancel', 'Cancel')}</Button>
+      {!gateways.length && (
+        <Gutters top={null}>
+          <Notice severity="info" fullWidth>
+            {t(
+              'virtualDeviceForm.noGatewaysYet',
+              'None of your devices can be a gateway yet. Install Remote.It on a device on the same network first.'
+            )}
+          </Notice>
+        </Gutters>
+      )}
+      <Gutters top="lg">
         <Button type="submit" variant="contained" color="primary" disabled={!ready}>
           {saving
             ? t('virtualDeviceForm.adding', 'Adding…')
@@ -321,7 +318,8 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
             ? t('virtualDeviceForm.convert', 'Make virtual device')
             : t('virtualDeviceForm.add', 'Add device')}
         </Button>
-      </Box>
+        <Button onClick={onCancel}>{t('common.cancel', 'Cancel')}</Button>
+      </Gutters>
     </form>
   )
 }
