@@ -34,7 +34,10 @@ vi.mock('../../services/browser', () => ({ openServiceURL: vi.fn() }))
 vi.mock('../../services/localSubnet', () => ({ subnetWebURL: (name: string, port: number) => `https://${name}:${port}` }))
 vi.mock('../../helpers/terminalHelper', () => ({ openTerminal: terminal }))
 vi.mock('../../hooks/useClipboard', () => ({ default: () => ({ copy, copied: false }) }))
-vi.mock('@common/applications', () => ({ getApplicationType: (id: number) => ({ urlForm: id === 8 }) }))
+vi.mock('@common/applications', async importOriginal => ({
+  ...(await importOriginal<object>()),
+  getApplicationType: (id: number) => ({ urlForm: id === 8 }),
+}))
 
 import { chooseDevices, ThisDeviceDevices } from './ThisDeviceDevices'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
