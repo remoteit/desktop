@@ -21,7 +21,7 @@ import { CarrierWhy } from './CarrierWhy'
 import { LoadingMessage } from './LoadingMessage'
 import { Notice } from './Notice'
 import { Gutters } from './Gutters'
-import { FormField } from './FormField'
+import { FormField, choiceListSx } from './FormField'
 
 // An account of more than this many devices names those to weigh.
 export const CANDIDATES_MAX = 1000
@@ -174,7 +174,7 @@ export const RunDevicePicker: React.FC<Props> = ({
             : t('carry.noCandidatesProxy', 'You have no device that can run a proxy server yet. Add a device first.')}
         </Typography>
       ) : (
-        <List dense disablePadding sx={{ maxHeight: 340, overflowY: 'auto' }}>
+        <List dense disablePadding sx={{ ...choiceListSx, maxHeight: 340, overflowY: 'auto' }}>
           {shown.map(candidate => (
             <ListItemButton
               key={candidate.id}
