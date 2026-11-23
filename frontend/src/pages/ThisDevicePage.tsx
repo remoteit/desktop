@@ -11,6 +11,7 @@ import { DeviceNameSetting } from '../components/DeviceNameSetting'
 import { DeviceContext } from '../services/Context'
 import { selectDevice } from '../selectors/devices'
 import { useThisDevice } from '../hooks/useThisDevice'
+import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { ThisDevicePart, ThisDeviceView } from '../components/thisDevice/ThisDeviceView'
 import { TransferUsageHint } from '../components/TransferUsage'
 import { readCloudExits } from '../components/thisDevice/readCloudExits'
@@ -36,6 +37,7 @@ export const ThisDevicePage: React.FC = () => {
   const device = useThisDevice()
   const signedIn = useSelector((state: State) => state.auth.authenticated)
   const userId = useSelector((state: State) => state.auth.user?.id)
+  const deviceSessions = useDeviceSessions()
   const match = useRouteMatch<{ part?: string }>('/this-device/:part')
   const part: ThisDevicePart =
     match?.params.part === 'details' ? 'details' : match?.params.part === 'advanced' ? 'advanced' : 'main'
@@ -78,6 +80,7 @@ export const ThisDevicePage: React.FC = () => {
               signedIn ? shown => <TransferUsageHint accountId={userId} kind="exit" shown={shown} /> : undefined
             }
             readExits={signedIn ? readCloudExits : undefined}
+            exitRunsHref={signedIn && deviceSessions ? uid => `#/devices/${uid}/runs` : undefined}
             renderRegistration={
               signedIn && device.has('registration')
                 ? status => <DeviceRegistration device={device} status={status} />

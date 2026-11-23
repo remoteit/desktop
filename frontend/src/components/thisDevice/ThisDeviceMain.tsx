@@ -50,7 +50,9 @@ export const ThisDeviceMain: React.FC<{
     (has('logging') && !!m.logging) ||
     has('diagnostics') ||
     (has('app') && !!m.app?.openAtLogin) ||
-    (has('remove') && !!d?.removal)
+    (has('remove') && !!d?.removal) ||
+    (has('ssh') && !!m.status?.ssh) ||
+    (has('exitNode') && !!m.status?.exitNode)
 
   return (
     <>

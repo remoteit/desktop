@@ -12,9 +12,15 @@ import {
   Capability,
   DeviceSetting,
   DeviceStatus,
+  ExitNodeCheck,
+  ExitNodeExit,
+  ExitNodeJoined,
+  ExitNodeRuns,
+  ExitNodeStatus,
   ExitRef,
   LoggingState,
   PermissionState,
+  SshState,
 } from './thisDevice'
 
 /* A stand-in shell for thisDevice: a machine's state in memory, every method of the bridge over it, and its events —
@@ -47,6 +53,21 @@ export type MockBridgeOptions = {
   app?: AppPrefs
   logging?: LoggingState
   confirmRemove?: boolean
+  // 1.12.0: the person's ssh ('ssh'; off and signed in unless said), and offering the machine as an exit ('exitNode').
+  ssh?: SshState
+  exitNode?: MockExitNode
+}
+
+// The owner's exits and the one the machine runs (none unless said); a join or a create puts it in one, joining, with
+// checks; refusal refuses every join and create as the cloud would, leaveRefusal a leave; confirm false is the administrator saying no ('cancelled').
+export type MockExitNode = {
+  status?: ExitNodeStatus
+  exits?: ExitNodeExit[]
+  runs?: ExitNodeRuns | null
+  checks?: ExitNodeCheck[]
+  refusal?: string
+  leaveRefusal?: string
+  confirm?: boolean
 }
 
 export type MockBridge = {
@@ -59,6 +80,8 @@ export type MockBridge = {
   app: AppPrefs
   logging: LoggingState
   removed: boolean
+  ssh: SshState
+  exitNode: Required<Pick<MockExitNode, 'exits' | 'runs'>>
   emit<E extends BridgeEvent>(event: E, payload: BridgeEvents[E]): void
   // 1.7.0: what the shell offers changes (its engine came, went or changed): info's answer, the status said from it,
   // and the info event, as a shell sends it.
@@ -86,6 +109,12 @@ const CAPABILITY_OF: { [method: string]: Capability | undefined } = {
   'app.set': 'app',
   'device.remove': 'remove',
   'device.start': 'start',
+  'ssh.get': 'ssh',
+  'ssh.set': 'ssh',
+  'exitNode.list': 'exitNode',
+  'exitNode.join': 'exitNode',
+  'exitNode.create': 'exitNode',
+  'exitNode.leave': 'exitNode',
 }
 
 export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
@@ -145,6 +174,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
     app: options.app ?? { openAtLogin: { on: true } },
     logging: options.logging ?? { detailed: false },
     removed: false,
+    ssh: options.ssh ?? { on: false },
+    exitNode: { exits: options.exitNode?.exits ?? [], runs: options.exitNode?.runs ?? null },
     emit(event, payload) {
       for (const listener of listeners[event] ?? []) listener(payload)
     },
@@ -281,6 +312,61 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
           case 'device.remove':
             bridge.removed = options.confirmRemove ?? false
             return { removed: bridge.removed }
+          case 'ssh.get':
+            return bridge.ssh
+          case 'ssh.set':
+            if (bridge.ssh.needsSignIn) throw new BridgeError('notSignedIn', 'sign in to use remote.it for ssh')
+            bridge.ssh = { on: !!a.on }
+            derive()
+            changed()
+            return bridge.ssh
+          case 'exitNode.list':
+          case 'exitNode.join':
+          case 'exitNode.create':
+          case 'exitNode.leave': {
+            const held = bridge.status.exitNode?.held
+            if (held) throw new BridgeError('refused', `held: ${held}`)
+            if (method === 'exitNode.leave') {
+              const ran = bridge.exitNode.runs
+              if (options.exitNode?.leaveRefusal) throw new BridgeError('refused', options.exitNode.leaveRefusal)
+              if (!ran) throw new BridgeError('refused', 'it runs no exit')
+              bridge.exitNode.runs = null
+              return { left: { id: ran.id, name: ran.name } }
+            }
+            if (method !== 'exitNode.list' && options.exitNode?.confirm === false)
+              throw new BridgeError('cancelled', 'the administrator’s confirmation was cancelled')
+            if (method === 'exitNode.list') {
+              const runs = bridge.exitNode.runs
+              return { exits: bridge.exitNode.exits, runs: runs && { ...runs, checks: null } }
+            }
+            if (options.exitNode?.refusal) throw new BridgeError('refused', options.exitNode.refusal)
+            let exit = bridge.exitNode.exits.find(x => x.id === a.id)
+            const created = method === 'exitNode.create'
+            if (created) {
+              exit = {
+                id: `gmock${bridge.exitNode.exits.length + 1}`,
+                name: a.name?.trim() || `${bridge.status.device?.name} exit`,
+                devices: 1,
+                inService: 0,
+                users: 0,
+                dormant: true,
+                lan: false,
+              }
+              bridge.exitNode.exits = [...bridge.exitNode.exits, exit]
+            }
+            if (!exit) throw new BridgeError('refused', 'no such exit of its owner’s')
+            const runs: ExitNodeRuns = {
+              id: exit.id,
+              name: exit.name,
+              state: 'retired',
+              joining: true,
+              lan: exit.lan,
+              checks: options.exitNode?.checks ?? [],
+            }
+            bridge.exitNode.runs = runs
+            const joined: ExitNodeJoined = { exit: { id: exit.id, name: exit.name }, runs, created, turnedOn: false }
+            return joined
+          }
           case 'device.start':
             if (bridge.status.engine === 'stopped') {
               bridge.status = { ...bridge.status, engine: 'online' }
@@ -360,6 +446,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
         : undefined,
       lanServices: capabilities.includes('lanServices') ? served : undefined,
       services: capabilities.includes('services') ? served : undefined,
+      exitNode: capabilities.includes('exitNode') ? s.exitNode ?? options.exitNode?.status ?? {} : undefined,
+      ssh: capabilities.includes('ssh') ? bridge.ssh : undefined,
     }
   }
   derive()

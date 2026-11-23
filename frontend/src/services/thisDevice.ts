@@ -87,9 +87,20 @@
    You.ExitRefusal: "Sign in to choose an exit", "Only someone who manages this device chooses its exit", a sign-in
    not confirmed yet), absent where it may; the page shows the exit read-only with it, rather than offering a choice
    the shell would refuse. A shell before 1.10.0 says none: the page offers the choice, and shows the shell's refusal
-   when it comes. */
+   when it comes.
 
-export const BRIDGE_VERSION = '1.11.0'
+   1.12.0 (additive): the menu's two set-once items, so they can leave the tray for This device (device-package
+   docs/menu-app.md §7.1, §7.5). 'ssh' (ssh.get, ssh.set; DeviceStatus.ssh): the person's own ssh to the addresses
+   they reach, by short-lived certificates — the menu's "Use remote.it for ssh" — offered where the shell sets it up,
+   changed only by someone signed in here (needsSignIn says so); in the status, so a change from the menu reaches the
+   page. 'exitNode' (exitNode.list, exitNode.join, exitNode.create, exitNode.leave;
+   DeviceStatus.exitNode): offering this machine as one of its owner's exits — the menu's "Use this Mac as an exit…":
+   the owner's exits and the one it runs with its checks, a join or a new exit, each confirmed by the machine's
+   administrator first (a no is 'cancelled'), refused while held (exitNode.held). exitNode.leave takes the machine out
+   of the exit it runs: no administrator asked, and refused by the cloud while the exit serves others through it —
+   drained and retired first, the account's, on the device's page. */
+
+export const BRIDGE_VERSION = '1.12.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -111,6 +122,8 @@ export type Capability =
   | 'start' // 1.6.0: device.start — start remote.it again on a machine where it was stopped (engine 'stopped')
   | 'notifications' // 1.8.0: the notification permission, in permissions.get and permissions.request ('permissions')
   | 'localPorts' // 1.9.0: other apps here reach the engine's 127.0.0.1 listeners — a phone offers local ports only with it
+  | 'ssh' // 1.12.0: ssh.get, ssh.set — the person's own ssh to the addresses they reach
+  | 'exitNode' // 1.12.0: exitNode.list, .join, .create, .leave — offer this machine as an exit; DeviceStatus.exitNode
 
 export type Platform = 'mac' | 'windows' | 'linux' | 'ios' | 'android'
 export type Shell = 'menu' | 'capacitor'
@@ -216,6 +229,9 @@ export type DeviceStatus = {
   relay?: { using: boolean }
   // 1.10.0: the local ports that answer this OS account — every one, to the machine's administrator. Absent: not said.
   ports?: ListedPort[]
+  // 1.12.0, with 'exitNode' and 'ssh'.
+  exitNode?: ExitNodeStatus
+  ssh?: SshState
 }
 
 /* 1.10.0: a local port of the machine as the daemon lists it to the caller's OS account (connectd control/client
@@ -238,6 +254,57 @@ export type ListedPort = {
   yours?: boolean
   noOne?: boolean
 }
+
+/* 1.12.0: "Use this machine as an exit" as the shell has it. held: why this account may not here — 'viewer' (it may
+   not change remote.it here), 'forbidden' (the administrator forbids exits on this machine), 'portal' (the
+   administrator keeps it to the portal); absent: it may. lanLocal: this machine decides whether an exit's users reach
+   its own local network (its administrator keeps its exit node local), whatever the exit's setting says. */
+export type ExitNodeStatus = { held?: 'viewer' | 'forbidden' | 'portal' | string; lanLocal?: boolean }
+
+// One of the owner's exits to join: its devices, those in service, the devices using it, whether none is in service
+// (dormant), and whether its users reach the local network of each device running it (lan, the exit's setting).
+export type ExitNodeExit = {
+  id: string
+  name: string
+  devices: number
+  inService: number
+  users: number
+  dormant: boolean
+  lan: boolean
+}
+
+// A check that keeps a device joining from service, in the cloud's words: passed; pending, waiting on what comes by
+// itself; else failed, something to put right.
+export type ExitNodeCheck = { name: string; passed: boolean; pending: boolean; reason: string }
+
+// The exit this machine runs: its state there ('active', 'draining', 'retired'), joining until its checks pass, its
+// LAN open, and the checks — after a join or a create.
+export type ExitNodeRuns = {
+  id: string
+  name: string
+  state: 'active' | 'draining' | 'retired' | string
+  joining: boolean
+  lan: boolean
+  checks?: ExitNodeCheck[] | null
+}
+
+export type ExitNodeList = { exits: ExitNodeExit[] | null; runs: ExitNodeRuns | null }
+// created: the cloud made the exit; turnedOn: the engine turned the machine's exit node on itself (its administrator
+// keeps it local).
+export type ExitNodeJoined = {
+  exit: { id: string; name: string }
+  runs: ExitNodeRuns
+  created: boolean
+  turnedOn: boolean
+}
+
+// left: the exit the machine ran; turnedOff: the engine turned the machine's exit node off itself (its administrator
+// keeps it local).
+export type ExitNodeLeft = { left: { id: string; name: string }; turnedOff?: boolean }
+
+// 1.12.0: the person's own ssh to the addresses they reach. needsSignIn: they are not signed in here, and it changes
+// only once they are.
+export type SshState = { on: boolean; needsSignIn?: boolean }
 
 export type SettingValue = string | number | boolean | null
 
@@ -356,6 +423,16 @@ export type BridgeMethods = {
   'device.remove': { args: {}; result: { removed: boolean } }
   // 1.6.0: remote.it started again where it was stopped; nothing to do while it runs.
   'device.start': { args: {}; result: DeviceStatus }
+  // 1.12.0
+  'ssh.get': { args: {}; result: SshState }
+  'ssh.set': { args: { on: boolean }; result: SshState }
+  // The cloud's answers, through the engine; join and create are confirmed by the machine's administrator first.
+  'exitNode.list': { args: {}; result: ExitNodeList }
+  'exitNode.join': { args: { id: string }; result: ExitNodeJoined }
+  // name: the new exit's; absent or empty, "<device> exit".
+  'exitNode.create': { args: { name?: string }; result: ExitNodeJoined }
+  // Out of the exit it runs: no administrator asked; the cloud refuses while the exit serves others through it.
+  'exitNode.leave': { args: {}; result: ExitNodeLeft }
   'stages.list': { args: {}; result: StageStatus[] }
   'stages.join': { args: { stage: string }; result: StageStatus }
   'stages.leave': { args: { stage: string }; result: {} }
