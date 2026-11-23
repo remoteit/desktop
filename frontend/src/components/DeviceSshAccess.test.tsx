@@ -23,6 +23,7 @@ vi.mock('../buttons/IconButton', () => ({
   ),
 }))
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     t: (_key: string, text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? ''),
   }),

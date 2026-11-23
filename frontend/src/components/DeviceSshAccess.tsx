@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Box,
   Button,
-  Checkbox,
-  FormControlLabel,
   List,
   ListItem,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  ListItemText,
   ListSubheader,
   TextField,
-  Typography,
 } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
-import { spacing } from '../styling'
+import { FormField } from './FormField'
+import { Gutters } from './Gutters'
+import { Icon } from './Icon'
+import { ListItemCheckbox } from './ListItemCheckbox'
 import {
   DeviceSshGrant,
   DeviceSshRead,
@@ -77,48 +79,54 @@ export const DeviceSshAccess: React.FC<{ deviceId: string; untitled?: boolean }>
       : t('deviceSshAccess.asUser', 'as {{login}}', { login: grant.login })
 
   return (
-    <List dense sx={{ paddingBottom: 1 }}>
-      {!untitled && (
-        <ListSubheader disableGutters>{t('deviceSshAccess.terminalAccess', 'Terminal access')}</ListSubheader>
-      )}
-      <ListItem disableGutters>
-        <Typography variant="body2" color="textSecondary">
-          {t('deviceSshAccess.terminalNote', 'Who can sign in through the terminal, and as which account.')}
-        </Typography>
+    <List disablePadding>
+      {!untitled && <ListSubheader>{t('deviceSshAccess.terminalAccess', 'Terminal access')}</ListSubheader>}
+      <ListItem dense>
+        <ListItemIcon>
+          <Icon name="terminal" size="md" fixedWidth />
+        </ListItemIcon>
+        <ListItemText
+          secondary={t('deviceSshAccess.terminalNote', 'Who can sign in through the terminal, and as which account.')}
+        />
       </ListItem>
       {read.grants.map(grant => (
         <React.Fragment key={`${grant.login} ${grant.user.id}`}>
-          <ListItem disableGutters>
-            <Box component="span" sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {grant.user.email ?? grant.user.id}{' '}
-              <Box component="span" sx={{ color: 'grayDark.main' }}>
-                {as(grant)}
-              </Box>
-              {read.fallback && (
-                <Box component="span" sx={{ color: 'grayDark.main' }}>
-                  {' '}
-                  — {t('deviceSshAccess.ownerDefault', 'the owner, by default')}
-                </Box>
+          <ListItem dense sx={{ paddingRight: '90px' }}>
+            <ListItemIcon>
+              <Icon name="user" size="md" fixedWidth />
+            </ListItemIcon>
+            <ListItemText
+              primary={grant.user.email ?? grant.user.id}
+              secondary={
+                read.fallback ? (
+                  <>
+                    {as(grant)} — {t('deviceSshAccess.ownerDefault', 'the owner, by default')}
+                  </>
+                ) : (
+                  as(grant)
+                )
+              }
+            />
+            <ListItemSecondaryAction>
+              {grant.login === '' && (
+                <IconButton
+                  icon="pen"
+                  size="sm"
+                  disabled={busy}
+                  title={t('deviceSshAccess.name', 'Name their account')}
+                  onClick={() => setNaming(naming === grant.user.id ? undefined : grant.user.id)}
+                />
               )}
-            </Box>
-            {grant.login === '' && (
-              <IconButton
-                icon="pen"
-                size="sm"
-                disabled={busy}
-                title={t('deviceSshAccess.name', 'Name their account')}
-                onClick={() => setNaming(naming === grant.user.id ? undefined : grant.user.id)}
-              />
-            )}
-            {!read.fallback && (
-              <IconButton
-                icon="times"
-                size="sm"
-                disabled={busy}
-                title={t('deviceSshAccess.revoke', 'Remove')}
-                onClick={() => revoke(grant.login, grant.user.id)}
-              />
-            )}
+              {!read.fallback && (
+                <IconButton
+                  icon="times"
+                  size="sm"
+                  disabled={busy}
+                  title={t('deviceSshAccess.revoke', 'Remove')}
+                  onClick={() => revoke(grant.login, grant.user.id)}
+                />
+              )}
+            </ListItemSecondaryAction>
           </ListItem>
           {grant.login === '' && naming === grant.user.id && (
             <OwnAccountName
@@ -135,46 +143,38 @@ export const DeviceSshAccess: React.FC<{ deviceId: string; untitled?: boolean }>
           )}
         </React.Fragment>
       ))}
-      <ListItem disableGutters sx={{ gap: 1, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      <FormField>
         <TextField
-          size="small"
           variant="filled"
           label={t('deviceSshAccess.email', 'Email')}
           value={email}
           onChange={e => setEmail(e.target.value)}
-          sx={{ flex: 2, minWidth: 200 }}
         />
+      </FormField>
+      <FormField help={t('deviceSshAccess.loginHelp', 'Empty: their own. Or a user there, * for any')}>
         <TextField
-          size="small"
           variant="filled"
           label={t('deviceSshAccess.login', 'Local user')}
           placeholder={t('deviceSshAccess.loginOwn', 'their own account')}
-          helperText={t('deviceSshAccess.loginHelp', 'Empty: their own. Or a user there, * for any')}
+          InputLabelProps={{ shrink: true }}
           value={login}
           onChange={e => setLogin(e.target.value)}
-          sx={{ flex: 1, minWidth: 160 }}
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              size="small"
-              checked={admin && !login.trim()}
-              disabled={!!login.trim()}
-              onChange={e => setAdmin(e.target.checked)}
-            />
-          }
-          label={t('deviceSshAccess.admin', 'Admin')}
-          sx={{ ...besideField, marginRight: 0 }}
-        />
-        <Button variant="contained" size="small" disabled={busy || !email.trim()} onClick={add} sx={besideField}>
+      </FormField>
+      <ListItemCheckbox
+        label={t('deviceSshAccess.admin', 'Admin')}
+        checked={admin && !login.trim()}
+        disabled={!!login.trim()}
+        onClick={setAdmin}
+      />
+      <Gutters top="sm">
+        <Button variant="contained" disabled={busy || !email.trim()} onClick={add}>
           {t('deviceSshAccess.add', 'Add')}
         </Button>
-      </ListItem>
+      </Gutters>
     </List>
   )
 }
-
-const besideField = { marginTop: `${spacing.xxs}px`, height: 42 }
 
 // The names that reach the machine's administrator: allowed, with a warning (a * grant reaches them already).
 const ADMINISTRATORS = ['root', 'administrator', 'admin']
@@ -225,45 +225,41 @@ const OwnAccountName: React.FC<{
     : t('deviceSshAccess.handleNote', 'Made by the device with the r3 prefix.')
 
   return (
-    <ListItem disableGutters sx={{ gap: 1, alignItems: 'flex-start', flexWrap: 'wrap', paddingLeft: 2 }}>
-      <TextField
-        size="small"
-        variant="filled"
-        autoFocus
-        label={
-          existing
-            ? t('deviceSshAccess.existingLabel', 'Account on the device')
-            : t('deviceSshAccess.handleLabel', 'Handle')
-        }
-        value={name}
-        error={!!reason}
-        helperText={reason ?? note}
-        onChange={e => {
-          setName(e.target.value)
+    <>
+      <FormField help={reason ? undefined : note}>
+        <TextField
+          variant="filled"
+          autoFocus
+          label={
+            existing
+              ? t('deviceSshAccess.existingLabel', 'Account on the device')
+              : t('deviceSshAccess.handleLabel', 'Handle')
+          }
+          value={name}
+          error={!!reason}
+          helperText={reason}
+          onChange={e => {
+            setName(e.target.value)
+            setReason(undefined)
+          }}
+        />
+      </FormField>
+      <ListItemCheckbox
+        label={t('deviceSshAccess.existing', 'Already on the device')}
+        checked={existing}
+        onClick={checked => {
+          setExisting(checked)
           setReason(undefined)
         }}
-        sx={{ flex: 2, minWidth: 200 }}
       />
-      <FormControlLabel
-        control={
-          <Checkbox
-            size="small"
-            checked={existing}
-            onChange={e => {
-              setExisting(e.target.checked)
-              setReason(undefined)
-            }}
-          />
-        }
-        label={t('deviceSshAccess.existing', 'Already on the device')}
-        sx={{ ...besideField, marginRight: 0 }}
-      />
-      <Button variant="contained" size="small" disabled={busy || invalid} onClick={save} sx={besideField}>
-        {t('deviceSshAccess.save', 'Save')}
-      </Button>
-      <Button size="small" disabled={busy} onClick={onCancel} sx={besideField}>
-        {t('deviceSshAccess.cancel', 'Cancel')}
-      </Button>
-    </ListItem>
+      <Gutters top="sm">
+        <Button variant="contained" disabled={busy || invalid} onClick={save}>
+          {t('deviceSshAccess.save', 'Save')}
+        </Button>
+        <Button disabled={busy} onClick={onCancel}>
+          {t('deviceSshAccess.cancel', 'Cancel')}
+        </Button>
+      </Gutters>
+    </>
   )
 }

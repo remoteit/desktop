@@ -89,9 +89,7 @@ export const DeviceEditPage: React.FC = () => {
               <DeviceAiCommandsSetting device={device} />
             </DeviceSection>
             <DeviceSection id="terminal" title={t('deviceSshAccess.terminalAccess', 'Terminal access')} list={false}>
-              <Gutters top={null} bottom={null} inset="icon">
-                <DeviceSshAccess deviceId={device.id} untitled />
-              </Gutters>
+              <DeviceSshAccess deviceId={device.id} untitled />
             </DeviceSection>
             <DeviceSection id="agent" title={t('deviceSettings.agent', 'Agent')}>
               <DeviceAgentSection />
@@ -107,9 +105,7 @@ export const DeviceEditPage: React.FC = () => {
               />
               <DevicePresenceSetting />
             </DeviceSection>
-            <Gutters top="lg">
-              <DeviceJoinKeys device={device} />
-            </Gutters>
+            <DeviceJoinKeys device={device} />
           </>
         )}
         {!manage && deviceSessions && (
