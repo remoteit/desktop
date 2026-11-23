@@ -4,11 +4,13 @@ import { selectLimitsLookup } from '../selectors/organizations'
 import { useSelector, useDispatch } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { Link } from 'react-router-dom'
-import { Box, List, ListItemButton, ListItemText, Divider, Tooltip, Chip, Theme } from '@mui/material'
+import { Box, List, ListItemButton, ListItemIcon, ListItemText, Divider, Tooltip, Chip, Theme } from '@mui/material'
 import { ListItemLocation } from './ListItemLocation'
 import { UpgradeBanner } from './UpgradeBanner'
 import { ResellerLogo } from './ResellerLogo'
 import { ListItemLink } from './ListItemLink'
+import { Quote } from './Quote'
+import { Icon } from './Icon'
 import { useCounts } from '../hooks/useCounts'
 import { getLocale } from '../helpers/dateHelper'
 import { spacing } from '../styling'
@@ -66,17 +68,19 @@ export const SidebarNav: React.FC = () => {
 
   const pages = (section: VisibleSection) => (
     <Box component="li" sx={{ listStyle: 'none' }}>
-      <Box component="ul" aria-label={section.label(t)} sx={{ listStyle: 'none', margin: 0, padding: 0 }}>
-        {section.pages.map(id => (
-          <li key={id}>
-            <PageLink id={id} current={nav.page === id} to={NAV_PAGES[id].to && nav.pageTo(id)} onOpen={nav.open}>
-              {id === 'connections' && !!counts.active && (
-                <Chip size="small" label={counts.active.toLocaleString(getLocale())} />
-              )}
-            </PageLink>
-          </li>
-        ))}
-      </Box>
+      <Quote margin={null} noInset indent="listIcon" color="grayLight">
+        <Box component="ul" aria-label={section.label(t)} sx={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          {section.pages.map(id => (
+            <li key={id}>
+              <PageLink id={id} current={nav.page === id} to={NAV_PAGES[id].to && nav.pageTo(id)} onOpen={nav.open}>
+                {id === 'connections' && !!counts.active && (
+                  <Chip size="small" label={counts.active.toLocaleString(getLocale())} />
+                )}
+              </PageLink>
+            </li>
+          ))}
+        </Box>
+      </Quote>
     </Box>
   )
 
@@ -165,8 +169,17 @@ const PageLink: React.FC<{
       selected={current}
       aria-current={current ? 'page' : undefined}
       dense
-      sx={{ paddingLeft: 7, minHeight: 34, paddingY: 0.25 }}
+      sx={{
+        marginLeft: `${spacing.xs}px`,
+        width: `calc(100% - ${spacing.xs + spacing.md}px)`,
+        paddingLeft: `${spacing.xs}px`,
+        minHeight: 34,
+        paddingY: 0.25,
+      }}
     >
+      <ListItemIcon sx={{ minWidth: 32 }}>
+        <Icon name={NAV_PAGES[id].icon} size="base" fixedWidth />
+      </ListItemIcon>
       <ListItemText primary={navPageLabel(id, t)} />
       {children}
     </ListItemButton>
