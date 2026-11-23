@@ -8,7 +8,7 @@ import { REGEX_LAST_PATH } from '../../constants'
 import { ServiceForm } from '../../components/ServiceForm'
 import { Typography } from '@mui/material'
 import { Container } from '../../components/Container'
-import { jumpHost } from '../../helpers/virtualDeviceHelper'
+import { jumpHost, servicesConfigurable } from '../../helpers/virtualDeviceHelper'
 import { Diagram } from '../../components/Diagram'
 import { Gutters } from '../../components/Gutters'
 import { Title } from '../../components/Title'
@@ -59,12 +59,12 @@ export const ServiceAddPage: React.FC<Props> = ({ device }) => {
             adding
             device={device}
             thisDevice={!!device?.thisDevice}
-            editable={device?.configurable || !!device?.thisDevice}
+            editable={servicesConfigurable(device) || !!device?.thisDevice}
             disabled={!device?.permissions.includes('MANAGE')}
             onSubmit={async form => {
               dispatch.ui.set({ setupAddingService: true })
-              device?.configurable &&
-                (await dispatch.devices.cloudAddService({ form, deviceId: device?.id, ports: form.ports }))
+              if (device && servicesConfigurable(device))
+                await dispatch.devices.cloudAddService({ form, deviceId: device.id, ports: form.ports })
               dispatch.ui.set({ setupAddingService: false })
             }}
             onChange={form => setForward(!!jumpHost(form, device))}
