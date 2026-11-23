@@ -42,7 +42,7 @@ export const ServiceConnectButton: React.FC = () => {
   const [proxy, setProxy] = useState(false)
   // No agent here reaches it, but it has a name and serves the web: this browser's client can open it in its own tab
   // (services/browserGateway), the proxy one step away as for a local name.
-  const web = useApplication(service, connection).urlForm
+  const web = useApplication(service, connection).web
   const ssh = service?.typeID === 28
   // The app the service belongs to, where it does: one whose service is ssh and that signs people in by certificate
   // opens in our web SSH as well, with the person's own account (components/AppTerminal).
