@@ -391,7 +391,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
               )}
             </ListSubheader>
             {adding && proxy.owner && (
-              <Gutters>
+              <>
                 <RunDevicePicker
                   kind="proxy"
                   target={proxy.id}
@@ -400,7 +400,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                   refusals={refusals}
                   onAdd={add}
                 />
-              </Gutters>
+              </>
             )}
             {devices.map(device => (
               <CarrierRow
@@ -619,10 +619,7 @@ const MoveNames: React.FC<{
 // The certificate its https endpoints are served with after its label changes: remote.it's for every proxy name.
 export function namesCertificateLine(t: TFunction, said: Pick<NamesMove, 'certificate'>): string {
   if (said.certificate === 'ready')
-    return t(
-      'proxyPage.namesReady',
-      'Its HTTPS public addresses use Remote.It’s certificate for every proxy name.'
-    )
+    return t('proxyPage.namesReady', 'Its HTTPS public addresses use Remote.It’s certificate for every proxy name.')
   return t(
     'proxyPage.namesPending',
     'Remote.It’s certificate for every proxy name isn’t issued yet. Its HTTPS public addresses don’t work until it is.'

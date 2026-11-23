@@ -20,6 +20,8 @@ import { candidateFitLine, candidateWhy, candidatesShown, refusalWhy } from '../
 import { CarrierWhy } from './CarrierWhy'
 import { LoadingMessage } from './LoadingMessage'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
+import { FormField } from './FormField'
 
 // An account of more than this many devices names those to weigh.
 export const CANDIDATES_MAX = 1000
@@ -133,55 +135,50 @@ export const RunDevicePicker: React.FC<Props> = ({
   return (
     <Box data-device-picker={kind}>
       {'reason' in candidates && (
-        <Notice severity="error" fullWidth gutterBottom>
-          {candidates.reason || t('runDevicePicker.unread', 'Couldn’t load your devices. Try again.')}
-        </Notice>
+        <Gutters top={null}>
+          <Notice severity="error" fullWidth>
+            {candidates.reason || t('runDevicePicker.unread', 'Couldn’t load your devices. Try again.')}
+          </Notice>
+        </Gutters>
       )}
       {!!refused.length && (
-        <Notice severity="warning" fullWidth gutterBottom>
-          {refused.map(id => (
-            <div key={id} data-refused={id}>
-              {t('runDevicePicker.refused', '{{device}}: {{reason}}', {
-                device: nameOf(all.find(candidate => candidate.id === id) ?? { id, name: null }),
-                reason: refusals[id]
-                  ? refusalWhy(t, kind, refusals[id]).reason
-                  : t('runDevicePicker.notAdded', 'Couldn’t add it. Try again.'),
-              })}
-            </div>
-          ))}
-        </Notice>
+        <Gutters top={null}>
+          <Notice severity="warning" fullWidth>
+            {refused.map(id => (
+              <div key={id} data-refused={id}>
+                {t('runDevicePicker.refused', '{{device}}: {{reason}}', {
+                  device: nameOf(all.find(candidate => candidate.id === id) ?? { id, name: null }),
+                  reason: refusals[id]
+                    ? refusalWhy(t, kind, refusals[id]).reason
+                    : t('runDevicePicker.notAdded', 'Couldn’t add it. Try again.'),
+                })}
+              </div>
+            ))}
+          </Notice>
+        </Gutters>
       )}
       {searching && (
-        <TextField
-          fullWidth
-          sx={{ marginBottom: 1 }}
-          label={t('runDevicePicker.search', 'Find a device')}
-          value={search}
-          onChange={event => setSearch(event.target.value)}
-        />
+        <FormField>
+          <TextField
+            variant="filled"
+            label={t('runDevicePicker.search', 'Find a device')}
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+          />
+        </FormField>
       )}
       {Array.isArray(candidates) && !all.length ? (
-        <Typography variant="body2" color="textSecondary" paddingY={1}>
+        <Typography variant="body2" color="textSecondary" component="p" sx={{ marginX: 4.5, paddingY: 1 }}>
           {kind === 'exit'
             ? t('carry.noCandidates', 'You have no device that can be an exit device yet. Add a device first.')
             : t('carry.noCandidatesProxy', 'You have no device that can run a proxy server yet. Add a device first.')}
         </Typography>
       ) : (
-        <List
-          dense
-          disablePadding
-          sx={{
-            maxHeight: 340,
-            overflowY: 'auto',
-            '& .MuiListItemButton-root': { paddingLeft: 0.5 },
-            '& .MuiListItemIcon-root': { justifyContent: 'flex-start' },
-          }}
-        >
+        <List dense disablePadding sx={{ maxHeight: 340, overflowY: 'auto' }}>
           {shown.map(candidate => (
             <ListItemButton
               key={candidate.id}
               dense
-              disableGutters
               disabled={!candidate.fit}
               data-candidate={candidate.id}
               data-fit={candidate.fit ? 'yes' : 'no'}
@@ -190,7 +187,6 @@ export const RunDevicePicker: React.FC<Props> = ({
               <ListItemIcon>
                 {single ? (
                   <Radio
-                    edge="start"
                     size="small"
                     checked={chosen.includes(candidate.id)}
                     disabled={!candidate.fit}
@@ -199,7 +195,6 @@ export const RunDevicePicker: React.FC<Props> = ({
                   />
                 ) : (
                   <Checkbox
-                    edge="start"
                     size="small"
                     checked={chosen.includes(candidate.id)}
                     disabled={!candidate.fit}
@@ -224,31 +219,34 @@ export const RunDevicePicker: React.FC<Props> = ({
         </List>
       )}
       {!!unfit.length && unfit.length < matched.length && (
-        <Button size="small" onClick={() => setShowUnfit(!showUnfit)} data-show-unfit>
-          {showUnfit
-            ? t('carry.hideUnfit', 'Hide devices that can’t be used')
-            : t('carry.showUnfit', {
-                count: unfit.length,
-                defaultValue_one: 'Show {{count}} device that can’t be used',
-                defaultValue_other: 'Show {{count}} devices that can’t be used',
-              })}
-        </Button>
+        <Gutters top="xs" bottom={null}>
+          <Button size="small" onClick={() => setShowUnfit(!showUnfit)} data-show-unfit>
+            {showUnfit
+              ? t('carry.hideUnfit', 'Hide devices that can’t be used')
+              : t('carry.showUnfit', {
+                  count: unfit.length,
+                  defaultValue_one: 'Show {{count}} device that can’t be used',
+                  defaultValue_other: 'Show {{count}} devices that can’t be used',
+                })}
+          </Button>
+        </Gutters>
       )}
       {kind === 'exit' && lan && (
-        <Notice severity="warning" fullWidth gutterTop>
-          <span data-lan-warning>
-            {lanAddWarning(
-              t,
-              listed.map(id => nameOf(fit.find(candidate => candidate.id === id) ?? { id, name: null }))
-            )}
-          </span>
-        </Notice>
+        <Gutters>
+          <Notice severity="warning" fullWidth>
+            <span data-lan-warning>
+              {lanAddWarning(
+                t,
+                listed.map(id => nameOf(fit.find(candidate => candidate.id === id) ?? { id, name: null }))
+              )}
+            </span>
+          </Notice>
+        </Gutters>
       )}
       {!single && (
-        <Box display="flex" gap={1} marginTop={1}>
+        <Gutters>
           <Button
             variant="contained"
-            size="small"
             disabled={busy || !listed.length}
             data-add
             onClick={() => onAdd?.(listed)}
@@ -263,11 +261,11 @@ export const RunDevicePicker: React.FC<Props> = ({
                 : t('runDevicePicker.addNone', 'Add devices'))}
           </Button>
           {onSkip && (
-            <Button size="small" disabled={busy} onClick={onSkip}>
+            <Button disabled={busy} onClick={onSkip}>
               {skip || t('runDevicePicker.skip', 'Not now')}
             </Button>
           )}
-        </Box>
+        </Gutters>
       )}
     </Box>
   )
