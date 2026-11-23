@@ -36,6 +36,7 @@ export type NavSignals = { products?: number }
 
 export type NavPage = {
   label: (t: TFunction) => string
+  icon: string
   /* Where the sub-link goes; none for the agent, which opens the chat instead. */
   to?: string
   /* The first path segments that belong to this page. */
@@ -53,6 +54,7 @@ export type NavPage = {
 export const NAV_PAGES: Record<NavPageId, NavPage> = {
   thisDevice: {
     label: t => t('navSection.thisDevice', 'This device'),
+    icon: 'laptop',
     to: '/this-device',
     segments: ['this-device'],
     roots: [],
@@ -60,6 +62,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   devices: {
     label: t => t('nav.devices', 'Devices'),
+    icon: 'router',
     to: '/devices',
     segments: ['devices', 'add'],
     roots: ['/devices', '/devices/select'],
@@ -67,6 +70,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   connections: {
     label: t => t('nav.connections', 'Connections'),
+    icon: 'arrow-right-arrow-left',
     to: '/connections',
     segments: ['connections'],
     roots: ['/connections'],
@@ -74,6 +78,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   services: {
     label: t => t('nav.services', 'Services'),
+    icon: 'layer-group',
     to: '/services',
     segments: ['services'],
     roots: ['/services'],
@@ -81,6 +86,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   networks: {
     label: t => t('nav.networks', 'Networks'),
+    icon: 'chart-network',
     to: '/networks',
     segments: ['networks'],
     roots: ['/networks'],
@@ -88,6 +94,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   exits: {
     label: t => t('nav.exits', 'Exits'),
+    icon: 'door-open',
     to: '/exits',
     segments: ['exits'],
     roots: ['/exits'],
@@ -95,6 +102,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   publicAddresses: {
     label: t => t('navPage.publicAddresses', 'Public addresses'),
+    icon: 'globe',
     to: '/public-addresses',
     segments: ['public-addresses'],
     roots: ['/public-addresses'],
@@ -102,6 +110,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   proxies: {
     label: t => t('navPage.proxyServers', 'Proxy servers'),
+    icon: 'server',
     to: '/proxies',
     segments: ['proxies'],
     roots: ['/proxies'],
@@ -109,6 +118,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   products: {
     label: t => t('nav.products', 'Products'),
+    icon: 'conveyor-belt-boxes',
     to: '/products',
     segments: ['products'],
     roots: ['/products', '/products/select'],
@@ -116,6 +126,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   scripting: {
     label: t => t('navPage.scripts', 'Scripts'),
+    icon: 'scripting',
     to: '/scripts',
     segments: ['scripts', 'script', 'runs', 'run', 'files', 'file'],
     roots: ['/scripts', '/files', '/runs', '/runs/:fileID'],
@@ -124,24 +135,28 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   apps: {
     label: t => t('nav.apps', 'Apps'),
+    icon: 'grid-2',
     to: '/apps',
     segments: ['apps'],
     roots: ['/apps'],
   },
   organization: {
     label: t => t('nav.organization', 'Organization'),
+    icon: 'industry-alt',
     to: '/organization',
     segments: ['organization', 'organization-empty'],
     roots: ['/organization', '/organization-empty'],
   },
   logs: {
     label: t => t('nav.logs', 'Logs'),
+    icon: 'rectangle-history',
     to: '/logs',
     segments: ['logs'],
     roots: ['/logs'],
   },
   partnerStats: {
     label: t => t('navPage.partnerStats', 'Partner stats'),
+    icon: 'chart-pie',
     to: '/partner-stats',
     segments: ['partner-stats'],
     roots: ['/partner-stats'],
@@ -149,6 +164,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   connectAi: {
     label: t => t('nav.connectAi', 'Connect AI'),
+    icon: 'plug',
     to: '/connect-ai',
     segments: ['connect-ai'],
     roots: ['/connect-ai'],
@@ -156,6 +172,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   agent: {
     label: t => t('nav.agent', 'Agent'),
+    icon: 'remote-ai',
     segments: [],
     roots: [],
     gate: 'agent',

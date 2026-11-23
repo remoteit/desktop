@@ -19,6 +19,7 @@ import { useNavSections } from '../hooks/useNavSections'
 import { useCounts } from '../hooks/useCounts'
 import { useChatToggle } from '../hooks/useChatEnabled'
 import { NavSectionId } from '../helpers/navSections'
+import { sectionPanelVariant, setSectionHome } from '../helpers/navVariant'
 import { ListItemLocation } from './ListItemLocation'
 import { ListItemLink } from './ListItemLink'
 import { Icon } from './Icon'
@@ -48,6 +49,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
     if (chat.show && chat.open) chat.toggle()
     const section = tabs.find(section => section.id === id)
     if (section && id !== value) nav.openSection(section)
+    if (section && sectionPanelVariant && section.pages.length > 1) setSectionHome(true)
   }
 
   return (
@@ -83,14 +85,19 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
         anchor="bottom"
         open={more}
         onClose={() => setMore(false)}
-        PaperProps={{ sx: { borderTopLeftRadius: 12, borderTopRightRadius: 12, paddingBottom: layout.insets.bottomPx } }}
+        PaperProps={{
+          sx: { borderTopLeftRadius: 12, borderTopRightRadius: 12, paddingBottom: layout.insets.bottomPx },
+        }}
       >
         <List onClick={() => setMore(false)} aria-label={t('nav.more', 'More')}>
           {rest.map(section => (
             <ListItemButton
               key={section.id}
               selected={nav.section?.id === section.id}
-              onClick={() => nav.openSection(section)}
+              onClick={() => {
+                nav.openSection(section)
+                if (sectionPanelVariant && section.pages.length > 1) setSectionHome(true)
+              }}
             >
               <ListItemIcon>
                 <Icon size="md" name={section.icon} fixedWidth />
@@ -113,7 +120,11 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
               icon="message"
             />
           ) : (
-            <ListItemLink title={t('nav.supportForum', 'Support Forum')} href="https://link.remote.it/forum" icon="comments" />
+            <ListItemLink
+              title={t('nav.supportForum', 'Support Forum')}
+              href="https://link.remote.it/forum"
+              icon="comments"
+            />
           )}
           <ListItemLocation title={t('nav.settings', 'Settings')} icon="sliders-h" to="/settings" match="/settings" />
         </List>

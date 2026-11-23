@@ -21,7 +21,11 @@ import { SignInPage } from '../pages/SignInPage'
 import { ThisDeviceApp } from './ThisDeviceApp'
 import { useThisDevice } from '../hooks/useThisDevice'
 import { BottomMenu } from './BottomMenu'
-import { useRememberSectionPage } from '../hooks/useNavSections'
+import { useNavSections, useRememberSectionPage } from '../hooks/useNavSections'
+import { NAV_VARIANT, sectionPanelVariant, setSectionHome, useSectionHome } from '../helpers/navVariant'
+import { subNavShown } from '../helpers/navSections'
+import { SECTION_PANEL_WIDTH, SECTION_RAIL_WIDTH, SectionPanel } from './SectionPanel'
+import { Panel } from './Panel'
 import { Sidebar } from './Sidebar'
 import { useChatEnabled, useChatDocked, useSidebarWidth, useLayoutBreakpoints } from '../hooks/useChatEnabled'
 import { Router } from '../routers/Router'
@@ -73,15 +77,18 @@ export const App: React.FC = () => {
   const needsUserHydration = authenticated && !user
   const signedOut = !authInitialized || !authenticated
 
+  const sectionPanel = useSectionPanelMode(hideSidebar, singlePanel)
+  const sectionWidth = sectionPanel === 'panel' ? SECTION_PANEL_WIDTH : sectionPanel === 'rail' ? SECTION_RAIL_WIDTH : 0
+
   const layout: ILayout = {
     insets,
     mobile,
     showOrgs,
     hideSidebar,
     showBottomMenu,
-    singlePanel,
-    triplePanel,
-    sidePanelWidth: sidebarWidth,
+    singlePanel: singlePanel || (hideSidebar && sectionPanel === 'panel'),
+    triplePanel: triplePanel && sectionPanel !== 'panel',
+    sidePanelWidth: sidebarWidth + sectionWidth,
   }
 
   useEffect(() => {
@@ -89,8 +96,12 @@ export const App: React.FC = () => {
   }, [])
 
   useEffect(() => {
+    if (!singlePanel) setSectionHome(false)
+  }, [singlePanel])
+
+  useEffect(() => {
     dispatch.ui.set({ layout })
-  }, [insets, mobile, showOrgs, hideSidebar, showBottomMenu, singlePanel, triplePanel, sidebarWidth])
+  }, [insets, mobile, showOrgs, hideSidebar, showBottomMenu, singlePanel, triplePanel, sidebarWidth, sectionWidth])
 
   if (waitMessage)
     return (
@@ -208,7 +219,16 @@ export const App: React.FC = () => {
                   }}
                 >
                   {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
-                  <Router layout={layout} />
+                  {(sectionPanel === 'panel' || sectionPanel === 'rail') && (
+                    <SectionPanel rail={sectionPanel === 'rail'} />
+                  )}
+                  {sectionPanel === 'home' ? (
+                    <Panel layout={layout}>
+                      <SectionPanel full />
+                    </Panel>
+                  ) : (
+                    <Router layout={layout} />
+                  )}
                   <SectionMemory />
                 </Box>
                 {showBottomMenu && chatDocked && <BottomMenu layout={layout} />}
@@ -231,4 +251,17 @@ export const App: React.FC = () => {
 const SectionMemory: React.FC = () => {
   useRememberSectionPage()
   return null
+}
+
+/* Option A: the section's own column of pages — beside the page when wide, beside a page's list when narrower,
+   and on a phone a screen of its own reached by the page's back arrow. A2 keeps a narrow labelled rail instead. */
+function useSectionPanelMode(hideSidebar: boolean, singlePanel: boolean): 'panel' | 'rail' | 'home' | undefined {
+  const nav = useNavSections()
+  const { pathname } = useLocation()
+  const home = useSectionHome()
+  if (!sectionPanelVariant || nav.remoteUI || !nav.page || !nav.section || nav.section.pages.length < 2) return
+  if (singlePanel) return home ? 'home' : undefined
+  if (NAV_VARIANT === 'a2') return 'rail'
+  if (hideSidebar && !subNavShown(nav.page, pathname, 1)) return
+  return 'panel'
 }

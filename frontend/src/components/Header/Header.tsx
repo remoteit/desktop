@@ -1,6 +1,8 @@
 import { REGEX_FIRST_PATH, ADMIN_ADDONS_ROUTE } from '../../constants'
 import { useMobile } from '../../hooks/useMobile'
-import { useChatToggle } from '../../hooks/useChatEnabled'
+import { useChatToggle, useLayoutBreakpoints } from '../../hooks/useChatEnabled'
+import { useNavSections } from '../../hooks/useNavSections'
+import { sectionPanelVariant, setSectionHome, useSectionHome } from '../../helpers/navVariant'
 import { ChatAgentGuide } from '../Chat/ChatAgentGuide'
 import React, { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -61,6 +63,10 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   // list, not a detail with a level above it.
   const isAdminRootPage = adminRootPages.includes(location.pathname) || location.pathname.startsWith(ADMIN_ADDONS_ROUTE)
   const isRootMenu = menu === location.pathname || isAdminRootPage
+  const nav = useNavSections()
+  const sectionHome = useSectionHome()
+  const phone = useLayoutBreakpoints().singlePanel
+  const sectionBack = sectionPanelVariant && phone && isRootMenu && !sectionHome && (nav.section?.pages.length || 0) > 1
 
   return (
     <>
@@ -78,7 +84,18 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
           marginTop: overlapHeader ? 3.5 : 1.5,
         }}
       >
-        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && <SidebarMenuButton />}
+        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && !sectionBack && (
+          <SidebarMenuButton />
+        )}
+        {sectionBack && (
+          <IconButton
+            title={nav.section?.label(t)}
+            onClick={() => setSectionHome(true)}
+            icon="chevron-left"
+            size="md"
+            color="grayDarker"
+          />
+        )}
         {(layout.hideSidebar || browser.isMobile) && (
           <Route path="/add" exact>
             <IconButton
