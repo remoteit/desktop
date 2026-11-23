@@ -93,11 +93,12 @@
    docs/menu-app.md §7.1, §7.5). 'ssh' (ssh.get, ssh.set; DeviceStatus.ssh): the person's own ssh to the addresses
    they reach, by short-lived certificates — the menu's "Use remote.it for ssh" — offered where the shell sets it up,
    changed only by someone signed in here (needsSignIn says so); in the status, so a change from the menu reaches the
-   page. 'exitNode' (exitNode.list, exitNode.join, exitNode.create;
+   page. 'exitNode' (exitNode.list, exitNode.join, exitNode.create, exitNode.leave;
    DeviceStatus.exitNode): offering this machine as one of its owner's exits — the menu's "Use this Mac as an exit…":
    the owner's exits and the one it runs with its checks, a join or a new exit, each confirmed by the machine's
-   administrator first (a no is 'cancelled'), refused while held (exitNode.held). Leaving an exit is the account's, on
-   the device's page; the shell offers none. */
+   administrator first (a no is 'cancelled'), refused while held (exitNode.held). exitNode.leave takes the machine out
+   of the exit it runs: no administrator asked, and refused by the cloud while the exit serves others through it —
+   drained and retired first, the account's, on the device's page. */
 
 export const BRIDGE_VERSION = '1.12.0'
 
@@ -122,7 +123,7 @@ export type Capability =
   | 'notifications' // 1.8.0: the notification permission, in permissions.get and permissions.request ('permissions')
   | 'localPorts' // 1.9.0: other apps here reach the engine's 127.0.0.1 listeners — a phone offers local ports only with it
   | 'ssh' // 1.12.0: ssh.get, ssh.set — the person's own ssh to the addresses they reach
-  | 'exitNode' // 1.12.0: exitNode.list, .join, .create — offer this machine as an exit; DeviceStatus.exitNode
+  | 'exitNode' // 1.12.0: exitNode.list, .join, .create, .leave — offer this machine as an exit; DeviceStatus.exitNode
 
 export type Platform = 'mac' | 'windows' | 'linux' | 'ios' | 'android'
 export type Shell = 'menu' | 'capacitor'
@@ -297,6 +298,10 @@ export type ExitNodeJoined = {
   turnedOn: boolean
 }
 
+// left: the exit the machine ran; turnedOff: the engine turned the machine's exit node off itself (its administrator
+// keeps it local).
+export type ExitNodeLeft = { left: { id: string; name: string }; turnedOff?: boolean }
+
 // 1.12.0: the person's own ssh to the addresses they reach. needsSignIn: they are not signed in here, and it changes
 // only once they are.
 export type SshState = { on: boolean; needsSignIn?: boolean }
@@ -426,6 +431,8 @@ export type BridgeMethods = {
   'exitNode.join': { args: { id: string }; result: ExitNodeJoined }
   // name: the new exit's; absent or empty, "<device> exit".
   'exitNode.create': { args: { name?: string }; result: ExitNodeJoined }
+  // Out of the exit it runs: no administrator asked; the cloud refuses while the exit serves others through it.
+  'exitNode.leave': { args: {}; result: ExitNodeLeft }
   'stages.list': { args: {}; result: StageStatus[] }
   'stages.join': { args: { stage: string }; result: StageStatus }
   'stages.leave': { args: { stage: string }; result: {} }

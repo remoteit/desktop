@@ -1378,6 +1378,7 @@
     "heldHow": ""
   },
   "deviceAnyPort": {
+    "label": "",
     "portsPlaceholder": "",
     "tcp": "",
     "udp": ""
@@ -5242,6 +5243,7 @@
     "localNetwork": "",
     "locked": "",
     "machine": "",
+    "manageExitDevice": "",
     "name": "",
     "newExit": "",
     "newExitName": "",

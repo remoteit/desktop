@@ -26,6 +26,7 @@ vi.mock('../selectors/accounts', async importOriginal => ({
   ...(await importOriginal<object>()),
   selectActiveAccountId: (s: any) => s.active,
 }))
+vi.mock('../platforms', () => ({ platforms: { component: () => undefined, componentByType: () => undefined } }))
 vi.mock('../selectors/tags', () => ({ selectTags: (s: any) => s.tags }))
 vi.mock('../models/products', () => ({ getProductModel: (s: any) => ({ all: s.products }) }))
 vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: catalog, graphQLAppTargets: targets }))

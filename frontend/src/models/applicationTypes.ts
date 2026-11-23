@@ -1,5 +1,6 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_SERVICE } from '@common/constants'
+import { getApplicationType } from '@common/applications'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { RootModel } from '.'
@@ -85,8 +86,18 @@ function sortFunction(a: IApplicationType, b: IApplicationType) {
   return rankA - rankB
 }
 
+// A type the API does not list — or not yet, the list still loading — is itself all the same, never another in its
+// place: a form keeps it as it saves, and nothing takes it for a proxied one. The first listed is for no type at all.
 export function findType(all?: IApplicationType[], typeId?: number): IApplicationType {
-  return all?.find(t => t.id === typeId) || all?.[0] || emptyServiceType
+  if (!typeId) return all?.[0] || emptyServiceType
+  return (
+    all?.find(t => t.id === typeId) || {
+      ...emptyServiceType,
+      id: typeId,
+      name: getApplicationType(typeId).title,
+      protocol: typeId >= UDP_TYPES ? 'UDP' : 'TCP',
+    }
+  )
 }
 
 export function getType(all: IApplicationType[], port?: number) {
@@ -96,9 +107,11 @@ export function getType(all: IApplicationType[], port?: number) {
 
 export function isReverseProxy(state: State, typeId?: number) {
   if (!typeId) return false
-  const applicationType = findType(state.applicationTypes.all, typeId)
-  return applicationType?.proxy
+  return findType(state.applicationTypes.all, typeId).proxy
 }
+
+// The ids of UDP types have this bit set.
+const UDP_TYPES = 0x8000
 
 const emptyServiceType: IApplicationType = {
   id: 1,

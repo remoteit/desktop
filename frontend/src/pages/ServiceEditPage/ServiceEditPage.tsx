@@ -11,6 +11,7 @@ import { ServiceSchemeSuggestion } from '../../components/ServiceSchemeSuggestio
 import { ListItem, ListItemText } from '@mui/material'
 import { useServiceApp } from '../../hooks/useDeviceApps'
 import { isAppService } from '../../helpers/appsHelper'
+import { servicesConfigurable } from '../../helpers/virtualDeviceHelper'
 
 type Props = { device?: IDevice }
 
@@ -81,7 +82,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
         device={device}
         service={service}
         thisDevice={thisDevice}
-        editable={!!device?.configurable || thisDevice}
+        editable={servicesConfigurable(device) || thisDevice}
         listenerDetails={listenerDetails}
         disabled={!device?.permissions.includes('MANAGE')}
         onCancel={exit}
@@ -91,7 +92,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
             const updatedService = structuredClone(service)
             updatedService.attributes = { ...service.attributes, ...form.attributes }
             await dispatch.devices.setServiceAttributes(updatedService)
-            if (device.configurable && !hostedByApp) {
+            if (servicesConfigurable(device) && !hostedByApp) {
               await dispatch.devices.cloudUpdateService({ form, deviceId: device.id, ports: form.ports })
             } else {
               await dispatch.devices.rename({ id: service.id, name: form.name })

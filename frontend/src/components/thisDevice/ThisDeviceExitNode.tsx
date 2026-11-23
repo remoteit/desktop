@@ -33,7 +33,8 @@ import { Note, SettingRow, T } from './shared'
 /* "Shares its connection" on This device's Advanced (bridge 1.12.0, 'exitNode'): this machine offered as one of its
    owner's exits — the menu's "Use this Mac as an exit…". What it runs and its state, the checks that keep it from
    service, joining an exit or creating one (the machine's administrator confirms first), and its exit node's switch.
-   Leaving an exit is the account's, on the device's page (leaveHref); the shell offers none. */
+   Leaving takes the machine out of the exit it runs; draining it first, where the exit serves others, is the
+   account's, on the device's page (leaveHref). */
 
 const NEW = ''
 
@@ -110,6 +111,15 @@ export const ThisDeviceExitNode: React.FC<{
     setList(l => l && { ...l, runs: answer.runs })
     setChoosing(false)
     if (relist) await load()
+  }
+
+  // Out of the exit it runs; a refusal — the exit serves others through it — is the cloud's reason, shown as any is.
+  const leave = async () => {
+    await device.call('exitNode.leave', {})
+    listAsked.current++
+    setJoined(undefined)
+    setList(l => l && { ...l, runs: null })
+    await load()
   }
 
   return (
@@ -198,9 +208,14 @@ export const ThisDeviceExitNode: React.FC<{
               {t('thisDevice.checkAgain', 'Check again')}
             </Button>
           )}
+          {runs && (
+            <Button size="small" disabled={m.busy} data-control="exit-leave" onClick={() => m.act(leave)}>
+              {t('thisDevice.leaveExit', 'Leave exit')}
+            </Button>
+          )}
           {runs && leaveHref && (
-            <Button size="small" href={leaveHref} data-control="exit-leave">
-              {t('thisDevice.leaveExit', 'Leave exit…')}
+            <Button size="small" href={leaveHref} data-control="exit-manage">
+              {t('thisDevice.manageExitDevice', 'Open device page')}
             </Button>
           )}
         </ListItem>

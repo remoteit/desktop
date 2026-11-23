@@ -1403,6 +1403,7 @@
     "heldHow": "They can change it on the device."
   },
   "deviceAnyPort": {
+    "label": "Any port access (TCP and UDP)",
     "portsPlaceholder": "* or 502,20000-20100. Empty for none.",
     "tcp": "Any port (TCP)",
     "udp": "Any port (UDP)"
@@ -5370,10 +5371,11 @@
     "ipAddress": "IP address",
     "joinExit": "Join exit",
     "kind": "device",
-    "leaveExit": "Leave exit…",
+    "leaveExit": "Leave exit",
     "localNetwork": "Local network",
     "locked": "Set by this computer’s administrator",
     "machine": "This {{kind}}",
+    "manageExitDevice": "Open device page",
     "name": "Name",
     "newExit": "New exit",
     "newExitName": "Exit name",

@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { Notice } from '../components/Notice'
 import { Gutters } from '../components/Gutters'
+import { servicesConfigurable } from '../helpers/virtualDeviceHelper'
 
 export const ServiceDefaultsPage: React.FC = () => {
   const { t } = useTranslation()
@@ -29,7 +30,7 @@ export const ServiceDefaultsPage: React.FC = () => {
         </Gutters>
         <ConnectionDefaultsForm
           service={service}
-          editable={!!device.configurable}
+          editable={servicesConfigurable(device)}
           disabled={!device.permissions.includes('MANAGE')}
           onCancel={() => history.goBack()}
           onSubmit={async form => {
@@ -38,7 +39,8 @@ export const ServiceDefaultsPage: React.FC = () => {
                 ...service,
                 attributes: { ...service.attributes, ...form.attributes },
               })
-              if (device?.configurable) await dispatch.devices.cloudUpdateService({ form, deviceId: device?.id })
+              if (servicesConfigurable(device))
+                await dispatch.devices.cloudUpdateService({ form, deviceId: device?.id })
             }
           }}
         />

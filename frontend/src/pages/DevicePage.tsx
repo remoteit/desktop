@@ -41,6 +41,7 @@ import { DuplicateKeyNotice } from '../components/DuplicateKeyNotice'
 import { DuplicateCopies } from '../components/DuplicateCopies'
 import { useDuplicateCopies } from '../hooks/useDeviceIdentity'
 import { DeviceProductNotice, ProductMark, useProductHold } from '../components/DeviceProductNotice'
+import { servicesConfigurable } from '../helpers/virtualDeviceHelper'
 
 export const DevicePage: React.FC = () => {
   const { t } = useTranslation()
@@ -73,9 +74,7 @@ export const DevicePage: React.FC = () => {
       </span>
     )
 
-  // A virtual device's services are graphql's alone: managing it is enough, with no daemon to configure.
-  const editable =
-    device.thisDevice || ((device.configurable || !!device.virtual) && device.permissions.includes('MANAGE'))
+  const editable = device.thisDevice || (servicesConfigurable(device) && device.permissions.includes('MANAGE'))
   const connection = connections?.find(c => c.deviceID === device.id && c.enabled)
   const thisDevice = device.thisDevice && device.owner.id === user.id
   const disableThisConnect = thisDevice && !connectThisDevice
