@@ -26,7 +26,9 @@ export const productAttributes: ProductAttribute[] = [
     defaultWidth: 300,
     value: ({ product, productOverview, mobile }: IDataOptions) => (
       <Box sx={{ minWidth: 0 }}>
-        <Typography noWrap>{product?.name}</Typography>
+        <Typography noWrap title={product?.name}>
+          {product?.name}
+        </Typography>
         {mobile && productOverview && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {productOverview.devices != null && (

@@ -4,6 +4,7 @@ import { usePanelDrag } from '../hooks/usePanelDrag'
 import { Box } from '@mui/material'
 import { Header } from './Header'
 import { PanelHandle } from './PanelHandle'
+import { BesideDetailContext } from '../services/Context'
 
 type Props = {
   left: React.ReactNode
@@ -71,7 +72,7 @@ export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, head
         ref={primaryRef}
       >
         {header && <Header panels={3} top />}
-        {left}
+        <BesideDetailContext.Provider value>{left}</BesideDetailContext.Provider>
       </Box>
       <Box sx={{ position: 'relative', height: '100%' }}>
         <PanelHandle onMouseDown={dragPrimary.onDown} grab={dragPrimary.grab} />
@@ -81,7 +82,7 @@ export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, head
         style={{ minWidth: dragSecondary.width, width: dragSecondary.width }}
         ref={secondaryRef}
       >
-        {center}
+        <BesideDetailContext.Provider value>{center}</BesideDetailContext.Provider>
       </Box>
       <Box sx={{ position: 'relative', height: '100%' }}>
         <PanelHandle onMouseDown={dragSecondary.onDown} grab={dragSecondary.grab} />

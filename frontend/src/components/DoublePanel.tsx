@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom'
 import { Box } from '@mui/material'
 import { Header } from './Header'
 import { PanelHandle } from './PanelHandle'
+import { BesideDetailContext } from '../services/Context'
 
 type Props = {
   left: React.ReactNode
@@ -60,7 +61,7 @@ export const DoublePanel: React.FC<Props> = ({ left, right, layout, header = tru
         ref={primaryRef}
       >
         {header && <Header panels={2} top={top} />}
-        {left}
+        <BesideDetailContext.Provider value>{left}</BesideDetailContext.Provider>
       </Box>
       <Box sx={{ position: 'relative', height: '100%' }}>
         <PanelHandle onMouseDown={drag.onDown} grab={drag.grab} />

@@ -29,3 +29,5 @@ export const DiagramContext = createContext<IDiagramContext>({
   proxy: undefined,
   relay: undefined,
 })
+
+export const BesideDetailContext = createContext<boolean>(false)

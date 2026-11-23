@@ -76,7 +76,7 @@ export const GridListHeader = <TOptions,>({
         style={{ left: resize, height: moveRef.current[4], display: resize ? 'block' : 'none' }}
       />
       {required && (
-        <GridListHeaderTitle attribute={required} onMouseDown={onDown} sticky>
+        <GridListHeaderTitle attribute={required} onMouseDown={onDown} sticky resizable={!mobile}>
           {!!icon && <ListItemIcon>{iconNode}</ListItemIcon>}
         </GridListHeaderTitle>
       )}
