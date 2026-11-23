@@ -384,7 +384,6 @@ export const DeviceNetworkPage: React.FC = () => {
                     {manage && !link && !!deviceChoices.length && (
                       <Button
                         size="small"
-                        color="inherit"
                         disabled={busy}
                         onClick={() => setAdding(open === 'device' ? false : { accountId: account.id, kind: 'device' })}
                       >
@@ -394,7 +393,6 @@ export const DeviceNetworkPage: React.FC = () => {
                     {!link && !!tagChoices.length && (
                       <Button
                         size="small"
-                        color="inherit"
                         disabled={busy}
                         onClick={() => setAdding(open === 'tag' ? false : { accountId: account.id, kind: 'tag' })}
                       >
@@ -1195,7 +1193,7 @@ const INDIVIDUALS = 'individuals'
 
 type NetworkView = 'map' | 'devices' | 'people'
 
-// An account's heading band, in its colour: the same in Devices and People.
+// An account's heading, its icon in its colour: the same in Devices and People.
 const AccountHeadingBand: React.FC<{
   icon: string
   name: string
@@ -1203,36 +1201,45 @@ const AccountHeadingBand: React.FC<{
   detail?: React.ReactNode
   children?: React.ReactNode
 }> = ({ icon, name, color, detail, children }) => (
-  <Box
+  <ListSubheader
+    disableSticky
+    disableGutters
     sx={{
       display: 'flex',
       alignItems: 'center',
       flexWrap: 'wrap',
       columnGap: 1,
-      paddingLeft: 2,
+      marginTop: 2,
+      paddingLeft: ROW_INDENT,
       paddingRight: 3.5,
-      paddingY: 1,
+      paddingY: 0.5,
       borderTop: 1,
       borderColor: 'grayLight.main',
-      bgcolor: color.background,
-      color: color.text,
     }}
   >
     <Icon name={icon} size="sm" color={color.text} />
-    <Typography variant="body1" sx={{ fontWeight: 500, color: 'inherit', minWidth: 0 }} noWrap>
+    <Box component="span" sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
       {name}
-    </Typography>
+    </Box>
     {detail && (
       <Typography
         variant="caption"
         component="div"
-        sx={{ color: 'inherit', opacity: 0.85, display: 'flex', alignItems: 'center', gap: 0.5, whiteSpace: 'nowrap' }}
+        color="textSecondary"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          whiteSpace: 'nowrap',
+          textTransform: 'none',
+          letterSpacing: 'normal',
+        }}
       >
         · {detail}
       </Typography>
     )}
     <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>{children}</Box>
-  </Box>
+  </ListSubheader>
 )
 
 /* The people reaching the network through one organization: the owning one — its owner and its roles — or one it is
@@ -1274,7 +1281,7 @@ const AccountPeople: React.FC<{
                   value={section.tier}
                   onChange={event => onTier(event.target.value as ShareRole)}
                   InputProps={{ disableUnderline: true }}
-                  SelectProps={{ sx: { paddingRight: '24px !important', fontSize: 12, color: color.text } }}
+                  SelectProps={{ sx: { paddingRight: '24px !important', fontSize: 12, color: 'inherit' } }}
                 >
                   <MenuItem value="CONNECT">{t('deviceNetwork.roleConnect', 'Can connect')}</MenuItem>
                   <MenuItem value="MANAGE">{t('deviceNetwork.roleManage', 'Can manage')}</MenuItem>
@@ -1293,7 +1300,6 @@ const AccountPeople: React.FC<{
             icon="times"
             title={t('deviceNetwork.unshareOrg', 'Stop sharing with {{name}}', { name: section.accountName })}
             size="sm"
-            color={color.text}
             onClick={onUnshare}
           />
         )}
@@ -1456,14 +1462,16 @@ const RoleRow: React.FC<{
             {reach}
           </Typography>
         </Box>
-        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0.75, minHeight: 28 }}>
+        <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.75, minHeight: 28 }}>
           <Icon
             name={access.tier === 'ADMIN' ? 'user-shield' : access.tier === 'MANAGE' ? 'sliders' : 'plug'}
             size="sm"
             color="grayDark"
           />
-          <Typography variant="body2">{tier}</Typography>
-          <Typography variant="caption" color="textSecondary">
+          <Typography variant="body2" noWrap>
+            {tier}
+          </Typography>
+          <Typography variant="caption" color="textSecondary" noWrap>
             · {peopleText(t, count)}
           </Typography>
         </Box>
