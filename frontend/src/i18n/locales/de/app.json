@@ -4845,6 +4845,28 @@
     "usersUsed_other": "{{actual}} von {{count}} Benutzern",
     "warning": "Dadurch wird Ihre Abrechnung geändert."
   },
+  "sectionPages": {
+    "connectionsNone": "",
+    "connectionsOpen_one": "",
+    "connectionsOpen_other": "",
+    "devices_one": "",
+    "devices_other": "",
+    "devicesOnline_one": "",
+    "devicesOnline_other": "",
+    "exitsOff": "",
+    "exitsOn_one": "",
+    "exitsOn_other": "",
+    "members_one": "",
+    "members_other": "",
+    "networks_one": "",
+    "networks_other": "",
+    "products_one": "",
+    "products_other": "",
+    "proxies_one": "",
+    "proxies_other": "",
+    "scripts_one": "",
+    "scripts_other": ""
+  },
   "serviceAddPage": {
     "maxServices_one": "Desktop unterstützt aktuell maximal {{count}} Dienst.",
     "maxServices_other": "Desktop unterstützt derzeit maximal {{count}} Dienste.",

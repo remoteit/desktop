@@ -6,7 +6,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // What the app shows signed out: in an app (a shell's thisDevice present) This device, the sign-in on it; in a plain
 // browser the sign-in screen, as before; signed in, the portal in either.
 
-const { state, device, viewport, mark, setUi } = vi.hoisted(() => ({
+const { state, device, viewport, mark, setUi, list } = vi.hoisted(() => ({
+  list: { section: undefined as object | undefined },
   state: { current: {} as any },
   device: { current: undefined as any },
   viewport: { width: 1440 },
@@ -46,7 +47,13 @@ vi.mock('../pages/SignInPage', () => ({ SignInPage: mark('signIn') }))
 vi.mock('./ThisDeviceApp', () => ({ ThisDeviceApp: mark('thisDevice') }))
 vi.mock('./BottomMenu', () => ({ BottomMenu: mark('bottomMenu') }))
 vi.mock('./Sidebar', () => ({ Sidebar: mark('sidebar') }))
-vi.mock('../hooks/useNavSections', () => ({ useRememberSectionPage: () => {} }))
+vi.mock('../hooks/useNavSections', () => ({
+  useRememberSectionPage: () => {},
+  useForgetSectionList: () => {},
+  useSectionList: () => list,
+}))
+vi.mock('./SectionPages', () => ({ SectionPages: mark('sectionPages') }))
+vi.mock('./Panel', () => ({ Panel: ({ children }: any) => <>{children}</> }))
 vi.mock('../routers/Router', () => ({ Router: mark('router') }))
 vi.mock('../pages/Page', () => ({
   Page: ({ children, offlineDialog = true }: any) => <div data-offline-dialog={String(offlineDialog)}>{children}</div>,
@@ -89,6 +96,7 @@ let dialog: string | null | undefined
 const shell = { compatible: true, has: () => true }
 
 beforeEach(() => {
+  list.section = undefined
   device.current = undefined
   viewport.width = 1440
   setUi.mockClear()
@@ -124,6 +132,16 @@ describe('the app, signed in', () => {
     const auth = { authenticated: true, user: { id: 'U' } }
     expect(await shown(auth, null)).toEqual(['sidebarMenu', 'router', 'bottomMenu'])
     expect(await shown(auth, null, '/terminal?name=console')).toEqual(['router'])
+  })
+
+  it("shows a section's list of pages in place of the page on a phone", async () => {
+    viewport.width = 400
+    list.section = { id: 'network', pages: [] }
+    expect(await shown({ authenticated: true, user: { id: 'U' } }, null, '/exits')).toEqual([
+      'sidebarMenu',
+      'sectionPages',
+      'bottomMenu',
+    ])
   })
 
   it('reserves the Organizations rail width for a standalone account without memberships', async () => {

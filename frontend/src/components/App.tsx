@@ -21,7 +21,9 @@ import { SignInPage } from '../pages/SignInPage'
 import { ThisDeviceApp } from './ThisDeviceApp'
 import { useThisDevice } from '../hooks/useThisDevice'
 import { BottomMenu } from './BottomMenu'
-import { useRememberSectionPage } from '../hooks/useNavSections'
+import { useForgetSectionList, useRememberSectionPage, useSectionList } from '../hooks/useNavSections'
+import { SectionPages } from './SectionPages'
+import { Panel } from './Panel'
 import { Sidebar } from './Sidebar'
 import { useChatEnabled, useChatDocked, useSidebarWidth, useLayoutBreakpoints } from '../hooks/useChatEnabled'
 import { Router } from '../routers/Router'
@@ -208,7 +210,7 @@ export const App: React.FC = () => {
                   }}
                 >
                   {hideSidebar ? <SidebarMenu /> : <Sidebar layout={layout} />}
-                  <Router layout={layout} />
+                  <Pages layout={layout} />
                   <SectionMemory />
                 </Box>
                 {showBottomMenu && chatDocked && <BottomMenu layout={layout} />}
@@ -230,5 +232,17 @@ export const App: React.FC = () => {
 
 const SectionMemory: React.FC = () => {
   useRememberSectionPage()
+  useForgetSectionList()
   return null
+}
+
+const Pages: React.FC<{ layout: ILayout }> = ({ layout }) => {
+  const list = useSectionList()
+  return list.section ? (
+    <Panel layout={layout}>
+      <SectionPages section={list.section} />
+    </Panel>
+  ) : (
+    <Router layout={layout} />
+  )
 }

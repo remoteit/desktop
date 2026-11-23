@@ -95,3 +95,38 @@ export function useRememberSectionPage() {
     ui.setPersistent({ sectionPage: { ...sectionPage, [section.id]: page } })
   }, [page, section?.id])
 }
+
+export function useSectionList() {
+  const { ui } = useDispatch<Dispatch>()
+  const history = useHistory()
+  const { pathname } = useLocation()
+  const phone = useSelector((state: State) => state.ui.layout.showBottomMenu)
+  const list = useSelector((state: State) => state.ui.sectionList)
+  const nav = useNavSections()
+  const section = phone && list?.pathname === pathname && nav.section?.id === list.section ? nav.section : undefined
+
+  const open = (target: VisibleSection) => {
+    if (target.pages.length < 2) {
+      if (nav.section?.id !== target.id) nav.openSection(target)
+      return
+    }
+    let to = pathname
+    if (nav.section?.id !== target.id) {
+      to = NAV_PAGES[nav.landing(target)].to || pathname
+      history.push(to)
+    }
+    ui.set({ sectionList: { section: target.id, pathname: to } })
+  }
+
+  return { section, open, close: () => ui.set({ sectionList: undefined }) }
+}
+
+export function useForgetSectionList() {
+  const { ui } = useDispatch<Dispatch>()
+  const { pathname } = useLocation()
+  const list = useSelector((state: State) => state.ui.sectionList)
+
+  useEffect(() => {
+    if (list && list.pathname !== pathname) ui.set({ sectionList: undefined })
+  }, [pathname])
+}

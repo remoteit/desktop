@@ -4,7 +4,7 @@ import { Box, Button, Typography, useMediaQuery, useTheme } from '@mui/material'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 
-/* The head of each Network page under its sub-link: what the page is for, then its one Add action. */
+/* The head of each Network page under its title: what the page is for, then its one Add action. */
 export const NetworkSectionIntro: React.FC<{ intro: string; action?: string; to?: string }> = ({
   intro,
   action,
