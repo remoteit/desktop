@@ -60,6 +60,13 @@ export function carrierState(t: TFunction, run: Run): string {
   return carrying(run) ? t('carry.on', 'On') : t('carry.notWorking', 'Not working')
 }
 
+export function carrierColor(run: Run): Color {
+  if (run.disabled || run.state === 'RETIRED') return 'gray'
+  if (run.joining) return failing(run.checks).length ? 'warning' : 'primary'
+  if (run.state === 'DRAINING') return 'warning'
+  return carrying(run) ? 'success' : 'warning'
+}
+
 const nameOf = (device: { id: string; name: string | null }) => device.name || device.id
 
 // What a person needs to know of an exit at a glance: whether it is ready, and which devices carry it.
