@@ -40,7 +40,7 @@ export const ThisDeviceSignIn: React.FC = () => {
           />
         </ListItem>
         <Box paddingX={2}>
-          <Button variant="outlined" size="small" onClick={() => window.location.reload()} data-control="retry">
+          <Button size="small" onClick={() => window.location.reload()} data-control="retry">
             {t('signIn.retry', 'Try again')}
           </Button>
         </Box>
