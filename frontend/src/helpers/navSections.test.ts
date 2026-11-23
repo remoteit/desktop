@@ -9,7 +9,7 @@ import {
   navSections,
   sectionLanding,
   sectionMatch,
-  subNavShown,
+  pageTitleShown,
 } from './navSections'
 
 const none: NavGates = {
@@ -93,7 +93,7 @@ describe('navSections', () => {
       expect([...pages].sort()).toEqual(oldSidebar(gates).sort())
     })
 
-    it(`selects the right section and sub-link from a direct link: ${name}`, () => {
+    it(`selects the right section and page from a direct link: ${name}`, () => {
       const sections = navSections(gates)
       for (const page of pagesOf(gates))
         for (const link of LINKS[page]) {
@@ -138,7 +138,7 @@ describe('navSections', () => {
     expect(sectionLanding(navSections({ ...none, agent: true }).find(s => s.id === 'ai')!, {})).toBe('agent')
   })
 
-  it('returns a section to the sub-link last used there, when it is still shown', () => {
+  it('returns a section to the page last used there, when it is still shown', () => {
     const sections = navSections(shapes['a fleet operator'])
     const section = (id: string) => sections.find(s => s.id === id)!
     expect(sectionLanding(section('devices'), {}, 'connections')).toBe('connections')
@@ -160,28 +160,28 @@ describe('navSections', () => {
     const sections = navSections(shapes['a fleet operator'])
     expect(navSectionAt(sections, '/add')?.id).toBe('devices')
     expect(navSectionAt(sections, '/add/linux')?.id).toBe('devices')
-    expect(subNavShown('devices', '/add', 1)).toBe(false)
+    expect(pageTitleShown('devices', '/add', 1)).toBe(false)
   })
 
-  it('shows the sub-links over a list, not over an item', () => {
-    expect(subNavShown('devices', '/devices', 1)).toBe(true)
-    expect(subNavShown('devices', '/devices/select', 1)).toBe(true)
-    expect(subNavShown('devices', '/devices/abc/details', 1)).toBe(false)
-    expect(subNavShown('devices', '/devices/setup', 1)).toBe(false)
-    expect(subNavShown('devices', '/devices/abc/details', 2)).toBe(false)
-    expect(subNavShown('devices', '/devices/transfer', 2)).toBe(true)
-    expect(subNavShown('networks', '/networks/net', 1)).toBe(false)
-    expect(subNavShown('networks', '/networks/net', 2)).toBe(true)
-    expect(subNavShown('exits', '/exits/new', 1)).toBe(false)
-    expect(subNavShown('exits', '/exits/new', 2)).toBe(true)
-    expect(subNavShown('products', '/products/p1/details', 2)).toBe(false)
-    expect(subNavShown('products', '/products/p1/details', 3)).toBe(true)
-    expect(subNavShown('products', '/products/add', 2)).toBe(true)
-    expect(subNavShown('scripting', '/script/f1/latest/run', 2)).toBe(false)
-    expect(subNavShown('scripting', '/script/f1/latest/run', 3)).toBe(true)
-    expect(subNavShown('scripting', '/scripts/add', 2)).toBe(true)
-    expect(subNavShown('scripting', '/runs/f1', 1)).toBe(true)
-    expect(subNavShown('organization', '/organization-empty', 1)).toBe(true)
-    expect(subNavShown('organization', '/organization/members', 2)).toBe(true)
+  it('titles a list with its page, not an item', () => {
+    expect(pageTitleShown('devices', '/devices', 1)).toBe(true)
+    expect(pageTitleShown('devices', '/devices/select', 1)).toBe(true)
+    expect(pageTitleShown('devices', '/devices/abc/details', 1)).toBe(false)
+    expect(pageTitleShown('devices', '/devices/setup', 1)).toBe(false)
+    expect(pageTitleShown('devices', '/devices/abc/details', 2)).toBe(false)
+    expect(pageTitleShown('devices', '/devices/transfer', 2)).toBe(true)
+    expect(pageTitleShown('networks', '/networks/net', 1)).toBe(false)
+    expect(pageTitleShown('networks', '/networks/net', 2)).toBe(true)
+    expect(pageTitleShown('exits', '/exits/new', 1)).toBe(false)
+    expect(pageTitleShown('exits', '/exits/new', 2)).toBe(true)
+    expect(pageTitleShown('products', '/products/p1/details', 2)).toBe(false)
+    expect(pageTitleShown('products', '/products/p1/details', 3)).toBe(true)
+    expect(pageTitleShown('products', '/products/add', 2)).toBe(true)
+    expect(pageTitleShown('scripting', '/script/f1/latest/run', 2)).toBe(false)
+    expect(pageTitleShown('scripting', '/script/f1/latest/run', 3)).toBe(true)
+    expect(pageTitleShown('scripting', '/scripts/add', 2)).toBe(true)
+    expect(pageTitleShown('scripting', '/runs/f1', 1)).toBe(true)
+    expect(pageTitleShown('organization', '/organization-empty', 1)).toBe(true)
+    expect(pageTitleShown('organization', '/organization/members', 2)).toBe(true)
   })
 })

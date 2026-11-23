@@ -4845,6 +4845,28 @@
     "usersUsed_other": "{{actual}} of {{count}} users",
     "warning": "This will change your billing."
   },
+  "sectionPages": {
+    "connectionsNone": "None open",
+    "connectionsOpen_one": "{{count}} open",
+    "connectionsOpen_other": "{{count}} open",
+    "devices_one": "{{count}} device",
+    "devices_other": "{{count}} devices",
+    "devicesOnline_one": "{{count}} device, {{online}} online",
+    "devicesOnline_other": "{{count}} devices, {{online}} online",
+    "exitsOff": "Off",
+    "exitsOn_one": "{{count}} on",
+    "exitsOn_other": "{{count}} on",
+    "members_one": "{{count}} member",
+    "members_other": "{{count}} members",
+    "networks_one": "{{count}} network",
+    "networks_other": "{{count}} networks",
+    "products_one": "{{count}} product",
+    "products_other": "{{count}} products",
+    "proxies_one": "{{count}} server",
+    "proxies_other": "{{count}} servers",
+    "scripts_one": "{{count}} script",
+    "scripts_other": "{{count}} scripts"
+  },
   "serviceAddPage": {
     "maxServices_one": "Desktop currently supports a maximum of {{count}} services.",
     "maxServices_other": "Desktop currently supports a maximum of {{count}} services.",

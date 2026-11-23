@@ -11,13 +11,19 @@ const flags = vi.hoisted(() => ({
   chat: false,
   products: 0,
   pathname: '/devices',
+  sectionPage: {} as Record<string, string>,
+  active: 0,
 }))
 const push = vi.hoisted(() => vi.fn())
+const toggle = vi.hoisted(() => vi.fn())
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string, text?: unknown) => (typeof text === 'string' ? text : key) }) }))
 vi.mock('react-redux', () => ({
   useSelector: (select: (s: any) => any) =>
-    select({ user: { reseller: null }, ui: { layout: { insets: {}, hideSidebar: false } } }),
+    select({
+      user: { reseller: null },
+      ui: { layout: { insets: {}, hideSidebar: false }, sectionPage: flags.sectionPage },
+    }),
   useDispatch: () => ({}),
 }))
 vi.mock('react-router-dom', async importOriginal => ({
@@ -31,6 +37,24 @@ vi.mock('@mui/material', () => ({
   Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   Chip: ({ label }: { label: string }) => <span data-chip={label} />,
   Divider: () => null,
+  ListItemButton: ({
+    children,
+    to,
+    onClick,
+    selected,
+    'aria-current': current,
+  }: {
+    children?: React.ReactNode
+    to?: string
+    onClick?: () => void
+    selected?: boolean
+    'aria-current'?: 'page'
+  }) => (
+    <a data-page data-to={to} data-selected={String(!!selected)} aria-current={current} onClick={onClick}>
+      {children}
+    </a>
+  ),
+  ListItemText: ({ primary }: { primary: string }) => <span>{primary}</span>,
 }))
 vi.mock('./ListItemLocation', () => ({
   ListItemLocation: ({ title, to, match, children }: { title: string; to?: string; match?: string | string[]; children?: React.ReactNode }) => (
@@ -53,8 +77,8 @@ vi.mock('../hooks/useThisDevice', () => ({
   useThisDevice: () => (flags.thisDevice ? { id: 'me' } : null),
   useThisDevicePage: () => flags.thisDevice,
 }))
-vi.mock('../hooks/useChatEnabled', () => ({ useChatToggle: () => ({ show: flags.chat, open: false, toggle: vi.fn() }) }))
-vi.mock('../hooks/useCounts', () => ({ useCounts: () => ({ devices: 12, networks: 0 }) }))
+vi.mock('../hooks/useChatEnabled', () => ({ useChatToggle: () => ({ show: flags.chat, open: false, toggle }) }))
+vi.mock('../hooks/useCounts', () => ({ useCounts: () => ({ devices: 12, networks: 0, active: flags.active }) }))
 vi.mock('../models/partnerStats', () => ({ getHasPartner: () => flags.partner }))
 vi.mock('../selectors/products', () => ({ getProductModel: () => ({ all: new Array(flags.products) }) }))
 vi.mock('../selectors/organizations', () => ({ selectLimitsLookup: () => ({}) }))
@@ -82,6 +106,8 @@ describe('SidebarNav', () => {
       chat: false,
       products: 0,
       pathname: '/devices',
+      sectionPage: {},
+      active: 0,
       ...set,
     })
     act(() => root.render(<SidebarNav />))
@@ -99,8 +125,71 @@ describe('SidebarNav', () => {
     container.remove()
   })
 
-  it('lists only the sections, then the footer', () => {
-    expect(render()).toEqual(['Devices', 'Network', 'Fleet', 'Team', 'AI', 'Announcements', 'Support Forum', 'Settings'])
+  const pages = () => [...container.querySelectorAll('[data-page]')].map(page => page.textContent)
+  const page = (title: string) => [...container.querySelectorAll('[data-page]')].find(p => p.textContent === title)!
+
+  it('lists the sections, then the footer', () => {
+    expect(render({ pathname: '/settings' })).toEqual([
+      'Devices',
+      'Network',
+      'Fleet',
+      'Team',
+      'AI',
+      'Announcements',
+      'Support Forum',
+      'Settings',
+    ])
+    expect(pages()).toEqual([])
+  })
+
+  it('opens only the section you are in, its pages beneath it', () => {
+    render({ pathname: '/exits', deviceSessions: true })
+    expect(pages()).toEqual(['Networks', 'Exits', 'Public addresses', 'Proxy servers'])
+    render({ pathname: '/scripts' })
+    expect(pages()).toEqual(['Products', 'Scripts', 'Apps'])
+    render({ pathname: '/devices/abc/details', services: true })
+    expect(pages()).toEqual(['Devices', 'Connections', 'Services'])
+  })
+
+  it('opens no pages under a section with one page', () => {
+    render({ pathname: '/connect-ai' })
+    expect(pages()).toEqual([])
+    render({ pathname: '/networks' })
+    expect(pages()).toEqual([])
+    render({ pathname: '/this-device', thisDevice: true })
+    expect(pages()).toEqual([])
+  })
+
+  it('marks the current page, and not the open section', () => {
+    const selected = () => [...container.querySelectorAll('[data-selected="true"]')].map(i => i.textContent)
+    render({ pathname: '/exits/e1', deviceSessions: true })
+    expect(page('Exits').getAttribute('aria-current')).toBe('page')
+    expect(page('Networks').getAttribute('aria-current')).toBeNull()
+    expect(selected()).toEqual(['Exits'])
+    render({ pathname: '/add' })
+    expect(page('Devices').getAttribute('aria-current')).toBe('page')
+  })
+
+  it('links each page to its address, and Connections shows how many are open', () => {
+    render({ pathname: '/connections', active: 2 })
+    expect(page('Devices').getAttribute('data-to')).toBe('/devices')
+    expect(page('Connections').getAttribute('data-to')).toBe('/connections')
+    expect(page('Connections').querySelector('[data-chip]')?.getAttribute('data-chip')).toBe('2')
+  })
+
+  it('opens the chat from the Agent page', () => {
+    render({ pathname: '/connect-ai', chat: true })
+    expect(pages()).toEqual(['Connect AI', 'Agent'])
+    expect(page('Agent').getAttribute('data-to')).toBeNull()
+    act(() => (page('Agent') as HTMLElement).click())
+    expect(toggle).toHaveBeenCalled()
+  })
+
+  it('returns a section name to the page last used in it', () => {
+    render({ pathname: '/devices', deviceSessions: true, sectionPage: { network: 'exits', team: 'logs' } })
+    expect(item('Network').getAttribute('data-to')).toBe('/exits')
+    expect(item('Team').getAttribute('data-to')).toBe('/logs')
+    expect(item('Devices').getAttribute('data-to')).toBe('/devices')
   })
 
   it('puts This device first in an app', () => {
@@ -118,14 +207,12 @@ describe('SidebarNav', () => {
     expect(item('Fleet').getAttribute('data-to')).toBe('/products')
   })
 
-  it('selects the section of a direct link', () => {
-    const selected = () => [...container.querySelectorAll('[data-selected="true"]')].map(i => i.getAttribute('data-nav'))
-    render({ pathname: '/exits/e1', deviceSessions: true })
-    expect(selected()).toEqual(['Network'])
+  it('selects a section with one page, and the footer, as before', () => {
+    const selected = () => [...container.querySelectorAll('li[data-selected="true"]')].map(i => i.getAttribute('data-nav'))
+    render({ pathname: '/connect-ai' })
+    expect(selected()).toEqual(['AI'])
     render({ pathname: '/runs/job/j1' })
-    expect(selected()).toEqual(['Fleet'])
-    render({ pathname: '/logs' })
-    expect(selected()).toEqual(['Team'])
+    expect(selected()).toEqual([])
     render({ pathname: '/settings' })
     expect(selected()).toEqual(['Settings'])
   })

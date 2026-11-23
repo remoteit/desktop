@@ -4728,6 +4728,19 @@
     "usersUsed_other": "{{count}}名中{{actual}}名のユーザー",
     "warning": "これにより請求内容が変更されます。"
   },
+  "sectionPages": {
+    "connectionsNone": "",
+    "connectionsOpen_other": "",
+    "devices_other": "",
+    "devicesOnline_other": "",
+    "exitsOff": "",
+    "exitsOn_other": "",
+    "members_other": "",
+    "networks_other": "",
+    "products_other": "",
+    "proxies_other": "",
+    "scripts_other": ""
+  },
   "serviceAddPage": {
     "maxServices_other": "Desktopは現在、最大{{count}}件のサービスをサポートしています。",
     "newService": "新しいサービス"

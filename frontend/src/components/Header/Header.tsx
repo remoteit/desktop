@@ -20,7 +20,8 @@ import { FilterButton } from '../../buttons/FilterButton'
 import { IconButton } from '../../buttons/IconButton'
 import { SidebarMenuButton } from '../../buttons/SidebarMenuButton'
 import { Title } from '../Title'
-import { SectionNav } from '../SectionNav'
+import { PageTitle } from '../PageTitle'
+import { useNavSections, useSectionList } from '../../hooks/useNavSections'
 import { Box } from '@mui/material'
 
 type Props = {
@@ -61,6 +62,16 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
   // list, not a detail with a level above it.
   const isAdminRootPage = adminRootPages.includes(location.pathname) || location.pathname.startsWith(ADMIN_ADDONS_ROUTE)
   const isRootMenu = menu === location.pathname || isAdminRootPage
+  const nav = useNavSections()
+  const sectionList = useSectionList()
+  const backToList =
+    layout.showBottomMenu &&
+    isRootMenu &&
+    menu !== '/add' &&
+    !sectionList.section &&
+    (nav.section?.pages.length || 0) > 1
+      ? nav.section
+      : undefined
 
   return (
     <>
@@ -78,7 +89,18 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
           marginTop: overlapHeader ? 3.5 : 1.5,
         }}
       >
-        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && <SidebarMenuButton />}
+        {sidebarHidden && (layout.singlePanel ? isRootMenu : true) && menu !== '/add' && !backToList && (
+          <SidebarMenuButton />
+        )}
+        {backToList && (
+          <IconButton
+            title={t('header.back', 'Back')}
+            onClick={() => sectionList.open(backToList)}
+            icon="chevron-left"
+            size="md"
+            color="grayDarker"
+          />
+        )}
         {(layout.hideSidebar || browser.isMobile) && (
           <Route path="/add" exact>
             <IconButton
@@ -112,25 +134,27 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
           </ChatAgentGuide>
         )}
         {!showSearch && menu !== '/services' && <RefreshButton size="md" color="grayDarker" />}
-        <Route path="/devices">
-          {!showSearch && !searched && (
-            <IconButton
-              size="md"
-              icon="search"
-              color="grayDarker"
-              title={t('header.deviceSearch', 'Device Search')}
-              placement="bottom"
-              fixedWidth
-              onClick={() => {
-                setShowSearch(true)
-                setTimeout(() => inputRef.current?.focus(), 20)
-              }}
-            />
-          )}
-          {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
-        </Route>
+        {!sectionList.section && (
+          <Route path="/devices">
+            {!showSearch && !searched && (
+              <IconButton
+                size="md"
+                icon="search"
+                color="grayDarker"
+                title={t('header.deviceSearch', 'Device Search')}
+                placement="bottom"
+                fixedWidth
+                onClick={() => {
+                  setShowSearch(true)
+                  setTimeout(() => inputRef.current?.focus(), 20)
+                }}
+              />
+            )}
+            {(!!showSearch || searched) && <GlobalSearch inputRef={inputRef} onClose={() => setShowSearch(false)} />}
+          </Route>
+        )}
         <Title />
-        {!(showSearch && mobile) && (
+        {!(showSearch && mobile) && !sectionList.section && (
           <>
             <Route path={['/devices', '/devices/select']} exact>
               <FilterButton />
@@ -167,7 +191,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
           </>
         )}
       </Box>
-      <SectionNav panels={panels} />
+      <PageTitle panels={panels} />
       <UpgradeNotice />
     </>
   )

@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { Dispatch } from '../store'
 import { selectLimitsLookup } from '../selectors/organizations'
-import { useNavSections } from '../hooks/useNavSections'
+import { useNavSections, useSectionList } from '../hooks/useNavSections'
 import { useCounts } from '../hooks/useCounts'
 import { useChatToggle } from '../hooks/useChatEnabled'
 import { NavSectionId } from '../helpers/navSections'
@@ -36,6 +36,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
   const counts = useCounts()
   const limits = useSelector(selectLimitsLookup)
   const nav = useNavSections()
+  const list = useSectionList()
   const chat = useChatToggle()
   const [more, setMore] = useState(false)
 
@@ -47,7 +48,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
     if (id === MORE) return setMore(true)
     if (chat.show && chat.open) chat.toggle()
     const section = tabs.find(section => section.id === id)
-    if (section && id !== value) nav.openSection(section)
+    if (section) list.open(section)
   }
 
   return (
@@ -90,7 +91,7 @@ export const BottomMenu: React.FC<Props> = ({ layout }) => {
             <ListItemButton
               key={section.id}
               selected={nav.section?.id === section.id}
-              onClick={() => nav.openSection(section)}
+              onClick={() => list.open(section)}
             >
               <ListItemIcon>
                 <Icon size="md" name={section.icon} fixedWidth />

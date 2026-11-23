@@ -121,6 +121,7 @@ export type UIState = {
   chatWidth: number
   chatPoppedOut: boolean
   sectionPage: Partial<Record<NavSectionId, NavPageId>>
+  sectionList?: { section: NavSectionId; pathname: string }
   poppedBubbles: string[]
   /** WHEN the user last chose "dismiss all", as a timestamp — not whether they did.
    *  A bubble introduced after that moment still gets shown. `true` is the legacy
@@ -231,6 +232,7 @@ export const defaultState: UIState = {
   chatWidth: CHAT_PANEL_WIDTH,
   chatPoppedOut: false,
   sectionPage: {},
+  sectionList: undefined,
   poppedBubbles: [],
   expireBubbles: false,
   guidesResetDate: undefined,
