@@ -1,13 +1,14 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Chip, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { Box, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import type { DeviceRuns, ExitDevice, ProxyDevice } from '../services/graphQLDeviceRuns'
-import { carrierState, carrying, refusalWhy } from '../helpers/exitWords'
+import { carrying, refusalWhy } from '../helpers/exitWords'
 import { failing } from '../helpers/runsHelper'
 import { RunActions } from './RunActions'
 import { CarrierWhy } from './CarrierWhy'
 import { Link } from './Link'
 import { Icon } from './Icon'
+import { CarrierStateChip } from './CarrierStateChip'
 
 type Props = {
   kind: 'proxy' | 'exit'
@@ -53,13 +54,7 @@ export const CarrierRow: React.FC<Props> = ({ kind, run, name, activation, manag
             >
               {device.name}
             </Link>
-            <Chip
-              size="small"
-              label={carrierState(t, run)}
-              color={on ? 'primary' : undefined}
-              variant={on ? 'filled' : 'outlined'}
-              data-run-state
-            />
+            <CarrierStateChip run={run} />
           </Box>
         }
         secondaryTypographyProps={{ component: 'div' }}

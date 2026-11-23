@@ -650,47 +650,49 @@ const ProxyProduct: React.FC<{ onProblem: Problem }> = ({ onProblem }) => {
   return (
     <List data-proxy-product={product?.id ?? ''}>
       <ListSubheader>remote.it's proxy product{product ? `: ${product.name}` : ''}</ListSubheader>
-      <Gutters>
-        {product ? (
-          <>
+      {product ? (
+        <>
+          <Gutters>
             <Typography variant="caption" color="textSecondary" component="p" gutterBottom>
               A new machine registers with one of its join keys, into remote.it's account, not yours. It joins the
               proxies and exits that take this product's devices, and goes into service as each one's activation says;
               with none, it appears above, running nothing until it is added to one. Keep its keys secret: anyone with
               one can add a device to remote.it's account.
             </Typography>
-            <ProductJoinKeys
-              product={product}
-              manage
-              onCreate={async input => {
-                const made = await graphQLCreateDeviceProductJoinKey(input)
-                if (made === 'ERROR') return {}
-                if ('reason' in made) return { reason: made.reason }
-                await reload()
-                return { key: made.data?.data?.createDeviceProductJoinKey?.key }
-              }}
-              onRevoke={async id => {
-                await graphQLRevokeDeviceProductJoinKey(product.id, id)
-                await reload()
-              }}
-            />
-            <ProductLifecycleSetting
-              name={product.name}
-              lifecycle={product.lifecycle}
-              manage
-              onChange={async lifecycle => {
-                const refused = refusalOf(await graphQLSetDeviceProductLifecycle(product.id, lifecycle))
-                await reload()
-                return refused === undefined ? {} : { reason: refused }
-              }}
-            />
-          </>
-        ) : (
+          </Gutters>
+          <ProductJoinKeys
+            product={product}
+            manage
+            onCreate={async input => {
+              const made = await graphQLCreateDeviceProductJoinKey(input)
+              if (made === 'ERROR') return {}
+              if ('reason' in made) return { reason: made.reason }
+              await reload()
+              return { key: made.data?.data?.createDeviceProductJoinKey?.key }
+            }}
+            onRevoke={async id => {
+              await graphQLRevokeDeviceProductJoinKey(product.id, id)
+              await reload()
+            }}
+          />
+          <ProductLifecycleSetting
+            name={product.name}
+            lifecycle={product.lifecycle}
+            manage
+            onChange={async lifecycle => {
+              const refused = refusalOf(await graphQLSetDeviceProductLifecycle(product.id, lifecycle))
+              await reload()
+              return refused === undefined ? {} : { reason: refused }
+            }}
+          />
+        </>
+      ) : (
+        <Gutters>
           <Typography variant="caption" color="textSecondary" component="p">
             remote.it's proxy product is not made yet.
           </Typography>
-        )}
-      </Gutters>
+        </Gutters>
+      )}
     </List>
   )
 }

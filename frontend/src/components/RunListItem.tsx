@@ -1,14 +1,14 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { Box, Chip, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { Box, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { DeviceRuns, ExitDevice, ProxyDevice } from '../services/graphQLDeviceRuns'
 import { lanLine, outOfService, runDetail } from '../helpers/runsHelper'
-import { carrierState, carrying } from '../helpers/exitWords'
 import { RunActions } from './RunActions'
 import { Link } from './Link'
 import { Icon } from './Icon'
+import { CarrierStateChip } from './CarrierStateChip'
 
 type Props = {
   kind: 'proxy' | 'exit'
@@ -78,13 +78,7 @@ export const RunListItem: React.FC<Props> = ({
             ) : (
               heading
             )}
-            <Chip
-              size="small"
-              label={carrierState(t, run)}
-              color={carrying(run) ? 'primary' : undefined}
-              variant={carrying(run) ? 'filled' : 'outlined'}
-              data-run-state
-            />
+            <CarrierStateChip run={run} />
           </Box>
         }
         secondaryTypographyProps={{ component: 'div' }}

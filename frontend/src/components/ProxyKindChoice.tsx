@@ -2,6 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, List, ListItemButton, ListItemIcon, ListItemText, Radio, RadioGroup, Typography } from '@mui/material'
 import { Gutters } from './Gutters'
+import { choiceListSx } from './FormField'
 
 type Props = {
   local: boolean
@@ -34,7 +35,7 @@ export const ProxyKindChoice: React.FC<Props> = ({ local, disabled, onChange }) 
         {t('proxyKind.label', 'Reached from')}
       </Typography>
       <RadioGroup value={value} onChange={event => onChange(event.target.value === 'local')}>
-        <List dense disablePadding>
+        <List dense disablePadding sx={choiceListSx}>
           {choices.map(choice => (
             <ListItemButton key={choice.key} dense disabled={disabled} onClick={() => onChange(choice.key === 'local')}>
               <ListItemIcon>

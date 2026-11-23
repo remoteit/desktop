@@ -137,7 +137,7 @@ const RegistrationForm: React.FC<{
 
   return (
     <Stack alignItems="flex-start" sx={{ mx: 2, mb: 1 }}>
-      <Button variant="outlined" onClick={() => setOpen(true)}>
+      <Button variant="contained" onClick={() => setOpen(true)}>
         {t('deviceRegistration.open', 'Add this device')}
       </Button>
       <Dialog open={open} onClose={busy ? undefined : close} fullWidth maxWidth="xs">

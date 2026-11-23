@@ -174,14 +174,13 @@ export const ThisDeviceExitNode: React.FC<{
       {!held && (
         <ListItem sx={{ flexWrap: 'wrap', gap: 1 }}>
           {listError && (
-            <Button size="small" variant="outlined" disabled={m.busy} data-control="exit-retry" onClick={load}>
+            <Button size="small" disabled={m.busy} data-control="exit-retry" onClick={load}>
               {t('thisDevice.tryAgain', 'Try again')}
             </Button>
           )}
           {list && (
             <Button
               size="small"
-              variant="outlined"
               disabled={m.busy}
               data-control="exit-choose"
               onClick={() => setChoosing(true)}

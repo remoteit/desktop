@@ -21,6 +21,12 @@ export const fieldSx = (theme: Theme) => ({
   },
 })
 
+export const choiceListSx = {
+  paddingLeft: `${spacing.md}px`,
+  paddingRight: `${spacing.lg}px`,
+  '& > .MuiListItemButton-root': { maxWidth: 400 },
+}
+
 type Props = {
   help?: React.ReactNode
   children?: React.ReactNode

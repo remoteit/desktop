@@ -22,7 +22,10 @@ const { catalog, targets, addMany, setProductApp, count, push, state, dispatch }
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }), useParams: () => ({ appID: 'acme.backup' }) }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select(state.value), useDispatch: () => dispatch }))
 vi.mock('../store', () => ({}))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: (s: any) => s.active }))
+vi.mock('../selectors/accounts', async importOriginal => ({
+  ...(await importOriginal<object>()),
+  selectActiveAccountId: (s: any) => s.active,
+}))
 vi.mock('../selectors/tags', () => ({ selectTags: (s: any) => s.tags }))
 vi.mock('../models/products', () => ({ getProductModel: (s: any) => ({ all: s.products }) }))
 vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: catalog, graphQLAppTargets: targets }))
@@ -38,6 +41,7 @@ vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data
 vi.mock('react-i18next', () => {
   const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
   return {
+    initReactI18next: { type: '3rdParty', init: () => {} },
     useTranslation: () => ({
       t: (_key: string, a: any, b?: any) =>
         typeof a === 'string' ? fill(a, b) : fill(a.count === 1 ? a.defaultValue_one : a.defaultValue_other, a),

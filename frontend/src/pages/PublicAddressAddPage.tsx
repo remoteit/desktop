@@ -26,7 +26,7 @@ import { ServiceChoice, graphQLServiceChoices } from '../services/graphQLPublicA
 import { graphQLGetErrors } from '../services/graphQL'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Container } from '../components/Container'
-import { FormField } from '../components/FormField'
+import { FormField, choiceListSx } from '../components/FormField'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -132,7 +132,7 @@ export const PublicAddressAddPage: React.FC = () => {
               />
             </FormField>
           )}
-          <List dense disablePadding sx={{ maxHeight: 280, overflowY: 'auto' }} data-services>
+          <List dense disablePadding sx={{ ...choiceListSx, maxHeight: 280, overflowY: 'auto' }} data-services>
             {shown.map(each => (
               <ListItemButton
                 key={each.id}

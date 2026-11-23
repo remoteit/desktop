@@ -208,7 +208,6 @@ export const ThisDeviceAdvanced: React.FC<{
           {has('diagnostics') && (
             <ListItem>
               <Button
-                variant="outlined"
                 size="small"
                 disabled={m.busy}
                 data-control="diagnostics"
@@ -247,7 +246,6 @@ export const ThisDeviceAdvanced: React.FC<{
             <ListItem>
               <Button
                 size="small"
-                variant="outlined"
                 color="error"
                 disabled={m.busy}
                 data-control="remove"

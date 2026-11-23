@@ -156,7 +156,7 @@ const CopyAddress: React.FC<{ address: string }> = ({ address }) => {
   const { t } = useTranslation()
   const clipboard = useClipboard()
   return (
-    <Button size="small" variant="outlined" data-action="copy" title={address} onClick={() => clipboard.copy(address)}>
+    <Button size="small" data-action="copy" title={address} onClick={() => clipboard.copy(address)}>
       {clipboard.copied ? t('thisDevice.copied', 'Copied') : t('thisDevice.copyAddress', 'Copy address')}
     </Button>
   )
@@ -202,13 +202,12 @@ const ServiceRow: React.FC<{ service: ServiceShortcut }> = ({ service }) => {
   }
 
   const action = !online ? undefined : destination && !failed ? (
-    <Button size="small" variant="contained" disabled={opening} data-action="open" onClick={open}>
+    <Button size="small" disabled={opening} data-action="open" onClick={open}>
       {t('thisDevice.open', 'Open')}
     </Button>
   ) : service.application === SSH && name ? (
     <Button
       size="small"
-      variant="contained"
       data-action="terminal"
       onClick={() => openTerminal({ name, port: port || 22, title: service.name, service: service.id })}
     >
@@ -217,7 +216,7 @@ const ServiceRow: React.FC<{ service: ServiceShortcut }> = ({ service }) => {
   ) : name ? (
     <CopyAddress address={name} />
   ) : (
-    <Button size="small" variant="outlined" href={to} data-action="connect">
+    <Button size="small" href={to} data-action="connect">
       {t('thisDevice.connect', 'Connect')}
     </Button>
   )
@@ -259,7 +258,7 @@ const DeviceRow: React.FC<{ device: IDevice }> = ({ device }) => {
         address ? (
           <CopyAddress address={address} />
         ) : (
-          <Button size="small" variant="outlined" href={`#/devices/${device.id}`} data-action="device">
+          <Button size="small" href={`#/devices/${device.id}`} data-action="device">
             {t('thisDevice.open', 'Open')}
           </Button>
         )

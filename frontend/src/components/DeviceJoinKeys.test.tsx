@@ -51,6 +51,7 @@ vi.mock('./Notice', () => ({ Notice: ({ children }: any) => <div data-notice>{ch
 vi.mock('react-i18next', () => {
   const fill = (text: string, values?: any) => text.replace(/{{(\w+)}}/g, (_, k) => values?.[k] ?? '')
   return {
+    initReactI18next: { type: '3rdParty', init: () => {} },
     useTranslation: () => ({
       t: (_key: string, a: any, b?: any) => (typeof a === 'string' ? fill(a, b) : fill(a.defaultValue, a)),
     }),

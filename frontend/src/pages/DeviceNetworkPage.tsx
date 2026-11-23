@@ -2,19 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  Box,
-  Button,
-  Chip,
-  List,
-  ListSubheader,
-  MenuItem,
-  Tab,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from '@mui/material'
+import { Box, Button, Chip, List, ListSubheader, MenuItem, Tab, TextField, Typography } from '@mui/material'
 import {
   NetworkMember,
   NetworkRule,
@@ -45,7 +33,6 @@ import { Dispatch, State } from '../store'
 import { getAllDevices } from '../selectors/devices'
 import { selectTags } from '../selectors/tags'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { useLabel } from '../hooks/useLabel'
 import { reloadDeviceNetworks, useDeviceNetworks } from '../hooks/useDeviceNetworks'
 import { graphQLDeleteNetwork, graphQLRemoveNetworkShare } from '../services/graphQLMutation'
 import { Link } from '../components/Link'
@@ -58,6 +45,7 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
+import { Tag } from '../components/Tag'
 import { DeviceNetworkGraph } from '../components/DeviceNetworkGraph'
 import { devicesText, peopleText, ruleSentence, tagsText } from '../components/DeviceNetworkWords'
 import { NetworkExits } from '../components/NetworkExits'
@@ -347,17 +335,28 @@ export const DeviceNetworkPage: React.FC = () => {
           ) : (
             <ListSubheader sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
               {t('deviceNetwork.show', 'Show')}
-              <ToggleButtonGroup
-                size="small"
-                exclusive
-                value={show}
-                onChange={(_, value) => value && setShow(value)}
-                sx={{ '& .MuiToggleButton-root': { paddingY: 0.25, paddingX: 1.25, fontSize: 11 } }}
+              <Box
+                sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', '& .MuiChip-root': { letterSpacing: 'normal' } }}
+                role="group"
+                data-show={show}
               >
-                <ToggleButton value="ALL">{t('deviceNetwork.showAll', 'All')}</ToggleButton>
-                <ToggleButton value="REACH">{t('deviceNetwork.showReach', 'Can reach')}</ToggleButton>
-                <ToggleButton value="REACHED">{t('deviceNetwork.showReached', 'Can be reached')}</ToggleButton>
-              </ToggleButtonGroup>
+                {(
+                  [
+                    ['ALL', t('deviceNetwork.showAll', 'All')],
+                    ['REACH', t('deviceNetwork.showReach', 'Can reach')],
+                    ['REACHED', t('deviceNetwork.showReached', 'Can be reached')],
+                  ] as const
+                ).map(([value, label]) => (
+                  <Chip
+                    key={value}
+                    size="small"
+                    label={label}
+                    color={show === value ? 'primary' : undefined}
+                    aria-pressed={show === value}
+                    onClick={() => setShow(value)}
+                  />
+                ))}
+              </Box>
             </ListSubheader>
           )}
           {!empty && show !== 'ALL' && !accounts.length && (
@@ -871,7 +870,6 @@ export const MemberRow: React.FC<{
               size="small"
               label={service.name}
               color={listed.has(service.id) ? 'primary' : 'default'}
-              variant={listed.has(service.id) ? 'filled' : 'outlined'}
               icon={listed.has(service.id) ? <Icon name="check" size="xxs" inline /> : undefined}
               onClick={chipsEditable ? () => on.onService(service.id) : undefined}
             />
@@ -879,8 +877,6 @@ export const MemberRow: React.FC<{
           {folded && (
             <Chip
               size="small"
-              variant="outlined"
-              sx={{ borderStyle: 'dashed' }}
               onClick={() => setOpen(true)}
               label={
                 hidden.some(service => listed.has(service.id))
@@ -931,11 +927,10 @@ const TagRule: React.FC<{
   onRemove: () => void
 }> = ({ rule, tags, choices, nameOf, editable, removable, onChange, onRemove }) => {
   const { t } = useTranslation()
-  const getColor = useLabel()
   const [picking, setPicking] = useState(false)
   const [open, setOpen] = useState(false)
   const colorOf = (name: string) =>
-    getColor(rule.tagColors?.find(tag => tag.name === name)?.color ?? tags.find(tag => tag.name === name)?.color ?? 0)
+    rule.tagColors?.find(tag => tag.name === name)?.color ?? tags.find(tag => tag.name === name)?.color ?? 0
   const devices = [...rule.devices].sort((a, b) => nameOf(a).localeCompare(nameOf(b)))
   const shown = open ? devices : devices.slice(0, INLINE)
 
@@ -960,17 +955,9 @@ const TagRule: React.FC<{
       </Box>
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center', marginTop: 1, paddingLeft: 3 }}>
         {rule.tags.map(tag => (
-          <Chip
+          <Tag
             key={tag}
-            size="small"
-            variant="outlined"
-            icon={
-              <Box
-                component="span"
-                sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: colorOf(tag), marginLeft: '8px !important' }}
-              />
-            }
-            label={tag}
+            tag={{ name: tag, color: colorOf(tag) }}
             onDelete={
               editable && rule.tags.length > 1
                 ? () => onChange({ tags: rule.tags.filter(name => name !== tag) })
@@ -1061,8 +1048,6 @@ const TagRule: React.FC<{
             {devices.length > INLINE && (
               <Chip
                 size="small"
-                variant="outlined"
-                sx={{ borderStyle: 'dashed' }}
                 onClick={() => setOpen(!open)}
                 label={
                   open
@@ -1190,10 +1175,8 @@ const PersonRow: React.FC<{
             {folded && (
               <Chip
                 size="small"
-                variant="outlined"
                 label={t('deviceNetwork.more', '{{count}} more', { count: devices.length - SHOWN })}
                 onClick={() => setOpen(true)}
-                sx={{ borderStyle: 'dashed' }}
               />
             )}
             {open && devices.length > INLINE && (
@@ -1266,7 +1249,6 @@ const AccountPeople: React.FC<{
   onTag: (name: string, on: boolean) => void
 }> = ({ section, color, devices, admin, onTier, onUnshare, onTag }) => {
   const { t } = useTranslation()
-  const getColor = useLabel()
   const count = new Set([section.accountId, ...section.roles.flatMap(role => role.members.map(member => member.id))])
     .size
   const people = peopleText(t, count)
@@ -1320,7 +1302,7 @@ const AccountPeople: React.FC<{
         <NetworkTags
           label={t('deviceNetwork.taggedIn', 'Tags on this network')}
           names={section.tags.map(tag => tag.name)}
-          colorOf={name => getColor(section.tags.find(tag => tag.name === name)?.color ?? 0)}
+          colorOf={name => section.tags.find(tag => tag.name === name)?.color ?? 0}
           choices={section.tagChoices}
           editable={section.tagsEditable}
           onAdd={name => onTag(name, true)}
@@ -1373,7 +1355,7 @@ const accountColor = (index: number, dark: boolean) => {
 const NetworkTags: React.FC<{
   label: string
   names: string[]
-  colorOf: (name: string) => string
+  colorOf: (name: string) => number
   choices: string[]
   editable: boolean
   onAdd: (name: string) => void
@@ -1389,33 +1371,19 @@ const NetworkTags: React.FC<{
           {label}
         </Typography>
         {names.map(name => (
-          <Chip
-            key={name}
-            size="small"
-            variant="outlined"
-            icon={
-              <Box
-                component="span"
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  bgcolor: colorOf(name),
-                  marginLeft: '8px !important',
-                }}
-              />
-            }
-            label={name}
-            onDelete={editable ? () => onRemove(name) : undefined}
-          />
+          <Tag key={name} tag={{ name, color: colorOf(name) }} onDelete={editable ? () => onRemove(name) : undefined} />
         ))}
         {editable && (
           <Chip
             size="small"
-            variant="outlined"
-            label={t('deviceNetwork.addTag', 'Add tag')}
+            label={
+              <>
+                <Icon name="plus" size="sm" inlineLeft />
+                {t('deviceNetwork.addTag', 'Add tag')}
+              </>
+            }
+            sx={{ fontWeight: 500, letterSpacing: 1, color: 'grayDarker.main' }}
             onClick={() => setPicking(!picking)}
-            sx={{ borderStyle: 'dashed' }}
           />
         )}
         {!names.length && (

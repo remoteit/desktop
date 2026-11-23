@@ -5,6 +5,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const { push } = vi.hoisted(() => ({ push: vi.fn() }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push }) }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
+vi.mock('./ColorChip', () => ({
+  ColorChip: ({ label, color, size, ...props }: any) => (
+    <span data-color={color} {...props}>
+      {label}
+    </span>
+  ),
+}))
 vi.mock('./Link', () => ({ Link: ({ to, children }: any) => <a data-link={to}>{children}</a> }))
 // Its actions are their own test's (RunActions.test.tsx): here, what they were given, and an answer.
 vi.mock('./RunActions', () => ({
