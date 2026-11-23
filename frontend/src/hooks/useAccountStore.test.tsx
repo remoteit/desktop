@@ -48,4 +48,28 @@ describe('something of the active account, shared by a list and the page beside 
     await act(async () => answers[2]('latest'))
     expect(container.querySelector('[data-show="list"]')?.textContent).toBe('A:latest')
   })
+
+  it('can be read from what is already held, without reading it', async () => {
+    let answer: (value: string) => void = () => {}
+    const read = vi.fn(() => new Promise<string>(resolve => (answer = resolve)))
+    const useStore = accountStore(read)
+    const Peek: React.FC = () => <div data-peek>{useStore.useCached() ?? 'none'}</div>
+    const Load: React.FC = () => <div>{useStore().value ?? ''}</div>
+    const container = document.createElement('div')
+    const root = createRoot(container)
+    await act(async () => root.render(<Peek />))
+    expect(read).not.toHaveBeenCalled()
+    expect(container.textContent).toBe('none')
+    await act(async () =>
+      root.render(
+        <>
+          <Peek />
+          <Load />
+        </>
+      )
+    )
+    await act(async () => answer('held'))
+    expect(read).toHaveBeenCalledTimes(1)
+    expect(container.querySelector('[data-peek]')?.textContent).toBe('held')
+  })
 })

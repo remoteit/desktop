@@ -31,9 +31,14 @@ export function accountStore<T>(read: (accountId: string) => Promise<T>) {
     if (again.delete(accountId)) await load(accountId)
   }
 
-  return function useAccountStore() {
+  function useCached() {
     const accountId = useSelector(selectActiveAccountId)
-    const value = useSyncExternalStore(subscribe, () => byAccount.get(accountId))
+    return useSyncExternalStore(subscribe, () => byAccount.get(accountId))
+  }
+
+  function useAccountStore() {
+    const accountId = useSelector(selectActiveAccountId)
+    const value = useCached()
 
     useEffect(() => {
       if (!byAccount.has(accountId)) load(accountId)
@@ -42,4 +47,6 @@ export function accountStore<T>(read: (accountId: string) => Promise<T>) {
     const reload = useCallback(() => load(accountId), [accountId])
     return { value, reload }
   }
+
+  return Object.assign(useAccountStore, { useCached })
 }
