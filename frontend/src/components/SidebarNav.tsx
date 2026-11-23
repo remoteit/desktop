@@ -13,7 +13,7 @@ import { useCounts } from '../hooks/useCounts'
 import { getLocale } from '../helpers/dateHelper'
 import { spacing } from '../styling'
 import { useNavSections } from '../hooks/useNavSections'
-import { NAV_PAGES, NavPageId, NavSectionId, VisibleSection, sectionMatch } from '../helpers/navSections'
+import { NAV_PAGES, NavPageId, NavSectionId, VisibleSection, sectionMatch, navPageLabel } from '../helpers/navSections'
 
 const listSx = (theme: Theme) => ({
   position: 'static',
@@ -167,7 +167,7 @@ const PageLink: React.FC<{
       dense
       sx={{ paddingLeft: 7, minHeight: 34, paddingY: 0.25 }}
     >
-      <ListItemText primary={NAV_PAGES[id].label(t)} />
+      <ListItemText primary={navPageLabel(id, t)} />
       {children}
     </ListItemButton>
   )

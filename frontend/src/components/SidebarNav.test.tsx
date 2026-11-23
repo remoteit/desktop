@@ -144,11 +144,11 @@ describe('SidebarNav', () => {
 
   it('opens only the section you are in, its pages beneath it', () => {
     render({ pathname: '/exits', deviceSessions: true })
-    expect(pages()).toEqual(['Networks', 'Exits', 'Public addresses', 'Proxy servers'])
+    expect(pages()).toEqual(['All networks', 'Exits', 'Public addresses', 'Proxy servers'])
     render({ pathname: '/scripts' })
     expect(pages()).toEqual(['Products', 'Scripts', 'Apps'])
     render({ pathname: '/devices/abc/details', services: true })
-    expect(pages()).toEqual(['Devices', 'Connections', 'Services'])
+    expect(pages()).toEqual(['All devices', 'Connections', 'Services'])
   })
 
   it('opens no pages under a section with one page', () => {
@@ -164,15 +164,15 @@ describe('SidebarNav', () => {
     const selected = () => [...container.querySelectorAll('[data-selected="true"]')].map(i => i.textContent)
     render({ pathname: '/exits/e1', deviceSessions: true })
     expect(page('Exits').getAttribute('aria-current')).toBe('page')
-    expect(page('Networks').getAttribute('aria-current')).toBeNull()
+    expect(page('All networks').getAttribute('aria-current')).toBeNull()
     expect(selected()).toEqual(['Exits'])
     render({ pathname: '/add' })
-    expect(page('Devices').getAttribute('aria-current')).toBe('page')
+    expect(page('All devices').getAttribute('aria-current')).toBe('page')
   })
 
   it('links each page to its address, and Connections shows how many are open', () => {
     render({ pathname: '/connections', active: 2 })
-    expect(page('Devices').getAttribute('data-to')).toBe('/devices')
+    expect(page('All devices').getAttribute('data-to')).toBe('/devices')
     expect(page('Connections').getAttribute('data-to')).toBe('/connections')
     expect(page('Connections').querySelector('[data-chip]')?.getAttribute('data-chip')).toBe('2')
   })
