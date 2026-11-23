@@ -266,6 +266,11 @@ export class Application {
     return lookup
   }
 
+  // Reached with a browser: by its form, or by what the cloud serves the type as (isWebType)
+  get web() {
+    return isWebType(this, this.cloudData)
+  }
+
   get reverseProxy() {
     return this.cloudData ? this.cloudData.proxy : false
   }
@@ -333,6 +338,19 @@ export class Application {
     const unique = new Set(matches)
     return [...Array.from(unique)]
   }
+}
+
+// The cloud's rule for a web service (graphql proxy-endpoints isWeb), which decides the ports a device serves HTTPS on:
+// a type of http or https, or one the proxies carry as web without naming a scheme (ScreenView).
+export function isWebType(app: Pick<Application, 'urlForm'>, type?: Pick<IApplicationType, 'proxy' | 'scheme'>) {
+  return app.urlForm || type?.scheme === 'http' || type?.scheme === 'https' || !!(type?.proxy && !type.scheme)
+}
+
+// A connection by another way than the proxy — a subnet name, a local port — with that host and port in place of the
+// proxy's address. Not public: a public template drops the port, which only the cloud proxy's address goes without.
+// Never saved, only launched from.
+export function directConnection(connection: IConnection, host: string, port?: number): IConnection {
+  return { ...connection, host, port, public: false, connected: true, ready: true, enabled: true, online: true }
 }
 
 export function getApplication(service?: IService, connection?: IConnection, globalDefaults?: ILookup<any>) {

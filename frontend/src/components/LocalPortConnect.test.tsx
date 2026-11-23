@@ -2,6 +2,7 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '@common/constants'
+import { initialize } from '@common/adaptor'
 import { getApplication } from '@common/applications'
 
 const openServiceURL = vi.fn()
@@ -33,6 +34,15 @@ import type { LocalPortState } from '../hooks/useLocalPort'
 import type { LocalPort } from '../services/localPorts'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
+
+// The cloud's types: ScreenView (48) is proxied as web with no scheme of its own; 4848 is proxied, and not web.
+const environment = { portal: true } as IEnvironment
+initialize({
+  getState: () => ({ environment, preferences: {} as IPreferences }),
+  getCloudData: typeId =>
+    ({ proxy: typeId === 7 || typeId === 48 || typeId === 4848, scheme: typeId === 7 ? 'http' : typeId === 4848 ? 'wss' : '' } as IApplicationType),
+  escapeRegex: string => string,
+})
 
 const service: IService = {
   ...DEFAULT_SERVICE,
@@ -107,6 +117,17 @@ describe('LocalPortConnect', () => {
     names.answer = undefined
     await render()
     expect(copied()).toBe('http://ui-pi.at.remote.it:33000')
+  })
+
+  it('ScreenView, which the cloud serves as web: launched at the URL it copies, over the scheme the port serves', async () => {
+    const screenview = {
+      service: { ...service, typeID: 48, port: 8959, attributes: {} },
+      connection: { ...connection, typeID: 48, public: true },
+    }
+    await render(screenview)
+    expect(copied()).toBe('http://ui-pi.at.remote.it:33000')
+    act(() => container.querySelector<HTMLButtonElement>('[data-testid="launch"]')!.click())
+    expect(openServiceURL).toHaveBeenCalledExactlyOnceWith('http://ui-pi.at.remote.it:33000')
   })
 
   it('a service that is not a web one: name:port; ssh: the command', async () => {

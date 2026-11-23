@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, TextField, Typography } from '@mui/material'
+import { directConnection } from '@common/applications'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { openServiceURL } from '../services/browser'
@@ -47,13 +48,13 @@ export const LocalPortConnect: React.FC<Props> = ({ state, service, connection }
 
   const host = local ? localPortHost(local, names) : ''
   const port = local?.port
-  // The service's connection with the local port in place of the proxy's address: never saved, only launched from.
+  // The service's connection with the local port in place of the proxy's address.
   const here = useMemo<IConnection | undefined>(
-    () => connection && { ...connection, host, port, connected: true, ready: true, enabled: true, online: true },
+    () => connection && directConnection(connection, host, port),
     [connection, host, port]
   )
   const app = useApplication(service, here)
-  const web = app.urlForm
+  const web = app.web
   const ssh = service?.typeID === 28
   const launchable = web || app.canLaunch
 
