@@ -89,7 +89,7 @@ export const DeviceEditPage: React.FC = () => {
               <DeviceAiCommandsSetting device={device} />
             </DeviceSection>
             <DeviceSection id="terminal" title={t('deviceSshAccess.terminalAccess', 'Terminal access')} list={false}>
-              <Gutters top={null} bottom={null}>
+              <Gutters top={null} bottom={null} inset="icon">
                 <DeviceSshAccess deviceId={device.id} untitled />
               </Gutters>
             </DeviceSection>
@@ -107,7 +107,7 @@ export const DeviceEditPage: React.FC = () => {
               />
               <DevicePresenceSetting />
             </DeviceSection>
-            <Gutters top={null}>
+            <Gutters top="lg">
               <DeviceJoinKeys device={device} />
             </Gutters>
           </>

@@ -102,7 +102,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
             button="plus"
             tags={tags}
             buttonProps={{
-              title: t('deviceList.addTag', 'Add Tag'),
+              title: t('deviceList.addTag', 'Add tag'),
               color: 'alwaysWhite',
               placement: 'bottom',
               loading: adding,
@@ -118,7 +118,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
             allowAdding={false}
             tags={getSelectedTags(devices, selected)}
             buttonProps={{
-              title: t('deviceList.removeTag', 'Remove Tag'),
+              title: t('deviceList.removeTag', 'Remove tag'),
               color: 'alwaysWhite',
               placement: 'bottom',
               loading: removing,
@@ -138,7 +138,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           </InputLabel>
           <IconButton
             icon="chevron-right"
-            title={t('deviceList.chooseScript', 'Choose Script')}
+            title={t('deviceList.chooseScript', 'Choose script')}
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}
@@ -146,7 +146,7 @@ export const DevicesActionBar: React.FC<Props> = ({ devices }) => {
           />
           <IconButton
             icon="plus"
-            title={t('deviceList.newScript', 'New Script')}
+            title={t('deviceList.newScript', 'New script')}
             color="alwaysWhite"
             placement="bottom"
             disabled={!selected.length}

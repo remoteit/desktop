@@ -99,7 +99,7 @@ export const DeviceDetailPage: React.FC = () => {
             <ListItemSetting
               icon="globe"
               label={
-                <Typography variant="body2" fontFamily="monospace" sx={{ wordBreak: 'break-all' }}>
+                <Typography variant="body2" sx={{ overflowWrap: 'anywhere' }}>
                   {address}
                 </Typography>
               }

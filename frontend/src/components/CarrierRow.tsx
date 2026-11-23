@@ -45,7 +45,12 @@ export const CarrierRow: React.FC<Props> = ({ kind, run, name, activation, manag
       <ListItemText
         primary={
           <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
-            <Link to={`/devices/${run.id}`} sx={{ padding: 0 }}>
+            <Link
+              to={`/devices/${run.id}`}
+              color="inherit"
+              noUnderline
+              sx={{ padding: 0, '&:hover': { textDecoration: 'underline' } }}
+            >
               {device.name}
             </Link>
             <Chip

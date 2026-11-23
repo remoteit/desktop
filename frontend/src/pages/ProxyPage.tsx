@@ -448,6 +448,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
             )}
             <ListItemSetting
               icon="trash"
+              iconColor="danger"
               label={t('proxyPage.delete', 'Delete proxy server')}
               subLabel={devices.length ? t('proxyPage.deleteRunning', 'Remove its devices first.') : undefined}
               button={t('proxyPage.deleteButton', 'Delete')}
@@ -508,7 +509,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
       <Confirm
         open={deleting}
         title={t('proxyPage.deleteTitle', 'Delete {{proxy}}?', { proxy: proxy.name })}
-        action={t('proxyPage.deleteButton', 'Delete')}
+        action={t('proxyPage.delete', 'Delete proxy server')}
         color="error"
         disabled={busy}
         onConfirm={remove}

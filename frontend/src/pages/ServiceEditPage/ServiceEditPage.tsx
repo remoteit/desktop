@@ -66,7 +66,7 @@ export const ServiceEditPage: React.FC<Props> = ({ device }) => {
         <ListItem>
           <ListItemText
             primary={t('serviceEditPage.listener', 'Listener')}
-            secondary={t('serviceEditPage.listenerUnavailable', 'No listener reported')}
+            secondary={t('serviceEditPage.listenerUnavailable', 'Waiting for the device to report its listener')}
           />
         </ListItem>
       )}

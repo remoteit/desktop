@@ -1,11 +1,11 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
-import { ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
+import { Box, Chip, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { useHistory } from 'react-router-dom'
 import { DeviceRuns, ExitDevice, ProxyDevice } from '../services/graphQLDeviceRuns'
 import { lanLine, outOfService, runDetail } from '../helpers/runsHelper'
-import { carrierState } from '../helpers/exitWords'
+import { carrierState, carrying } from '../helpers/exitWords'
 import { RunActions } from './RunActions'
 import { Link } from './Link'
 import { Icon } from './Icon'
@@ -70,18 +70,22 @@ export const RunListItem: React.FC<Props> = ({
       </ListItemIcon>
       <ListItemText
         primary={
-          <>
+          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
             {to && actions ? (
-              <Link to={to} sx={{ padding: 0 }}>
+              <Link to={to} color="inherit" noUnderline sx={{ padding: 0, '&:hover': { textDecoration: 'underline' } }}>
                 {heading}
               </Link>
             ) : (
               heading
             )}
-            <Typography component="span" variant="caption" color="textSecondary" marginLeft={1} data-run-state>
-              {carrierState(t, run)}
-            </Typography>
-          </>
+            <Chip
+              size="small"
+              label={carrierState(t, run)}
+              color={carrying(run) ? 'primary' : undefined}
+              variant={carrying(run) ? 'filled' : 'outlined'}
+              data-run-state
+            />
+          </Box>
         }
         secondaryTypographyProps={{ component: 'div' }}
         secondary={

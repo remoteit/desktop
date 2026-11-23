@@ -152,8 +152,15 @@ describe('navSections', () => {
 
   it('finds no section for pages outside them', () => {
     const sections = navSections(shapes['a fleet operator'])
-    for (const path of ['/settings', '/account', '/add', '/announcements', '/feedback', '/admin/users'])
+    for (const path of ['/settings', '/account', '/announcements', '/feedback', '/admin/users'])
       expect(navSectionAt(sections, path), path).toBeUndefined()
+  })
+
+  it('puts adding a device under Devices', () => {
+    const sections = navSections(shapes['a fleet operator'])
+    expect(navSectionAt(sections, '/add')?.id).toBe('devices')
+    expect(navSectionAt(sections, '/add/linux')?.id).toBe('devices')
+    expect(subNavShown('devices', '/add', 1)).toBe(false)
   })
 
   it('shows the sub-links over a list, not over an item', () => {

@@ -25,7 +25,7 @@ import { selectActiveAccountId } from '../../selectors/accounts'
 import { selectPermissions } from '../../selectors/organizations'
 import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
-import { spacing } from '../../styling'
+import { fontSizes, spacing } from '../../styling'
 import { Gutters } from '../../components/Gutters'
 
 const Section: React.FC<{ title: string; action?: React.ReactNode; children?: React.ReactNode }> = ({
@@ -117,7 +117,11 @@ export const ProductPage: React.FC = () => {
           <Stack direction="row" alignItems="center" spacing={1.5}>
             <Icon platform={product.platform?.id} platformIcon size="xl" />
             <Box minWidth={0}>
-              <Typography variant="h2" component="h1" sx={{ overflowWrap: 'anywhere' }}>
+              <Typography
+                variant="h2"
+                component="h1"
+                sx={{ fontSize: fontSizes.xl, fontWeight: 500, letterSpacing: -0.2, overflowWrap: 'anywhere' }}
+              >
                 {product.name}
               </Typography>
               <Typography variant="body2" color="textSecondary">

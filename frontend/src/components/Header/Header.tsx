@@ -144,7 +144,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
                     icon="check-square"
                     size="md"
                     color="grayDarker"
-                    title={t('header.showSelect', 'Show Select')}
+                    title={t('header.showSelect', 'Show select')}
                   />
                 </Route>
                 <Route path="/devices/select" exact>
@@ -154,7 +154,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
                     size="md"
                     type="solid"
                     color="primary"
-                    title={t('header.hideSelect', 'Hide Select')}
+                    title={t('header.hideSelect', 'Hide select')}
                   />
                 </Route>
               </Switch>

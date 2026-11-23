@@ -172,7 +172,7 @@ const AddressRow: React.FC<{ address: PublicAddress; busy: boolean; onRemove: ()
       </ListItemIcon>
       <ListItemText
         primary={shown}
-        primaryTypographyProps={{ sx: { wordBreak: 'break-all' }, fontWeight: 500 }}
+        primaryTypographyProps={{ sx: { wordBreak: 'break-all' } }}
         secondaryTypographyProps={{ component: 'div' }}
         secondary={
           <>

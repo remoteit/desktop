@@ -83,7 +83,7 @@ export const IssueDeviceJoinKeyDialog: React.FC<Props> = ({ device, rotate, onCh
     <Dialog open onClose={created || working ? undefined : onClose} maxWidth="sm" fullWidth>
       {created ? (
         <>
-          <DialogTitle>{t('issueDeviceJoinKey.createdTitle', 'Device Join Key Issued')}</DialogTitle>
+          <DialogTitle>{t('issueDeviceJoinKey.createdTitle', 'Join key created')}</DialogTitle>
           <DialogContent>
             <DeviceJoinKeyOnce name={created.name} joinKey={created.key}>
               {rotate &&
@@ -105,8 +105,8 @@ export const IssueDeviceJoinKeyDialog: React.FC<Props> = ({ device, rotate, onCh
         <form onSubmit={issue} noValidate>
           <DialogTitle>
             {rotate
-              ? t('issueDeviceJoinKey.rotateTitle', 'Rotate Device Join Keys')
-              : t('issueDeviceJoinKey.title', 'Issue Device Join Key')}
+              ? t('issueDeviceJoinKey.rotateTitle', 'Replace join keys')
+              : t('issueDeviceJoinKey.title', 'Create join key')}
           </DialogTitle>
           <DialogContent>
             <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -178,12 +178,12 @@ export const IssueDeviceJoinKeyDialog: React.FC<Props> = ({ device, rotate, onCh
               {working ? (
                 <>
                   <Icon name="spinner-third" spin size="sm" inlineLeft />
-                  {t('issueDeviceJoinKey.issuing', 'Issuing...')}
+                  {t('issueDeviceJoinKey.issuing', 'Creating')}
                 </>
               ) : rotate && !revoked ? (
-                t('issueDeviceJoinKey.rotate', 'Revoke All and Issue')
+                t('issueDeviceJoinKey.rotate', 'Revoke all and create')
               ) : (
-                t('issueDeviceJoinKey.issue', 'Issue')
+                t('issueDeviceJoinKey.issue', 'Create')
               )}
             </Button>
           </DialogActions>

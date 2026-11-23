@@ -155,7 +155,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
           }}
         >
           {saving
-            ? t('common.saving', 'Saving...')
+            ? t('common.saving', 'Saving')
             : changed
             ? t('common.save', 'Save')
             : t('common.saved', 'Saved')}

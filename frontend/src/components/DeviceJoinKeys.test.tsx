@@ -140,7 +140,7 @@ describe('DeviceJoinKeys', () => {
     const chips = [...container.querySelectorAll('[data-chip]')].map(c => c.textContent)
     expect(chips).toEqual(['Expired', 'Revoked'])
     // Only a key in force can be revoked.
-    expect(container.querySelectorAll('[data-join-key] [data-confirm="Revoke Key"]')).toHaveLength(1)
+    expect(container.querySelectorAll('[data-join-key] [data-confirm="Revoke key"]')).toHaveLength(1)
   })
 
   it('flags a key in force with no boot for 30 days, as a suggestion only', async () => {
@@ -156,12 +156,12 @@ describe('DeviceJoinKeys', () => {
 
   it('issues a key; with two in force it says to revoke one first', async () => {
     await render()
-    await act(async () => button('Issue Key').click())
+    await act(async () => button('Create join key').click())
     expect(container.querySelector('[data-issue-dialog="D1"]')).not.toBeNull()
 
     read.mockResolvedValue([key({ id: 'k2' }), key()])
     await render()
-    expect(button('Issue Key').disabled).toBe(true)
+    expect(button('Create join key').disabled).toBe(true)
     expect(text()).toContain('Two keys are in force, the most a device has: revoke one before issuing another.')
   })
 
@@ -171,7 +171,7 @@ describe('DeviceJoinKeys', () => {
       'This is its only key in force: the device cannot come back at its next boot'
     )
     read.mockResolvedValue([key({ revoked: '2026-11-09T12:00:00Z' })])
-    await act(async () => button('Revoke Key').click())
+    await act(async () => button('Revoke key').click())
     expect(revokeOne).toHaveBeenCalledWith('D1', 'k1')
     expect(read).toHaveBeenCalledTimes(2)
     expect(text()).toContain('Revoked')
@@ -190,7 +190,7 @@ describe('DeviceJoinKeys', () => {
   it('a device of a persistent product, synced or enforced, is issued keys as any other', async () => {
     product.current = { id: 'P1', name: 'Kiosks', sync: 'enforced', lifecycle: 'persistent' }
     await render()
-    expect(button('Issue Key').disabled).toBe(false)
+    expect(button('Create join key').disabled).toBe(false)
     expect(container.querySelector('[data-ephemeral]')).toBeNull()
   })
 
@@ -203,9 +203,9 @@ describe('DeviceJoinKeys', () => {
     // Keys it holds from before are listed, to be revoked.
     read.mockResolvedValue([key()])
     await render()
-    expect(button('Issue Key')).toBeUndefined()
+    expect(button('Create join key')).toBeUndefined()
     expect(container.querySelector('[data-ephemeral]')!.textContent).toContain('Devices of Pool are ephemeral')
-    expect(button('Revoke Key')).toBeTruthy()
+    expect(button('Revoke key')).toBeTruthy()
     expect(button('Revoke all keys')).toBeTruthy()
   })
 

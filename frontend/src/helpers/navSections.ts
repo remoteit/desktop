@@ -61,7 +61,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   devices: {
     label: t => t('nav.devices', 'Devices'),
     to: '/devices',
-    segments: ['devices'],
+    segments: ['devices', 'add'],
     roots: ['/devices', '/devices/select'],
     detail: /^\/devices\/(?!transfer(\/|$))[^/]+/,
   },

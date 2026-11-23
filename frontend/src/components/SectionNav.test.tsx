@@ -112,11 +112,11 @@ describe('SectionNav', () => {
     expect(labels()).toEqual(['Connect AI', 'Agent'])
   })
 
-  it('leaves out a section with nothing to choose between', () => {
+  it('heads a section with one page the same way, and leaves out This device', () => {
     render('/networks', 1, { deviceSessions: false })
-    expect(labels()).toEqual([])
+    expect(labels()).toEqual(['Networks'])
     render('/connect-ai')
-    expect(labels()).toEqual([])
+    expect(labels()).toEqual(['Connect AI'])
     render('/this-device', 1, { thisDevice: true })
     expect(labels()).toEqual([])
   })

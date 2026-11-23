@@ -98,7 +98,7 @@ export const AddDeviceAheadDialog: React.FC<Props> = ({ onClose }) => {
                     )
                   : t(
                       'addDeviceAhead.added',
-                      'It has its ID and its product’s setup, and takes no licence until it first comes online. Its machine comes in with a restore code: Restore Device, on its page.'
+                      'It has its ID and its product’s setup, and takes no licence until it first comes online.'
                     )}
               </Typography>
             )}

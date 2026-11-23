@@ -108,7 +108,7 @@ const toTranscript = (messages: Array<{ role: string; content: string }>): ChatT
 
 const authRequiredError = () =>
   i18n.t('notices:chat.authRequired', {
-    defaultValue: 'The agent refused this session\u2019s credentials — refresh permissions to continue.',
+    defaultValue: 'Agent authentication required — sign in to continue.',
   })
 const sessionExpiredError = () =>
   i18n.t('notices:chat.sessionExpired', {

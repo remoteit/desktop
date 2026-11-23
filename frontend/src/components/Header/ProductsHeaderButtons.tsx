@@ -27,7 +27,7 @@ export const ProductsToolbarButtons: React.FC = () => {
         icon="check-square"
         type={isSelectMode ? 'solid' : 'regular'}
         color={isSelectMode ? 'primary' : 'grayDarker'}
-        title={isSelectMode ? t('header.hideSelect', 'Hide Select') : t('header.showSelect', 'Show Select')}
+        title={isSelectMode ? t('header.hideSelect', 'Hide select') : t('header.showSelect', 'Show select')}
       />
       <Tooltip title={adminRequired} placement="top" arrow>
         <span>

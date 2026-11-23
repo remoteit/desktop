@@ -34,7 +34,7 @@ export const DevicesApplicationsTabs: React.FC = () => {
       TabIndicatorProps={{ sx: { display: 'none' } }}
       sx={{ marginX: 3, marginY: 1 }}
     >
-      <MasterTab label={t('devicesApplicationsTabs.allServices', 'All Services')} onClick={() => update(undefined)} />
+      <MasterTab label={t('devicesApplicationsTabs.allServices', 'All services')} onClick={() => update(undefined)} />
       {allTypes.map(app => {
         return app.ids.includes(SCREEN_VIEW_ID) ? (
           <Tab
