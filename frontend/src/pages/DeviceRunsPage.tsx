@@ -215,7 +215,7 @@ export const NotRunning: React.FC<{ kind: 'proxy' | 'exit'; manage: boolean; onM
               ? t('deviceRuns.noExitNote', 'Other devices could send their traffic out through this one.')
               : t('deviceRuns.noProxyNote', 'Public addresses for services could be served from this device.')}
             {manage && (
-              <Box marginTop={0.5} marginLeft={-1}>
+              <Box marginTop={0.5} marginLeft={-2}>
                 <Button size="small" data-make={kind} onClick={onMake}>
                   {kind === 'exit'
                     ? t('deviceRuns.setUpExit', 'Set up exit')
