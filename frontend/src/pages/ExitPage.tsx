@@ -285,7 +285,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
               )}
             </ListSubheader>
             {adding && exit.owner && (
-              <Gutters top="xs">
+              <>
                 <RunDevicePicker
                   kind="exit"
                   target={exit.id}
@@ -295,7 +295,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                   lan={exit.lan}
                   onAdd={add}
                 />
-              </Gutters>
+              </>
             )}
             {devices.map(device => (
               <CarrierRow

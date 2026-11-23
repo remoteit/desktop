@@ -1,16 +1,17 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { Box, List, ListItem, ListItemText, Stack, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material'
 import { IDeviceProduct, IDeviceProductJoinKey, IJoinKeyInput } from '../models/products'
 import { JOIN_KEY_ENV, JOIN_KEY_FILE_ENV } from '../constants'
 import { selectPermissions } from '../selectors/organizations'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
-import { DynamicButton } from '../buttons/DynamicButton'
 import { CreateJoinKeyDialog } from './CreateJoinKeyDialog'
 import { ColorChip } from './ColorChip'
 import { Timestamp } from './Timestamp'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
+import { Icon } from './Icon'
 import { dispatch } from '../store'
 
 type Props = {
@@ -56,26 +57,28 @@ export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, on
 
   return (
     <Box>
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography variant="subtitle2" color="textSecondary">
-          {t('productJoinKeys.title', 'Join keys')}
-        </Typography>
-        <DynamicButton
+      <Typography variant="subtitle1">
+        {t('productJoinKeys.title', 'Join keys')}
+        <Button
           size="small"
-          icon="plus"
-          title={t('productJoinKeys.create', 'Create join key')}
+          startIcon={<Icon name="plus" size="sm" />}
           disabled={!admin || !!revoking}
           onClick={() => setCreating(true)}
-        />
-      </Stack>
-      <Typography variant="body2" color="textSecondary" gutterBottom>
-        {t('productJoinKeys.description', {
-          env: JOIN_KEY_ENV,
-          file: JOIN_KEY_FILE_ENV,
-          defaultValue:
-            'Put a key on each machine as {{env}}, or in a file named by {{file}}. A key only creates devices of this product. You see it once.',
-        })}
+          sx={{ marginLeft: 1 }}
+        >
+          {t('productJoinKeys.create', 'Create join key')}
+        </Button>
       </Typography>
+      <Gutters top={null} bottom="xs">
+        <Typography variant="caption" component="p">
+          {t('productJoinKeys.description', {
+            env: JOIN_KEY_ENV,
+            file: JOIN_KEY_FILE_ENV,
+            defaultValue:
+              'Put a key on each machine as {{env}}, or in a file named by {{file}}. A key only creates devices of this product. You see it once.',
+          })}
+        </Typography>
+      </Gutters>
       {keys.length ? (
         <List dense disablePadding>
           {keys.map(key => {
@@ -83,7 +86,6 @@ export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, on
             return (
               <ListItem
                 key={key.id}
-                disableGutters
                 // Room for the action: the theme's list padding leaves none, and a key's lines are long.
                 sx={{ paddingRight: 6 }}
                 secondaryAction={
@@ -115,6 +117,9 @@ export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, on
                   )
                 }
               >
+                <ListItemIcon>
+                  <Icon name="key" size="md" fixedWidth />
+                </ListItemIcon>
                 <ListItemText
                   primary={
                     <Stack direction="row" alignItems="center" spacing={1}>
@@ -188,9 +193,11 @@ export const ProductJoinKeys: React.FC<Props> = ({ product, manage, onCreate, on
           })}
         </List>
       ) : (
-        <Typography variant="body2" color="textSecondary" gutterBottom>
-          {t('productJoinKeys.none', 'No join keys yet.')}
-        </Typography>
+        <Gutters top={null}>
+          <Typography variant="body2" color="textSecondary">
+            {t('productJoinKeys.none', 'No join keys yet.')}
+          </Typography>
+        </Gutters>
       )}
       {creating && <CreateJoinKeyDialog product={product} onCreate={onCreate} onClose={() => setCreating(false)} />}
     </Box>

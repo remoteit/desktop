@@ -46,15 +46,14 @@ export const RunActions: React.FC<Props> = ({ device, scope, run, activation, di
     <Box
       display="flex"
       flexWrap="wrap"
-      gap={1}
       marginTop={0.5}
+      marginLeft={-1}
       data-run-actions={scope === 'device' ? 'device' : scope.kind}
     >
       {choices.map(each => (
         <Button
           key={each.plain ?? each.action}
           size="small"
-          variant={each.plain === 'REMOVE' || each.plain === 'STOP' ? 'text' : 'outlined'}
           color={each.action === 'RETIRE' || each.action === 'REMOVE' ? 'error' : 'primary'}
           disabled={disabled}
           data-action={each.action}

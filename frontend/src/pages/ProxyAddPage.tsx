@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { Box, Button, Collapse, FormControlLabel, Switch, TextField, Typography } from '@mui/material'
+import { Button, Collapse, List, TextField, Typography } from '@mui/material'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLAddProxyDevice } from '../services/graphQLDeviceRuns'
 import { Proxy, graphQLCreateProxy } from '../services/graphQLProxy'
@@ -12,6 +12,8 @@ import { RunDevicePicker } from '../components/RunDevicePicker'
 import { ProxyKindChoice } from '../components/ProxyKindChoice'
 import { useAccountProxies } from '../hooks/useAccountExits'
 import { Container } from '../components/Container'
+import { FormField } from '../components/FormField'
+import { ListItemSetting } from '../components/ListItemSetting'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -92,10 +94,11 @@ export const ProxyAddPage: React.FC = () => {
         </>
       }
     >
-      <Gutters>
-        <Box display="flex" flexDirection="column" gap={3} maxWidth={560}>
+      <List>
+        <FormField>
           <TextField
             autoFocus
+            variant="filled"
             label={t('proxyAdd.name', 'Name')}
             value={proxy ? proxy.name : name}
             disabled={!!proxy}
@@ -103,76 +106,79 @@ export const ProxyAddPage: React.FC = () => {
             onChange={event => setName(event.target.value)}
             data-name
           />
-          {!proxy && <ProxyKindChoice local={local} disabled={busy} onChange={setLocal} />}
-          <Box>
-            <Typography variant="subtitle2" gutterBottom>
-              {t('proxyAdd.device', 'Device to run it')}
-            </Typography>
-            <RunDevicePicker
-              kind="proxy"
-              target={proxy?.id}
-              ownerId={proxy?.owner?.id || accountId}
-              single
-              onChoose={setDevice}
-            />
-          </Box>
-          {!proxy && (
-            <Box>
-              <Button
-                size="small"
-                onClick={() => setMore(!more)}
-                endIcon={<Icon name={more ? 'chevron-up' : 'chevron-down'} size="sm" />}
-                data-more
-              >
-                {t('proxyAdd.more', 'More options')}
-              </Button>
-              <Collapse in={more}>
-                <Box display="flex" flexDirection="column" gap={2} marginTop={2}>
-                  <TextField
-                    size="small"
-                    label={t('proxyAdd.label', 'Address label')}
-                    placeholder={t('proxyAdd.labelAutomatic', 'Made from the name')}
-                    value={label}
-                    error={!!labelProblem}
-                    helperText={
-                      labelProblem
-                        ? t('proxyAdd.labelProblem', 'Lower case letters and digits, at most {{max}}', {
-                            max: NAME_MAX,
-                          })
-                        : t('proxyAdd.labelHint', 'The first part of its addresses.')
-                    }
-                    inputProps={{ maxLength: NAME_MAX }}
-                    onChange={event => setLabel(event.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
-                  />
-                  <FormControlLabel
-                    control={
-                      <Switch checked={publicEndpoints} onChange={event => setPublicEndpoints(event.target.checked)} />
-                    }
-                    label={t('proxyAdd.publicEndpoints', 'Allow public addresses anyone can open')}
-                  />
-                </Box>
-              </Collapse>
-            </Box>
-          )}
-          {refusal && (
-            <Notice severity="error" fullWidth>
-              {refusal}
-            </Notice>
-          )}
-          <Box display="flex" gap={1}>
+        </FormField>
+      </List>
+      {!proxy && <ProxyKindChoice local={local} disabled={busy} onChange={setLocal} />}
+      <Typography variant="subtitle1">{t('proxyAdd.device', 'Device to run it')}</Typography>
+      <RunDevicePicker
+        kind="proxy"
+        target={proxy?.id}
+        ownerId={proxy?.owner?.id || accountId}
+        single
+        onChoose={setDevice}
+      />
+      {!proxy && (
+        <>
+          <Gutters top="sm" bottom={null}>
             <Button
-              variant="contained"
-              disabled={busy || (!proxy && (!name.trim() || !!labelProblem))}
-              onClick={create}
-              data-create
+              size="small"
+              onClick={() => setMore(!more)}
+              endIcon={<Icon name={more ? 'chevron-up' : 'chevron-down'} size="sm" />}
+              data-more
             >
-              {proxy ? t('proxyAdd.addDevice', 'Add device') : t('proxyAdd.create', 'Create proxy server')}
+              {t('proxyAdd.more', 'More options')}
             </Button>
-            <Button disabled={busy} onClick={() => history.push(proxy ? `/proxies/${proxy.id}` : '/proxies')}>
-              {proxy ? t('proxyAdd.open', 'Open proxy server') : t('exitAdd.cancel', 'Cancel')}
-            </Button>
-          </Box>
-        </Box>
+          </Gutters>
+          <Collapse in={more}>
+            <List>
+              <FormField help={labelProblem ? undefined : t('proxyAdd.labelHint', 'The first part of its addresses.')}>
+                <TextField
+                  variant="filled"
+                  label={t('proxyAdd.label', 'Address label')}
+                  placeholder={t('proxyAdd.labelAutomatic', 'Made from the name')}
+                  value={label}
+                  error={!!labelProblem}
+                  helperText={
+                    labelProblem
+                      ? t('proxyAdd.labelProblem', 'Lower case letters and digits, at most {{max}}', {
+                          max: NAME_MAX,
+                        })
+                      : undefined
+                  }
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ maxLength: NAME_MAX }}
+                  onChange={event => setLabel(event.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                />
+              </FormField>
+              <ListItemSetting
+                icon="globe"
+                label={t('proxyAdd.publicEndpoints', 'Allow public addresses anyone can open')}
+                toggle={publicEndpoints}
+                onClick={() => setPublicEndpoints(!publicEndpoints)}
+              />
+            </List>
+          </Collapse>
+        </>
+      )}
+      {refusal && (
+        <Gutters>
+          <Notice severity="error" fullWidth>
+            {refusal}
+          </Notice>
+        </Gutters>
+      )}
+      <Gutters top="lg">
+        <Button
+          variant="contained"
+          disabled={busy || (!proxy && (!name.trim() || !!labelProblem))}
+          onClick={create}
+          data-create
+        >
+          {proxy ? t('proxyAdd.addDevice', 'Add device') : t('proxyAdd.create', 'Create proxy server')}
+        </Button>
+        <Button disabled={busy} onClick={() => history.push(proxy ? `/proxies/${proxy.id}` : '/proxies')}>
+          {proxy ? t('proxyAdd.open', 'Open proxy server') : t('exitAdd.cancel', 'Cancel')}
+        </Button>
       </Gutters>
     </Container>
   )

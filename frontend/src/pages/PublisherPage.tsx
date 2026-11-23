@@ -21,6 +21,7 @@ import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
+import { FormField } from '../components/FormField'
 import { Confirm } from '../components/Confirm'
 import { SignerFrame, useCreateLabels } from '../components/SignerFrame'
 import { CreateRequest, Created } from '../services/releaseSigner'
@@ -127,57 +128,64 @@ export const PublisherPage: React.FC = () => {
       }
     >
       {read === null && (
-        <Notice severity="info" gutterTop>
-          {t('publisherPage.unavailable', 'Publishing apps is not available here.')}
-        </Notice>
+        <Gutters>
+          <Notice severity="info" fullWidth>
+            {t('publisherPage.unavailable', 'Publishing apps is not available here.')}
+          </Notice>
+        </Gutters>
       )}
       {refusal && (
-        <Notice severity="error" gutterTop onClose={() => setRefusal(undefined)}>
-          {refusal}
-        </Notice>
+        <Gutters>
+          <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
+            {refusal}
+          </Notice>
+        </Gutters>
       )}
       {read && !publisher && (
-        <Gutters data-publisher-claim>
-          <Typography variant="body2" gutterBottom>
-            {t(
-              'publisherPage.claimIntro',
-              'Publish your own apps for your own devices. Choose a publisher id. Every app you publish is named <id>.<app>.'
-            )}{' '}
-            {t(
-              'publisherPage.claimIds',
-              'Ids are first come, first served, and an id is yours for good. Remote.It’s and well-known names are reserved.'
-            )}
-          </Typography>
-          <TextField
-            fullWidth
-            size="small"
-            variant="filled"
-            label={t('publisherPage.id', 'Publisher id')}
-            helperText={t('publisherPage.idHelp', '1 to 32 of a–z, 0–9 and -')}
-            value={claimId}
-            onChange={e => setClaimId(e.target.value.toLowerCase())}
-            inputProps={{ maxLength: 32, 'data-claim-id': true }}
-            sx={{ marginBottom: 1 }}
-          />
-          <TextField
-            fullWidth
-            size="small"
-            variant="filled"
-            label={t('publisherPage.name', 'Name shown with your apps')}
-            value={claimName}
-            onChange={e => setClaimName(e.target.value)}
-            inputProps={{ maxLength: 64, 'data-claim-name': true }}
-            sx={{ marginBottom: 1 }}
-          />
-          <Button
-            variant="contained"
-            disabled={busy || !/^[a-z0-9-]{1,32}$/.test(claimId) || !claimName.trim()}
-            onClick={() => apply(() => graphQLClaimAppPublisher(claimId, claimName, account))}
-            data-claim
-          >
-            {t('publisherPage.claim', 'Claim')}
-          </Button>
-        </Gutters>
+        <Box data-publisher-claim>
+          <Gutters bottom={null}>
+            <Typography variant="body2">
+              {t(
+                'publisherPage.claimIntro',
+                'Publish your own apps for your own devices. Choose a publisher id. Every app you publish is named <id>.<app>.'
+              )}{' '}
+              {t(
+                'publisherPage.claimIds',
+                'Ids are first come, first served, and an id is yours for good. Remote.It’s and well-known names are reserved.'
+              )}
+            </Typography>
+          </Gutters>
+          <List>
+            <FormField help={t('publisherPage.idHelp', '1 to 32 of a–z, 0–9 and -')}>
+              <TextField
+                variant="filled"
+                label={t('publisherPage.id', 'Publisher id')}
+                value={claimId}
+                onChange={e => setClaimId(e.target.value.toLowerCase())}
+                inputProps={{ maxLength: 32, 'data-claim-id': true }}
+              />
+            </FormField>
+            <FormField>
+              <TextField
+                variant="filled"
+                label={t('publisherPage.name', 'Name shown with your apps')}
+                value={claimName}
+                onChange={e => setClaimName(e.target.value)}
+                inputProps={{ maxLength: 64, 'data-claim-name': true }}
+              />
+            </FormField>
+          </List>
+          <Gutters top="lg">
+            <Button
+              variant="contained"
+              disabled={busy || !/^[a-z0-9-]{1,32}$/.test(claimId) || !claimName.trim()}
+              onClick={() => apply(() => graphQLClaimAppPublisher(claimId, claimName, account))}
+              data-claim
+            >
+              {t('publisherPage.claim', 'Claim')}
+            </Button>
+          </Gutters>
+        </Box>
       )}
       {publisher && (
         <>
@@ -217,24 +225,28 @@ export const PublisherPage: React.FC = () => {
 
           <Typography variant="subtitle1">{t('publisherPage.keys', 'Signing keys')}</Typography>
           {!read?.publishing.certifies && (
-            <Notice severity="warning" gutterBottom>
-              {t('publisherPage.noCatalogueKey', 'This server cannot certify keys yet, so its devices take no published app.')}
-            </Notice>
+            <Gutters top={null}>
+              <Notice severity="warning" fullWidth>
+                {t('publisherPage.noCatalogueKey', 'This server cannot certify keys yet, so its devices take no published app.')}
+              </Notice>
+            </Gutters>
           )}
           {kept && (
-            <Notice severity="warning" gutterBottom onClose={() => setKept(undefined)}>
-              <span data-key-kept={kept}>
-                {t(
-                  'publisherPage.keepKey',
-                  'Key {{id}} is registered. Keep its file and passphrase. Remote.It cannot recover either.',
-                  { id: kept }
-                )}{' '}
-                {t(
-                  'publisherPage.keepKeyLost',
-                  'Without them you cannot sign releases with this key. If someone else may have the file, create a new key and revoke this one.'
-                )}
-              </span>
-            </Notice>
+            <Gutters top={null}>
+              <Notice severity="warning" fullWidth onClose={() => setKept(undefined)}>
+                <span data-key-kept={kept}>
+                  {t(
+                    'publisherPage.keepKey',
+                    'Key {{id}} is registered. Keep its file and passphrase. Remote.It cannot recover either.',
+                    { id: kept }
+                  )}{' '}
+                  {t(
+                    'publisherPage.keepKeyLost',
+                    'Without them you cannot sign releases with this key. If someone else may have the file, create a new key and revoke this one.'
+                  )}
+                </span>
+              </Notice>
+            </Gutters>
           )}
           <List dense data-publisher-keys>
             {publisher.keys.map(key => (

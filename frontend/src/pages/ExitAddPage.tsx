@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-import { Box, Button, TextField, Typography } from '@mui/material'
+import { Button, List, TextField, Typography } from '@mui/material'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLAddExitDevice } from '../services/graphQLDeviceRuns'
 import { Exit, graphQLCreateExit } from '../services/graphQLExits'
@@ -10,6 +10,7 @@ import { RunDevicePicker } from '../components/RunDevicePicker'
 import { refusalWhy } from '../helpers/exitWords'
 import { useAccountExits } from '../hooks/useAccountExits'
 import { Container } from '../components/Container'
+import { FormField } from '../components/FormField'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
@@ -77,47 +78,49 @@ export const ExitAddPage: React.FC = () => {
         </>
       }
     >
-      <Gutters>
-        <Box display="flex" flexDirection="column" gap={3} maxWidth={560}>
+      <List>
+        <FormField>
           <TextField
             autoFocus
+            variant="filled"
             label={t('exitAdd.name', 'Name')}
             placeholder={t('exitAdd.namePlaceholder', 'Home, Office, Lab')}
             value={exit ? exit.name : name}
             disabled={!!exit}
             inputProps={{ maxLength: 255 }}
+            InputLabelProps={{ shrink: true }}
             onChange={event => setName(event.target.value)}
             data-name
           />
-          <Box>
-            <Typography variant="subtitle2" gutterBottom>
-              {t('exitAdd.device', 'Exit device')}
-            </Typography>
-            <Typography variant="caption" color="textSecondary" component="p" gutterBottom>
-              {t('exitAdd.deviceHint', 'Traffic routed through this exit leaves the internet from this device.')}
-            </Typography>
-            <RunDevicePicker
-              kind="exit"
-              target={exit?.id}
-              ownerId={exit?.owner?.id || accountId}
-              single
-              onChoose={setDevice}
-            />
-          </Box>
-          {refusal && (
-            <Notice severity="error" fullWidth>
-              {refusal}
-            </Notice>
-          )}
-          <Box display="flex" gap={1}>
-            <Button variant="contained" disabled={busy || (!exit && !name.trim())} onClick={create} data-create>
-              {exit ? t('exitAdd.addDevice', 'Add device') : t('exitAdd.create', 'Create exit')}
-            </Button>
-            <Button disabled={busy} onClick={() => history.push(exit ? `/exits/${exit.id}` : '/exits')}>
-              {exit ? t('exitAdd.openExit', 'Open exit') : t('exitAdd.cancel', 'Cancel')}
-            </Button>
-          </Box>
-        </Box>
+        </FormField>
+      </List>
+      <Typography variant="subtitle1">{t('exitAdd.device', 'Exit device')}</Typography>
+      <Gutters top={null} bottom="xs">
+        <Typography variant="caption">
+          {t('exitAdd.deviceHint', 'Traffic routed through this exit leaves the internet from this device.')}
+        </Typography>
+      </Gutters>
+      <RunDevicePicker
+        kind="exit"
+        target={exit?.id}
+        ownerId={exit?.owner?.id || accountId}
+        single
+        onChoose={setDevice}
+      />
+      {refusal && (
+        <Gutters>
+          <Notice severity="error" fullWidth>
+            {refusal}
+          </Notice>
+        </Gutters>
+      )}
+      <Gutters top="lg">
+        <Button variant="contained" disabled={busy || (!exit && !name.trim())} onClick={create} data-create>
+          {exit ? t('exitAdd.addDevice', 'Add device') : t('exitAdd.create', 'Create exit')}
+        </Button>
+        <Button disabled={busy} onClick={() => history.push(exit ? `/exits/${exit.id}` : '/exits')}>
+          {exit ? t('exitAdd.openExit', 'Open exit') : t('exitAdd.cancel', 'Cancel')}
+        </Button>
       </Gutters>
     </Container>
   )

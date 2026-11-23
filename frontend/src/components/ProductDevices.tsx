@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Box, List, Typography } from '@mui/material'
 import { ProductDevice } from '../services/productPolicy'
 import { ListItemLocation } from './ListItemLocation'
+import { Gutters } from './Gutters'
+import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 
 /* The devices that belong to a product now (Device.product): those it registered, and those attached to it since —
    the newest, as many as graphql lists at once, and how many there are in all. Each to its own page, where its product
@@ -11,14 +13,16 @@ export const ProductDevices: React.FC<{ devices: ProductDevice[]; count?: number
   const { t } = useTranslation()
   const total = count ?? devices.length
   return (
-    <Box marginTop={3} data-product-devices>
-      <Typography variant="subtitle2" color="textSecondary">
+    <Box marginTop={2} data-product-devices>
+      <Typography variant="subtitle1">
         {t('productDevices.title', { count: total, defaultValue: 'Devices ({{count}})' })}
       </Typography>
       {!devices.length ? (
-        <Typography variant="body2" color="textSecondary">
-          {t('productDevices.none', 'No device belongs to this product.')}
-        </Typography>
+        <Gutters top={null}>
+          <Typography variant="body2" color="textSecondary">
+            {t('productDevices.none', 'No device belongs to this product.')}
+          </Typography>
+        </Gutters>
       ) : (
         <List dense disablePadding>
           {devices.map(device => (
@@ -28,14 +32,15 @@ export const ProductDevices: React.FC<{ devices: ProductDevice[]; count?: number
               icon="hdd"
               iconColor={device.state === 'active' ? 'primary' : 'grayDark'}
               title={device.name}
-              disableGutters
               dense
             />
           ))}
           {total > devices.length && (
-            <Typography variant="caption" color="textSecondary" data-product-devices-more>
-              {t('productDevices.more', { count: total - devices.length, defaultValue: 'and {{count}} more' })}
-            </Typography>
+            <Box component="li" sx={{ listStyle: 'none', paddingLeft: `${LIST_ITEM_ICON_WIDTH + spacing.md}px` }}>
+              <Typography variant="caption" color="textSecondary" data-product-devices-more>
+                {t('productDevices.more', { count: total - devices.length, defaultValue: 'and {{count}} more' })}
+              </Typography>
+            </Box>
           )}
         </List>
       )}

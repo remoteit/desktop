@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, List, ListItem, ListItemText, Stack, Typography } from '@mui/material'
+import { Box, Button, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material'
 import {
   DeviceJoinKey,
   graphQLDeviceJoinKeys,
@@ -12,11 +12,12 @@ import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { useDeviceSessionInfo } from '../hooks/useDeviceSessionInfo'
 import { useDeviceProduct } from '../hooks/useProductPolicy'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
-import { DynamicButton } from '../buttons/DynamicButton'
 import { IssueDeviceJoinKeyDialog } from './IssueDeviceJoinKeyDialog'
 import { ColorChip } from './ColorChip'
 import { Timestamp } from './Timestamp'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
+import { Icon } from './Icon'
 
 // At most two keys in force per device (graphql refuses a third): "current" and "next", for a rollover.
 export const KEYS_IN_FORCE = 2
@@ -91,12 +92,10 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
   }
 
   return (
-    <Box sx={{ paddingBottom: 2 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography variant="subtitle2" color="textSecondary">
-          {t('deviceJoinKeys.heading', 'Device join keys')}
-        </Typography>
-        <Stack direction="row" spacing={1} alignItems="center">
+    <Box component="section" sx={{ paddingBottom: 2 }}>
+      <Typography variant="subtitle1" component="h2">
+        {t('deviceJoinKeys.heading', 'Device join keys')}
+        <Stack direction="row" spacing={1} alignItems="center" marginLeft={1}>
           {!!inForce && (
             <ConfirmIconButton
               confirm
@@ -125,43 +124,48 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
             />
           )}
           {!ephemeral && (
-            <DynamicButton
+            <Button
               size="small"
-              icon="plus"
-              title={t('deviceJoinKeys.issue', 'Create join key')}
+              startIcon={<Icon name="plus" size="sm" />}
               disabled={full || !!busy}
               onClick={() => setIssuing(true)}
-            />
+            >
+              {t('deviceJoinKeys.issue', 'Create join key')}
+            </Button>
           )}
         </Stack>
-      </Stack>
-      <Typography variant="body2" color="textSecondary" gutterBottom>
-        {t(
-          'deviceJoinKeys.description',
-          'For a device that starts fresh at every boot: a key brings it back as itself — the same ID, settings, access and history. Each key is shown once, when it is issued.'
-        )}
       </Typography>
-      {ephemeral && (
-        <Typography variant="caption" color="textSecondary" component="p" gutterBottom data-ephemeral>
-          {t('deviceJoinKeys.ephemeral', {
-            product: product?.name,
-            defaultValue:
-              'Devices of {{product}} are ephemeral: each start is a new device, registered with one of the product’s join keys. No device join key is issued to them; revoke these once nothing holds them.',
-          })}
-        </Typography>
-      )}
-      {!ephemeral && full && (
-        <Typography variant="caption" color="textSecondary" component="p" gutterBottom>
+      <Gutters top={null} bottom="xs">
+        <Typography variant="caption" component="p">
           {t(
-            'deviceJoinKeys.full',
-            'Two keys are in force, the most a device has: revoke one before issuing another. To roll over, issue the next key, install it, see its first boot here, then revoke the old one.'
+            'deviceJoinKeys.description',
+            'For a device that starts fresh at every boot: a key brings it back as itself — the same ID, settings, access and history. Each key is shown once, when it is issued.'
           )}
         </Typography>
-      )}
+        {ephemeral && (
+          <Typography variant="caption" component="p" marginTop={1} data-ephemeral>
+            {t('deviceJoinKeys.ephemeral', {
+              product: product?.name,
+              defaultValue:
+                'Devices of {{product}} are ephemeral: each start is a new device, registered with one of the product’s join keys. No device join key is issued to them; revoke these once nothing holds them.',
+            })}
+          </Typography>
+        )}
+        {!ephemeral && full && (
+          <Typography variant="caption" component="p" marginTop={1}>
+            {t(
+              'deviceJoinKeys.full',
+              'Two keys are in force, the most a device has: revoke one before issuing another. To roll over, issue the next key, install it, see its first boot here, then revoke the old one.'
+            )}
+          </Typography>
+        )}
+      </Gutters>
       {reason && (
-        <Notice severity="error" fullWidth gutterBottom>
-          {reason}
-        </Notice>
+        <Gutters top={null}>
+          <Notice severity="error" fullWidth>
+            {reason}
+          </Notice>
+        </Gutters>
       )}
       {keys.length ? (
         <List dense disablePadding>
@@ -170,7 +174,6 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
             return (
               <ListItem
                 key={key.id}
-                disableGutters
                 data-join-key={key.id}
                 sx={{ paddingRight: 6 }}
                 secondaryAction={
@@ -207,6 +210,9 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
                   )
                 }
               >
+                <ListItemIcon>
+                  <Icon name="key" size="md" fixedWidth />
+                </ListItemIcon>
                 <ListItemText
                   primary={
                     <Stack direction="row" alignItems="center" spacing={1}>
@@ -278,9 +284,11 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
           })}
         </List>
       ) : (
-        <Typography variant="body2" color="textSecondary" gutterBottom>
-          {t('deviceJoinKeys.none', 'No join keys yet.')}
-        </Typography>
+        <Gutters top="xs" bottom={null}>
+          <Typography variant="body2" color="textSecondary">
+            {t('deviceJoinKeys.none', 'No join keys yet.')}
+          </Typography>
+        </Gutters>
       )}
       {issuing && <IssueDeviceJoinKeyDialog device={device} onChanged={load} onClose={() => setIssuing(false)} />}
     </Box>

@@ -10,6 +10,7 @@ import {
   DialogTitle,
   List,
   ListItem,
+  ListItemIcon,
   ListItemText,
   Stack,
   Typography,
@@ -20,11 +21,12 @@ import { selectPermissions } from '../selectors/organizations'
 import { platforms } from '../platforms'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { CopyIconButton } from '../buttons/CopyIconButton'
-import { DynamicButton } from '../buttons/DynamicButton'
 import { CopyCodeBlock } from './CopyCodeBlock'
 import { ColorChip } from './ColorChip'
 import { Timestamp } from './Timestamp'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
+import { Icon } from './Icon'
 import { dispatch } from '../store'
 
 type Props = { product: IDeviceProduct }
@@ -123,26 +125,28 @@ export const ProductOneTimeCodes: React.FC<Props> = ({ product }) => {
   }
 
   return (
-    <Box sx={{ marginTop: 3 }}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography variant="subtitle2" color="textSecondary">
-          {t('productOneTimeCodes.title', 'One-time codes')}
-        </Typography>
-        <DynamicButton
+    <Box sx={{ marginTop: 2 }}>
+      <Typography variant="subtitle1">
+        {t('productOneTimeCodes.title', 'One-time codes')}
+        <Button
           size="small"
-          icon="plus"
-          title={t('productOneTimeCodes.add', 'Add one device')}
-          loading={minting}
+          startIcon={<Icon name={minting ? 'spinner-third' : 'plus'} spin={minting} size="sm" />}
           disabled={!admin || busy}
           onClick={mint}
-        />
-      </Stack>
-      <Typography variant="body2" color="textSecondary" gutterBottom>
-        {t('productOneTimeCodes.description', {
-          hours: REGISTRATION_CODE_EXPIRATION_HOURS,
-          defaultValue: 'Use a one-time code to add a single device by hand. Each code works once, within {{hours}} hours.',
-        })}
+          sx={{ marginLeft: 1 }}
+        >
+          {t('productOneTimeCodes.add', 'Add one device')}
+        </Button>
       </Typography>
+      <Gutters top={null} bottom="xs">
+        <Typography variant="caption" component="p">
+          {t('productOneTimeCodes.description', {
+            hours: REGISTRATION_CODE_EXPIRATION_HOURS,
+            defaultValue:
+              'Use a one-time code to add a single device by hand. Each code works once, within {{hours}} hours.',
+          })}
+        </Typography>
+      </Gutters>
       {codes.length ? (
         <List dense disablePadding>
           {codes.map(code => {
@@ -150,7 +154,6 @@ export const ProductOneTimeCodes: React.FC<Props> = ({ product }) => {
             return (
               <ListItem
                 key={code.code}
-                disableGutters
                 // Room for the action: the theme's list padding leaves none.
                 sx={{ paddingRight: 6 }}
                 secondaryAction={
@@ -179,6 +182,9 @@ export const ProductOneTimeCodes: React.FC<Props> = ({ product }) => {
                   )
                 }
               >
+                <ListItemIcon>
+                  <Icon name="ticket" size="md" fixedWidth />
+                </ListItemIcon>
                 <ListItemText
                   primary={
                     <Stack direction="row" alignItems="center" spacing={1}>
@@ -239,9 +245,11 @@ export const ProductOneTimeCodes: React.FC<Props> = ({ product }) => {
           })}
         </List>
       ) : (
-        <Typography variant="body2" color="textSecondary" gutterBottom>
-          {t('productOneTimeCodes.none', 'No one-time codes yet.')}
-        </Typography>
+        <Gutters top={null}>
+          <Typography variant="body2" color="textSecondary">
+            {t('productOneTimeCodes.none', 'No one-time codes yet.')}
+          </Typography>
+        </Gutters>
       )}
       {shown && <OneTimeCodeDialog product={product} code={shown} onClose={() => setShown(undefined)} />}
     </Box>

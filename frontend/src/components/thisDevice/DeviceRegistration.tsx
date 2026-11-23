@@ -168,6 +168,7 @@ const RegistrationForm: React.FC<{
                 {t('deviceRegistration.signedInAs', 'Signed in as {{email}}', { email: user.email })}
               </Typography>
               <TextField
+                variant="filled"
                 select
                 label={t('deviceRegistration.owner', 'Owning account')}
                 value={eligible ? accountId : ''}
@@ -185,6 +186,7 @@ const RegistrationForm: React.FC<{
                 ))}
               </TextField>
               <TextField
+                variant="filled"
                 label={t('deviceRegistration.name', 'Device name')}
                 value={registration.pendingAccount ? registration.name : name}
                 onChange={event => setName(event.target.value)}

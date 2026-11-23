@@ -211,9 +211,9 @@ export const AppAddDialog: React.FC = () => {
             {target === 'devices' && (
               <Box data-app-add-devices>
                 <TextField
-                  size="small"
                   fullWidth
-                  variant="standard"
+                  hiddenLabel
+                  variant="filled"
                   placeholder={t('apps.searchDevices', 'Search devices…')}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
@@ -268,11 +268,10 @@ export const AppAddDialog: React.FC = () => {
             )}
 
             {target === 'tag' && (
-              <Box data-app-add-tags sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <Box data-app-add-tags sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                 <TextField
                   select
-                  size="small"
-                  variant="standard"
+                  variant="filled"
                   label={t('apps.tags', 'Tags')}
                   value={tagged}
                   onChange={e => setTagged([...(e.target as unknown as HTMLSelectElement).selectedOptions].map(o => o.value))}
@@ -288,8 +287,8 @@ export const AppAddDialog: React.FC = () => {
                 </TextField>
                 <TextField
                   select
-                  size="small"
-                  variant="standard"
+                  hiddenLabel
+                  variant="filled"
                   value={operator}
                   onChange={e => setOperator(e.target.value as ITagOperator)}
                   SelectProps={{ native: true }}
@@ -313,8 +312,7 @@ export const AppAddDialog: React.FC = () => {
               <Box data-app-add-product>
                 <TextField
                   select
-                  size="small"
-                  variant="standard"
+                  variant="filled"
                   fullWidth
                   label={t('apps.product', 'Product')}
                   value={productId}
@@ -336,11 +334,10 @@ export const AppAddDialog: React.FC = () => {
               </Box>
             )}
 
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', marginTop: 2, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', marginTop: 2, flexWrap: 'wrap' }}>
               <TextField
                 select
-                size="small"
-                variant="standard"
+                variant="filled"
                 label={t('apps.channel', 'Channel')}
                 value={channel}
                 onChange={e => setChannel(e.target.value)}
@@ -359,8 +356,7 @@ export const AppAddDialog: React.FC = () => {
               {pinning ? (
                 <TextField
                   select
-                  size="small"
-                  variant="standard"
+                  variant="filled"
                   label={t('apps.keepOn', 'Keep on')}
                   value={version}
                   onChange={e => setVersion(e.target.value)}

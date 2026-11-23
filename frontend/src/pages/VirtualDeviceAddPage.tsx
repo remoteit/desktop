@@ -87,7 +87,7 @@ export const VirtualDeviceAddPage: React.FC = () => {
           </Box>
         </Gutters>
       )}
-      <Gutters size={null} sx={{ maxWidth: 600 }}>
+      <Gutters size={null}>
         <VirtualDeviceForm
           prefill={prefill}
           onDone={id => history.push(`/devices/${id}`)}

@@ -474,6 +474,7 @@ export const DeviceNetworkPage: React.FC = () => {
             <Box sx={{ paddingX: 2, paddingY: 1, borderTop: 1, borderColor: 'grayLight.main' }}>
               {adding === 'account' ? (
                 <TextField
+                  variant="filled"
                   select
                   fullWidth
                   size="small"
@@ -636,6 +637,7 @@ const AddPanel: React.FC<{
     >
       {kind === 'device' ? (
         <TextField
+          variant="filled"
           select
           fullWidth
           size="small"
@@ -660,6 +662,7 @@ const AddPanel: React.FC<{
         </TextField>
       ) : (
         <TextField
+          variant="filled"
           select
           fullWidth
           size="small"
@@ -718,6 +721,7 @@ const ReachSelect: React.FC<{ value: boolean; disabled: boolean; onChange: (reac
   const { t } = useTranslation()
   return (
     <TextField
+      variant="filled"
       select
       size="small"
       label={t('deviceNetwork.canReach', 'Can reach')}
@@ -741,6 +745,7 @@ const ReachedSelect: React.FC<{
   const { t } = useTranslation()
   return (
     <TextField
+      variant="filled"
       select
       size="small"
       label={t('deviceNetwork.canBeReached', 'Can be reached')}
@@ -852,6 +857,7 @@ export const MemberRow: React.FC<{
           </Typography>
           {open && services.length > FILTER && (
             <TextField
+              variant="filled"
               size="small"
               fullWidth
               placeholder={t('deviceNetwork.filterServices', 'Filter {{count}} services', { count: services.length })}
@@ -981,6 +987,7 @@ const TagRule: React.FC<{
       {picking && (
         <Box sx={{ paddingLeft: 3, marginTop: 1 }}>
           <TextField
+            variant="filled"
             select
             fullWidth
             size="small"
@@ -1011,6 +1018,7 @@ const TagRule: React.FC<{
         />
         {rule.tags.length > 1 && (
           <TextField
+            variant="filled"
             select
             size="small"
             label={t('deviceNetwork.match', 'Match')}
@@ -1418,6 +1426,7 @@ const NetworkTags: React.FC<{
       </Box>
       {picking && (
         <TextField
+          variant="filled"
           select
           size="small"
           value=""

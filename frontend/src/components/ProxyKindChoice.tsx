@@ -1,14 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Box,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  Radio,
-  RadioGroup,
-  Typography,
-} from '@mui/material'
+import { Box, List, ListItemButton, ListItemIcon, ListItemText, Radio, RadioGroup, Typography } from '@mui/material'
+import { Gutters } from './Gutters'
 
 type Props = {
   local: boolean
@@ -22,51 +15,39 @@ type Props = {
    and anything without remote.it reach endpoints by it. */
 export const ProxyKindChoice: React.FC<Props> = ({ local, disabled, onChange }) => {
   const { t } = useTranslation()
+  const value = local ? 'local' : 'internet'
+  const choices = [
+    {
+      key: 'internet',
+      name: t('proxyKind.internet', 'Internet'),
+      line: t('proxyKind.internetHint', 'Anyone on the internet can reach its public addresses.'),
+    },
+    {
+      key: 'local',
+      name: t('proxyKind.local', 'Local network'),
+      line: t('proxyKind.localHint', 'Only devices on the same local network can reach it. Good for printers and PCs.'),
+    },
+  ]
   return (
-    <FormControl disabled={disabled} data-proxy-kind={local ? 'local' : 'internet'}>
-      <Typography variant="subtitle2" component="legend" gutterBottom>
+    <Box component="fieldset" data-proxy-kind={value} sx={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+      <Typography variant="subtitle1" component="legend">
         {t('proxyKind.label', 'Reached from')}
       </Typography>
-      <RadioGroup value={local ? 'local' : 'internet'} onChange={event => onChange(event.target.value === 'local')}>
-        <FormControlLabel
-          value="internet"
-          control={<Radio size="small" />}
-          sx={ALIGN}
-          label={
-            <Choice
-              name={t('proxyKind.internet', 'Internet')}
-              line={t('proxyKind.internetHint', 'Anyone on the internet can reach its public addresses.')}
-            />
-          }
-        />
-        <FormControlLabel
-          value="local"
-          control={<Radio size="small" />}
-          sx={ALIGN}
-          label={
-            <Choice
-              name={t('proxyKind.local', 'Local network')}
-              line={t(
-                'proxyKind.localHint',
-                'Only devices on the same local network can reach it. Good for printers and PCs.'
-              )}
-            />
-          }
-        />
+      <RadioGroup value={value} onChange={event => onChange(event.target.value === 'local')}>
+        <List dense disablePadding>
+          {choices.map(choice => (
+            <ListItemButton key={choice.key} dense disabled={disabled} onClick={() => onChange(choice.key === 'local')}>
+              <ListItemIcon>
+                <Radio size="small" value={choice.key} disabled={disabled} disableRipple />
+              </ListItemIcon>
+              <ListItemText primary={choice.name} secondary={choice.line} />
+            </ListItemButton>
+          ))}
+        </List>
       </RadioGroup>
-      <FormHelperText sx={{ marginLeft: 0 }}>{t('proxyKind.fixed', 'You can’t change this later.')}</FormHelperText>
-    </FormControl>
+      <Gutters top="xs" bottom={null}>
+        <Typography variant="caption">{t('proxyKind.fixed', 'You can’t change this later.')}</Typography>
+      </Gutters>
+    </Box>
   )
 }
-
-// Each radio beside its choice's name, the line under it wrapping as it must.
-const ALIGN = { alignItems: 'flex-start', '& .MuiRadio-root': { marginTop: 0.25 } }
-
-const Choice: React.FC<{ name: string; line: string }> = ({ name, line }) => (
-  <Box paddingY={0.5}>
-    <Typography variant="body2">{name}</Typography>
-    <Typography variant="caption" color="textSecondary" component="div">
-      {line}
-    </Typography>
-  </Box>
-)

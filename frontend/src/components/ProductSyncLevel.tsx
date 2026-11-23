@@ -13,6 +13,7 @@ import { ProductPolicyPreview, PreviewState } from './ProductPolicyPreview'
 import { SelectSetting } from './SelectSetting'
 import { Confirm } from './Confirm'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
 
 type Props = {
   productId: string
@@ -68,9 +69,7 @@ export const ProductSyncLevel: React.FC<Props> = ({ productId, name, sync, manag
 
   return (
     <Box data-sync={sync}>
-      <Typography variant="subtitle2" color="textSecondary">
-        {t('productSync.title', 'Sync Level')}
-      </Typography>
+      <Typography variant="subtitle1">{t('productSync.title', 'Sync Level')}</Typography>
       <List disablePadding>
         <SelectSetting
           icon="arrows-rotate"
@@ -82,15 +81,16 @@ export const ProductSyncLevel: React.FC<Props> = ({ productId, name, sync, manag
             description: syncMeaning(t, level),
           }))}
           disabled={!manage || saving}
-          disableGutters
           helperText={syncMeaning(t, sync)}
           onChange={next => choose(next as ProductSync)}
         />
       </List>
       {refusal && (
-        <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
-          {refusal}
-        </Notice>
+        <Gutters>
+          <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
+            {refusal}
+          </Notice>
+        </Gutters>
       )}
       <Confirm
         open={!!target}

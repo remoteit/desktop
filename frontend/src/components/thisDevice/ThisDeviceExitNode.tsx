@@ -372,6 +372,7 @@ const ChooseExit: React.FC<{
         </RadioGroup>
         {chosen === NEW && (
           <TextField
+            variant="filled"
             fullWidth
             size="small"
             value={name}

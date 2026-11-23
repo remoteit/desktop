@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Button, List, ListItem, ListItemText, MenuItem, Stack, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { NetworkDeviceRole } from '../services/graphQLDeviceNetworks'
 import { graphQLSetProxyProduct } from '../services/graphQLProxy'
 import { refusalOf } from '../services/graphQL'
@@ -16,6 +27,9 @@ import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
 import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { ListItemSetting } from './ListItemSetting'
 import { Notice } from './Notice'
+import { Gutters } from './Gutters'
+import { Icon } from './Icon'
+import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 import { roleName } from '../helpers/productPolicyHelper'
 
 type Props = {
@@ -64,21 +78,23 @@ export const ProductGrants: React.FC<Props> = ({
   }
 
   return (
-    <Box marginTop={3} data-product-grants>
-      <Typography variant="subtitle2" color="textSecondary">
-        {t('productGrants.title', 'Grants')}
-      </Typography>
-      <Typography variant="caption" color="textSecondary" component="p" gutterBottom>
-        {t(
-          'productGrants.hint',
-          'What its devices get while they belong to it. To change a grant, you must be able to manage what it grants.'
-        )}
-      </Typography>
+    <Box marginTop={2} data-product-grants>
+      <Typography variant="subtitle1">{t('productGrants.title', 'Grants')}</Typography>
+      <Gutters top={null} bottom="xs">
+        <Typography variant="caption" component="p">
+          {t(
+            'productGrants.hint',
+            'What its devices get while they belong to it. To change a grant, you must be able to manage what it grants.'
+          )}
+        </Typography>
+      </Gutters>
       {registrationWarning && (
-        <Notice severity="warning" fullWidth gutterBottom>
-          <strong>{t('productGrants.warningTitle', 'Register its devices with join keys')}</strong>
-          <em>{registrationWarning}</em>
-        </Notice>
+        <Gutters top="xs">
+          <Notice severity="warning" fullWidth>
+            <strong>{t('productGrants.warningTitle', 'Register its devices with join keys')}</strong>
+            <em>{registrationWarning}</em>
+          </Notice>
+        </Gutters>
       )}
       {served.networks && networks && (
         <Networks productId={productId} name={name} networks={networks} manage={manage && !saving} change={change} />
@@ -87,9 +103,11 @@ export const ProductGrants: React.FC<Props> = ({
         <Proxies productId={productId} accountId={accountId} manage={manage && !saving} change={change} />
       )}
       {refusal && (
-        <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
-          {refusal}
-        </Notice>
+        <Gutters>
+          <Notice severity="error" fullWidth onClose={() => setRefusal(undefined)}>
+            {refusal}
+          </Notice>
+        </Gutters>
       )}
     </Box>
   )
@@ -114,19 +132,21 @@ const Networks: React.FC<{
 
   return (
     <Box data-product-networks>
-      <Typography variant="body2" gutterBottom>
-        {t('productGrants.networks', 'Networks')}
-      </Typography>
+      <Gutters top="sm" bottom={null}>
+        <Typography variant="body2">{t('productGrants.networks', 'Networks')}</Typography>
+      </Gutters>
       <List dense disablePadding>
         {!networks.length && (
-          <ListItem disableGutters>
+          <ListItem>
+            <ListItemIcon>
+              <Icon name="chart-network" size="md" fixedWidth />
+            </ListItemIcon>
             <ListItemText secondary={t('productGrants.noNetworks', 'None')} />
           </ListItem>
         )}
         {networks.map(network => (
           <ListItem
             key={network.id}
-            disableGutters
             data-network={network.id}
             secondaryAction={
               manage && (
@@ -156,20 +176,30 @@ const Networks: React.FC<{
               )
             }
           >
+            <ListItemIcon>
+              <Icon name="chart-network" size="md" fixedWidth />
+            </ListItemIcon>
             <ListItemText primary={network.name} secondary={roleName(t, network.role)} />
           </ListItem>
         ))}
       </List>
       {manage && !!choices.length && (
-        <Stack direction="row" gap={1} alignItems="flex-end" marginBottom={2}>
+        <Stack
+          direction="row"
+          gap={1}
+          alignItems="center"
+          flexWrap="wrap"
+          marginY={1}
+          sx={{ marginLeft: `${spacing.md + LIST_ITEM_ICON_WIDTH}px`, marginRight: `${spacing.md}px` }}
+        >
           <TextField
             select
-            variant="standard"
+            variant="filled"
             size="small"
             label={t('productGrants.addNetwork', 'Add a network')}
             value={adding}
             onChange={e => setAdding(e.target.value)}
-            sx={{ flexGrow: 1 }}
+            sx={{ flexGrow: 1, minWidth: 200 }}
             inputProps={{ 'data-add-network': true }}
           >
             {choices.map(network => (
@@ -180,9 +210,10 @@ const Networks: React.FC<{
           </TextField>
           <TextField
             select
-            variant="standard"
+            variant="filled"
             size="small"
             label={t('productGrants.role', 'As')}
+            sx={{ minWidth: 140 }}
             value={role}
             onChange={e => setRole(e.target.value as NetworkDeviceRole)}
             inputProps={{ 'data-add-role': true }}
@@ -234,9 +265,9 @@ const Proxies: React.FC<{ productId: string; accountId: string; manage: boolean;
 
   return (
     <Box data-product-proxies>
-      <Typography variant="body2" marginTop={2}>
-        {t('productGrants.proxies', 'Proxies')}
-      </Typography>
+      <Gutters top="sm" bottom={null}>
+        <Typography variant="body2">{t('productGrants.proxies', 'Proxies')}</Typography>
+      </Gutters>
       <List dense disablePadding>
         {proxies.map(proxy => (
           <ListItemSetting
@@ -250,7 +281,6 @@ const Proxies: React.FC<{ productId: string; accountId: string; manage: boolean;
             }
             toggle={proxy.joined}
             disabled={!manage}
-            disableGutters
             onClick={async () => {
               await change(
                 graphQLSetProxyProduct(proxy.id, productId, !proxy.joined).then(result =>

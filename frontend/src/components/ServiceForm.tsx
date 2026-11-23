@@ -4,7 +4,7 @@ import structuredClone from '@ungap/structured-clone'
 import { useTranslation } from 'react-i18next'
 import { MAX_DESCRIPTION_LENGTH } from '../constants'
 import { IP_PRIVATE, DEFAULT_SERVICE, DEFAULT_CONNECTION } from '@common/constants'
-import { Typography, TextField, List, ListItem, Button, Theme } from '@mui/material'
+import { Typography, TextField, List, ListItem, Button } from '@mui/material'
 import { useURLForm } from '../hooks/useURLForm'
 import { AddFromNetwork } from './AddFromNetwork'
 import { useApplication } from '../hooks/useApplication'
@@ -21,8 +21,9 @@ import { usePortScan } from '../hooks/usePortScan'
 import { validPort } from '../helpers/connectionHelper'
 import { findType } from '../models/applicationTypes'
 import { Gutters } from './Gutters'
-import { spacing, Sizes } from '../styling'
+import { Sizes } from '../styling'
 import { Notice } from './Notice'
+import { fieldSx } from './FormField'
 import { ServicePortsField } from './ServicePortsField'
 import { useMultiPortServices } from '../hooks/useMultiPortServices'
 import { firstPortOf, formatPorts, parsePorts } from '../services/multiPortServices'
@@ -455,21 +456,4 @@ export const ServiceForm: React.FC<ServiceFormProps> = ({
   )
 }
 
-export const fieldSx = (theme: Theme) => ({
-  paddingRight: `${spacing.lg}px`,
-  paddingLeft: `${spacing.md}px`,
-  alignItems: 'flex-start',
-  '& > *': {
-    width: '50%',
-    maxWidth: 400,
-  },
-  '& > span.MuiTypography-root': {
-    width: `calc(50% - ${spacing.lg}px)`,
-    marginLeft: `${spacing.lg}px`,
-  },
-  [theme.breakpoints.down('sm')]: {
-    flexDirection: 'column',
-    '& > *': { width: '100%' },
-    '& > span.MuiTypography-root': { margin: `${spacing.xs}px`, width: '100%', marginBottom: `${spacing.md}px` },
-  },
-})
+export { fieldSx }
