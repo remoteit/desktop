@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { List, ListSubheader, Typography } from '@mui/material'
+import { Box, List, ListSubheader, Typography } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import {
   FORMER_RESOLVES_DAYS,
@@ -11,7 +11,7 @@ import {
 } from '../services/subnetNames'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
-import { Gutters } from './Gutters'
+import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 
 /* The account's slug: its part of every one of its devices' DNS names, <name>-<slug>.<domain>. Edited in place, its
    form checked as it is typed and then whether the account can have it (graphql accountSlugAvailable: not reserved,
@@ -66,15 +66,18 @@ export const AccountSlugSetting: React.FC<{ accountId?: string }> = ({ accountId
           if (chosen) setSlug(chosen)
         }}
       />
-      <Gutters top={null}>
-        <Typography variant="caption" color="textSecondary">
+      <Box
+        component="li"
+        sx={{ listStyle: 'none', marginLeft: `${spacing.md + LIST_ITEM_ICON_WIDTH}px`, marginRight: `${spacing.xl}px` }}
+      >
+        <Typography variant="caption" color="textSecondary" component="p">
           {t(
             'accountSlug.about',
             "Every device's address ends in -<slug>. Changing it renames them for everyone. The old slug works for {{days}} days, then stays reserved for six months.",
             { days: FORMER_RESOLVES_DAYS }
           )}
         </Typography>
-      </Gutters>
+      </Box>
     </List>
   )
 }
