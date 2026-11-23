@@ -1,6 +1,6 @@
 import { State } from '../store'
 import { createModel } from '@rematch/core'
-import { getAccountIds } from './accounts'
+import { getAccountIds, accountIdsBySignIn } from './accounts'
 import { graphQLFetchSessions } from '../services/graphQLRequest'
 import { setConnection, getManufacturerType, getManufacturerUser } from '../helpers/connectionHelper'
 import { graphQLDisconnect } from '../services/graphQLMutation'
@@ -22,10 +22,16 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(_: void, state) {
       const ids: string[] = getAccountIds(state)
-      const result = await graphQLFetchSessions(ids)
-      if (result === 'ERROR') return
+      // One request per sign-in, each about the accounts it serves.
+      const answers = await Promise.all(
+        accountIdsBySignIn(state, ids).map(async ([sub, own]) => {
+          const result = await graphQLFetchSessions(own, { sub })
+          return result === 'ERROR' ? undefined : dispatch.sessions.parse({ result, ids: own })
+        })
+      )
+      if (answers.every(answer => !answer)) return
 
-      const all = await dispatch.sessions.parse({ result, ids })
+      const all = answers.flatMap(answer => answer || [])
       console.log('SESSIONS', all)
       dispatch.sessions.updatePublicConnections(all)
       dispatch.sessions.set({ all })

@@ -478,6 +478,11 @@ export default createModel<RootModel>()({
       state = { ...defaultAccountState }
       return state
     },
+    /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
+    forget(state: ProductsAccountState, accountIds: string[]) {
+      accountIds.forEach(id => delete state[id])
+      return state
+    },
     rootSet(state: ProductsAccountState, params: ProductsAccountState) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state

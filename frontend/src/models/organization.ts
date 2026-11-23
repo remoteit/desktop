@@ -11,7 +11,7 @@ import {
   graphQLUpdateRole,
   graphQLRemoveRole,
 } from '../services/graphQLMutation'
-import { getAccountIds } from './accounts'
+import { getAccountIds, accountIdsBySignIn } from './accounts'
 import { graphQLFetchOrganizations, graphQLFetchGuests, graphQLGetResellerReportUrl } from '../services/graphQLRequest'
 import { selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -155,9 +155,16 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(_: void, state) {
       const ids: string[] = getAccountIds(state)
-      const result = await graphQLFetchOrganizations(ids)
-      if (result === 'ERROR') return
-      const accounts = await dispatch.organization.parse({ result, ids })
+      // One request per sign-in, each about the accounts it serves; a sign-in that cannot be asked leaves its
+      // accounts as they were stored.
+      const answers = await Promise.all(
+        accountIdsBySignIn(state, ids).map(async ([sub, own]) => {
+          const result = await graphQLFetchOrganizations(own, { sub })
+          return result === 'ERROR' ? undefined : dispatch.organization.parse({ result, ids: own })
+        })
+      )
+      if (answers.every(answer => !answer)) return
+      const accounts: IOrganizationAccountState['accounts'] = Object.assign({}, ...answers)
       ids.forEach(id => {
         if (!accounts[id] && state.organization.accounts[id]) accounts[id] = state.organization.accounts[id]
       })
@@ -432,6 +439,11 @@ export default createModel<RootModel>()({
     },
     reset(state: IOrganizationAccountState) {
       state = { ...defaultAccountState }
+      return state
+    },
+    /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
+    forget(state: IOrganizationAccountState, accountIds: string[]) {
+      state.accounts = Object.fromEntries(Object.entries(state.accounts).filter(([id]) => !accountIds.includes(id)))
       return state
     },
   },

@@ -361,6 +361,11 @@ export default createModel<RootModel>()({
       state = { ...defaultAccountState }
       return state
     },
+    /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
+    forget(state: INetworksAccountState, accountIds: string[]) {
+      state.all = Object.fromEntries(Object.entries(state.all).filter(([id]) => !accountIds.includes(id)))
+      return state
+    },
     set(state: INetworksAccountState, params: Partial<INetworksAccountState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state

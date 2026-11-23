@@ -2733,6 +2733,7 @@
     "lockConfirm": "アプリをロックすると、アクティブな接続とホストされているサービスはすべて実行されたままになり、他のユーザーはサインインできなくなります。",
     "logs": "ログ",
     "networks": "ネットワーク",
+    "openAs": "{{account}} として {{name}} を開く",
     "organization": "組織",
     "partnerStats": "パートナー統計",
     "products": "プロダクト",
@@ -2743,16 +2744,20 @@
     "services": "サービス",
     "settings": "設定",
     "signedInOnBrowser": "このブラウザでサインイン済み",
+    "signInOnDevice": "このデバイスでサインイン",
     "signOut": "サインアウト",
     "signOutConfirm": "サインアウトすると、このデバイスの譲渡や他のユーザーのサインインが可能になります。すべての接続が停止します。",
     "support": "サポート",
     "supportForum": "サポートフォーラム",
-    "switchAccount": "アカウントを切り替え",
     "testUI": "テストUI",
     "testUIConfirm": "アルファ機能を有効にすると、動作が不安定になることがあります。テストおよび開発目的のみを想定しています。",
     "thisDevice": "このデバイス",
     "totalDevices": "合計デバイス数",
-    "totalNetworks": "合計ネットワーク数"
+    "totalNetworks": "合計ネットワーク数",
+    "useSeveral": "複数を同時に使用",
+    "useSeveralOffAction": "オフにする",
+    "useSeveralOffConfirm": "ここで {{accounts}} がサインアウトされます。{{keep}} としてサインインしたままになり、他のアカウントは保存されたままなので切り替えられます。",
+    "useSeveralOffTitle": "一度に 1 つのアカウントだけを使用しますか?"
   },
   "network": {
     "active": "アクティブ",
@@ -3198,7 +3203,8 @@
     "memberLabel": "{{name}} - {{role}}",
     "organizations": "組織",
     "ownerLabel": "{{name}} - オーナー",
-    "personalAccount": "個人アカウント"
+    "personalAccount": "個人アカウント",
+    "via": "{{account}} 経由"
   },
   "organizationSelectList": {
     "membershipSettings": "メンバーシップ設定",

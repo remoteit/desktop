@@ -2785,6 +2785,7 @@
     "lockConfirm": "Wenn Sie die App sperren, bleiben alle aktiven Verbindungen und gehosteten Dienste weiterhin aktiv, und andere Benutzer können sich nicht anmelden.",
     "logs": "Protokolle",
     "networks": "Netzwerke",
+    "openAs": "{{name}} als {{account}} öffnen",
     "organization": "Organisation",
     "partnerStats": "Partnerstatistiken",
     "products": "Produkte",
@@ -2795,16 +2796,20 @@
     "services": "Dienste",
     "settings": "Einstellungen",
     "signedInOnBrowser": "In diesem Browser angemeldet",
+    "signInOnDevice": "Auf diesem Gerät anmelden",
     "signOut": "Abmelden",
     "signOutConfirm": "Durch das Abmelden kann dieses Gerät übertragen oder ein anderer Benutzer angemeldet werden. Dadurch werden alle Verbindungen beendet.",
     "support": "Support",
     "supportForum": "Support-Forum",
-    "switchAccount": "Konto wechseln",
     "testUI": "Test-UI",
     "testUIConfirm": "Das Aktivieren von Alpha-Funktionen kann zu Instabilität führen. Dies ist nur für Test- und Entwicklungszwecke vorgesehen.",
     "thisDevice": "Dieses Gerät",
     "totalDevices": "Geräte insgesamt",
-    "totalNetworks": "Netzwerke insgesamt"
+    "totalNetworks": "Netzwerke insgesamt",
+    "useSeveral": "Mehrere gleichzeitig verwenden",
+    "useSeveralOffAction": "Ausschalten",
+    "useSeveralOffConfirm": "Dadurch wird {{accounts}} hier abgemeldet. Sie bleiben als {{keep}} angemeldet, und die anderen bleiben gespeichert, sodass Sie zu ihnen wechseln können.",
+    "useSeveralOffTitle": "Jeweils nur ein Konto verwenden?"
   },
   "network": {
     "active": "Aktiv",
@@ -3253,7 +3258,8 @@
     "memberLabel": "{{name}} - {{role}}",
     "organizations": "Organisationen",
     "ownerLabel": "{{name}} - Inhaber",
-    "personalAccount": "Persönliches Konto"
+    "personalAccount": "Persönliches Konto",
+    "via": "Über {{account}}"
   },
   "organizationSelectList": {
     "membershipSettings": "Mitgliedschaftseinstellungen",

@@ -69,6 +69,11 @@ export default createModel<RootModel>()({
       state = { ...defaultState }
       return state
     },
+    /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
+    forget(state: IApplicationTypeState, accountIds: string[]) {
+      state.account = Object.fromEntries(Object.entries(state.account).filter(([id]) => !accountIds.includes(id)))
+      return state
+    },
     set(state: IApplicationTypeState, params: Partial<IApplicationTypeState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state

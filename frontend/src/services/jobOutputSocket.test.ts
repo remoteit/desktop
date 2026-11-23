@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 
-vi.mock('./cloudController', () => ({ wsAuthorization: vi.fn().mockResolvedValue('Bearer t') }))
+vi.mock('./cloudController', () => ({ wsAuthorizationFor: vi.fn().mockResolvedValue('Bearer t') }))
 vi.mock('../helpers/apiHelper', () => ({ getWebSocketURL: () => undefined, getTestHeader: () => ({}) }))
 vi.mock('../helpers/versionHelper', () => ({ version: 'test' }))
 vi.mock('./browser', () => ({ agent: () => 'test' }))

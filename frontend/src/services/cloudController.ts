@@ -9,7 +9,8 @@ import { getAccountIds, accountFromDevice } from '../models/accounts'
 import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
 import { DEVICE_TYPE } from '@common/applications'
 import { getToken } from './remoteit'
-import { oidcAccessToken } from './oidc'
+import { oidcAccessToken, oidcSignIns, oidcSubscribe } from './oidc'
+import { getSignIns, requestSignIn, RequestFor } from '../selectors/signIns'
 import { resourceForEventsURL } from '../constants'
 import { version } from '../helpers/versionHelper'
 import { store } from '../store'
@@ -35,13 +36,26 @@ const connectTimes = new CloudTimes()
 // audience (resourceForEventsURL says when); otherwise it presents the graphql token — on the
 // unified front that is the right audience, not a stand-in, and on the legacy shared-domain URL the
 // authorizer's dual-accept window admits it until that contract retires.
-export async function wsAuthorization(): Promise<string> {
+// `sub`: the sign-in whose token it is; absent, the page's own person.
+export async function wsAuthorization(sub?: string): Promise<string> {
   const resource = resourceForEventsURL(getWebSocketURL() || '')
-  if (!resource) return await getToken()
-  const token = await oidcAccessToken(resource)
+  if (!resource) return await getToken(sub)
+  const token = await oidcAccessToken(resource, sub)
   return token ? 'Bearer ' + token : ''
 }
 
+/** wsAuthorization for a socket about one thing (a job's output): as the sign-in that serves the account it is in. */
+export const wsAuthorizationFor = (requestFor: RequestFor): Promise<string> =>
+  wsAuthorization(requestSignIn(store.getState(), requestFor))
+
+// How long an event delivered to one sign-in's socket is remembered, so its copy on another's is passed over.
+const SEEN_FOR_MS = 60_000
+
+/* ONE SOCKET PER SIGN-IN. The stream answers a subscribe with the events its token's person may see, so each sign-in
+   in use has a socket of its own, subscribed with its own token: the controller the app uses is the page's own
+   person's (`sub` ''), and it keeps one more of itself for every sign-in beside them (`others`), opened and closed as
+   they join and leave. Every socket's events go through the one pipeline into the same state, kept by account id; an
+   event two sign-ins both see (a device shared with both, an organization both belong to) is handled once. */
 class CloudController {
   initialized: boolean = false
   socket?: ReconnectingWebSocket
@@ -49,10 +63,16 @@ class CloudController {
   pingInterval = 5 * 60 * 1000 + Math.floor(Math.random() * 60 * 1000) // 5 + random 60 seconds
   pongReceived: number = Date.now()
   timer?: NodeJS.Timeout
+  others = new Map<string, CloudController>()
+  unfollow?: () => void
+  seen = new Map<string, number>()
+
+  constructor(readonly sub: string = '', readonly main?: CloudController) {}
 
   // Idempotent: connect() is a no-op when the socket is up, so a second signedIn()
   // recovers a closed socket rather than returning early and leaving it dead.
   init() {
+    this.followSignIns()
     this.connect()
     if (this.initialized) return
     network.on('connect', this.reconnect)
@@ -60,11 +80,43 @@ class CloudController {
     this.initialized = true
   }
 
+  /** A socket for each sign-in beside the page's own person, as they are now and as they change. */
+  followSignIns = () => {
+    if (this.main) return
+    this.unfollow ??= oidcSubscribe(this.followSignIns)
+    const subs = oidcSignIns()
+      .filter(signIn => !signIn.primary)
+      .map(signIn => signIn.sub)
+    this.others.forEach((other, sub) => {
+      if (subs.includes(sub)) return
+      other.stop()
+      this.others.delete(sub)
+    })
+    subs.forEach(sub => {
+      if (this.others.has(sub)) return
+      const other = new CloudController(sub, this)
+      this.others.set(sub, other)
+      // Opened with the page's own socket: at once when that is up, else by its connect().
+      if (this.socket) other.open()
+    })
+  }
+
+  /** The person this socket's events are seen by: the sign-in's own account. */
+  viewerId(state = store.getState()): string {
+    return (this.sub && getSignIns(state)[this.sub]?.id) || state.auth.user?.id || ''
+  }
+
   log(...args) {
     console.log(`%cCLOUD SOCKET ${args[0]}`, 'color:cyan;font-weight:bold', ...args.slice(1))
   }
 
+  /** This socket, then each further sign-in's. */
   connect() {
+    this.open()
+    this.others.forEach(other => other.open())
+  }
+
+  open() {
     if (this.socket instanceof ReconnectingWebSocket) {
       this.log('ALREADY CONNECTED')
       return
@@ -102,6 +154,8 @@ class CloudController {
     }
     this.log('PING')
     this.socket?.send('ping')
+    // The refresh button's ping (the page's own socket) asks every sign-in's.
+    this.others.forEach(other => other.socket?.send('ping'))
   }
 
   reconnect = () => {
@@ -113,6 +167,7 @@ class CloudController {
   }
 
   close = () => {
+    this.others.forEach(other => other.close())
     this.log('CLOSE')
     this.socket?.removeEventListener('open', this.onOpen)
     this.socket?.removeEventListener('message', this.onMessage)
@@ -129,12 +184,22 @@ class CloudController {
    */
   reset = () => {
     this.log('RESET')
-    this.close()
-    if (this.timer) clearInterval(this.timer)
-    this.timer = undefined
+    this.unfollow?.()
+    this.unfollow = undefined
+    this.others.forEach(other => other.stop())
+    this.others.clear()
+    this.seen.clear()
+    this.stop()
     network.off('connect', this.reconnect)
     network.off('disconnect', this.close)
     this.initialized = false
+  }
+
+  /** This socket and its ping, ended. */
+  stop() {
+    this.close()
+    if (this.timer) clearInterval(this.timer)
+    this.timer = undefined
   }
 
   onClose = event => this.log('CLOSED', event)
@@ -163,7 +228,7 @@ class CloudController {
       // this flag continue to receive single-event frames.
       supportsBatch: true,
       headers: {
-        authorization: await wsAuthorization(),
+        authorization: await wsAuthorization(this.sub || undefined),
         'User-Agent': `remoteit/${version} ${agent()}`,
         ...getTestHeader(),
       },
@@ -327,12 +392,40 @@ ${await productFullEventFields()}
   // (`{data: {event: {...}}}` or `{errors: [...]}`); converting from the
   // raw WS string lives in `onMessage`.
   handleParsed = (payload: any) => {
+    const main = this.main ?? this
+    if (main.others.size && main.seenBefore(payload)) return
     let event = this.toCloudEvent(payload)
     if (!event) return
 
     this.log('EVENT', event)
     event = this.update(event)
     notify(event)
+  }
+
+  /** Whether this event has come already, on another sign-in's socket. Told by what happened, to what, when and by
+   *  whom: the same event is the same in each sign-in's copy, whatever else each may be shown of it. */
+  seenBefore(payload: any): boolean {
+    const event = payload?.data?.event
+    if (!event) return false
+    const key = JSON.stringify([
+      event.type,
+      event.state,
+      event.action,
+      event.timestamp,
+      event.session,
+      event.actor?.id,
+      (event.target || []).map(target => target?.id),
+      event.job?.id,
+      event.job?.status,
+      event.jobDevice?.id,
+      event.jobDevice?.status,
+      event.owner?.id,
+    ])
+    const now = Date.now()
+    this.seen.forEach((at, old) => now - at > SEEN_FOR_MS && this.seen.delete(old))
+    if (this.seen.has(key)) return true
+    this.seen.set(key, now)
+    return false
   }
 
   errors(data) {
@@ -364,7 +457,8 @@ ${await productFullEventFields()}
         actor: getManufacturerUser(event.manufacturer, reverseProxy) || event.actor,
         users: event.users,
         owner: event.owner,
-        authUserId: state.auth.user?.id || '',
+        // The person who saw it: the sign-in whose socket it came on. "You" in what follows is that person.
+        authUserId: this.viewerId(state),
         platform: event.platform,
         sessionId: event.session,
         source: event.source,

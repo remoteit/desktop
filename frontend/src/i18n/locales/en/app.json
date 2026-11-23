@@ -2785,6 +2785,7 @@
     "lockConfirm": "Locking the app will leave all active connections and hosted services running and prevent others from signing in.",
     "logs": "Logs",
     "networks": "Networks",
+    "openAs": "Open {{name}} as {{account}}",
     "organization": "Organization",
     "partnerStats": "Partner Stats",
     "products": "Products",
@@ -2795,16 +2796,20 @@
     "services": "Services",
     "settings": "Settings",
     "signedInOnBrowser": "Signed in on this browser",
+    "signInOnDevice": "Sign in on this device",
     "signOut": "Sign out",
     "signOutConfirm": "Signing out will allow this device to be transferred or another user to sign in. It will stop all connections.",
     "support": "Support",
     "supportForum": "Support Forum",
-    "switchAccount": "Switch account",
     "testUI": "Test UI",
     "testUIConfirm": "Enabling alpha features may be unstable. It is only intended for testing and development.",
     "thisDevice": "This Device",
     "totalDevices": "Total Devices",
-    "totalNetworks": "Total Networks"
+    "totalNetworks": "Total Networks",
+    "useSeveral": "Use several at once",
+    "useSeveralOffAction": "Turn off",
+    "useSeveralOffConfirm": "This signs out {{accounts}} here. You stay signed in as {{keep}}, and the others stay saved so you can switch to them.",
+    "useSeveralOffTitle": "Use one account at a time?"
   },
   "network": {
     "active": "Active",
@@ -3253,7 +3258,8 @@
     "memberLabel": "{{name}} - {{role}}",
     "organizations": "Organizations",
     "ownerLabel": "{{name}} - Owner",
-    "personalAccount": "Personal Account"
+    "personalAccount": "Personal Account",
+    "via": "Via {{account}}"
   },
   "organizationSelectList": {
     "membershipSettings": "Membership Settings",

@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { state, uiSet, apiHeaders, request } = vi.hoisted(() => ({
-  state: { ui: { offline: undefined as object | undefined } },
+const { state, uiSet, apiHeaders, request, sentAs } = vi.hoisted(() => ({
+  state: { ui: { offline: undefined as object | undefined } } as Record<string, any>,
+  // The sign-in each request was made as (apiRequest's `sub`; undefined is the page's own person).
+  sentAs: [] as (string | undefined)[],
   uiSet: vi.fn(),
   apiHeaders: vi.fn(),
   request: vi.fn(),
@@ -11,8 +13,10 @@ vi.mock('../store', () => ({
 }))
 // apiHeaders stands for the headers apiRequest hands its sender (undefined when signed out).
 vi.mock('./remoteit', () => ({
-  apiRequest: (method: string, url: string, send: (headers?: object) => Promise<unknown>) =>
-    apiHeaders(method, url).then(send),
+  apiRequest: (method: string, url: string, send: (headers?: object) => Promise<unknown>, sub?: string) => {
+    sentAs.push(sub)
+    return apiHeaders(method, url).then(send)
+  },
 }))
 vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql', getApiRestURL: () => 'https://api.test/graphql' }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
@@ -36,6 +40,9 @@ const requests = [
 
 beforeEach(() => {
   state.ui.offline = undefined
+  delete state.accounts
+  delete state.auth
+  sentAs.length = 0
   apiHeaders.mockReset().mockResolvedValue({ authorization: 'token' })
   request.mockReset()
   uiSet.mockReset()
@@ -237,5 +244,47 @@ describe('graphQLRequestWithReason', () => {
     const response = { data: { data: { x: true } }, headers: {} }
     request.mockResolvedValue(response)
     expect(await graphQLRequestWithReason('mutation { x }')).toBe(response)
+  })
+})
+
+/* Personal is the page's own person; Work is signed in beside them, with its own account and the Labs organization. */
+describe('a request is made as the sign-in that serves the account it asks about', () => {
+  beforeEach(() => {
+    state.auth = { user: { id: 'personal' } }
+    state.accounts = {
+      membership: [],
+      signIns: {
+        'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [{ account: { id: 'labs' } }] },
+      },
+    }
+    state.devices = { labs: { all: [{ id: 'd-labs', services: [] }] } }
+    request.mockResolvedValue({ data: { data: {} }, headers: {} })
+  })
+
+  it('by the account its variables name, the account that holds what they name, or what the caller says', async () => {
+    await graphQLBasicRequest('query($accountId: String) { login { id } }', { accountId: 'labs' })
+    await graphQLRequestWithReason('mutation($deviceId: String) { x }', { deviceId: 'd-labs' })
+    await graphQLPartialRequest('{ login { _0: account(id: "work") { id } } }', {}, { sub: 'sub-work' })
+    await graphQLBasicRequest('{ login { id } }', {}, true, { account: 'work' })
+    await post({ query: '{ x }', variables: { accountId: 'work' } })
+    await get('/file/download/f1', { account: 'labs' })
+    expect(sentAs).toEqual(Array(6).fill('sub-work'))
+  })
+
+  it('as the page’s own person when it is about them, or about an account of theirs', async () => {
+    await graphQLBasicRequest('{ login { email } }')
+    await graphQLBasicRequest('query($accountId: String) { login { id } }', { accountId: 'personal' })
+    await graphQLRequestWithReason('mutation($deviceId: String) { x }', { deviceId: 'd-elsewhere' })
+    await get('/file')
+    expect(sentAs).toEqual(Array(4).fill(undefined))
+  })
+
+  it('resends a dropped read as the same sign-in', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    request
+      .mockRejectedValueOnce({ isAxiosError: true, code: 'ERR_NETWORK' })
+      .mockResolvedValue({ data: { data: {} }, headers: {} })
+    await graphQLBasicRequest('query($accountId: String) { login { id } }', { accountId: 'labs' })
+    expect(sentAs).toEqual(['sub-work', 'sub-work'])
   })
 })

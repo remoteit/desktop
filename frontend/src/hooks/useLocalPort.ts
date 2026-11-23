@@ -4,6 +4,7 @@ import { State } from '../store'
 import { useDeviceSessions } from './useDeviceSessions'
 import { useListedPorts } from './useListedPorts'
 import { ListedPort } from '../services/thisDevice'
+import { selectPersonFor } from '../selectors/signIns'
 import {
   LocalPort,
   Machine,
@@ -41,7 +42,8 @@ const POLL_FOR_MS = 30_000
 export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortState {
   const enabled = useDeviceSessions()
   const phoneOverride = useSelector((state: State) => !!state.ui.testUI && !!state.ui.localPortsOnPhone)
-  const userId = useSelector((state: State) => state.auth?.user?.id)
+  // The person the port is opened as: the sign-in that serves the service's row (services/localPorts forService).
+  const userId = useSelector((state: State) => selectPersonFor(state, [serviceId]))
   const [machine, setMachine] = useState<Machine | null>()
   const [local, setLocal] = useState<LocalPort>()
   const [error, setError] = useState<string>()
@@ -60,7 +62,7 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
   // A service on this machine's own device has no local port: it is here already.
   const offered = enabled && offersLocalPorts(machine, phoneOverride) && !!serviceId && machine?.id !== deviceId
   const machineId = offered ? machine?.id : undefined
-  // Opened here by the person signed in on this machine: their account's alone (services/localPorts scopeFor).
+  // Opened here by one of the people signed in on this machine: their account's alone (services/localPorts scopeFor).
   const scope = scopeFor(machine, userId)
   // Read again as the port changes: the daemon lists it once it has applied it.
   const ports = useListedPorts(offered, local && `${local.initiatorId}:${local.open}:${local.state}`)

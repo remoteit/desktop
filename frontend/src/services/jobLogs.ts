@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { getApiRestURL } from '../helpers/apiHelper'
 import { apiRequest } from './remoteit'
+import { requestSignIn } from '../selectors/signIns'
+import { store } from '../store'
 
 export type DeviceLogEntry = {
   jobDeviceId: string
@@ -42,7 +44,14 @@ export async function getJobLogs(jobId: string, jobDeviceId?: string, zipOnly = 
   const query = jobDeviceId ? `?jobDeviceId=${encodeURIComponent(jobDeviceId)}` : zipOnly ? '?devices=0' : ''
   const url = `${getApiRestURL()}/job/log/all/${jobId}${query}`
   try {
-    const response = await apiRequest('GET', url, async headers => (headers ? axios.get(url, { headers }) : undefined))
+    // As the sign-in that serves the account the job is in.
+    const sub = requestSignIn(store.getState(), { about: [jobId] })
+    const response = await apiRequest(
+      'GET',
+      url,
+      async headers => (headers ? axios.get(url, { headers }) : undefined),
+      sub
+    )
     if (!response) return { kind: 'error', status: 401, message: 'Not signed in' }
     return { kind: 'ok', data: response?.data as JobLogsResponse }
   } catch (err: any) {

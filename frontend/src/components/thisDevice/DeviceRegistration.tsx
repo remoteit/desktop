@@ -63,8 +63,9 @@ const RegistrationForm: React.FC<{
   const user = useSelector((state: State) => state.user)
   const organizations = useSelector(
     (state: State) =>
+      // The device is registered by the page's own person: only to an organization their own sign-in reaches.
       selectOrganizationOptions(state).filter(
-        org => !org.disabled && org.id !== user.id && selectCanRegister(state, org.id)
+        org => !org.disabled && !org.via && org.id !== user.id && selectCanRegister(state, org.id)
       ),
     shallowEqual
   )

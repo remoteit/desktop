@@ -2,7 +2,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket'
 import { getWebSocketURL, getTestHeader } from '../helpers/apiHelper'
 import { version } from '../helpers/versionHelper'
 import { agent } from './browser'
-import { wsAuthorization } from './cloudController'
+import { wsAuthorizationFor } from './cloudController'
 import type { OutputChunk } from './jobRuns'
 
 /* A run's live output and its job's changes, while the portal shows the run (device-package docs/scripting-plan.md, "As
@@ -35,7 +35,12 @@ async function subscribe() {
     action: 'subscribe',
     types: ['JOB_OUTPUT', 'JOB', 'DEVICE_JOB'],
     uris: [jobDeviceUri(w.jobDeviceId), jobUri(w.jobId)],
-    headers: { authorization: await wsAuthorization(), 'User-Agent': `remoteit/${version} ${agent()}`, ...getTestHeader() },
+    headers: {
+      // As the sign-in that serves the account the job is in.
+      authorization: await wsAuthorizationFor({ about: [w.jobId] }),
+      'User-Agent': `remoteit/${version} ${agent()}`,
+      ...getTestHeader(),
+    },
     query: QUERY,
   })
   if (current === socket && w === watch && current.readyState === WebSocket.OPEN) current.send(message)

@@ -1,5 +1,7 @@
 import i18n from '../i18n'
 import { State } from '../store'
+import { oidcSignIns } from '../services/oidc'
+import { ISignIn, getSignIns, selectAccountRoutes, selectSignInSub } from '../selectors/signIns'
 import { createModel } from '@rematch/core'
 import { getDevices } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
@@ -12,6 +14,12 @@ import { RootModel } from '.'
 export type IAccountsState = {
   membership: IMembership[]
   activeId?: string // user.id
+  // The sign-ins in use beside the page's own person, by sub (selectors/signIns): each one's account and organizations.
+  signIns?: ILookup<ISignIn>
+  // The sign-in the person picked for an organization more than one reaches, by account id.
+  via?: ILookup<string>
+  // The page's own person's sub, as last signed in: says whose the stored data is when another person's page boots.
+  primarySub?: string
   standaloneOrganizations?: boolean
   pendingOrganizationClosures?: PendingOrganizationClosure[]
 }
@@ -35,13 +43,39 @@ function membershipFrom(data): IMembership {
 const accountsState: IAccountsState = {
   membership: [],
   activeId: undefined,
+  signIns: {},
+  via: {},
 }
+
+const SIGN_IN_QUERY = ` query SignIn {
+    login {
+      id
+      email
+      membership {
+        created
+        customRole {
+          id
+          name
+        }
+        license
+        organization {
+          name
+          account {
+            id
+            email
+            picture
+          }
+        }
+      }
+    }
+  }`
 
 export default createModel<RootModel>()({
   state: { ...accountsState },
   effects: dispatch => ({
     async fetch() {
       void dispatch.accounts.fetchOrganizationClosures()
+      void dispatch.accounts.fetchSignIns()
       const result = await graphQLBasicRequest(
         ` query Accounts {
               login {
@@ -77,9 +111,78 @@ export default createModel<RootModel>()({
       // deliberately selected their personal account, which selectDefaultAccountId reads.
       const activeId = state.accounts.activeId
       const userId = state.auth.user?.id || state.user.id
-      const stale = !!activeId && activeId !== userId && !memberships.some(m => m.account.id === activeId)
+      // A row another sign-in serves is that sign-in's to keep or drop (fetchSignIns).
+      const others = Object.values(getSignIns(state)).some(
+        signIn => signIn.id === activeId || signIn.membership.some(m => m.account.id === activeId)
+      )
+      const stale =
+        !!activeId && activeId !== userId && !others && !memberships.some(m => m.account.id === activeId)
       if (stale) dispatch.ui.set({ selected: [], selectionAnchor: undefined })
       dispatch.accounts.set({ membership: memberships, ...(stale ? { activeId: undefined } : {}) })
+    },
+    /* Every further sign-in's own account and organizations, asked with that sign-in's token: its rows join the
+       switcher, and requests about them are made as it. A sign-in no longer in use loses its rows and what was
+       stored for them; one that could not be asked this time keeps what was known. */
+    async fetchSignIns(_: void, state) {
+      const others = oidcSignIns().filter(signIn => !signIn.primary)
+      if (!others.length && !Object.keys(getSignIns(state)).length) return
+      const known = getSignIns(state)
+      const found = await Promise.all(
+        others.map(async ({ sub, email }): Promise<ISignIn | undefined> => {
+          const result = await graphQLBasicRequest(SIGN_IN_QUERY, {}, true, { sub })
+          const login = result === 'ERROR' ? undefined : result.data?.data?.login
+          if (!login?.id) return known[sub]
+          return {
+            sub,
+            id: login.id,
+            email: login.email || email || '',
+            membership: (login.membership || []).map(membershipFrom),
+          }
+        })
+      )
+      // Asked of the sign-ins as they are now: one that left while the answers came is not put back.
+      const inUse = new Set(oidcSignIns().map(signIn => signIn.sub))
+      const signIns: ILookup<ISignIn> = {}
+      found.forEach(signIn => signIn && inUse.has(signIn.sub) && (signIns[signIn.sub] = signIn))
+      await dispatch.accounts.setSignIns(signIns)
+    },
+    async setSignIns(signIns: ILookup<ISignIn>, state) {
+      const before = Object.keys(selectAccountRoutes(state))
+      const added = Object.keys(signIns).some(sub => !getSignIns(state)[sub])
+      await dispatch.accounts.set({ signIns })
+      const routes = selectAccountRoutes({ ...state, accounts: { ...state.accounts, signIns } } as State)
+      const gone = before.filter(id => !routes[id])
+      if (gone.length) {
+        if (state.accounts.activeId && gone.includes(state.accounts.activeId)) {
+          await dispatch.accounts.select(state.auth.user?.id || state.user.id)
+        }
+        dispatch.accounts.forgetData(gone)
+      }
+      // The new rows' organizations (names, licenses, limits) are read as the sign-in that serves them.
+      if (added) void dispatch.organization.fetch()
+    },
+    /** What is stored for accounts that are no longer rows: dropped from every list kept by account id. */
+    forgetData(accountIds: string[]) {
+      if (!accountIds.length) return
+      dispatch.devices.forget(accountIds)
+      dispatch.products.forget(accountIds)
+      dispatch.partnerStats.forget(accountIds)
+      dispatch.networks.forget(accountIds)
+      dispatch.files.forget(accountIds)
+      dispatch.jobs.forget(accountIds)
+      dispatch.tags.forget(accountIds)
+      dispatch.organization.forget(accountIds)
+      dispatch.applicationTypes.forget(accountIds)
+    },
+    /** Serve an organization more than one sign-in reaches through `sub` ('' the page's own person) from now on:
+     *  what was stored for it was read as the other sign-in, so it is read again. */
+    async setVia({ accountId, sub }: { accountId: string; sub: string }, state) {
+      if ((selectSignInSub(state, accountId) || '') === sub) return
+      await dispatch.accounts.set({ via: { ...state.accounts.via, [accountId]: sub } })
+      dispatch.accounts.forgetData([accountId])
+      void dispatch.organization.fetch()
+      // Selected: its lists are read again, now that nothing is stored for it.
+      if (selectActiveAccountId(state) === accountId) await dispatch.accounts.select(accountId)
     },
     async fetchOrganizationClosures() {
       const result = await graphQLBasicRequest(
@@ -134,6 +237,7 @@ export default createModel<RootModel>()({
       const result = await graphQLLeaveMembership(id)
       if (result !== 'ERROR') {
         dispatch.accounts.set({ membership: membership.filter(m => m.account.id !== id) })
+        if (selectSignInSub(state, id)) await dispatch.accounts.fetchSignIns()
         await dispatch.accounts.select(state.user.id)
         dispatch.ui.set({
           successMessage: i18n.t('notices:organization.left', {
@@ -270,7 +374,7 @@ export default createModel<RootModel>()({
 
 export function accountFromDevice(state: State, ownerId: string, access: string[]) {
   const userId = state.auth.user?.id || state.user.id
-  const orgIds = state.accounts.membership.map(m => m.account.id)
+  const orgIds = getAccountIds(state).filter(id => id !== userId)
   orgIds.push(userId) // add current user to accounts
 
   // My device
@@ -284,8 +388,19 @@ export function accountFromDevice(state: State, ownerId: string, access: string[
   return userId
 }
 
+/** Every account that is a row: the page's own person first, the organizations they belong to, then each further
+ *  sign-in's own account and organizations. */
 export function getAccountIds(state: State) {
   let ids = state.accounts.membership.map(m => m.account.id)
   state.auth.user && ids.unshift(state.auth.user.id)
+  Object.keys(selectAccountRoutes(state)).forEach(id => ids.includes(id) || ids.push(id))
   return ids
+}
+
+/** Account ids by the sign-in that serves them ('' the page's own person): a request that names several accounts is
+ *  made once per sign-in, each asking only about its own. */
+export function accountIdsBySignIn(state: State, ids: string[]): [sub: string, ids: string[]][] {
+  const groups: ILookup<string[]> = {}
+  ids.forEach(id => (groups[selectSignInSub(state, id) || ''] ??= []).push(id))
+  return Object.entries(groups)
 }

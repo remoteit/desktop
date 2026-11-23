@@ -9,6 +9,7 @@ import { Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem, T
 import { getOwnOrganization } from '../models/organization'
 import { selectAllConnectionSessions } from '../selectors/connections'
 import { selectOrganization, selectOrganizationOptions } from '../selectors/organizations'
+import { selectActiveAccountId } from '../selectors/accounts'
 import { GuideBubble } from './GuideBubble'
 import { fontSizes } from '../styling'
 import { Avatar } from './Avatar'
@@ -119,8 +120,13 @@ export const OrganizationSelect: React.FC = () => {
   const [closing, setClosing] = React.useState<PendingOrganizationClosure>()
 
   const ownOrgId = ownOrg?.id
+  const activeAccountId = useSelector(selectActiveAccountId)
   let menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
 
+  // The row that is selected, by account: a signed-in account with no organization has no org id to compare, and its
+  // own row would otherwise leave the mark on the house.
+  const houseId = ownOrgId || userId
+  const selectedId = menu === '/account' ? houseId : activeAccountId || houseId
   if (menu === '/account') {
     activeOrg = ownOrg
     menu = '/devices'
@@ -195,11 +201,11 @@ export const OrganizationSelect: React.FC = () => {
             >
               <ListItem disableGutters sx={buttonContainerSx}>
                 <ButtonBase
-                  sx={[buttonSx, ownOrgId === activeOrg.id ? activeSx : {}]}
+                  sx={[buttonSx, selectedId === houseId ? activeSx : {}]}
                   onClick={() => onSelect(ownOrgId || userId)}
                 >
                   <Box sx={homeSx}>
-                    <Icon size="md" name="house" color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'} />
+                    <Icon size="md" name="house" color={selectedId === houseId ? 'black' : 'grayDarkest'} />
                   </Box>
                 </ButtonBase>
               </ListItem>
@@ -218,11 +224,17 @@ export const OrganizationSelect: React.FC = () => {
                 <Tooltip
                   title={
                     <Title
-                      primary={t('organizationSelect.memberLabel', {
-                        name: option.name,
-                        role: option.roleName,
-                        defaultValue: '{{name}} - {{role}}',
-                      })}
+                      primary={
+                        option.signIn
+                          ? option.name || option.email
+                          : t('organizationSelect.memberLabel', {
+                              name: option.name,
+                              role: option.roleName,
+                              defaultValue: '{{name}} - {{role}}',
+                            })
+                      }
+                      // How the row is available, where it is not the person's own sign-in that reaches it.
+                      via={option.signIn ? undefined : option.via?.email}
                       count={count}
                     />
                   }
@@ -234,7 +246,7 @@ export const OrganizationSelect: React.FC = () => {
                     <ButtonBase
                       disabled={option.disabled}
                       onClick={() => onSelect(option.id)}
-                      sx={[buttonSx, option.id === activeOrg.id ? activeSx : {}]}
+                      sx={[buttonSx, option.id === selectedId ? activeSx : {}]}
                     >
                       <Avatar email={option.email} fallback={option.name} size={38} border={2} />
                     </ButtonBase>
@@ -290,11 +302,17 @@ export const OrganizationSelect: React.FC = () => {
   )
 }
 
-function Title({ primary, count }: { primary: string; count: number }) {
+function Title({ primary, via, count }: { primary: string; via?: string; count: number }) {
   const { t } = useTranslation()
   return (
     <>
       {primary}
+      {!!via && (
+        <>
+          <br />
+          {t('organizationSelect.via', { account: via, defaultValue: 'Via {{account}}' })}
+        </>
+      )}
       {!!count && (
         <>
           <Divider />

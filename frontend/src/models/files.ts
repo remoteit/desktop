@@ -148,7 +148,7 @@ export default createModel<RootModel>()({
       if (form.argumentDefinitions?.length) data.arguments = JSON.stringify(form.argumentDefinitions)
 
       dispatch.ui.set({ fileUpload: { phase: 'uploading' } })
-      const result = await postFile(form.file, data, `/file/upload`)
+      const result = await postFile(form.file, data, `/file/upload`, { account: accountId })
       if (result === 'ERROR') return ''
       return result?.data.fileId
     },
@@ -156,7 +156,7 @@ export default createModel<RootModel>()({
       uploads.forEach(controller => controller.abort())
     },
     async download(fileId: string) {
-      const result = await get(`/file/download/${fileId}`)
+      const result = await get(`/file/download/${fileId}`, { about: [fileId] })
       if (result === 'ERROR') return
 
       const contentType = result.headers['content-type']
@@ -221,6 +221,11 @@ export default createModel<RootModel>()({
     },
     reset(state) {
       state = { ...defaultState }
+      return state
+    },
+    /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
+    forget(state, accountIds: string[]) {
+      state.all = Object.fromEntries(Object.entries(state.all).filter(([id]) => !accountIds.includes(id)))
       return state
     },
     set(state, params: Partial<FilesState>) {

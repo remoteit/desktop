@@ -1,8 +1,8 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
-import { ButtonBase, Divider, Menu } from '@mui/material'
+import { ButtonBase, Checkbox, Divider, Menu } from '@mui/material'
 import { useHideSidebar } from '../hooks/useChatEnabled'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
@@ -13,7 +13,15 @@ import { ListItemLink } from './ListItemLink'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { DesktopUI } from './DesktopUI'
 import { Avatar } from './Avatar'
-import { oidcAccounts, oidcRefreshBrowserAccounts } from '../services/oidc'
+import { Icon } from './Icon'
+import {
+  oidcAccounts,
+  oidcRefreshBrowserAccounts,
+  oidcSeveral,
+  oidcSeveralOffered,
+  oidcSubscribe,
+} from '../services/oidc'
+import { selectOrganizationOptions } from '../selectors/organizations'
 import { emit } from '../services/Controller'
 import browser from '../services/browser'
 import { DESKTOP_HELP_LINK } from '../constants'
@@ -24,11 +32,16 @@ const TRANSITION_DURATION = 200
 const AVATAR_SIZE = 40
 const AVATAR_BORDER = 6
 
+const readSignIns = () => ({ accounts: oidcAccounts(), several: oidcSeveral(), offered: oidcSeveralOffered() })
+
 export const AvatarMenu: React.FC = () => {
   const history = useHistory()
   const [open, setOpen] = useState<boolean>(false)
-  // The registry's accounts, re-read after each refresh of the browser's set on open.
-  const [accounts, setAccounts] = useState(oidcAccounts)
+  // The registry's accounts and whether several are used at once, re-read after each refresh of the browser's set on
+  // open.
+  const [signIns, setSignIns] = useState(readSignIns)
+  const { accounts, several, offered } = signIns
+  const setAccounts = () => setSignIns(readSignIns())
   const [altMenu, setAltMenu] = useState<boolean>(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const enterTimer = useRef<number>()
@@ -47,12 +60,21 @@ export const AvatarMenu: React.FC = () => {
   }
   const licenseIndicator = useSelector(selectLicenseIndicator)
   const activeUser = useSelector(selectActiveUser)
+  // The selected organization, where more than one sign-in reaches it: the others it can be opened as.
+  const shared = useSelector((state: State) =>
+    selectOrganizationOptions(state).find(option => option.id === activeUser.id && option.reach)
+  )
+
+  // An account joining or leaving (here, in another tab, in the app's menu) changes the rows while the menu is up.
+  useEffect(() => oidcSubscribe(setAccounts), [])
   const userAdmin = useSelector((state: State) => state.auth.user?.admin || false)
+  // Who turning Use several at once off takes out of use here.
+  const inUseBeside = accounts.filter(a => a.signedIn && !a.active)
 
   // handleOpen is reached from the hover timer, the click and every re-entry of the menu paper;
   // the browser's accounts are asked for once per opening, not per pointer crossing.
   const handleOpen = () => {
-    if (!open) void oidcRefreshBrowserAccounts().finally(() => setAccounts(oidcAccounts()))
+    if (!open) void oidcRefreshBrowserAccounts().finally(setAccounts)
     window.addEventListener('keydown', checkAltMenu)
     setOpen(true)
   }
@@ -186,41 +208,106 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         </DesktopUI>
-        {/* The other accounts this app has signed into (services/oidc.ts registry) — one
-            click makes one active. Emails render as-is (identities are not translated);
-            the AS chooser behind "Switch account" below remains the way to ADD one. */}
-        {accounts
-          .filter(a => !a.active)
-          .map(a => (
+        {/* An organization more than one sign-in reaches is one row, served by one of them: the others are offered
+            here, for the row that is selected. */}
+        {shared?.reach
+          ?.filter(sign => sign.sub !== (shared.via?.sub || ''))
+          .map(sign => (
+            <ListItemSetting
+              key={sign.sub}
+              label={t('nav.openAs', {
+                name: shared.name,
+                account: sign.email,
+                defaultValue: 'Open {{name}} as {{account}}',
+              })}
+              icon="arrow-right-arrow-left"
+              onClick={async () => {
+                handleClose()
+                await dispatch.accounts.setVia({ accountId: shared.id, sub: sign.sub })
+              }}
+            />
+          ))}
+        {/* The accounts (services/oidc.ts registry; in an app, its shell's), the page's own person first. Emails render
+            as-is (identities are not translated); the AS chooser behind "Sign in on this device" below is the way to
+            ADD one.
+            One used at a time: the page's person is the one selected, and a click on another switches to it — the
+            page boots as them, and the account left stays saved.
+            Several used at once: a check beside each. Checking one brings it into use beside the page's person — its
+            rows join the organization switcher — and unchecking takes it out of use and keeps it saved. The page's
+            own person is always in use.
+            Either way an account's own Sign out is what forgets it. */}
+        {accounts.map(a => {
+          const other = !a.active
+          return (
             <ListItemSetting
               key={a.sub}
               label={a.name || a.email || a.sub}
               subLabel={
-                a.known
-                  ? t('nav.signedInOnBrowser', 'Signed in on this browser')
-                  : a.name && a.email
-                  ? a.email
-                  : undefined
+                a.known ? t('nav.signedInOnBrowser', 'Signed in on this browser') : a.name && a.email ? a.email : undefined
               }
               icon={<Avatar email={a.email} picture={a.picture} fallback={a.name} size={24} border={0} />}
-              confirm={browser.hasBackend}
+              confirm={!several && browser.hasBackend}
               confirmProps={switchConfirm}
-              onClick={async () => {
-                handleClose()
-                await dispatch.auth.activateAccount(a.sub)
-              }}
+              secondaryContent={
+                several ? (
+                  <Checkbox
+                    size="small"
+                    checked={a.signedIn}
+                    disabled={!other}
+                    tabIndex={-1}
+                    readOnly
+                    disableRipple
+                    inputProps={{ 'aria-label': a.email || a.name || a.sub }}
+                  />
+                ) : (
+                  !other && <Icon name="check" color="primary" fixedWidth />
+                )
+              }
+              button={other && a.saved ? t('nav.signOut', 'Sign out') : undefined}
+              onButtonClick={() => dispatch.auth.signOutAccount(a.sub)}
+              secondaryContentWidth={several ? '130px' : '90px'}
+              onClick={
+                other
+                  ? async () => {
+                      if (several) return dispatch.auth.useAccount({ sub: a.sub, use: !a.signedIn })
+                      handleClose()
+                      await dispatch.auth.activateAccount(a.sub)
+                    }
+                  : undefined
+              }
             />
-          ))}
+          )
+        })}
         <ListItemSetting
-          label={t('nav.switchAccount', 'Switch account')}
-          icon="users"
-          confirm={browser.hasBackend}
+          label={t('nav.signInOnDevice', 'Sign in on this device')}
+          icon="user-plus"
+          confirm={!several && browser.hasBackend}
           confirmProps={switchConfirm}
           onClick={async () => {
             handleClose()
-            await dispatch.auth.switchAccount()
+            await dispatch.auth.addAccount()
           }}
         />
+        {/* Turning it off keeps the page's own person and takes the others out of use here: asked first, by name. */}
+        {offered && (
+          <ListItemSetting
+            label={t('nav.useSeveral', 'Use several at once')}
+            icon="users"
+            toggle={several}
+            confirm={several && inUseBeside.length > 0}
+            confirmProps={{
+              title: t('nav.useSeveralOffTitle', 'Use one account at a time?'),
+              action: t('nav.useSeveralOffAction', 'Turn off'),
+              children: t('nav.useSeveralOffConfirm', {
+                accounts: inUseBeside.map(a => a.email || a.name || a.sub).join(', '),
+                keep: user?.email || activeUser.email,
+                defaultValue:
+                  'This signs out {{accounts}} here. You stay signed in as {{keep}}, and the others stay saved so you can switch to them.',
+              }),
+            }}
+            onClick={() => dispatch.auth.setSeveral(!several)}
+          />
+        )}
         <ListItemSetting
           confirm={backendAuthenticated}
           label={t('nav.signOut', 'Sign out')}

@@ -34,7 +34,23 @@ const {
   oidcActivationHint,
   oidcTakeSwitched,
   completeCallback,
+  oidcAccounts,
+  oidcSignIns,
+  oidcSignOutAccount,
+  oidcPromoteSignIn,
+  oidcSubscribe,
+  oidcSeveral,
+  oidcSetSeveral,
+  oidcUseAccount,
 } = vi.hoisted(() => ({
+  oidcSeveral: vi.fn(() => false),
+  oidcSetSeveral: vi.fn(),
+  oidcUseAccount: vi.fn(),
+  oidcAccounts: vi.fn((): any[] => []),
+  oidcSignIns: vi.fn((): any[] => []),
+  oidcSignOutAccount: vi.fn(),
+  oidcPromoteSignIn: vi.fn(),
+  oidcSubscribe: vi.fn(),
   oidcCallbackReason: vi.fn(),
   oidcActivationHint: vi.fn(),
   oidcTakeSwitched: vi.fn(),
@@ -61,7 +77,7 @@ const {
   oidcShell: vi.fn(),
   pushUnregister: vi.fn(),
   browser: { isElectron: false, isNative: false, hasBackend: false },
-  storeState: { auth: {} as Record<string, unknown>, user: { id: '' } },
+  storeState: { auth: {} as Record<string, unknown>, user: { id: '' } } as Record<string, any>,
 }))
 
 // signInFailure() tests `error instanceof OidcError`, so the mock must export a real class
@@ -85,6 +101,14 @@ vi.mock('../services/oidc', () => ({
   oidcSignedIn,
   oidcActivationHint,
   oidcTakeSwitched,
+  oidcAccounts,
+  oidcSignIns,
+  oidcSignOutAccount,
+  oidcPromoteSignIn,
+  oidcSubscribe,
+  oidcSeveral,
+  oidcSetSeveral,
+  oidcUseAccount,
   invalidateOidcToken: vi.fn(),
   oidcTakeSupportTicket: vi.fn(),
   OidcError: class OidcError extends Error {},
@@ -149,12 +173,14 @@ function makeDispatch() {
       signedOut: vi.fn(),
       signOut: vi.fn(),
       releaseAgent: vi.fn(),
-      switchAccount: vi.fn(),
+      addAccount: vi.fn(),
+      useAccount: vi.fn(),
       handleSignInSuccess: vi.fn(),
       healGrant: vi.fn(),
     },
     ui: { set: vi.fn(), setPersistent: vi.fn() },
     chat: { signOut: vi.fn() },
+    accounts: { fetchSignIns: vi.fn() },
   }
 }
 
@@ -191,6 +217,9 @@ const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
 beforeEach(() => {
   oidcStart.mockReset()
+  oidcSeveral.mockReset().mockReturnValue(false)
+  oidcSetSeveral.mockReset().mockResolvedValue(true)
+  oidcUseAccount.mockReset().mockResolvedValue(true)
   oidcEndSession.mockReset().mockResolvedValue(204)
   changePassword.mockReset()
   signOutEverywhere.mockReset().mockResolvedValue({ status: 200, body: { ended: 1, pool: 'skipped' } })
@@ -208,6 +237,11 @@ beforeEach(() => {
   reloadIfStageChanged.mockReset()
   controllerClose.mockReset()
   pushUnregister.mockReset()
+  oidcAccounts.mockReset().mockReturnValue([])
+  oidcSignIns.mockReset().mockReturnValue([])
+  oidcSignOutAccount.mockReset().mockResolvedValue(true)
+  oidcPromoteSignIn.mockReset().mockReturnValue(false)
+  oidcSubscribe.mockReset().mockReturnValue(() => {})
 })
 
 describe('auth model — the sign-in paths', () => {
@@ -649,26 +683,79 @@ describe('auth model — switching accounts releases the agent first', () => {
     expect(emitWithAck).not.toHaveBeenCalled()
   })
 
-  it('the chooser opens without releasing the agent: a cancel must leave this computer signed in', async () => {
-    browser.isElectron = true
-    const dispatch = makeDispatch()
-    await effectsFor(dispatch).switchAccount()
-    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
-    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
-  })
-
-  it('a browser on the local backend releases before the chooser: its return is a page load that cannot', async () => {
+  it('with one used at a time, the chooser releases the agent first — except on desktop, whose live window does', async () => {
     const dispatch = makeDispatch()
     dispatch.auth.releaseAgent.mockResolvedValue(false)
-    await effectsFor(dispatch).switchAccount()
+    await effectsFor(dispatch).addAccount()
     expect(oidcStart).not.toHaveBeenCalled()
 
     dispatch.auth.releaseAgent.mockResolvedValue(true)
-    await effectsFor(dispatch).switchAccount()
+    await effectsFor(dispatch).addAccount()
     expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
+
+    browser.isElectron = true
+    dispatch.auth.releaseAgent.mockClear()
+    await effectsFor(dispatch).addAccount()
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(oidcStart).toHaveBeenCalledTimes(2)
+    browser.isElectron = false
   })
 
-  it('a saved account activates only once the agent is released', async () => {
+  it('with one used at a time, choosing a saved account switches to it: the agent released, the push token dropped, then a reload as them', async () => {
+    const assign = vi.fn()
+    vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, assign })
+    // The other account is saved, and not in use.
+    beside('sub-b', false)
+    oidcIsSavedAccount.mockReturnValue(true)
+    oidcActivateAccount.mockReturnValue(true)
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(true)
+    await effectsFor(dispatch).activateAccount('sub-b')
+    expect(dispatch.auth.releaseAgent).toHaveBeenCalledTimes(1)
+    expect(pushUnregister).toHaveBeenCalledTimes(1)
+    expect(oidcActivateAccount).toHaveBeenCalledWith('sub-b')
+    expect(assign).toHaveBeenCalledWith('/')
+    expect(dispatch.auth.useAccount).not.toHaveBeenCalled()
+    expect(oidcUseAccount).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it('with one used at a time, choosing an account the browser only knows selects it silently, the agent released first', async () => {
+    beside('sub-b', false)
+    oidcIsSavedAccount.mockReturnValue(false)
+    oidcSelectKnownAccount.mockResolvedValue(true)
+    const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(false)
+    await effectsFor(dispatch).activateAccount('sub-b')
+    expect(oidcSelectKnownAccount).not.toHaveBeenCalled()
+
+    dispatch.auth.releaseAgent.mockResolvedValue(true)
+    await effectsFor(dispatch).activateAccount('sub-b')
+    expect(oidcSelectKnownAccount).toHaveBeenCalledWith('sub-b')
+    expect(dispatch.auth.useAccount).not.toHaveBeenCalled()
+  })
+
+  it('the chooser adds an account without releasing the agent: the one signed in stays this computer’s', async () => {
+    oidcSeveral.mockReturnValue(true)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).addAccount()
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(oidcStart).toHaveBeenCalledWith({ prompt: 'select_account' })
+
+    browser.isElectron = true
+    await effectsFor(dispatch).addAccount()
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(oidcStart).toHaveBeenCalledTimes(2)
+  })
+
+  const beside = (sub: string, signedIn: boolean) =>
+    oidcAccounts.mockReturnValue([
+      { sub: 'sub-a', active: true, signedIn: true },
+      { sub, active: false, signedIn },
+    ])
+
+  it('making a signed-in account the page’s person activates it only once the agent is released', async () => {
+    beside('sub-b', true)
     oidcIsSavedAccount.mockReturnValue(true)
     oidcActivateAccount.mockReturnValue(false)
     const dispatch = makeDispatch()
@@ -681,7 +768,8 @@ describe('auth model — switching accounts releases the agent first', () => {
     expect(oidcActivateAccount).toHaveBeenCalledWith('sub-b')
   })
 
-  it("a saved account drops this phone's push token before it activates", async () => {
+  it("making a signed-in account the page’s person drops this phone's push token before it activates", async () => {
+    beside('sub-b', true)
     oidcIsSavedAccount.mockReturnValue(true)
     oidcActivateAccount.mockReturnValue(false)
     const dispatch = makeDispatch()
@@ -691,18 +779,139 @@ describe('auth model — switching accounts releases the agent first', () => {
     expect(pushUnregister.mock.invocationCallOrder[0]).toBeLessThan(oidcActivateAccount.mock.invocationCallOrder[0])
   })
 
-  it('a known account goes to the browser without releasing the agent', async () => {
-    browser.isElectron = true
+  it('with several at once, an account not in use joins the one that is: no release, no push token dropped, nothing activated', async () => {
+    oidcSeveral.mockReturnValue(true)
+    beside('sub-b', false)
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).activateAccount('sub-b')
+    expect(dispatch.auth.useAccount).toHaveBeenCalledWith({ sub: 'sub-b', use: true })
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(pushUnregister).not.toHaveBeenCalled()
+    expect(oidcActivateAccount).not.toHaveBeenCalled()
+  })
+
+  it('checking an account brings it into use and reads its rows; one that cannot be goes to the chooser', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).useAccount({ sub: 'sub-b', use: true })
+    expect(oidcUseAccount).toHaveBeenCalledWith('sub-b', true)
+    expect(dispatch.accounts.fetchSignIns).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.addAccount).not.toHaveBeenCalled()
+
+    oidcUseAccount.mockResolvedValue(false)
+    await effectsFor(dispatch).useAccount({ sub: 'sub-unknown', use: true })
+    expect(dispatch.auth.addAccount).toHaveBeenCalledTimes(1)
+  })
+
+  it('unchecking an account takes it out of use and drops its rows: it is not signed out, and nothing reloads', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).useAccount({ sub: 'sub-b', use: false })
+    expect(oidcUseAccount).toHaveBeenCalledWith('sub-b', false)
+    expect(oidcSignOutAccount).not.toHaveBeenCalled()
+    expect(dispatch.accounts.fetchSignIns).toHaveBeenCalledTimes(1)
+    expect(oidcUseAccount.mock.invocationCallOrder[0]).toBeLessThan(
+      dispatch.accounts.fetchSignIns.mock.invocationCallOrder[0]
+    )
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(dispatch.auth.addAccount).not.toHaveBeenCalled()
+  })
+
+  it('turning Use several at once off or on sets it, then reads the rows again so the others’ go', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).setSeveral(false)
+    expect(oidcSetSeveral).toHaveBeenCalledWith(false)
+    expect(oidcSetSeveral.mock.invocationCallOrder[0]).toBeLessThan(
+      dispatch.accounts.fetchSignIns.mock.invocationCallOrder[0]
+    )
+    await effectsFor(dispatch).setSeveral(true)
+    expect(oidcSetSeveral).toHaveBeenLastCalledWith(true)
+    expect(dispatch.accounts.fetchSignIns).toHaveBeenCalledTimes(2)
+  })
+
+  it('in an app, a signed-in account is made the page’s person through the shell, the agent released first', async () => {
+    beside('sub-b', true)
     oidcIsSavedAccount.mockReturnValue(false)
     oidcSelectKnownAccount.mockResolvedValue(true)
     const dispatch = makeDispatch()
+    dispatch.auth.releaseAgent.mockResolvedValue(true)
     await effectsFor(dispatch).activateAccount('sub-b')
-    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(dispatch.auth.releaseAgent).toHaveBeenCalledTimes(1)
     expect(oidcSelectKnownAccount).toHaveBeenCalledWith('sub-b')
   })
 })
 
-describe('auth model — the chooser callback releases the agent only for a different account', () => {
+describe('auth model — signing one account out leaves the rest', () => {
+  beforeEach(() => oidcClaims.mockReset().mockReturnValue({ sub: 'sub-a' }))
+
+  it('an account beside the page’s person: its sign-in ends, its rows are read again, and nothing else is torn down', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).signOutAccount('sub-b')
+    expect(oidcSignOutAccount).toHaveBeenCalledWith('sub-b')
+    expect(dispatch.accounts.fetchSignIns).toHaveBeenCalledTimes(1)
+    expect(oidcSignOutAccount.mock.invocationCallOrder[0]).toBeLessThan(
+      dispatch.accounts.fetchSignIns.mock.invocationCallOrder[0]
+    )
+    expect(dispatch.auth.signOut).not.toHaveBeenCalled()
+    expect(dispatch.auth.signedOut).not.toHaveBeenCalled()
+    expect(oidcEndSession).not.toHaveBeenCalled()
+  })
+
+  it('a sign-out the shell or the login server fails still reads the rows again', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    oidcSignOutAccount.mockRejectedValue(new Error('refused'))
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).signOutAccount('sub-b')
+    expect(dispatch.accounts.fetchSignIns).toHaveBeenCalledTimes(1)
+  })
+
+  it('the page’s own person signs out as ever', async () => {
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).signOutAccount('sub-a')
+    expect(dispatch.auth.signOut).toHaveBeenCalledTimes(1)
+    expect(oidcSignOutAccount).not.toHaveBeenCalled()
+  })
+})
+
+describe('auth model — the page’s person signing out with others still signed in', () => {
+  const assign = vi.fn()
+  beforeEach(() => {
+    assign.mockReset()
+    vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, assign })
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+  const purge = async () => vi.mocked((await import('../store')).persistor.purge)
+
+  it('the last one out purges the stored state, resets every model and lands on the sign-in screen', async () => {
+    ;(await purge()).mockClear()
+    const { dispatch } = spyDispatch()
+    await effectsFor(dispatch).signedOut()
+    expect(await purge()).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.resetAccountData).toHaveBeenCalledTimes(1)
+    expect(oidcPromoteSignIn).not.toHaveBeenCalled()
+    expect(assign).not.toHaveBeenCalled()
+    expect(reloadIfStageChanged).toHaveBeenCalledTimes(1)
+  })
+
+  it('with another signed in: what is stored for their rows stays, and the page boots as them', async () => {
+    ;(await purge()).mockClear()
+    oidcSignIns.mockReturnValue([
+      { sub: 'sub-a', primary: true },
+      { sub: 'sub-b', primary: false },
+    ])
+    oidcPromoteSignIn.mockReturnValue(true)
+    const { dispatch } = spyDispatch()
+    await effectsFor(dispatch).signedOut()
+    expect(await purge()).not.toHaveBeenCalled()
+    expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
+    expect(dispatch.auth.resetPersonData).toHaveBeenCalledTimes(1)
+    expect(oidcPromoteSignIn).toHaveBeenCalledTimes(1)
+    expect(assign).toHaveBeenCalledWith('/')
+    expect(controllerClose.mock.invocationCallOrder[0]).toBeLessThan(oidcPromoteSignIn.mock.invocationCallOrder[0])
+  })
+})
+
+describe('auth model — the chooser callback in a signed-in window', () => {
   const assign = vi.fn()
   beforeEach(() => {
     assign.mockReset()
@@ -715,35 +924,43 @@ describe('auth model — the chooser callback releases the agent only for a diff
     vi.restoreAllMocks()
   })
 
-  // The admit gate oidcCompleteFromUrl runs between the code exchange and storing the account.
-  const admitting = (returned: { sub: string } | undefined) =>
-    oidcCompleteFromUrl.mockImplementation(async (_search, admit) => ((await admit(returned)) ? returned : undefined))
-
-  it('a different account is stored only once the agent is released, then boots as that account', async () => {
-    admitting({ sub: 'sub-b' })
+  it('with one used at a time, a different account is admitted only once the agent is released, and the page boots as it', async () => {
     const dispatch = makeDispatch()
     dispatch.auth.releaseAgent.mockResolvedValue(true)
+    oidcCompleteFromUrl.mockImplementation(async (_search: string, admit: (claims: any) => Promise<boolean>) =>
+      (await admit({ sub: 'sub-b' })) ? { sub: 'sub-b' } : undefined
+    )
     await effectsFor(dispatch).completeCallback('?code=c&state=s')
-    expect(oidcCompleteFromUrl).toHaveBeenCalledWith('?code=c&state=s', expect.any(Function))
     expect(dispatch.auth.releaseAgent).toHaveBeenCalledTimes(1)
     expect(assign).toHaveBeenCalledWith('/')
+    expect(dispatch.accounts.fetchSignIns).not.toHaveBeenCalled()
+
+    assign.mockReset()
+    dispatch.auth.releaseAgent.mockResolvedValue(false)
+    await effectsFor(dispatch).completeCallback('?code=c&state=s')
+    expect(assign).not.toHaveBeenCalled()
   })
 
-  it('the same account keeps the agent', async () => {
-    admitting({ sub: 'sub-a' })
+  it('a different account joins the one signed in: no reload, the agent kept, and its rows read', async () => {
+    oidcSeveral.mockReturnValue(true)
+    oidcCompleteFromUrl.mockImplementation(async (_search: string, admit: (claims: any) => Promise<boolean>) =>
+      (await admit({ sub: 'sub-b' })) ? { sub: 'sub-b' } : undefined
+    )
+    const dispatch = makeDispatch()
+    await effectsFor(dispatch).completeCallback('?code=c&state=s')
+    expect(oidcCompleteFromUrl).toHaveBeenCalledWith('?code=c&state=s', expect.any(Function))
+    expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
+    expect(assign).not.toHaveBeenCalled()
+    expect(dispatch.accounts.fetchSignIns).toHaveBeenCalledTimes(1)
+  })
+
+  it('the same account signing in again boots on its new tokens, the agent kept', async () => {
+    oidcCompleteFromUrl.mockResolvedValue({ sub: 'sub-a' })
     const dispatch = makeDispatch()
     await effectsFor(dispatch).completeCallback('?code=c&state=s')
     expect(dispatch.auth.releaseAgent).not.toHaveBeenCalled()
     expect(assign).toHaveBeenCalledWith('/')
-  })
-
-  it('a refused release refuses the new account and stays as the owner', async () => {
-    admitting({ sub: 'sub-b' })
-    const dispatch = makeDispatch()
-    dispatch.auth.releaseAgent.mockResolvedValue(false)
-    await effectsFor(dispatch).completeCallback('?code=c&state=s')
-    expect(dispatch.auth.releaseAgent).toHaveBeenCalledTimes(1)
-    expect(assign).not.toHaveBeenCalled()
+    expect(dispatch.accounts.fetchSignIns).not.toHaveBeenCalled()
   })
 
   it('a cancelled or failed chooser keeps the agent and this session', async () => {
@@ -812,7 +1029,7 @@ describe('auth model — the desktop hands the chooser callback to a signed-in w
   })
 })
 
-describe('auth model — signing in as another account clears the last account’s persisted state', () => {
+describe('auth model — booting as another person over stored state', () => {
   const signInAs = async (id: string, persistedOwner: string) => {
     storeState.user = { id: persistedOwner }
     vi.mocked(graphQLLogin).mockResolvedValue({
@@ -823,40 +1040,45 @@ describe('auth model — signing in as another account clears the last account�
     return dispatch
   }
 
-  beforeEach(() => broadcastChatSignout.mockReset())
+  beforeEach(() => {
+    broadcastChatSignout.mockReset()
+    oidcClaims.mockReset().mockReturnValue({ sub: 'sub-b' })
+  })
 
   afterEach(() => {
+    for (const key of Object.keys(storeState)) if (key !== 'auth' && key !== 'user') delete storeState[key]
     storeState.user = { id: '' }
     persist.bootstrapped = true
     persist.persistsState = true
   })
 
-  it('resets and closes chat popouts before the new user is set when the persisted state is another account’s', async () => {
+  it('adopts the stored state and closes chat popouts before the new user is set when it is another person’s', async () => {
     const dispatch = await signInAs('USER-B', 'USER-A')
-    expect(dispatch.auth.resetAccountData).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.adoptAccountData).toHaveBeenCalledWith('USER-B')
     expect(broadcastChatSignout).toHaveBeenCalledTimes(1)
-    expect(dispatch.auth.resetAccountData.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(dispatch.auth.adoptAccountData.mock.invocationCallOrder[0]).toBeLessThan(
       dispatch.auth.set.mock.invocationCallOrder[0]
     )
   })
 
-  it('stamps the new owner right after the reset, before any account fetch can persist', async () => {
+  it('stamps the new owner, and their sub, right after, before any account fetch can persist', async () => {
     const dispatch = await signInAs('USER-B', 'USER-A')
     expect(dispatch.user.set).toHaveBeenCalledWith({ id: 'USER-B' })
-    expect(dispatch.auth.resetAccountData.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(dispatch.accounts.set).toHaveBeenCalledWith({ primarySub: 'sub-b' })
+    expect(dispatch.auth.adoptAccountData.mock.invocationCallOrder[0]).toBeLessThan(
       dispatch.user.set.mock.invocationCallOrder[0]
     )
   })
 
   it('keeps the persisted state and chat popouts for the same account', async () => {
     const dispatch = await signInAs('USER-A', 'USER-A')
-    expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
+    expect(dispatch.auth.adoptAccountData).not.toHaveBeenCalled()
     expect(broadcastChatSignout).not.toHaveBeenCalled()
   })
 
   it('treats state with no recorded owner as another account’s, popouts included', async () => {
     const dispatch = await signInAs('USER-A', '')
-    expect(dispatch.auth.resetAccountData).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.adoptAccountData).toHaveBeenCalledTimes(1)
     expect(broadcastChatSignout).toHaveBeenCalledTimes(1)
     expect(dispatch.user.set).toHaveBeenCalledWith({ id: 'USER-A' })
   })
@@ -864,7 +1086,7 @@ describe('auth model — signing in as another account clears the last account�
   it('skips the check in a popout or support tab, which persists nothing and must not close other windows’ popouts', async () => {
     persist.persistsState = false
     const dispatch = await signInAs('USER-A', '')
-    expect(dispatch.auth.resetAccountData).not.toHaveBeenCalled()
+    expect(dispatch.auth.adoptAccountData).not.toHaveBeenCalled()
     expect(broadcastChatSignout).not.toHaveBeenCalled()
     expect(dispatch.user.set).toHaveBeenCalledWith({ id: 'USER-A' })
   })
@@ -883,34 +1105,175 @@ describe('auth model — signing in as another account clears the last account�
     persist.bootstrapped = true
     persist.listener?.()
     await signingIn
-    expect(dispatch.auth.resetAccountData).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.adoptAccountData).toHaveBeenCalledTimes(1)
   })
 
-  it('resets every persisted model', () => {
+  it('the last sign-out resets every persisted model', () => {
     const { models, dispatch } = spyDispatch()
-    effectsFor(dispatch).resetAccountData()
+    const effects = effectsFor(dispatch)
+    dispatch.auth.resetPersonData.mockImplementation(() => effects.resetPersonData())
+    effects.resetAccountData()
     const reset = Object.keys(models).filter(model => models[model].reset?.mock.calls.length)
     expect(reset.sort()).toEqual([...PERSISTED_MODELS].sort())
   })
+
+  /* A was the page's person with org-a; B was signed in beside them with org-b; C had been too, with org-c, and has
+     since signed out. Something is stored for each, and for an account no one recorded ('stray'). */
+  const stored = () => {
+    const byAccount = (ids: string[]) => Object.fromEntries(ids.map(id => [id, {}]))
+    const ids = ['USER-A', 'org-a', 'USER-B', 'org-b', 'USER-C', 'org-c', 'stray']
+    const member = (id: string) => ({ account: { id } })
+    Object.assign(storeState, {
+      user: { id: 'USER-A' },
+      accounts: {
+        primarySub: 'sub-a',
+        membership: [member('org-a')],
+        signIns: {
+          'sub-b': { sub: 'sub-b', id: 'USER-B', email: 'b@x.test', membership: [member('org-b')] },
+          'sub-c': { sub: 'sub-c', id: 'USER-C', email: 'c@x.test', membership: [member('org-c')] },
+        },
+      },
+      devices: { default: {}, ...byAccount(ids) },
+      products: { default: {} },
+      networks: { all: byAccount(ids) },
+      files: { all: {} },
+      jobs: { all: {} },
+      tags: { all: byAccount(['org-c']) },
+      organization: { accounts: byAccount(ids) },
+      applicationTypes: { account: {} },
+    })
+  }
+  const adopt = () => {
+    const { models, dispatch } = spyDispatch()
+    effectsFor(dispatch).adoptAccountData('USER-B')
+    return { models, forgotten: (models.accounts.forgetData.mock.calls[0][0] as string[]).sort() }
+  }
+
+  it('keeps what is stored for the accounts of sign-ins still in use, the former person’s included', () => {
+    stored()
+    oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }, { sub: 'sub-a', primary: false }])
+    const { models, forgotten } = adopt()
+    expect(forgotten).toEqual(['USER-C', 'org-c', 'stray'])
+    expect(models.auth.resetPersonData).toHaveBeenCalledTimes(1)
+    expect(models.accounts.set).toHaveBeenCalledWith(
+      expect.objectContaining({ membership: [], signIns: {}, activeId: undefined, primarySub: undefined })
+    )
+    // Nothing kept by account id is reset wholesale.
+    expect(models.devices).toBeUndefined()
+  })
+
+  it('drops what only the former person’s sign-in served once they have signed out', () => {
+    stored()
+    oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }])
+    expect(adopt().forgotten).toEqual(['USER-A', 'USER-C', 'org-a', 'org-c', 'stray'])
+  })
+
+  it('keeps nothing of state with no record of whose it was', () => {
+    stored()
+    storeState.accounts = { membership: [{ account: { id: 'org-a' } }], signIns: {} }
+    oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }, { sub: 'sub-a', primary: false }])
+    expect(adopt().forgotten).toEqual(['USER-A', 'USER-B', 'USER-C', 'org-a', 'org-b', 'org-c', 'stray'])
+  })
 })
 
-describe("auth model — a different account arriving drops this phone's push token", () => {
+describe('auth model — a boot that finds the page’s person’s grant dead', () => {
+  const assign = vi.fn()
+  beforeEach(() => {
+    assign.mockReset()
+    vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, assign })
+    oidcCompleteFromUrl.mockReset().mockResolvedValue(undefined)
+    vi.mocked(getToken).mockResolvedValue('')
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('boots as the next account still signed in, once the dead one’s tokens are gone', async () => {
+    oidcSignedIn.mockReturnValueOnce(true).mockReturnValue(false)
+    oidcPromoteSignIn.mockReturnValue(true)
+    const dispatch = await boot()
+    expect(assign).toHaveBeenCalledWith('/')
+    expect(dispatch.auth.handleSignInSuccess).not.toHaveBeenCalled()
+  })
+
+  it('stays as it is while the tokens are kept (the network, not the grant), and with no one else signed in', async () => {
+    oidcSignedIn.mockReturnValue(true)
+    oidcPromoteSignIn.mockReturnValue(true)
+    await boot()
+    expect(oidcPromoteSignIn).not.toHaveBeenCalled()
+
+    oidcSignedIn.mockReset().mockReturnValueOnce(true).mockReturnValue(false)
+    oidcPromoteSignIn.mockReturnValue(false)
+    await boot()
+    expect(assign).not.toHaveBeenCalled()
+  })
+
+  it('leaves it to the shell in an app', async () => {
+    oidcSignedIn.mockReturnValueOnce(true).mockReturnValue(false)
+    oidcShell.mockReturnValue(true)
+    oidcPromoteSignIn.mockReturnValue(true)
+    await boot()
+    expect(assign).not.toHaveBeenCalled()
+    oidcShell.mockReset()
+  })
+})
+
+describe('auth model — another account arriving at boot joins the one signed in', () => {
   beforeEach(() => {
     oidcClaims.mockReset().mockReturnValue({ sub: 'sub-a' })
     oidcCompleteFromUrl.mockReset()
   })
 
-  const admitting = (returned: { sub: string }) =>
-    oidcCompleteFromUrl.mockImplementation(async (_search, admit) => ((await admit(returned)) ? returned : undefined))
-  it('drops it before the new account is stored, then signs in as that account', async () => {
-    admitting({ sub: 'sub-b' })
+  it('keeps this phone’s push token and restores the page’s own person, checked like any stored session', async () => {
+    oidcCompleteFromUrl.mockResolvedValue({ sub: 'sub-b' })
+    oidcSignedIn.mockReturnValue(true)
+    vi.mocked(getToken).mockResolvedValue('Bearer t')
+    const dispatch = await boot()
+    expect(pushUnregister).not.toHaveBeenCalled()
+    expect(getToken).toHaveBeenCalledTimes(1)
+    expect(dispatch.auth.handleSignInSuccess).toHaveBeenCalledTimes(1)
+  })
+
+  it('signs in as the account that came back when it is the page’s own', async () => {
+    oidcCompleteFromUrl.mockResolvedValue({ sub: 'sub-a' })
+    const dispatch = await boot()
+    expect(pushUnregister).not.toHaveBeenCalled()
+    expect(getToken).not.toHaveBeenCalled()
+    expect(dispatch.auth.handleSignInSuccess).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("auth model — a different account arriving at boot", () => {
+  beforeEach(() => {
+    oidcClaims.mockReset().mockReturnValue({ sub: 'sub-a' })
+    oidcCompleteFromUrl.mockReset()
+  })
+
+  // The exchange as services/oidc runs it: the admit gate, then the account stored — as the page's person with one
+  // used at a time, beside them with several.
+  const arriving = (returned: { sub: string }, replaces: boolean) =>
+    oidcCompleteFromUrl.mockImplementation(async (_search, admit) => {
+      if (!(await admit(returned))) return undefined
+      if (replaces) oidcClaims.mockReturnValue(returned)
+      return returned
+    })
+
+  it("with one used at a time, drops this phone's push token before the new account is stored, then signs in as it", async () => {
+    arriving({ sub: 'sub-b' }, true)
     const dispatch = await boot()
     expect(pushUnregister).toHaveBeenCalledTimes(1)
     expect(dispatch.auth.handleSignInSuccess).toHaveBeenCalledTimes(1)
   })
 
-  it('keeps it when the same account signs back in', async () => {
-    admitting({ sub: 'sub-a' })
+  it('keeps the push token when the same account signs back in', async () => {
+    arriving({ sub: 'sub-a' }, true)
+    await boot()
+    expect(pushUnregister).not.toHaveBeenCalled()
+  })
+
+  it('with several at once, keeps the push token: the page’s person is who they were', async () => {
+    oidcSeveral.mockReturnValue(true)
+    arriving({ sub: 'sub-b' }, false)
     await boot()
     expect(pushUnregister).not.toHaveBeenCalled()
   })

@@ -4,6 +4,7 @@ import { graphQLBasicRequest, graphQLGetErrors, graphQLPartialRequest } from './
 import { withoutDeviceSessions } from './graphQLDaemon'
 import { jobRunsPaged, setJobRunsPaged } from './jobDevices'
 import { JOB_PREVIEW_RUNS } from '../helpers/jobHelper'
+import { RequestFor } from '../selectors/signIns'
 
 export async function graphQLLogin() {
   return await graphQLBasicRequest(
@@ -405,7 +406,7 @@ export async function graphQLFetchPlans() {
   )
 }
 
-export async function graphQLFetchOrganizations(ids: string[]) {
+export async function graphQLFetchOrganizations(ids: string[], requestFor?: RequestFor) {
   return await graphQLPartialRequest(
     ` query Organizations {
         login {
@@ -485,7 +486,9 @@ export async function graphQLFetchOrganizations(ids: string[]) {
       )
       .join('\n')}
         }
-      }`
+      }`,
+    {},
+    requestFor
   )
 }
 
@@ -583,7 +586,7 @@ export async function graphQLFetchGuests(accountId: string) {
   )
 }
 
-export async function graphQLFetchSessions(ids: string[]) {
+export async function graphQLFetchSessions(ids: string[], requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query Sessions {
         login {
@@ -627,7 +630,10 @@ export async function graphQLFetchSessions(ids: string[]) {
       )
       .join('\n')}
         }
-      }`
+      }`,
+    {},
+    false,
+    requestFor
   )
 }
 

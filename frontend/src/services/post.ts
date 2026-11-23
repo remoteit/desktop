@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from 'axios'
 import { getApiRestURL, getApiURL } from '../helpers/apiHelper'
 import { apiRequest } from './remoteit'
 import { store } from '../store'
+import { requestSignIn, RequestFor } from '../selectors/signIns'
 import network from './Network'
 import sleep from '../helpers/sleep'
 
@@ -11,19 +12,27 @@ export function resetErrorCount() {
   errorCount = 0
 }
 
+/* `requestFor` says whose request this is where the request itself does not: the account it asks about, or the
+   sign-in outright. Without it the sign-in is read from the request (selectors/signIns requestSignIn): the account
+   its variables name, else the account that holds what they name, else the page's own person. */
 export async function post(
   data: ILookup<any, string> = {},
   path: string = '',
   silent = false,
-  retry = false
+  retry = false,
+  requestFor?: RequestFor
 ): Promise<AxiosResponse | 'ERROR'> {
   if (store.getState().ui.offline) return 'ERROR'
+  const sub = requestSignIn(store.getState(), requestFor, data?.variables)
 
   // graphql at its URL; a REST route (a path) under the API's REST root (getApiRestURL: on the unified front, /api).
   const url = (path ? getApiRestURL() : getApiURL()) + path
   try {
-    const response = await apiRequest('POST', url, async headers =>
-      headers ? axios.request({ url, method: 'post', headers, data }) : undefined
+    const response = await apiRequest(
+      'POST',
+      url,
+      async headers => (headers ? axios.request({ url, method: 'post', headers, data }) : undefined),
+      sub
     )
     if (!response) {
       console.warn('Unable to get token for API request.', data)
@@ -34,7 +43,7 @@ export async function post(
     if (retry && droppedInFlight(error)) {
       console.warn('POST DROPPED, RETRYING', { data, path })
       await sleep(1000)
-      return await post(data, path, silent)
+      return await post(data, path, silent, false, { sub })
     }
     console.error('POST ERROR', { data, path })
     await apiError(error, silent)
@@ -48,7 +57,12 @@ function droppedInFlight(error: unknown) {
   return axios.isAxiosError(error) && !error.response && error.code === 'ERR_NETWORK'
 }
 
-export async function postFile(file: File, data: ILookup<any, string> = {}, path: string = '') {
+export async function postFile(
+  file: File,
+  data: ILookup<any, string> = {},
+  path: string = '',
+  requestFor?: RequestFor
+) {
   const form = new FormData()
 
   form.append('file', file)
@@ -56,7 +70,7 @@ export async function postFile(file: File, data: ILookup<any, string> = {}, path
     form.append(key, value)
   })
 
-  return await post(form, path)
+  return await post(form, path, false, false, requestFor)
 }
 
 export async function apiError(error: unknown, silent = false) {

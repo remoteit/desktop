@@ -5,7 +5,6 @@ import { State } from '../store'
 import {
   getUser,
   getUserId,
-  getMemberships,
   getOrganizations,
   getPlans,
   getLimitsOverride,
@@ -15,7 +14,7 @@ import {
 } from './state'
 import { selectActiveAccountId, isUserAccount, selectActiveUser } from './accounts'
 import { defaultState, canMemberView, DEFAULT_ROLE } from '../models/organization'
-import { selectMembership } from './accounts'
+import { selectMembership, selectMemberships } from './accounts'
 
 export const selectOrganization = createSelector(
   [selectActiveAccountId, getOrganizations, selectMembership, getUser],
@@ -29,8 +28,10 @@ export const selectOrganization = createSelector(
   }
 )
 
+// `via`: the sign-in a row is reached through when it is not the page's own person; `reach`: every sign-in that
+// reaches it, where more than one does. A sign-in's own account is a row whether or not it is an organization.
 export const selectOrganizationOptions = createSelector(
-  [getMemberships, getOrganizations],
+  [selectMemberships, getOrganizations],
   (memberships, organizations) =>
     memberships
       .map(m => {
@@ -38,13 +39,21 @@ export const selectOrganizationOptions = createSelector(
         return {
           id: m.account.id,
           email: m.account.email,
-          name: org.name || m.name,
+          name: org.name || m.name || (m.signIn ? m.account.email : undefined),
           roleId: m.roleId,
           roleName: m.roleName,
-          disabled: !org.id,
+          disabled: !org.id && !m.signIn,
+          via: m.via,
+          reach: m.reach,
+          signIn: m.signIn,
         }
       })
       .sort(byName)
+)
+
+/** The switcher's rows that the page's own person's sign-in serves: what a page about that one person lists. */
+export const selectPrimaryOrganizationOptions = createSelector([selectOrganizationOptions], options =>
+  options.filter(option => !option.via)
 )
 
 export const selectOrganizationName = createSelector(

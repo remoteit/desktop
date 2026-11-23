@@ -94,7 +94,8 @@ describe('files.upload', () => {
         name: 'run.sh',
         arguments: JSON.stringify(form.argumentDefinitions),
       },
-      '/file/upload'
+      '/file/upload',
+      { account: 'acct' }
     )
     expect(dispatch.files.fetchSingle).toHaveBeenCalledWith({ fileId: 'f2' })
   })
