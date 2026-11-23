@@ -21,6 +21,7 @@ import { useProductHold } from '../components/DeviceProductNotice'
 import { DeviceApps } from '../components/DeviceApps'
 import { Gutters } from '../components/Gutters'
 import { Icon } from '../components/Icon'
+import { servicesConfigurable } from '../helpers/virtualDeviceHelper'
 
 export const DeviceServicesPage: React.FC = () => {
   const { t } = useTranslation()
@@ -36,7 +37,7 @@ export const DeviceServicesPage: React.FC = () => {
   if (!device) return <DeviceHeaderMenu />
 
   const manage = device.permissions.includes('MANAGE')
-  const editable = device.thisDevice || ((device.configurable || !!device.virtual) && manage)
+  const editable = device.thisDevice || (servicesConfigurable(device) && manage)
   const services = [...device.services].sort((a, b) => a.name.localeCompare(b.name))
 
   return (
