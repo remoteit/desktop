@@ -86,9 +86,11 @@ class Platforms {
     'windows',
   ]
 
+  ready: Promise<void>
+
   constructor() {
     this.seedFromCatalogue()
-    this.initialize()
+    this.ready = this.initialize()
   }
 
   private seedFromCatalogue() {

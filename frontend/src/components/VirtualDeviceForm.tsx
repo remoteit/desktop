@@ -24,6 +24,7 @@ import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 import { useGateways } from '../hooks/useGateways'
 import { isAddressOnly } from '../helpers/virtualDeviceHelper'
+import { platforms } from '../platforms'
 import { PlatformChoice, allPlatformChoices, virtualPlatformChoices } from '../platforms/virtual'
 
 /* The one form every way of making a virtual device leads to: from a gateway's page, from what a gateway sees
@@ -70,6 +71,15 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
     if (!applicationTypes.length) dispatch.applicationTypes.fetchAll()
   }, [])
 
+  const [platformsLoaded, setPlatformsLoaded] = useState(false)
+  useEffect(() => {
+    let live = true
+    platforms.ready.then(() => live && setPlatformsLoaded(true))
+    return () => {
+      live = false
+    }
+  }, [])
+
   const converting = !!prefill.fromServiceId
   const gateway = gateways.find(g => g.id === gatewayId)
 
@@ -84,7 +94,7 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
       if (chosen) list.push(chosen)
     }
     return { list, all }
-  }, [prefill.platform, platform])
+  }, [prefill.platform, platform, platformsLoaded])
 
   const addService = () => {
     const type = applicationTypes.find(a => a.id === newType)
