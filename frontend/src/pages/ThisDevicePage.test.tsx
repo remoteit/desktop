@@ -1145,19 +1145,38 @@ describe('This device’s ssh and exit', () => {
       const runs = { id: 'gk3x9q2m7ab1', name: 'Office', state: s, joining: false, lan: false }
       const { container } = await render({ capabilities: caps, exitNode: { exits, runs } }, { part: 'advanced' })
       expect(state(container).textContent).toContain(word)
-      expect(container.querySelector('[data-control="exit-leave"]')).toBeNull()
+      expect(container.querySelector('[data-control="exit-leave"]')).not.toBeNull()
+      expect(container.querySelector('[data-control="exit-manage"]')).toBeNull()
     }
     const runs = { id: 'gk3x9q2m7ab1', name: 'Office', state: 'active', joining: false, lan: true }
     const { container } = await render(
       { capabilities: caps, exitNode: { exits, runs, status: { lanLocal: true } } },
       { part: 'advanced', exitRunsHref: uid => `#/devices/${uid}/runs` }
     )
-    expect(container.querySelector('[data-control="exit-leave"]')!.getAttribute('href')).toBe(
+    expect(container.querySelector('[data-control="exit-manage"]')!.getAttribute('href')).toBe(
       '#/devices/80:00:00:00:01:0A:BC:DE/runs'
     )
     expect(container.querySelector('[data-note="exit-lan"]')!.textContent).toBe(
       'This Mac decides whether users of Office reach its local network.'
     )
+  })
+
+  it('leaves the exit it runs; the cloud’s refusal is shown and it stays in', async () => {
+    const runs = { id: 'gk3x9q2m7ab1', name: 'Office', state: 'retired', joining: false, lan: false }
+    const { container, bridge } = await render({ capabilities: caps, exitNode: { exits, runs } }, { part: 'advanced' })
+    await click(container.querySelector('[data-control="exit-leave"]'))
+    expect(bridge.calls.filter(c => c.method === 'exitNode.leave')).toHaveLength(1)
+    expect(state(container).getAttribute('data-exit-node-state')).toBe('off')
+    expect(container.querySelector('[data-control="exit-leave"]')).toBeNull()
+
+    const reason = 'it runs Office, where 2 devices use it: drain it there first, then retire it'
+    const out = await render(
+      { capabilities: caps, exitNode: { exits, runs: { ...runs, state: 'active' }, leaveRefusal: reason } },
+      { part: 'advanced' }
+    )
+    await click(out.container.querySelector('[data-control="exit-leave"]'))
+    expect(out.container.textContent).toContain(reason)
+    expect(state(out.container).getAttribute('data-exit-node-state')).toBe('active')
   })
 
   it('held by the machine’s administrator: why, nothing asked of the cloud, no way to join', async () => {
