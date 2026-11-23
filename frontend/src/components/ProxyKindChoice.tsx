@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, List, ListItemButton, ListItemIcon, ListItemText, Radio, Typography } from '@mui/material'
+import { Box, List, ListItemButton, ListItemIcon, ListItemText, Radio, RadioGroup, Typography } from '@mui/material'
 import { Gutters } from './Gutters'
 
 type Props = {
@@ -33,23 +33,18 @@ export const ProxyKindChoice: React.FC<Props> = ({ local, disabled, onChange }) 
       <Typography variant="subtitle1" component="legend">
         {t('proxyKind.label', 'Reached from')}
       </Typography>
-      <List dense disablePadding role="radiogroup">
-        {choices.map(choice => (
-          <ListItemButton key={choice.key} dense disabled={disabled} onClick={() => onChange(choice.key === 'local')}>
-            <ListItemIcon>
-              <Radio
-                size="small"
-                value={choice.key}
-                checked={value === choice.key}
-                disabled={disabled}
-                disableRipple
-                onChange={() => onChange(choice.key === 'local')}
-              />
-            </ListItemIcon>
-            <ListItemText primary={choice.name} secondary={choice.line} />
-          </ListItemButton>
-        ))}
-      </List>
+      <RadioGroup value={value} onChange={event => onChange(event.target.value === 'local')}>
+        <List dense disablePadding>
+          {choices.map(choice => (
+            <ListItemButton key={choice.key} dense disabled={disabled} onClick={() => onChange(choice.key === 'local')}>
+              <ListItemIcon>
+                <Radio size="small" value={choice.key} disabled={disabled} disableRipple />
+              </ListItemIcon>
+              <ListItemText primary={choice.name} secondary={choice.line} />
+            </ListItemButton>
+          ))}
+        </List>
+      </RadioGroup>
       <Gutters top="xs" bottom={null}>
         <Typography variant="caption">{t('proxyKind.fixed', 'You can’t change this later.')}</Typography>
       </Gutters>
