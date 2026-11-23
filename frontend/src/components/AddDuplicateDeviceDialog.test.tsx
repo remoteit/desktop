@@ -119,6 +119,7 @@ describe('AddDuplicateDeviceDialog', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
     expect(onRotate).not.toHaveBeenCalled()
 
+    act(() => root.unmount())
     await render('copy', false)
     await act(async () => button('Make Device and Key').click())
     await act(async () => button('Done').click())

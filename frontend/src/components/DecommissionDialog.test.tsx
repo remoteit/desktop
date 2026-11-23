@@ -64,9 +64,9 @@ describe('DecommissionDialog', () => {
   })
 
   it('one device: says what it runs, taken out of each; several: not', async () => {
-    await render([{ id: 'd1', name: 'Kitchen Pi' }])
+    const root = await render([{ id: 'd1', name: 'Kitchen Pi' }])
     expect(document.body.querySelector('[data-run-effects]')?.getAttribute('data-run-effects')).toBe('DECOMMISSION:d1')
-    document.body.innerHTML = ''
+    await act(async () => root.unmount())
     await render([
       { id: 'd1', name: 'a' },
       { id: 'd2', name: 'b' },
