@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Box, Button, CircularProgress, List, ListItem, ListItemText, Typography } from '@mui/material'
-import { getApplicationType } from '@common/applications'
+import { getApplicationType, isWebType } from '@common/applications'
 import type { State } from '../../store'
 import { selectActiveAccountId } from '../../selectors/accounts'
 import { getDeviceModel, selectVisibleDevices } from '../../selectors/devices'
@@ -171,11 +171,7 @@ const ServiceRow: React.FC<{ service: ServiceShortcut }> = ({ service }) => {
   const to = `#/devices/${service.device.id}/${service.id}/connect`
   const online = service.enabled && service.state === 'active'
   const type = useSelector((state: State) => state.applicationTypes.all.find(each => each.id === service.application))
-  const web =
-    getApplicationType(service.application).urlForm ||
-    type?.scheme === 'http' ||
-    type?.scheme === 'https' ||
-    (type?.proxy && !type.scheme)
+  const web = isWebType(getApplicationType(service.application), type)
   const name = service.subnetName ?? undefined
   const port = service.subnetPort ?? undefined
   // Only the default HTTPS port opens through the browser gateway; any other needs this machine's own name for it.
