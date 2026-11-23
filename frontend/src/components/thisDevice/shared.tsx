@@ -241,6 +241,8 @@ export const SettingRow: React.FC<{
         data-setting={setting.name}
         secondaryAction={
           <TextField
+            variant="filled"
+            hiddenLabel
             select
             size="small"
             value={setting.value}

@@ -355,6 +355,8 @@ const RouteRow: React.FC<{
 
   const control = picker ? (
     <TextField
+      variant="filled"
+      hiddenLabel
       select
       fullWidth
       value={state.value}
