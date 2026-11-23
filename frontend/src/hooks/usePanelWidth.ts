@@ -11,7 +11,7 @@ const PANEL_WIDTH_DEFAULTS: Record<string, { default: number; primary?: number; 
   files: { default: 450 },
   file: { default: 450 },
   settings: { default: 350 },
-  account: { default: 300 },
+  account: { default: 350 },
   organization: { default: 350 },
   products: { default: 450, primary: 330, secondary: 400 },
   scripts: { default: 550 },
