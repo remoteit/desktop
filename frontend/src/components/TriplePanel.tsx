@@ -70,7 +70,7 @@ export const TriplePanel: React.FC<Props> = ({ left, center, right, layout, head
         style={{ minWidth: dragPrimary.width, width: dragPrimary.width }}
         ref={primaryRef}
       >
-        {header && <Header panels={3} />}
+        {header && <Header panels={3} top />}
         {left}
       </Box>
       <Box sx={{ position: 'relative', height: '100%' }}>

@@ -26,9 +26,10 @@ import { Box } from '@mui/material'
 
 type Props = {
   panels?: number
+  top?: boolean
 }
 
-export const Header: React.FC<Props> = ({ panels = 1 }) => {
+export const Header: React.FC<Props> = ({ panels = 1, top }) => {
   const { t } = useTranslation()
   const { searched } = useSelector(selectDeviceModelAttributes)
   const permissions = useSelector(selectPermissions)
@@ -112,7 +113,7 @@ export const Header: React.FC<Props> = ({ panels = 1 }) => {
             />
           </Route>
         )}
-        {!isRootMenu && (
+        {!isRootMenu && !top && (
           <IconButton
             title={t('header.back', 'Back')}
             onClick={navigateUp}

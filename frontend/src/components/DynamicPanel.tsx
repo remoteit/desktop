@@ -3,6 +3,7 @@ import { useLocation, matchPath } from 'react-router-dom'
 import { TriplePanel } from './TriplePanel'
 import { DoublePanel } from './DoublePanel'
 import { Panel } from './Panel'
+import { REGEX_FIRST_PATH } from '../constants'
 
 // Layout by panel count:
 //   1 panel:  primary (at root) or secondary (deeper)
@@ -32,7 +33,8 @@ export const DynamicPanel: React.FC<Props> = ({ primary, secondary, tertiary, la
   }
 
   if (secondary) {
-    return <DoublePanel header={header} left={primary} right={secondary} layout={layout} />
+    const leftIsTop = !root || root === location.pathname.match(REGEX_FIRST_PATH)?.[0]
+    return <DoublePanel header={header} top={leftIsTop} left={primary} right={secondary} layout={layout} />
   }
 
   return <Panel layout={layout} header={header}>{primary}</Panel>
