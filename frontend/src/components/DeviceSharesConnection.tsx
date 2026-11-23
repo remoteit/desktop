@@ -38,11 +38,11 @@ export const DeviceSharesConnection: React.FC<{ device: IDevice }> = ({ device }
           <>
             {t('deviceShares.offNote', 'Other devices could send traffic out through this one.')}
             {manage && (
-              <Box component="span" sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, marginTop: 1 }}>
-                <Button size="small" variant="outlined" onClick={() => setMaking('exit')} data-make="exit">
+              <Box component="span" sx={{ display: 'flex', flexWrap: 'wrap', marginTop: 0.5, marginLeft: -1 }}>
+                <Button size="small" onClick={() => setMaking('exit')} data-make="exit">
                   {t('deviceRuns.setUpExit', 'Set up exit')}
                 </Button>
-                <Button size="small" variant="outlined" onClick={() => setMaking('proxy')} data-make="proxy">
+                <Button size="small" onClick={() => setMaking('proxy')} data-make="proxy">
                   {t('deviceRuns.setUpProxy', 'Set up proxy server')}
                 </Button>
               </Box>
