@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Box, Button, List, ListItem, ListItemText, Typography } from '@mui/material'
-import { getApplicationType } from '@common/applications'
+import { getApplicationType, isWebType } from '@common/applications'
 import { selectActiveAccountId } from '../selectors/accounts'
 import type { State } from '../store'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
@@ -100,11 +100,7 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   const to = `/devices/${service.device.id}/${service.id}/connect`
   const online = service.enabled && service.state === 'active'
   const type = useSelector((state: State) => state.applicationTypes.all.find(type => type.id === service.application))
-  const web =
-    getApplicationType(service.application).urlForm ||
-    type?.scheme === 'http' ||
-    type?.scheme === 'https' ||
-    (type?.proxy && !type.scheme)
+  const web = isWebType(getApplicationType(service.application), type)
   const name = web ? service.subnetName : undefined
   const port = service.subnetPort
   // Only the default HTTPS port can be opened through the browser gateway.

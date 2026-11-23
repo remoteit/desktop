@@ -62,13 +62,14 @@ export type MockBridgeOptions = {
 }
 
 // The owner's exits and the one the machine runs (none unless said); a join or a create puts it in one, joining, with
-// checks; refusal refuses every join and create as the cloud would; confirm false is the administrator saying no ('cancelled').
+// checks; refusal refuses every join and create as the cloud would, leaveRefusal a leave; confirm false is the administrator saying no ('cancelled').
 export type MockExitNode = {
   status?: ExitNodeStatus
   exits?: ExitNodeExit[]
   runs?: ExitNodeRuns | null
   checks?: ExitNodeCheck[]
   refusal?: string
+  leaveRefusal?: string
   confirm?: boolean
 }
 
@@ -116,6 +117,7 @@ const CAPABILITY_OF: { [method: string]: Capability | undefined } = {
   'exitNode.list': 'exitNode',
   'exitNode.join': 'exitNode',
   'exitNode.create': 'exitNode',
+  'exitNode.leave': 'exitNode',
 }
 
 export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
@@ -326,9 +328,17 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             return bridge.ssh
           case 'exitNode.list':
           case 'exitNode.join':
-          case 'exitNode.create': {
+          case 'exitNode.create':
+          case 'exitNode.leave': {
             const held = bridge.status.exitNode?.held
             if (held) throw new BridgeError('refused', `held: ${held}`)
+            if (method === 'exitNode.leave') {
+              const ran = bridge.exitNode.runs
+              if (options.exitNode?.leaveRefusal) throw new BridgeError('refused', options.exitNode.leaveRefusal)
+              if (!ran) throw new BridgeError('refused', 'it runs no exit')
+              bridge.exitNode.runs = null
+              return { left: { id: ran.id, name: ran.name } }
+            }
             if (method !== 'exitNode.list' && options.exitNode?.confirm === false)
               throw new BridgeError('cancelled', 'the administrator’s confirmation was cancelled')
             if (method === 'exitNode.list') {

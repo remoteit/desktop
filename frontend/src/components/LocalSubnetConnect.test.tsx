@@ -2,6 +2,7 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '@common/constants'
+import { initialize } from '@common/adaptor'
 import { getApplication } from '@common/applications'
 
 const openServiceURL = vi.fn()
@@ -45,6 +46,15 @@ vi.mock('./Icon', () => ({ Icon: () => null }))
 import { LocalSubnetConnect } from './LocalSubnetConnect'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
+
+// The cloud's types: ScreenView (48) is proxied as web with no scheme of its own; 4848 is proxied, and not web.
+const environment = { portal: true } as IEnvironment
+initialize({
+  getState: () => ({ environment, preferences: {} as IPreferences }),
+  getCloudData: typeId =>
+    ({ proxy: typeId === 7 || typeId === 48 || typeId === 4848, scheme: typeId === 7 ? 'http' : typeId === 4848 ? 'wss' : '' } as IApplicationType),
+  escapeRegex: string => string,
+})
 
 const NAME = 'homeassistant-evan.on.solo.remote.it'
 
@@ -161,6 +171,26 @@ describe('LocalSubnetConnect', () => {
     await render()
     expect(container.querySelector('[data-testid="copy"]')!.getAttribute('data-value')).toBe(`https://${NAME}:8123`)
     expect(container.textContent).toContain(`https://${NAME}:8123`)
+  })
+
+  // As the portal opens it on a Mac with the app: a saved connection from the proxy is public there.
+  it('launches ScreenView at the URL it copies, port included', async () => {
+    await render({
+      service: { ...service, typeID: 48, port: 8959, attributes: {} },
+      connection: { ...connection, typeID: 48 },
+    })
+    await click('launch')
+    expect(openServiceURL).toHaveBeenCalledExactlyOnceWith(`https://${NAME}:8959`)
+    expect(container.querySelector('[data-testid="copy"]')!.getAttribute('data-value')).toBe(`https://${NAME}:8959`)
+  })
+
+  it("keeps the port in a launch template: only the cloud proxy's address goes without one", async () => {
+    await render({
+      service: { ...service, typeID: 4848, port: 9000, attributes: { launchTemplate: 'https://[host]:[port]/app' } },
+      connection: { ...connection, typeID: 4848, launchType: 'URL' },
+    })
+    await click('launch')
+    expect(openServiceURL).toHaveBeenCalledExactlyOnceWith(`https://${NAME}:9000/app`)
   })
 
   it('copies a service that is not a web one as name:port', async () => {

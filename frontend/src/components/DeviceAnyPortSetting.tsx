@@ -38,12 +38,16 @@ export const DeviceAnyPortSetting: React.FC = () => {
 
   if (!enabled || !device || (!anyPort && ports === undefined)) return null
 
-  // Turned off by the administrator, it takes none, whatever was set.
-  const shown: Ports | null | undefined = anyPort
-    ? anyPort.control === 'off'
-      ? null
-      : { tcp: anyPort.value?.tcp ?? null, udp: anyPort.value?.udp ?? null }
-    : ports
+  if (anyPort?.control === 'off')
+    return (
+      <ListItemSetting
+        icon="lock"
+        label={t('deviceAnyPort.label', 'Any port access (TCP and UDP)')}
+        subLabel={settingNote(t, anyPort)}
+      />
+    )
+
+  const shown = anyPort ? { tcp: anyPort.value?.tcp ?? null, udp: anyPort.value?.udp ?? null } : ports
 
   const save = async (change: { tcp?: string; udp?: string }) => {
     if (anyPort) {

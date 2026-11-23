@@ -1,15 +1,15 @@
 import escapeRegex from 'escape-string-regexp'
 import i18n from './i18n'
 import { initialize } from '@common/adaptor'
-import { findType } from './models/applicationTypes'
 import { store } from './store'
 
 function getState() {
   return store.getState().backend
 }
 
+// The type itself or none: one the API does not list is not taken for another, which would make it web.
 function getCloudData(typeId?: number) {
-  return findType(store.getState().applicationTypes.all, typeId)
+  return store.getState().applicationTypes.all.find(type => type.id === typeId)
 }
 
 initialize({

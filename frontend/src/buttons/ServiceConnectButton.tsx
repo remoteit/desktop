@@ -45,7 +45,7 @@ export const ServiceConnectButton: React.FC = () => {
     other => other.id !== service?.id && other.enabled !== false && other.port === 443
   )
   const defaultHttp = !sharedHttpsInUse && service?.typeID === HTTP_TYPE && service.port === 80
-  const web = useApplication(service, connection).urlForm
+  const web = useApplication(service, connection).web
   const ssh = service?.typeID === 28
   const serving = useServiceApp(device, service)
   const byCertificate = opensTerminal(serving.app, serving.appService)

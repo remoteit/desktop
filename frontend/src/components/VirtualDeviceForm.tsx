@@ -23,7 +23,7 @@ import { FormField } from './FormField'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 import { useGateways } from '../hooks/useGateways'
-import { isAddressOnly } from '../helpers/virtualDeviceHelper'
+import { isAddressOnly, portOf, virtualServiceTypes } from '../helpers/virtualDeviceHelper'
 import { platforms } from '../platforms'
 import { PlatformChoice, allPlatformChoices, virtualPlatformChoices } from '../platforms/virtual'
 
@@ -96,10 +96,12 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
     return { list, all }
   }, [prefill.platform, platform, platformsLoaded])
 
+  const serviceTypes = virtualServiceTypes(applicationTypes)
+  const port = portOf(newPort)
+
   const addService = () => {
     const type = applicationTypes.find(a => a.id === newType)
-    if (!type) return
-    const port = Number(newPort) || type.port || 1
+    if (!type || !port) return
     setServices([...services, { name: type.name, application: type.id, port, checked: true }])
     setNewType('')
     setNewPort('')
@@ -263,23 +265,22 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
                 setNewPort(String(applicationTypes.find(a => a.id === id)?.port || ''))
               }}
             >
-              {applicationTypes
-                .filter(a => a.port)
-                .map(a => (
-                  <MenuItem key={a.id} value={a.id}>
-                    {a.name}
-                  </MenuItem>
-                ))}
+              {serviceTypes.map(a => (
+                <MenuItem key={a.id} value={a.id}>
+                  {a.name}
+                </MenuItem>
+              ))}
             </TextField>
             <TextField
               variant="filled"
               label={t('virtualDeviceForm.port', 'Port')}
               InputLabelProps={{ shrink: true }}
               value={newPort}
+              error={!!newPort && !port}
               sx={{ width: 100 }}
               onChange={event => setNewPort(event.target.value.replace(/\D/g, ''))}
             />
-            <Button disabled={newType === ''} onClick={addService}>
+            <Button disabled={newType === '' || !port} onClick={addService}>
               {t('virtualDeviceForm.addService', 'Add')}
             </Button>
           </Stack>

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from '@mui/material'
+import { directConnection } from '@common/applications'
 import useClipboard from '../hooks/useClipboard'
 import { openServiceURL } from '../services/browser'
 import { emit } from '../services/Controller'
@@ -52,18 +53,9 @@ export const LocalSubnetConnect: React.FC<Props> = ({
   const clipboard = useClipboard()
   const port = namePort || service?.port
   const ssh = service?.typeID === 28
-  // The service's connection with the name in place of the proxy's address: never saved, only launched from.
+  // The service's connection with the name in place of the proxy's address.
   const here = useMemo<IConnection | undefined>(
-    () =>
-      connection && {
-        ...connection,
-        host: local.name,
-        port,
-        connected: true,
-        ready: true,
-        enabled: true,
-        online: true,
-      },
+    () => connection && directConnection(connection, local.name, port),
     [connection, local.name, port]
   )
   const app = useApplication(service, here)
@@ -71,7 +63,7 @@ export const LocalSubnetConnect: React.FC<Props> = ({
   const [loopWarning, setLoopWarning] = useState(false)
   const [loopPort, setLoopPort] = useState<number>()
   const deviceSessions = useDeviceSessions()
-  const web = app.urlForm
+  const web = app.web
   const webPort = port === 80 && defaultHttp ? 443 : port || 443
 
   useEffect(() => {
