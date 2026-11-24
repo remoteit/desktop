@@ -47,6 +47,12 @@ async function read(accountId: string, row: RowKey) {
   listeners.forEach(listener => listener())
 }
 
+/** A row's networks as just read for it elsewhere (a network looked for among the other rows): kept as if read here. */
+export function primeDeviceNetworks(row: RowKey, networks: DeviceNetwork[]) {
+  byRow.set(row, networks)
+  listeners.forEach(listener => listener())
+}
+
 export const useDeviceNetworks = () => {
   const accountId = useSelector(selectActiveAccountId)
   const row = useSelector((state: State) => selectRow(state))

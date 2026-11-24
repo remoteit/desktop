@@ -40,6 +40,7 @@ import { getAllDevices } from '../selectors/devices'
 import { selectTags } from '../selectors/tags'
 import { useLabel } from '../hooks/useLabel'
 import { useDeviceNetworks } from '../hooks/useDeviceNetworks'
+import { useDeviceNetworkElsewhere } from '../hooks/useNetworkElsewhere'
 import { graphQLRemoveNetworkShare } from '../services/graphQLMutation'
 import { Link } from '../components/Link'
 import { LoadingMessage } from '../components/LoadingMessage'
@@ -84,7 +85,9 @@ export const DeviceNetworkPage: React.FC = () => {
   const accountId = useSelector(selectActiveAccountId)
 
   const network = Array.isArray(networks) ? networks.find(n => n.id === networkID) : undefined
-  if (networks === undefined) return <LoadingMessage />
+  // Opened at its address, and not this row's: looked for in the other rows here, whose row is then selected.
+  const elsewhere = useDeviceNetworkElsewhere(networkID, networks)
+  if (networks === undefined || (!network && elsewhere)) return <LoadingMessage />
   if (!network)
     return (
       <Container gutterBottom header={<Typography variant="h1">{t('deviceNetwork.title', 'Network')}</Typography>}>

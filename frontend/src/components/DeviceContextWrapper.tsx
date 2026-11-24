@@ -1,3 +1,4 @@
+import { useStoredNetworkElsewhere } from '../hooks/useNetworkElsewhere'
 import React from 'react'
 import { selectDeviceService } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
@@ -29,6 +30,9 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   const { fetching, initialized } = useSelector(selectDeviceModelAttributes)
 
   const waiting = fetching || !initialized
+  // A network's page opened at its address, the network not this row's: looked for in the other rows here, whose
+  // row is then selected.
+  useStoredNetworkElsewhere(networkID)
 
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
