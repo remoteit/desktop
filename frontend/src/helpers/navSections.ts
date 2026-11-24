@@ -64,8 +64,8 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   devices: {
     label: t => t('nav.devices', 'Devices'),
-    navLabel: t => t('nav.devicesAll', 'All devices'),
-    icon: 'router',
+    navLabel: t => t('nav.devicesAll', 'All'),
+    icon: 'list-ul',
     to: '/devices',
     segments: ['devices', 'add'],
     roots: ['/devices', '/devices/select'],
@@ -89,8 +89,8 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   networks: {
     label: t => t('nav.networks', 'Networks'),
-    navLabel: t => t('nav.networksAll', 'All networks'),
-    icon: 'chart-network',
+    navLabel: t => t('nav.networksAll', 'All'),
+    icon: 'rectangle-list',
     to: '/networks',
     segments: ['networks'],
     roots: ['/networks'],
@@ -122,7 +122,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   products: {
     label: t => t('nav.products', 'Products'),
-    icon: 'conveyor-belt-boxes',
+    icon: 'box',
     to: '/products',
     segments: ['products'],
     roots: ['/products', '/products/select'],
@@ -146,7 +146,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   organization: {
     label: t => t('nav.organization', 'Organization'),
-    icon: 'industry-alt',
+    icon: 'users',
     to: '/organization',
     segments: ['organization', 'organization-empty'],
     roots: ['/organization', '/organization-empty'],
@@ -176,7 +176,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   agent: {
     label: t => t('nav.agent', 'Agent'),
-    icon: 'remote-ai',
+    icon: 'message-bot',
     segments: [],
     roots: [],
     gate: 'agent',

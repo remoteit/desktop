@@ -167,17 +167,17 @@ describe('SidebarNav', () => {
 
   it('opens only the section you are in, its pages beneath it', () => {
     render({ pathname: '/exits', deviceSessions: true })
-    expect(pages()).toEqual(['All networks', 'Exits', 'Public addresses', 'Proxy servers'])
+    expect(pages()).toEqual(['All', 'Exits', 'Public addresses', 'Proxy servers'])
     render({ pathname: '/scripts' })
     expect(pages()).toEqual(['Products', 'Scripts', 'Apps'])
     render({ pathname: '/devices/abc/details', services: true })
-    expect(pages()).toEqual(['All devices', 'Connections', 'Services'])
+    expect(pages()).toEqual(['All', 'Connections', 'Services'])
   })
 
   it("shows each page's icon, the pages set off by a line under their section", () => {
     render({ pathname: '/exits', deviceSessions: true })
     const icons = () => [...container.querySelectorAll('[data-page] [data-icon]')].map(i => i.getAttribute('data-icon'))
-    expect(icons()).toEqual(['chart-network', 'door-open', 'globe', 'server'])
+    expect(icons()).toEqual(['rectangle-list', 'door-open', 'globe', 'server'])
     expect(container.querySelectorAll('[data-quote="listIcon"] [data-page]')).toHaveLength(4)
     render({ pathname: '/connect-ai' })
     expect(container.querySelector('[data-quote]')).toBeNull()
@@ -196,15 +196,15 @@ describe('SidebarNav', () => {
     const selected = () => [...container.querySelectorAll('[data-selected="true"]')].map(i => i.textContent)
     render({ pathname: '/exits/e1', deviceSessions: true })
     expect(page('Exits').getAttribute('aria-current')).toBe('page')
-    expect(page('All networks').getAttribute('aria-current')).toBeNull()
+    expect(page('All').getAttribute('aria-current')).toBeNull()
     expect(selected()).toEqual(['Exits'])
     render({ pathname: '/add' })
-    expect(page('All devices').getAttribute('aria-current')).toBe('page')
+    expect(page('All').getAttribute('aria-current')).toBe('page')
   })
 
   it('links each page to its address, and Connections shows how many are open', () => {
     render({ pathname: '/connections', active: 2 })
-    expect(page('All devices').getAttribute('data-to')).toBe('/devices')
+    expect(page('All').getAttribute('data-to')).toBe('/devices')
     expect(page('Connections').getAttribute('data-to')).toBe('/connections')
     expect(page('Connections').querySelector('[data-chip]')?.getAttribute('data-chip')).toBe('2')
   })
