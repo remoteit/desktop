@@ -4,10 +4,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // The list read again where it is — another sign-in comes to serve the account (hooks/useReadAgain) — keeps what the
 // person had ticked, where it is still listed; and one that cannot be read then shows none of what was read before.
-const { fetchDisabled } = vi.hoisted(() => ({ fetchDisabled: vi.fn() }))
+const { fetchDisabled, restore } = vi.hoisted(() => ({ fetchDisabled: vi.fn(), restore: vi.fn() }))
 vi.mock('react-redux', () => ({
   useSelector: (select: any) => select({ ui: { destroying: false } }),
-  useDispatch: () => ({ devices: { restore: vi.fn() } }),
+  useDispatch: () => ({ devices: { restore } }),
 }))
 vi.mock('../store', () => ({}))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'ACME' }))
@@ -24,16 +24,21 @@ vi.mock('../hooks/useDeviceDisable', () => ({
 vi.mock('../components/DisabledDeviceNotice', () => ({ disabledDescription: () => '' }))
 vi.mock('../components/DecommissionDialog', () => ({ DecommissionDialog: () => null }))
 vi.mock('../components/ListItemCheckbox', () => ({
-  ListItemCheckbox: ({ checked, onClick, label }: any) => (
-    <label data-row>
-      <input type="checkbox" checked={checked} onChange={event => onClick(event.target.checked)} />
-      {label}
-    </label>
+  ListItemCheckbox: ({ checked, onClick, label, children }: any) => (
+    <div>
+      <label data-row>
+        <input type="checkbox" checked={checked} onChange={event => onClick(event.target.checked)} />
+        {label}
+      </label>
+      {children}
+    </div>
   ),
 }))
 vi.mock('../components/LoadingMessage', () => ({ LoadingMessage: () => <div data-loading /> }))
 vi.mock('../components/TargetPlatform', () => ({ TargetPlatform: () => null }))
-vi.mock('../buttons/IconButton', () => ({ IconButton: () => null }))
+vi.mock('../buttons/IconButton', () => ({
+  IconButton: ({ title, onClick }: any) => <button data-action={title} onClick={onClick} />,
+}))
 vi.mock('../components/Container', () => ({
   Container: ({ header, children }: any) => (
     <div>
@@ -105,5 +110,14 @@ describe('the disabled devices, read again as another sign-in', () => {
     await act(async () => forgetAccountCaches(['ACME']))
     expect(rows(container)).toEqual([])
     expect(container.querySelector('[data-notice]')!.textContent).toBe('Disabled devices could not be read.')
+  })
+
+  // The rows are the page's own, in no stored list: a restore says whose they are.
+  it('restore a row as the account the list was read for', async () => {
+    fetchDisabled.mockResolvedValue(listed('pi'))
+    restore.mockReset().mockResolvedValue(false)
+    const container = await open()
+    await act(async () => container.querySelector<HTMLButtonElement>('[data-action="Restore"]')!.click())
+    expect(restore).toHaveBeenCalledWith({ ids: ['pi'], accountId: 'ACME' })
   })
 })

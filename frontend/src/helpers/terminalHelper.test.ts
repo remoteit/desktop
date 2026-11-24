@@ -65,3 +65,38 @@ describe('openTerminal', () => {
     open.mockRestore()
   })
 })
+
+/* In this page's own app the terminal's session is the browser's one client's, which is the page's own person's. A
+   service only another sign-in reaches is not opened in it — said, not a tab that cannot connect. */
+describe('a service another sign-in serves', () => {
+  it('is not opened in this browser’s terminal; from the desktop app it opens in the web portal as ever', async () => {
+    const { readStateWith } = await import('../selectors/signIns')
+    readStateWith(
+      () =>
+        ({
+          auth: { user: { id: 'me' } },
+          accounts: {
+            membership: [],
+            signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+          },
+          devices: {
+            me: { all: [{ id: 'd-me', services: [{ id: 's-me' }] }] },
+            work: { all: [{ id: 'd-work', services: [{ id: 's-work' }] }] },
+          },
+        } as any)
+    )
+    const { terminalReaches } = await import('./terminalHelper')
+    const opened = vi.spyOn(window, 'open').mockReturnValue(null)
+    env.isNative = false
+    expect(openTerminal({ name: 'pi-acme.on.remote.it', port: 22, service: 's-work' })).toBe('OTHER_SIGN_IN')
+    expect(opened).not.toHaveBeenCalled()
+    expect(terminalReaches('s-work')).toBe(false)
+    expect(openTerminal({ name: 'mac-me.on.remote.it', port: 22, service: 's-me' })).toBe(true)
+    expect(opened).toHaveBeenCalledTimes(1)
+    env.isNative = true
+    expect(terminalReaches('s-work')).toBe(true)
+    env.isNative = false
+    readStateWith(() => ({} as any))
+    opened.mockRestore()
+  })
+})

@@ -1,5 +1,6 @@
 import { post } from './post'
 import { graphQLBasicRequest } from './graphQL'
+import { noteAccountOf } from '../selectors/signIns'
 
 /* Disabled devices (graphql-api docs/DEVICE-DISABLE.md). "Delete" becomes Disable: the device stops serving at once and
    can be restored at any time. Decommission, offered only on a disabled device, is the final step.
@@ -105,22 +106,28 @@ export async function graphQLDisableDevices(ids: string[], keepHosted?: boolean)
   )
 }
 
-export async function graphQLRestoreDevices(ids: string[]) {
+// `accountId`, here and to decommission: the account whose list the devices were read in — a disabled device is in no
+// stored list, so where the page knows the account it says so, and the request is made as the sign-in serving it.
+export async function graphQLRestoreDevices(ids: string[], accountId?: string) {
   return await graphQLBasicRequest(
     ` mutation RestoreDevices($ids: [String!]!) {
         restoreDevices(ids: $ids)
       }`,
-    { ids }
+    { ids },
+    false,
+    accountId ? { account: accountId } : undefined
   )
 }
 
 // graphql asks only that `confirm` be true; what the person must type to get here is the portal's (DecommissionDialog).
-export async function graphQLDecommissionDevices(ids: string[]) {
+export async function graphQLDecommissionDevices(ids: string[], accountId?: string) {
   return await graphQLBasicRequest(
     ` mutation DecommissionDevices($ids: [String!]!) {
         decommissionDevices(ids: $ids, confirm: true)
       }`,
-    { ids }
+    { ids },
+    false,
+    accountId ? { account: accountId } : undefined
   )
 }
 
@@ -129,7 +136,7 @@ export const DISABLED_PAGE_SIZE = 100
 // An account's disabled devices — those the reader may manage: what the Disabled view lists. fields:
 // deviceDisableFields(), which say who disabled each where the API does.
 export async function graphQLFetchDisabledDevices(accountId: string, from = 0, fields = FIELDS) {
-  return await graphQLBasicRequest(
+  const response = await graphQLBasicRequest(
     ` query DisabledDevices($accountId: String, $size: Int, $from: Int) {
         login {
           id
@@ -150,4 +157,12 @@ export async function graphQLFetchDisabledDevices(accountId: string, from = 0, f
       }`,
     { accountId, size: DISABLED_PAGE_SIZE, from }
   )
+  // Disabled devices are in no stored list: whatever is asked of one by its id alone afterwards (its page, a restore)
+  // is asked as the sign-in serving the account it was listed for.
+  if (response !== 'ERROR')
+    noteAccountOf(
+      accountId,
+      (response.data?.data?.login?.account?.devices?.items || []).map((device: { id: string }) => device.id)
+    )
+  return response
 }

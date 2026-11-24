@@ -852,10 +852,12 @@ export default createModel<RootModel>()({
     },
 
     // The list is read again: a restored device takes its place in it, and in its total, by graphql's sort.
-    async restore(deviceIds: string[], state) {
+    // `accountId`: the account whose disabled devices they were listed among, where the caller knows it.
+    async restore(devices: string[] | { ids: string[]; accountId?: string }, state) {
+      const { ids: deviceIds, accountId } = Array.isArray(devices) ? { ids: devices, accountId: undefined } : devices
       if (!deviceIds.length) return false
       dispatch.ui.set({ destroying: true })
-      const result = await graphQLRestoreDevices(deviceIds)
+      const result = await graphQLRestoreDevices(deviceIds, ...(accountId ? [accountId] : []))
       if (result !== 'ERROR') {
         for (const id of deviceIds)
           for (const accountId in state.devices) {
@@ -887,10 +889,11 @@ export default createModel<RootModel>()({
     },
 
     // Called once the person has typed the confirmation (DecommissionDialog); graphql asks only for confirm: true.
-    async decommission(deviceIds: string[]) {
+    async decommission(devices: string[] | { ids: string[]; accountId?: string }) {
+      const { ids: deviceIds, accountId } = Array.isArray(devices) ? { ids: devices, accountId: undefined } : devices
       if (!deviceIds.length) return false
       dispatch.ui.set({ destroying: true })
-      const result = await graphQLDecommissionDevices(deviceIds)
+      const result = await graphQLDecommissionDevices(deviceIds, ...(accountId ? [accountId] : []))
       if (result !== 'ERROR') {
         await dispatch.devices.cleanup(deviceIds)
         dispatch.ui.set({
@@ -917,8 +920,11 @@ export default createModel<RootModel>()({
       if (!ids.length) return
       const accountId = selectDevice(state, undefined, ids[0])?.accountId || selectActiveAccountId(state)
       dispatch.ui.set({ destroying: true })
+      // A copy is disabled, so in no stored list: asked as the sign-in serving the account it is a copy in.
       const refused =
-        ids.length === 1 ? await graphQLKeepDuplicate(ids[0], fromOriginal) : await graphQLKeepDuplicates(ids)
+        ids.length === 1
+          ? await graphQLKeepDuplicate(ids[0], fromOriginal, accountId)
+          : await graphQLKeepDuplicates(ids, accountId)
       if (refused === undefined) {
         if (ids.length === 1) await dispatch.devices.fetchSingleFull({ id: ids[0], accountId, silent: true })
         await dispatch.devices.fetchList()
@@ -940,7 +946,7 @@ export default createModel<RootModel>()({
     async makeOriginal({ id, originalId }: { id: string; originalId?: string }, state): Promise<string | undefined> {
       const accountId = selectDevice(state, undefined, id)?.accountId || selectActiveAccountId(state)
       dispatch.ui.set({ destroying: true })
-      const refused = await graphQLMakeOriginal(id)
+      const refused = await graphQLMakeOriginal(id, accountId)
       if (refused === undefined) {
         await dispatch.devices.fetchSingleFull({ id, accountId, silent: true })
         if (originalId) await dispatch.devices.fetchSingleFull({ id: originalId, accountId, silent: true })

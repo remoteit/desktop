@@ -2,7 +2,7 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { memberPolicyFields } from './productPolicy'
-import type { RequestFor } from '../selectors/signIns'
+import { RequestFor, noteAccountOf } from '../selectors/signIns'
 
 /* Networks of devices (presence-server docs/device-principals.md §2, §8): each network's devices — initiators, targets
    or both, and what a target exposes (the services the network lists, all of them, any port of its own) — its tag
@@ -155,7 +155,14 @@ export async function graphQLDeviceNetworks(
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, 'kind')) return UNSUPPORTED
   if (errors) return 'ERROR'
-  return response.data?.data?.login?.account?.networks ?? []
+  const networks: DeviceNetwork[] = response.data?.data?.login?.account?.networks ?? []
+  // These networks are kept by a hook, in no stored list: what is asked of one, or of a rule of its, by id alone is
+  // asked as the sign-in serving the account they were read for.
+  noteAccountOf(
+    accountId,
+    networks.flatMap(network => [network.id, ...(network.deviceRules || []).map(rule => rule.id)])
+  )
+  return networks
 }
 
 // A device you manage onto a network you manage — or a change of its role or what it exposes there.
@@ -283,7 +290,12 @@ export async function graphQLTaggedInto(accountId: string): Promise<TaggedInto[]
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, 'taggedInto')) return UNSUPPORTED
   if (errors) return 'ERROR'
-  return response.data?.data?.login?.account?.taggedInto ?? []
+  const rules: TaggedInto[] = response.data?.data?.login?.account?.taggedInto ?? []
+  noteAccountOf(
+    accountId,
+    rules.map(rule => rule.id)
+  )
+  return rules
 }
 
 // An account's tags on a network — the owner's, or an organization's it is shared with — which decide which of its

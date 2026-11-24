@@ -3,6 +3,7 @@ import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from 
 import type { SettingState } from './graphQLDeviceSettings'
 import { appPolicyFields, settingLockOf, SettingLock } from './productPolicy'
 import { AppChange, AppHeldBack, AppSettingChoice, choiceOf, refused } from './deviceAppsShared'
+import type { RequestFor } from '../selectors/signIns'
 
 export { NEEDS_NEWER, needsNewer, refused } from './deviceAppsShared'
 export type { AppChange, AppHeldBack, AppHeldBackReason, Refused } from './deviceAppsShared'
@@ -365,11 +366,13 @@ async function appMutation(
   declaration: string,
   args: string,
   variables: ILookup<any>,
-  selection?: string
+  selection?: string,
+  requestFor?: RequestFor
 ): Promise<AppChange<any>> {
   const result = await graphQLRequestWithReason(
     `mutation ${name[0].toUpperCase()}${name.slice(1)}(${declaration}) { ${name}(${args})${selection ? ` { ${selection} }` : ''} }`,
-    variables
+    variables,
+    requestFor
   )
   if (result === 'ERROR') return { reason: '' }
   if ('reason' in result) return result
@@ -484,14 +487,17 @@ export async function graphQLAddDeviceApps(
 export async function graphQLSetDeviceAppsRelease(
   app: string,
   deviceIds: string[],
-  { channel, version, consentRoot }: AppRelease
+  { channel, version, consentRoot }: AppRelease,
+  // The account whose devices they are listed as, on the app's page: they may be in no stored list.
+  accountId?: string
 ): Promise<AppChange<DeviceAppChange[]>> {
   const answer = await appMutation(
     'setDeviceAppsRelease',
     '$app: String!, $deviceIds: [String!]!, $channel: String, $version: String, $consentRoot: Boolean',
     'app: $app, deviceIds: $deviceIds, channel: $channel, version: $version, consentRoot: $consentRoot',
     given({ app, deviceIds, channel, version, consentRoot }),
-    CHANGE_FIELDS
+    CHANGE_FIELDS,
+    accountId ? { orAccount: accountId } : undefined
   )
   return refused(answer) ? answer : changesOf(answer)
 }

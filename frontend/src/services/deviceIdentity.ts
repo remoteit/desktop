@@ -3,6 +3,7 @@ import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
 import { SchemaField, TypeRef, buildCall, named } from './graphQLSchema'
 import { deviceDisableFields, disabledAdaptor } from './deviceDisable'
 import { accountCache } from './accountCaches'
+import { noteAccountOf } from '../selectors/signIns'
 
 /* A device's identity (graphql-api docs/PROXY-GROUPS.md §11, "Wave 3: device identity"): the join keys that bring a
    device that starts fresh at every boot back as itself, a device added ahead of its first boot, and duplicates — two
@@ -279,12 +280,17 @@ type Outcome<T = unknown> = { ok: true; data: T } | { ok: false; reason: string 
 
 // One of the identity mutations, as the API declares it. A refusal comes back in graphql's words, for the page to show;
 // '' where none was said.
-async function identityMutation(name: Mutation, variables: ILookup<any>): Promise<Outcome<any>> {
+// `orAccount`: the account to ask as where no stored list holds the device named — a copy, which is disabled.
+async function identityMutation(name: Mutation, variables: ILookup<any>, orAccount?: string): Promise<Outcome<any>> {
   const served = await deviceIdentity()
   const field = served.mutations[name]
   if (!field) return { ok: false, reason: '' }
   const request = buildCall('mutation', field, variables, served.selections[name] || '__typename')
-  const response = await graphQLRequestWithReason(request.query, request.variables)
+  const response = await graphQLRequestWithReason(
+    request.query,
+    request.variables,
+    orAccount ? { orAccount } : undefined
+  )
   if (response === 'ERROR') return { ok: false, reason: '' }
   if ('reason' in response) return { ok: false, reason: response.reason }
   return { ok: true, data: response.data?.data?.[name] }
@@ -372,17 +378,17 @@ export async function graphQLAddDevice(input: {
 
 // A copy kept as a new device: enabled, starting from its original's setup (services, tags, product) unless
 // fromOriginal is false.
-export async function graphQLKeepDuplicate(deviceId: string, fromOriginal: boolean) {
-  return failed(await identityMutation('keepDuplicate', { deviceId, fromOriginal }))
+export async function graphQLKeepDuplicate(deviceId: string, fromOriginal: boolean, accountId?: string) {
+  return failed(await identityMutation('keepDuplicate', { deviceId, fromOriginal }, accountId))
 }
 
-export async function graphQLKeepDuplicates(deviceIds: string[]) {
-  return failed(await identityMutation('keepDuplicates', { deviceIds }))
+export async function graphQLKeepDuplicates(deviceIds: string[], accountId?: string) {
+  return failed(await identityMutation('keepDuplicates', { deviceIds }, accountId))
 }
 
 // The copy's machine becomes the original and the original's the copy, disabled.
-export async function graphQLMakeOriginal(deviceId: string) {
-  return failed(await identityMutation('makeOriginal', { deviceId }))
+export async function graphQLMakeOriginal(deviceId: string, accountId?: string) {
+  return failed(await identityMutation('makeOriginal', { deviceId }, accountId))
 }
 
 // For a device whose join key is on two machines: a new device with its setup and a fresh device join key, shown once,
@@ -486,6 +492,11 @@ export async function graphQLFetchDuplicateCopies(accountId: string): Promise<Du
     }
     if (from + items.length >= (devices?.total || 0) || !items.length) break
   }
+  // Copies are disabled, so in no stored list: kept, made the original or removed as the sign-in serving the account.
+  noteAccountOf(
+    accountId,
+    found.map(copy => copy.id)
+  )
   return found
 }
 

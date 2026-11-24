@@ -88,7 +88,7 @@ export const DisabledDevicesPage: React.FC = () => {
     )
 
   const restore = async (ids: string[]) => {
-    if (await dispatch.devices.restore(ids)) load()
+    if (await dispatch.devices.restore({ ids, accountId })) load()
   }
 
   const byId = (ids: string[]) => rows.filter(r => ids.includes(r.id))
@@ -234,6 +234,7 @@ export const DisabledDevicesPage: React.FC = () => {
       <DecommissionDialog
         open={!!decommission.length}
         devices={decommission}
+        accountId={accountId}
         onClose={() => setDecommission([])}
         onDone={() => load()}
       />

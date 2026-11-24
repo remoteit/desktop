@@ -19,7 +19,7 @@ vi.mock('../services/productPolicy', async importOriginal => ({
 vi.mock('../hooks/useDeviceSettings', () => ({ useDeviceSettings: () => ({ setting: () => undefined }) }))
 // The console's own words come with its part of the device page, which reaches for the local subnet and the terminal.
 vi.mock('../hooks/useLocalSubnetName', () => ({ useSubnetName: () => undefined }))
-vi.mock('../helpers/terminalHelper', () => ({ openTerminal: vi.fn() }))
+vi.mock('../helpers/terminalHelper', () => ({ openTerminal: vi.fn(), terminalReaches: () => true }))
 vi.mock('./SelectSetting', () => ({
   SelectSetting: ({ label, value, values, disabled, helperText, onChange, ...props }: any) => (
     <div

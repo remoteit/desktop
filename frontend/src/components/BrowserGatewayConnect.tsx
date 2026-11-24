@@ -35,7 +35,10 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name, service, terminal
 
   const open = async () => {
     // An SSH service: a terminal in this app, its session through the browser's client.
-    if (terminal) return openTerminal({ name, port: terminal.port, title: terminal.title, service: terminal.service })
+    if (terminal)
+      return setOpened(
+        openTerminal({ name, port: terminal.port, title: terminal.title, service: terminal.service ?? service })
+      )
     setOpening(true)
     setOpened(await openThroughGateway(name, service))
     setOpening(false)

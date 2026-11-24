@@ -184,7 +184,8 @@ export const AppPage: React.FC = () => {
     const answer = await graphQLSetDeviceAppsRelease(
       app.id,
       chosen.map(d => d.deviceId),
-      values.consentRoot ? values : { version: values.version }
+      values.consentRoot ? values : { version: values.version },
+      ...(account ? [account] : [])
     )
     setBusy(false)
     if (refused(answer)) return setRefusal(answer.reason || t('apps.notChanged', 'The app was not changed.'))
