@@ -54,6 +54,7 @@ import {
   deviceMatchesFilters,
 } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
+import { noteAccountOf } from '../selectors/signIns'
 import { selectLimit } from '../selectors/organizations'
 import { Duration } from 'luxon'
 import { AxiosResponse } from 'axios'
@@ -489,8 +490,9 @@ export default createModel<RootModel>()({
 
     // `ports`, a multi-port service's list, only from the service form where the account has them
     // (services/multiPortServices): a caller changing the port alone leaves the rest of the list as it is.
-    async cloudAddService({ form, deviceId, ports }: { form: IService; deviceId: string; ports?: string[] }) {
+    async cloudAddService({ form, deviceId, ports }: { form: IService; deviceId: string; ports?: string[] }, state) {
       if (!form.host || !form.port) return
+      const accountId = selectDevice(state, undefined, deviceId)?.accountId
       const result = await graphQLAddService({
         deviceId,
         name: form.name,
@@ -504,12 +506,14 @@ export default createModel<RootModel>()({
         const id = result?.data?.data?.addService?.id
         console.log('CLOUD ADD SERVICE', { id, form })
         if (id) {
-          await graphQLSetAttributes(form.attributes, id)
+          // The new service is in no list yet to say whose it is: its device's sign-in made it, and sets what follows.
+          noteAccountOf(accountId, [id])
+          await graphQLSetAttributes(form.attributes, id, { about: [deviceId] })
           dispatch.devices.addService({ deviceId, service: { ...form, ports, id } })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
           // The form is not the service: read the device for its state — online already when its daemon took it up
           // before the service was here to be marked — and its name in device subnets.
-          dispatch.devices.fetchSingleFull({ id: deviceId, hidden: true, silent: true })
+          dispatch.devices.fetchSingleFull({ id: deviceId, hidden: true, silent: true, accountId })
           requestServiceSessionInfo(deviceId, id)
         }
         // ScreenView is an app now (remoteit.screenview, turned on in the device's Apps): adding a service never installs
@@ -1137,6 +1141,14 @@ export default createModel<RootModel>()({
         await dispatch.accounts.removeDevice(id)
       }
       await dispatch.connections.fetch()
+    },
+
+    /** Devices that `accountIds` lost (unshared from them): out of their lists alone while another account here holds
+     *  them still — their connections and networks are that account's too — and cleaned up as gone when none does. */
+    async cleanupFor({ ids, accountIds }: { ids: string[]; accountIds: string[] }) {
+      for (const id of ids) {
+        if (!(await dispatch.accounts.removeDeviceFrom({ id, accountIds }))) await dispatch.devices.cleanup([id])
+      }
     },
 
     async cleanupService(serviceId: string) {

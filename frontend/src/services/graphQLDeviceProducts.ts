@@ -164,12 +164,15 @@ export async function graphQLAddDeviceProductService(
   )
 }
 
-export async function graphQLRemoveDeviceProductService(id: string) {
+// `productId`: a product's service is in no stored list by its own id, so its product says whose request it is.
+export async function graphQLRemoveDeviceProductService(id: string, productId: string) {
   return await graphQLBasicRequest(
     ` mutation RemoveDeviceProductService($id: ID!) {
         removeDeviceProductService(id: $id)
       }`,
-    { id }
+    { id },
+    false,
+    { about: [productId] }
   )
 }
 

@@ -1,4 +1,6 @@
 import { post } from './post'
+import { store } from '../store'
+import { requestSignIn } from '../selectors/signIns'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { Upkeep, withoutDeviceSessions } from './graphQLDaemon'
 
@@ -83,12 +85,20 @@ export function requestServiceSessionInfo(deviceId: string, serviceId: string) {
   timer ??= setTimeout(flush)
 }
 
+// One query per sign-in, each about the devices it serves: the ids are in the query's own text, not its variables, so
+// whose request it is is said apart.
 async function flush() {
   const ids = [...wanted]
   wanted = new Set()
   timer = undefined
   if (!ids.length) return
+  const state = store.getState()
+  const bySignIn: ILookup<string[]> = {}
+  ids.forEach(id => (bySignIn[requestSignIn(state, { about: [id] }) || ''] ??= []).push(id))
+  await Promise.all(Object.entries(bySignIn).map(([sub, own]) => read(own, sub)))
+}
 
+async function read(ids: string[], sub: string) {
   const upkeep = `${withUpkeep ? ' updatedBy howToUpdate available' : ''}${
     withSupport ? ' supported { supported minimum kind message }' : ''
   }`
@@ -97,7 +107,7 @@ async function flush() {
   )}) { id subnetName actsFor { email } agent { running package { version format } update { version state detail }${upkeep} } services { id subnetName${
     withServiceNames ? ` subnetOwnName subnetPort${withNamePorts ? ' subnetPorts subnetDefaultLabel' : ''}` : ''
   } } } } }`
-  const response = await post({ query })
+  const response = await post({ query }, '', false, false, { sub })
   if (response !== 'ERROR') {
     if (withUpkeep && withoutDeviceSessions(response.data?.errors, 'howToUpdate')) {
       withUpkeep = false

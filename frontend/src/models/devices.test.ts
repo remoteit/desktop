@@ -10,7 +10,11 @@ const {
   graphQLKeepDuplicates,
   graphQLMakeOriginal,
   requestDuplicateCopies,
+  graphQLAddService,
+  graphQLSetAttributes,
 } = vi.hoisted(() => ({
+  graphQLAddService: vi.fn(),
+  graphQLSetAttributes: vi.fn(),
   graphQLFetchDeviceList: vi.fn(),
   graphQLDeviceAdaptor: vi.fn(),
   graphQLDisableDevices: vi.fn(),
@@ -33,7 +37,7 @@ vi.mock('../services/deviceIdentity', () => ({
   graphQLMakeOriginal,
   requestDuplicateCopies,
 }))
-vi.mock('../services/graphQLMutation', () => ({}))
+vi.mock('../services/graphQLMutation', () => ({ graphQLAddService, graphQLSetAttributes }))
 vi.mock('../services/graphQLRequest', () => ({}))
 vi.mock('../services/graphQLVirtualDevices', () => ({}))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'acct' }))
@@ -47,6 +51,7 @@ vi.mock('../selectors/organizations', () => ({}))
 vi.mock('../store', () => ({ store: {} }))
 
 import devices, { defaultState } from './devices'
+import { requestSignIn, resetNotedAccounts } from '../selectors/signIns'
 
 const stateWith = (over: Partial<typeof defaultState> = {}) => ({ devices: { acct: { ...defaultState, ...over } } })
 
@@ -256,5 +261,52 @@ describe('duplicates (graphql-api docs/PROXY-GROUPS.md §11, wave 3)', () => {
     expect(graphQLMakeOriginal).toHaveBeenCalledWith('Y1')
     expect(dispatch.devices.fetchSingleFull.mock.calls.map((c: any) => c[0].id)).toEqual(['Y1', 'X1'])
     expect(requestDuplicateCopies).toHaveBeenCalledWith('org', true)
+  })
+})
+
+/* Unshared from some of the accounts here (services/cloudController DEVICE_SHARE): theirs to lose, not everyone's. */
+describe('a device some accounts here lost', () => {
+  beforeEach(() => {
+    dispatch.devices.cleanup = vi.fn()
+    dispatch.accounts.removeDeviceFrom = vi.fn()
+  })
+
+  it('leaves their lists alone while another account here holds it: its connections and networks stay', async () => {
+    dispatch.accounts.removeDeviceFrom.mockResolvedValue(true)
+    await effects().cleanupFor({ ids: ['D1'], accountIds: ['work'] })
+    expect(dispatch.accounts.removeDeviceFrom).toHaveBeenCalledWith({ id: 'D1', accountIds: ['work'] })
+    expect(dispatch.devices.cleanup).not.toHaveBeenCalled()
+  })
+
+  it('is cleaned up as gone when no other account here holds it', async () => {
+    dispatch.accounts.removeDeviceFrom.mockResolvedValue(false)
+    await effects().cleanupFor({ ids: ['D1'], accountIds: ['work'] })
+    expect(dispatch.devices.cleanup).toHaveBeenCalledWith(['D1'])
+  })
+})
+
+/* A device of another sign-in's account: its new service is in no list until the device is read again, so what is
+   asked next by the service's id alone would go as the page's own person. */
+describe('a service added to a device', () => {
+  it('has its attributes set, and its device read again, as the device’s own account', async () => {
+    resetNotedAccounts()
+    dispatch.devices.addService = vi.fn()
+    dispatch.devices.fetchSingleFull = vi.fn()
+    dispatch.ui = { set: vi.fn() }
+    graphQLAddService.mockResolvedValue({ data: { data: { addService: { id: 'S-NEW' } } } })
+    const form = { name: 'ssh', typeID: 28, host: '127.0.0.1', port: 22, enabled: true, attributes: { route: 'p2p' } }
+    const state = stateWith({ all: [{ id: 'D1', accountId: 'work', services: [] }] as any })
+    await effects().cloudAddService({ form, deviceId: 'D1' }, state)
+    expect(graphQLSetAttributes).toHaveBeenCalledWith({ route: 'p2p' }, 'S-NEW', { about: ['D1'] })
+    expect(dispatch.devices.fetchSingleFull).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'D1', accountId: 'work' })
+    )
+    // Whatever else names the new service alone, before it is read, goes the same way.
+    const signedIn: any = {
+      auth: { user: { id: 'me' } },
+      accounts: { membership: [], signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: '', membership: [] } } },
+    }
+    expect(requestSignIn(signedIn, undefined, { serviceId: 'S-NEW' })).toBe('sub-work')
+    resetNotedAccounts()
   })
 })

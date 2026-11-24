@@ -1,13 +1,21 @@
 import { addConnectionProps } from '../models/networks'
 import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
 import { store } from '../store'
+import type { RequestFor } from '../selectors/signIns'
 
-export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
+// `requestFor`: whose request it is, where the service is too new to be in the store and say so itself.
+export async function graphQLSetAttributes(
+  attributes: ILookup<string | number | undefined>,
+  serviceId?: String,
+  requestFor?: RequestFor
+) {
   return await graphQLBasicRequest(
     ` mutation SetAttributes($attributes: Object!, $serviceId: String) {
         setAttributes(attributes: $attributes, serviceId: $serviceId)
       }`,
-    { attributes: { $remoteit: attributes }, serviceId }
+    { attributes: { $remoteit: attributes }, serviceId },
+    false,
+    requestFor
   )
 }
 
@@ -243,12 +251,16 @@ export async function graphQLRemoveMembers(email: string[], accountId?: string) 
   )
 }
 
-export async function graphQLLeaveMembership(id: string) {
+// `sub`: the sign-in whose membership it is ('' the page's own person) — said outright, since the organization's id
+// alone names whichever sign-in serves its row, who may be another member of it.
+export async function graphQLLeaveMembership(id: string, sub: string) {
   return await graphQLBasicRequest(
     ` mutation LeaveMembership($id: ID!) {
         leaveOrganization(id: $id)
       }`,
-    { id }
+    { id },
+    false,
+    { sub }
   )
 }
 

@@ -244,6 +244,21 @@ describe('the sign-ins beside the page’s own person', () => {
       expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
       expect(dispatch.accounts.select.mock.calls).toEqual([['personal']])
     })
+
+    it('leave it as the page’s person, whose membership it is, though the other is picked to serve it', async () => {
+      graphQLLeaveMembership.mockReset().mockResolvedValue({})
+      const both = { ...work, membership: [member('labs'), member('acme')] }
+      const { dispatch, run } = effectsWith(
+        signedIn({ 'sub-work': both }, { activeId: 'acme', via: { acme: 'sub-work' } })
+      )
+      dispatch.ui = { set: vi.fn() }
+      await run('leaveMembership', 'acme')
+      expect(graphQLLeaveMembership).toHaveBeenCalledWith('acme', '')
+      expect(dispatch.accounts.set).toHaveBeenCalledWith({ membership: [] })
+      // The other is a member still: its row, and what was read for it as them, stay.
+      expect(dispatch.accounts.setSignIns).not.toHaveBeenCalled()
+      expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
+    })
   })
 
   it('do not put back one that signed out while it was being asked', async () => {
@@ -297,5 +312,55 @@ describe('the sign-ins beside the page’s own person', () => {
     await (accounts as any).effects(dispatch).parse({ data: { data: { login: { membership: [] } } } }, state)
     expect(dispatch.accounts.set).toHaveBeenCalledWith({ membership: [] })
     expect(dispatch.ui.set).not.toHaveBeenCalled()
+  })
+})
+
+/* A device shared with Personal and Work, both signed in here, is in both their lists — and in the list kept for
+   connections, which is no account's. */
+describe('a device taken out of some accounts’ lists', () => {
+  const device = (id: string, more: object = {}) => ({ id, ...more })
+  const held = () => ({
+    auth: { user: { id: 'personal' } },
+    user: { id: 'personal' },
+    accounts: {
+      membership: [],
+      signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+      via: {},
+    },
+    devices: {
+      personal: { all: [device('D1'), device('D2')], total: 2 },
+      work: { all: [device('D1')], total: 1 },
+      connections: { all: [device('D1'), device('D3')], total: 0 },
+    },
+  })
+  function removing(state: object) {
+    const dispatch: any = { accounts: { setDevices: vi.fn() }, devices: { set: vi.fn() } }
+    const effects = (accounts as any).effects(dispatch)
+    dispatch.accounts.removeDeviceFrom = vi.fn((payload: object) => effects.removeDeviceFrom(payload, state))
+    return { dispatch, effects }
+  }
+
+  it('leaves the other accounts’ lists as they are, says another holds it, and counts one fewer', async () => {
+    const { dispatch, effects } = removing(held())
+    expect(await effects.removeDeviceFrom({ id: 'D1', accountIds: ['work'] }, held())).toBe(true)
+    expect(dispatch.accounts.setDevices.mock.calls).toEqual([[{ devices: [], accountId: 'work' }]])
+    expect(dispatch.devices.set.mock.calls).toEqual([[{ total: 0, accountId: 'work' }]])
+  })
+
+  it('says no account holds it when only the list kept for connections does', async () => {
+    const state = held()
+    state.devices.personal.all = [device('D2')]
+    const { effects } = removing(state)
+    expect(await effects.removeDeviceFrom({ id: 'D1', accountIds: ['work'] }, state)).toBe(false)
+  })
+
+  it('comes out of every list when the device is gone', async () => {
+    const { dispatch, effects } = removing(held())
+    await effects.removeDevice('D1')
+    expect(dispatch.accounts.setDevices.mock.calls.map(([set]: any) => set.accountId)).toEqual([
+      'personal',
+      'work',
+      'connections',
+    ])
   })
 })

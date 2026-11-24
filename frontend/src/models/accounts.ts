@@ -253,9 +253,11 @@ export default createModel<RootModel>()({
       dispatch.products.fetchIfEmpty()
       dispatch.partnerStats.fetchIfEmpty()
     },
+    /** The page's own person leaves an organization: asked as them outright, whichever sign-in serves its row — it is
+     *  their membership the pages that offer this list, and their membership that goes from here. */
     async leaveMembership(id: string, state) {
       const { membership } = state.accounts
-      const result = await graphQLLeaveMembership(id)
+      const result = await graphQLLeaveMembership(id, '')
       if (result !== 'ERROR') {
         const remaining = membership.filter(m => m.account.id !== id)
         // Left as the primary, and still a row through another sign-in: read as that one from now on.
@@ -265,7 +267,6 @@ export default createModel<RootModel>()({
           dispatch.accounts.forgetData(moved)
           void dispatch.organization.fetch()
         }
-        if (selectSignInSub(state, id)) await dispatch.accounts.fetchSignIns()
         await dispatch.accounts.select(state.user.id)
         dispatch.ui.set({
           successMessage: i18n.t('notices:organization.left', {
@@ -366,9 +367,20 @@ export default createModel<RootModel>()({
     /* 
       Remove all references to a device for cleanup after device is deleted
      */
-    async removeDevice(id: string, state) {
+    async removeDevice(id: string) {
+      await dispatch.accounts.removeDeviceFrom({ id })
+    },
+    /** Out of the lists of `accountIds` alone, where given: a device those accounts lost that others here may still
+     *  have. True when another account's list holds it still (the lists kept beside the accounts' do not count). */
+    async removeDeviceFrom({ id, accountIds }: { id: string; accountIds?: string[] }, state): Promise<boolean> {
+      const rows = getAccountIds(state)
+      let kept = false
       for (const accountId in state.devices) {
         const all = state.devices[accountId].all
+        if (accountIds && !accountIds.includes(accountId)) {
+          kept ||= rows.includes(accountId) && all.some(d => d.id === id)
+          continue
+        }
         const filtered = all.filter(d => d.id !== id)
         if (filtered.length !== all.length) {
           await dispatch.accounts.setDevices({ devices: filtered, accountId })
@@ -377,6 +389,7 @@ export default createModel<RootModel>()({
             await dispatch.devices.set({ total: state.devices[accountId].total - 1, accountId })
         }
       }
+      return kept
     },
   }),
   reducers: {

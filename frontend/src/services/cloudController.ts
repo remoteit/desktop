@@ -634,28 +634,23 @@ ${await productFullEventFields()}
         const routes = actorSub === undefined ? {} : selectAccountRoutes(state)
         const doneFor = (id: string) =>
           actorSub !== undefined && (routes[id]?.reach.some(who => who.sub === actorSub) ?? true)
-        const accountTo = event.users.find(u => accountIds.includes(u.id) && !doneFor(u.id))
+        const accountsTo = event.users.filter(u => accountIds.includes(u.id) && !doneFor(u.id)).map(u => u.id)
+        if (!accountsTo.length) break
+        const shared = event.target.filter(target => target.typeID === DEVICE_TYPE)
 
-        // device unshared from me or my org
-        if (accountTo && event.action === 'remove') {
-          event.target.forEach(target => {
-            if (target.typeID !== DEVICE_TYPE) return
-            // Unshared by someone signed in here: it stays theirs, and leaves only the list it was shared into
-            if (actorSub !== undefined) dispatch.accounts.setDevice({ id: target.id, accountId: accountTo.id })
-            else dispatch.devices.cleanup([target.id])
-          })
+        // device unshared from me or my org: out of their lists alone — whoever else here has it (its owner, another
+        // person it is shared with) keeps it, and its connections; gone from here only when no one does
+        if (event.action === 'remove') {
+          dispatch.devices.cleanupFor({ ids: shared.map(target => target.id), accountIds: accountsTo })
         }
 
         // device shared or updated with me or my org
-        else if (accountTo && ['add', 'update'].includes(event.action)) {
-          event.target.forEach(target => {
-            if (target.typeID === DEVICE_TYPE)
-              dispatch.devices.fetchSingleFull({
-                id: target.deviceId,
-                newDevice: event.action === 'add',
-                accountId: accountTo.id,
-              })
-          })
+        else if (['add', 'update'].includes(event.action)) {
+          shared.forEach(target =>
+            accountsTo.forEach(accountId =>
+              dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: event.action === 'add', accountId })
+            )
+          )
         }
         break
 

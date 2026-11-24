@@ -4,6 +4,7 @@ import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { EXIT_DEVICE_FIELDS, ExitDevice } from './graphQLDeviceRuns'
 import { PersonRef, exitErrorFields, exitSignInFields } from './deviceSignIns'
 import { ExitServing, exitServingFields } from './exitServing'
+import { noteAccountOf } from '../selectors/signIns'
 
 /* Exits (graphql-api docs/PROXY-GROUPS.md §13): what devices send their traffic out through, run by devices — remote.it
    picks the one a device's new connections go through. remote.it's are at a location and offered by plan; an own exit
@@ -74,10 +75,16 @@ export const graphQLAccountExits = (accountId: string) =>
     }`,
     { accountId },
     'exits',
-    data => ({
-      own: (data?.login?.account?.exits ?? []).map(parsed),
-      shared: (data?.login?.account?.sharedExits ?? []).map(parsed),
-    })
+    data => {
+      const own: Exit[] = (data?.login?.account?.exits ?? []).map(parsed)
+      const shared: Exit[] = (data?.login?.account?.sharedExits ?? []).map(parsed)
+      // An exit is in no stored list: what is asked of it by its id alone is asked as this account's sign-in.
+      noteAccountOf(
+        accountId,
+        [...own, ...shared].map(exit => exit.id)
+      )
+      return { own, shared }
+    }
   )
 
 // The exits you may send a device's traffic through, offered now — remote.it's by plan, your own, those shared with you,
@@ -117,6 +124,7 @@ export async function graphQLCreateExit(name: string, accountId?: string): Promi
   )
   if (result === 'ERROR') return { reason: '' }
   if ('reason' in result) return result
+  noteAccountOf(accountId, [result.data?.data?.createExit?.id])
   return parsed(result.data?.data?.createExit)
 }
 
@@ -239,6 +247,12 @@ export async function graphQLNetworkExits(
     data => data?.login?.account?.networks ?? []
   )
   if (!Array.isArray(result)) return result
+  result.forEach(network =>
+    noteAccountOf(
+      accountId,
+      (network.exits ?? []).map(exit => exit.id)
+    )
+  )
   return new Map(result.map(network => [network.id, network.exits ?? []]))
 }
 

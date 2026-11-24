@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { request } = vi.hoisted(() => ({ request: vi.fn() }))
+const { request, state } = vi.hoisted(() => ({ request: vi.fn(), state: { ui: {} } as Record<string, any> }))
 vi.mock('../store', () => ({
-  store: { getState: () => ({ ui: {} }), dispatch: { ui: { set: vi.fn(), deprecated: vi.fn() } } },
+  store: { getState: () => state, dispatch: { ui: { set: vi.fn(), deprecated: vi.fn() } } },
 }))
-vi.mock('./remoteit', () => ({ apiRequest: vi.fn((_method, _url, send) => send({ authorization: 'token' })) }))
+vi.mock('./remoteit', () => ({
+  apiRequest: vi.fn((_method, _url, send, sub) => send({ authorization: `token-of:${sub ?? 'primary'}` })),
+}))
 vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql' }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
@@ -27,6 +29,8 @@ const settled = () =>
 
 beforeEach(() => {
   resetDeviceSessionInfo()
+  Object.keys(state).forEach(key => delete state[key])
+  state.ui = {}
   request.mockReset()
   vi.spyOn(console, 'error').mockImplementation(() => {})
 })
@@ -260,5 +264,39 @@ describe('device session info', () => {
   it('does not read a device not read yet for a service', () => {
     requestServiceSessionInfo('NEW', 'VNC')
     expect(request).not.toHaveBeenCalled()
+  })
+})
+
+// The ids are in the query's text, where nothing reads whose they are: each sign-in is asked about its own devices.
+describe('with several sign-ins in use', () => {
+  it('asks each sign-in about the devices it serves, in a query of its own', async () => {
+    Object.assign(state, {
+      auth: { user: { id: 'me' } },
+      user: { email: 'me@x.test' },
+      accounts: {
+        membership: [],
+        signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+      },
+      devices: { me: { all: [{ id: 'A', services: [] }] }, work: { all: [{ id: 'B', services: [] }] } },
+    })
+    request.mockImplementation(async ({ data }: { data: { query: string } }) => ({
+      data: {
+        data: {
+          login: {
+            device: ['A', 'B'].filter(id => data.query.includes(`"${id}"`)).map(id => ({ id, subnetName: id })),
+          },
+        },
+      },
+      headers: {},
+    }))
+    requestDeviceSessionInfo('A')
+    requestDeviceSessionInfo('B')
+    await vi.waitFor(() => expect(deviceSessionInfo('B')?.subnetName).toBe('B'))
+    expect(deviceSessionInfo('A')?.subnetName).toBe('A')
+    const asked = request.mock.calls.map(([sent]) => [sent.headers.authorization, sent.data.query.match(/\[.*?\]/)[0]])
+    expect(asked.sort()).toEqual([
+      ['token-of:primary', '["A"]'],
+      ['token-of:sub-work', '["B"]'],
+    ])
   })
 })

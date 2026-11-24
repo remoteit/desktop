@@ -2,6 +2,7 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
+import { RequestFor, noteAccountOf } from '../selectors/signIns'
 
 /* Proxies and their endpoints (graphql-api docs/PROXY-GROUPS.md §13 and §14, presence-server docs/proxy-plan.md): a
    proxy is reached at its name — its tcp and udp endpoints there, each at a port, and each https endpoint at a name of
@@ -153,7 +154,15 @@ export const graphQLAccountProxies = (accountId: string) =>
     `query AccountProxies($accountId: String) { login { id account(id: $accountId) { id proxies { ${LIST_FIELDS} } } } }`,
     { accountId },
     'proxies',
-    data => data?.login?.account?.proxies ?? []
+    data => {
+      const proxies: ListedProxy[] = data?.login?.account?.proxies ?? []
+      // A proxy is in no stored list: what is asked of it by its id alone is asked as this account's sign-in.
+      noteAccountOf(
+        accountId,
+        proxies.map(proxy => proxy.id)
+      )
+      return proxies
+    }
   )
 
 // One proxy, with its endpoints: one you manage, or one you may make endpoints on. None for another.
@@ -184,6 +193,7 @@ export async function graphQLCreateProxy(set: {
   )
   if (result === 'ERROR') return { reason: '' }
   if ('reason' in result) return result
+  noteAccountOf(set.accountId, [result.data?.data?.createProxy?.id])
   return result.data?.data?.createProxy
 }
 
@@ -423,8 +433,9 @@ export const graphQLCreateEndpoint = (serviceId: string, endpoint: NewEndpoint) 
     { serviceId, ...endpoint }
   )
 
-export const graphQLRemoveEndpoint = (id: string) =>
-  graphQLBasicRequest(` mutation RemoveEndpoint($id: String!) { removeEndpoint(id: $id) }`, { id })
+// `requestFor`: an endpoint's id is in no stored list, so the caller says whose it is — its service's.
+export const graphQLRemoveEndpoint = (id: string, requestFor?: RequestFor) =>
+  graphQLBasicRequest(` mutation RemoveEndpoint($id: String!) { removeEndpoint(id: $id) }`, { id }, false, requestFor)
 
 // Where an endpoint is reached, as a person would type it: graphql's url — under its proxy's own name once that is
 // active —, an https one's whole, a tcp or udp one's host and port, its scheme dropped.

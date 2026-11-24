@@ -5,7 +5,14 @@ vi.mock('../services/browser', () => ({ default: {}, getLocalStorage: vi.fn() })
 vi.mock('../models/plans', () => ({ REMOTEIT_PRODUCT_ID: 'remoteit' }))
 vi.mock('../models/organization', () => ({ defaultState: { id: '', name: '' } }))
 
-import { requestSignIn, selectAccountRoutes, selectPersonFor, selectSignInSub } from './signIns'
+import {
+  noteAccountOf,
+  requestSignIn,
+  resetNotedAccounts,
+  selectAccountRoutes,
+  selectPersonFor,
+  selectSignInSub,
+} from './signIns'
 import { selectMemberships, selectActiveUser, selectShowOrganizations } from './accounts'
 import { selectOrganizationOptions } from './organizations'
 
@@ -153,6 +160,27 @@ describe('the sign-in a request is made as', () => {
     expect(requestSignIn(s, undefined, { id: 'labs' })).toBe('sub-work')
     expect(requestSignIn(s, undefined, { deviceId: 'd-personal' })).toBeUndefined()
     expect(requestSignIn(s, { about: ['file-labs'] })).toBe('sub-work')
+  })
+
+  it('is the one that serves the account something no list holds was made or read under', () => {
+    resetNotedAccounts()
+    const s = state()
+    // A service just added to Labs' device, an exit read with Labs' exits: neither is in a stored list.
+    expect(requestSignIn(s, undefined, { serviceId: 'svc-new' })).toBeUndefined()
+    noteAccountOf('labs', ['svc-new', 'exit-1', undefined])
+    expect(requestSignIn(s, undefined, { serviceId: 'svc-new', attributes: {} })).toBe('sub-work')
+    expect(requestSignIn(s, undefined, { exit: 'exit-1', confirm: false })).toBe('sub-work')
+    expect(requestSignIn(s, { about: ['exit-1'] })).toBe('sub-work')
+    // What a list holds says first; an account that is no row here says nothing; with one sign-in, nothing to decide.
+    expect(requestSignIn(s, undefined, { exit: 'exit-1', deviceId: 'd-personal' })).toBeUndefined()
+    noteAccountOf('someone-else', ['exit-2'])
+    expect(requestSignIn(s, undefined, { exit: 'exit-2' })).toBeUndefined()
+    noteAccountOf('work', ['exit-2'])
+    expect(requestSignIn(s, undefined, { exit: 'exit-2' })).toBe('sub-work')
+    expect(requestSignIn(single(), undefined, { exit: 'exit-1' })).toBeUndefined()
+    noteAccountOf(undefined, ['exit-3'])
+    expect(requestSignIn(s, undefined, { exit: 'exit-3' })).toBeUndefined()
+    resetNotedAccounts()
   })
 
   it('prefers the selected account, then any the primary serves, for something more than one account holds', () => {

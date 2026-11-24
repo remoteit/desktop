@@ -2,6 +2,7 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { memberPolicyFields } from './productPolicy'
+import type { RequestFor } from '../selectors/signIns'
 
 /* Networks of devices (presence-server docs/device-principals.md §2, §8): each network's devices — initiators, targets
    or both, and what a target exposes (the services the network lists, all of them, any port of its own) — its tag
@@ -202,7 +203,8 @@ export const graphQLSetDeviceAnyPort = (deviceId: string, set: { tcp?: string; u
 
 export async function graphQLDeviceAnyPort(deviceId: string) {
   const query = `query DeviceAnyPort { login { device(id: ${JSON.stringify([deviceId])}) { anyPort { tcp udp } } } }`
-  const response = await post({ query })
+  // The id is in the query's own text, not its variables: said apart, so it is asked as the device's sign-in.
+  const response = await post({ query }, '', false, false, { about: [deviceId] })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables: {} })
   if (withoutDeviceSessions(errors, 'anyPort')) return UNSUPPORTED
@@ -223,21 +225,27 @@ export const graphQLCreateNetworkDeviceRule = (
     { networkId, ...rule }
   )
 
-export const graphQLUpdateNetworkDeviceRule = (ruleId: string, rule: RuleChoices) =>
+// `requestFor`, here and for its removal: a rule's id is in no stored list, so the caller says whose request it is —
+// the network's sign-in, or the account's whose devices the rule takes.
+export const graphQLUpdateNetworkDeviceRule = (ruleId: string, rule: RuleChoices, requestFor?: RequestFor) =>
   graphQLBasicRequest(
     `mutation UpdateNetworkDeviceRule($ruleId: String!, $tags: [String!], $operator: ListOperator, $initiator: Boolean, $allServices: Boolean, $anyPort: Boolean) {
       updateNetworkDeviceRule(ruleId: $ruleId, tags: $tags, operator: $operator, initiator: $initiator, allServices: $allServices, anyPort: $anyPort) { id }
     }`,
-    { ruleId, ...rule }
+    { ruleId, ...rule },
+    false,
+    requestFor
   )
 
 // Either side may end a rule: the network's, or an administrator of the account whose devices it takes (withdrawing).
-export const graphQLRemoveNetworkDeviceRule = (ruleId: string) =>
+export const graphQLRemoveNetworkDeviceRule = (ruleId: string, requestFor?: RequestFor) =>
   graphQLBasicRequest(
     `mutation RemoveNetworkDeviceRule($ruleId: String!) {
       removeNetworkDeviceRule(ruleId: $ruleId)
     }`,
-    { ruleId }
+    { ruleId },
+    false,
+    requestFor
   )
 
 export const graphQLSetNetworkShareRole = (networkId: string, email: string, role: ShareRole) =>

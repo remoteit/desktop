@@ -435,8 +435,8 @@ export const DeviceNetworkPage: React.FC = () => {
                     deviceById={deviceById}
                     editable={rule.editable && !link && !busy}
                     removable={admin && !link && !busy}
-                    onChange={set => act(() => graphQLUpdateNetworkDeviceRule(rule.id, set))}
-                    onRemove={() => act(() => graphQLRemoveNetworkDeviceRule(rule.id))}
+                    onChange={set => act(() => graphQLUpdateNetworkDeviceRule(rule.id, set, { about: [network.id] }))}
+                    onRemove={() => act(() => graphQLRemoveNetworkDeviceRule(rule.id, { about: [network.id] }))}
                   />
                 ))}
                 {!!account.members.length && (

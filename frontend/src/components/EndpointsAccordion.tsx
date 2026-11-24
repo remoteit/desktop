@@ -69,7 +69,7 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
 
   const remove = async (id: string) => {
     setBusy(true)
-    if ((await graphQLRemoveEndpoint(id)) !== 'ERROR') await load()
+    if ((await graphQLRemoveEndpoint(id, { about: [service.id] })) !== 'ERROR') await load()
     setBusy(false)
   }
 

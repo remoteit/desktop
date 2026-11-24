@@ -417,7 +417,7 @@ export default createModel<RootModel>()({
 
     async removeService({ productId, serviceId }: { productId: string; serviceId: string }, state) {
       const accountId = selectActiveAccountId(state)
-      const response = await graphQLRemoveDeviceProductService(serviceId)
+      const response = await graphQLRemoveDeviceProductService(serviceId, productId)
       if (response !== 'ERROR') {
         const productModel = getProductModel(state, accountId)
         dispatch.products.set({

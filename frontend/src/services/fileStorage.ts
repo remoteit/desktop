@@ -99,12 +99,15 @@ export async function fetchFileVersions(
 
 // Deleting one version: its bytes freed at once. The API refuses a version an unfinished job uses, naming the jobs —
 // shown as any request's error is.
-export async function deleteFileVersion(fileVersionId: string): Promise<boolean> {
+// `fileId`: the version's file — a version's id is in no stored list, so its file says whose request it is.
+export async function deleteFileVersion(fileVersionId: string, fileId: string): Promise<boolean> {
   const response = await graphQLBasicRequest(
     ` mutation DeleteFileVersion($fileVersionId: String) {
         deleteFileVersion(fileVersionId: $fileVersionId)
       }`,
-    { fileVersionId }
+    { fileVersionId },
+    false,
+    { about: [fileId] }
   )
   return response !== 'ERROR' && response?.data?.data?.deleteFileVersion === true
 }

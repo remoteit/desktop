@@ -32,7 +32,7 @@ export const TaggedIntoList: React.FC<{ accountId?: string }> = ({ accountId }) 
     if (!window.confirm(t('taggedInto.confirm', 'Take these devices off {{name}}?', { name: rule.network?.name })))
       return
     setBusy(true)
-    await graphQLRemoveNetworkDeviceRule(rule.id)
+    await graphQLRemoveNetworkDeviceRule(rule.id, accountId ? { account: accountId } : undefined)
     await load()
     setBusy(false)
   }

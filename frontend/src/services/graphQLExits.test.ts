@@ -32,6 +32,7 @@ import {
   graphQLSetExitProduct,
   graphQLSetNetworkExit,
 } from './graphQLExits'
+import { requestSignIn } from '../selectors/signIns'
 import * as deviceRuns from './graphQLDeviceRuns'
 import {
   EXIT_DEVICE_FIELDS,
@@ -136,6 +137,18 @@ describe('a network’s exits', () => {
 })
 
 describe('an account’s exits', () => {
+  it('are each remembered as that account’s: asked of by its id alone, an exit is asked as the sign-in serving it', async () => {
+    const signedIn: any = {
+      auth: { user: { id: 'ME' } },
+      accounts: { membership: [], signIns: { 'sub-work': { sub: 'sub-work', id: 'WORK', email: '', membership: [] } } },
+    }
+    request.mockResolvedValue(answer({ login: { id: 'ME', account: { id: 'WORK', exits: [mac], sharedExits: [] } } }))
+    expect(requestSignIn(signedIn, undefined, { id: mac.id })).toBeUndefined()
+    await graphQLAccountExits('WORK')
+    expect(requestSignIn(signedIn, undefined, { id: mac.id })).toBe('sub-work')
+    expect(requestSignIn(signedIn, undefined, { exit: mac.id, confirm: false })).toBe('sub-work')
+  })
+
   it('its own and those other accounts share with it, each tag’s date a date', async () => {
     const own = { ...mac, tags: [{ name: 'lab', color: 3, created }] }
     const shared = { ...mac, id: 'xned', owner: { id: 'NED', email: 'ned@example.com' }, tags: [] }

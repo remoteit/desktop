@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const { sockets, signIns, listeners, state, notify, setSession, getToken, devices, held, dispatched } = vi.hoisted(
   () => ({
-    devices: { fetchSingleFull: vi.fn(), cleanup: vi.fn() },
+    devices: { fetchSingleFull: vi.fn(), cleanup: vi.fn(), cleanupFor: vi.fn() },
     held: { device: undefined as { id: string } | undefined },
     dispatched: { removeDevice: vi.fn(), setDevice: vi.fn(), set: vi.fn() },
     sockets: [] as any[],
@@ -276,7 +276,19 @@ describe('an event between two people signed in here', () => {
 
   it('an unshare from one to the other leaves the owner’s list alone', () => {
     both(1, share('remove', 'personal', 'work'))
-    expect(dispatched.setDevice).toHaveBeenCalledWith({ id: 'dev-1', accountId: 'work' })
+    expect(devices.cleanupFor).toHaveBeenCalledWith({ ids: ['dev-1'], accountIds: ['work'] })
+    expect(devices.cleanup).not.toHaveBeenCalled()
+  })
+
+  it('a share with both, then an unshare from one, by someone who is not here: only that one loses it', () => {
+    inUse('sub-work')
+    cloudController.init()
+    const withBoth = JSON.parse(share('add', 'someone', 'personal'))
+    withBoth.data.event.users.push({ id: 'work', email: 'work@x.test' })
+    sockets[0].handlers.message({ data: JSON.stringify(withBoth) })
+    expect(devices.fetchSingleFull.mock.calls.map(([asked]) => asked.accountId)).toEqual(['personal', 'work'])
+    sockets[1].handlers.message({ data: share('remove', 'someone', 'work') })
+    expect(devices.cleanupFor).toHaveBeenCalledWith({ ids: ['dev-1'], accountIds: ['work'] })
     expect(devices.cleanup).not.toHaveBeenCalled()
   })
 
@@ -289,6 +301,6 @@ describe('an event between two people signed in here', () => {
     both(0, share('add', 'someone', 'personal'))
     expect(devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'dev-1', newDevice: true, accountId: 'personal' })
     both(0, share('remove', 'someone', 'work'))
-    expect(devices.cleanup).toHaveBeenCalledWith(['dev-1'])
+    expect(devices.cleanupFor).toHaveBeenCalledWith({ ids: ['dev-1'], accountIds: ['work'] })
   })
 })

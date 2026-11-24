@@ -119,6 +119,25 @@ const selectHeldIds = createSelector(
   }
 )
 
+/* The ids no stored list holds, by the account they are of: what was just made and is not read into the store yet (a
+   new service), and what is only ever read into a page (an exit, a proxy). Said where they are made or read with their
+   account (noteAccountOf), so a later request that names one alone is still made as the sign-in that serves that
+   account, not as the primary. An id may be read under more than one account (an exit shared with one, read again
+   under its owner's): the first of them that is a row here is used. For the page's life: none of it is state. */
+const noted = new Map<string, Set<string>>()
+
+export function noteAccountOf(accountId: string | undefined, ids: (string | undefined | null)[]) {
+  if (!accountId) return
+  ids.forEach(id => {
+    if (!id) return
+    if (!noted.has(id)) noted.set(id, new Set())
+    noted.get(id)!.add(accountId)
+  })
+}
+
+// For tests.
+export const resetNotedAccounts = () => noted.clear()
+
 // The strings a request's variables carry: its own, a list's, and those of an input object one level down.
 const namedIds = (variables: ILookup<any> | undefined, nested = true): string[] => {
   const ids: string[] = []
@@ -140,7 +159,8 @@ export const selectPersonFor = (state: State, about: (string | undefined)[]): st
 /* The sign-in a request is made as. With one sign-in in use there is nothing to decide. Otherwise, in order: what
    the caller said; the account the variables name (`accountId`); the account whose stored lists hold an id the
    variables name — the selected account first, then any the primary serves, then the rest — so a change to a device
-   reached only through another sign-in is made as that sign-in; else the primary. A request about the person
+   reached only through another sign-in is made as that sign-in; the account an id no list holds was made or read
+   under (noteAccountOf); else the primary. A request about the person
    themselves (profile, billing, keys, contacts, plans, chat) names none of these and is always the primary's, so
    those pages never show one account's data under another's name. */
 export function requestSignIn(state: State, requestFor?: RequestFor, variables?: ILookup<any>): string | undefined {
@@ -159,5 +179,7 @@ export function requestSignIn(state: State, requestFor?: RequestFor, variables?:
   const accountIds = Object.keys(routes)
   if (accountIds.some(id => !routes[id].sub && holds(id))) return undefined
   const other = accountIds.find(id => routes[id].sub && holds(id))
-  return other ? routes[other].sub : undefined
+  if (other) return routes[other].sub
+  const of = named.flatMap(id => [...(noted.get(id) || [])]).find(accountId => routes[accountId])
+  return of ? routes[of].sub : undefined
 }

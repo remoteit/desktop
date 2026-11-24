@@ -64,7 +64,7 @@ export const FileVersions: React.FC<{ fileId: string; canDelete?: boolean }> = (
                   </Notice>
                 }
                 onDelete={async () => {
-                  if (await deleteFileVersion(version.id)) {
+                  if (await deleteFileVersion(version.id, fileId)) {
                     await load()
                     await dispatch.files.fetchSingle({ fileId })
                   }
