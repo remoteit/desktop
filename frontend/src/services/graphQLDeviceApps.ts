@@ -246,41 +246,41 @@ const parsedService = (service: any): DeviceAppService => ({
 })
 
 export const parsedDeviceApp = (app: any): DeviceApp => ({
-    ...app,
-    enabled: !!app.enabled,
-    added: app.added ?? null,
-    pinned: app.pinned ?? null,
-    release: app.release ?? null,
-    latest: app.latest ?? null,
-    upToDate: !!app.upToDate,
-    heldBack: app.heldBack?.reason ? { reason: app.heldBack.reason, detail: app.heldBack.detail ?? '' } : null,
-    grantUntil: app.grantUntil ?? null,
-    adminControl: app.adminControl ?? 'cloud+local',
-    locked: app.locked?.product || app.locked?.level ? settingLockOf(app.locked) : null,
-    rootConsent: rootConsentOf(app.rootConsent),
-    awaitingRoot: app.awaitingRoot ?? null,
-    problems: app.problems ?? [],
-    conversion: conversionOf(app.conversion),
-    conversionDetail: app.conversionDetail ?? null,
-    contract: app.contract ?? null,
-    protocol: app.protocol ?? null,
-    icon: app.icon ?? null,
-    capabilities: app.capabilities ?? [],
-    hostKey: app.hostKey ?? null,
-    sessions: (app.sessions ?? []).map((session: any) => ({
-      session: session.session,
-      login: session.login ?? null,
-      via: session.via ?? null,
-      since: session.since ?? null,
-    })),
-    sessionsOpen: app.sessionsOpen ?? app.sessions?.length ?? 0,
-    features: app.features ?? [],
-    portSetting: app.portSetting ?? null,
-    services: (app.services ?? []).map(parsedService),
-    listen: app.listen ?? null,
-    listeners: app.listeners ?? [],
-    settings: (app.settings ?? []).map(parsedSetting),
-  })
+  ...app,
+  enabled: !!app.enabled,
+  added: app.added ?? null,
+  pinned: app.pinned ?? null,
+  release: app.release ?? null,
+  latest: app.latest ?? null,
+  upToDate: !!app.upToDate,
+  heldBack: app.heldBack?.reason ? { reason: app.heldBack.reason, detail: app.heldBack.detail ?? '' } : null,
+  grantUntil: app.grantUntil ?? null,
+  adminControl: app.adminControl ?? 'cloud+local',
+  locked: app.locked?.product || app.locked?.level ? settingLockOf(app.locked) : null,
+  rootConsent: rootConsentOf(app.rootConsent),
+  awaitingRoot: app.awaitingRoot ?? null,
+  problems: app.problems ?? [],
+  conversion: conversionOf(app.conversion),
+  conversionDetail: app.conversionDetail ?? null,
+  contract: app.contract ?? null,
+  protocol: app.protocol ?? null,
+  icon: app.icon ?? null,
+  capabilities: app.capabilities ?? [],
+  hostKey: app.hostKey ?? null,
+  sessions: (app.sessions ?? []).map((session: any) => ({
+    session: session.session,
+    login: session.login ?? null,
+    via: session.via ?? null,
+    since: session.since ?? null,
+  })),
+  sessionsOpen: app.sessionsOpen ?? app.sessions?.length ?? 0,
+  features: app.features ?? [],
+  portSetting: app.portSetting ?? null,
+  services: (app.services ?? []).map(parsedService),
+  listen: app.listen ?? null,
+  listeners: app.listeners ?? [],
+  settings: (app.settings ?? []).map(parsedSetting),
+})
 
 // An app's fields, with its product's lock and its root consent where the API has them.
 const appFields = async () => [FIELDS, await appPolicyFields()].filter(Boolean).join(' ')
@@ -370,7 +370,9 @@ async function appMutation(
   requestFor?: RequestFor
 ): Promise<AppChange<any>> {
   const result = await graphQLRequestWithReason(
-    `mutation ${name[0].toUpperCase()}${name.slice(1)}(${declaration}) { ${name}(${args})${selection ? ` { ${selection} }` : ''} }`,
+    `mutation ${name[0].toUpperCase()}${name.slice(1)}(${declaration}) { ${name}(${args})${
+      selection ? ` { ${selection} }` : ''
+    } }`,
     variables,
     requestFor
   )
@@ -446,7 +448,12 @@ export async function graphQLRemoveDeviceApp(deviceId: string, app: string): Pro
 /* Many devices at once (addDeviceApps, setDeviceAppsRelease): each device alone, a refusal that device's result and
    never the call's. At most 500 devices a call. */
 export type DeviceAppOutcome = 'added' | 'enabled' | 'changed' | 'unchanged' | 'refused'
-export type DeviceAppChange = { deviceId: string; name: string | null; outcome: DeviceAppOutcome | string; error: string | null }
+export type DeviceAppChange = {
+  deviceId: string
+  name: string | null
+  outcome: DeviceAppOutcome | string
+  error: string | null
+}
 export const MANY_DEVICES_MAX = 500
 
 const CHANGE_FIELDS = 'deviceId name outcome error'
@@ -488,7 +495,8 @@ export async function graphQLSetDeviceAppsRelease(
   app: string,
   deviceIds: string[],
   { channel, version, consentRoot }: AppRelease,
-  // The account whose devices they are listed as, on the app's page: they may be in no stored list.
+  // The account whose devices they are listed as, on the app's page, and so who asks: they may be in no stored list
+  // of that account's — or in another's here, whose sign-in may not manage them.
   accountId?: string
 ): Promise<AppChange<DeviceAppChange[]>> {
   const answer = await appMutation(
@@ -497,7 +505,7 @@ export async function graphQLSetDeviceAppsRelease(
     'app: $app, deviceIds: $deviceIds, channel: $channel, version: $version, consentRoot: $consentRoot',
     given({ app, deviceIds, channel, version, consentRoot }),
     CHANGE_FIELDS,
-    accountId ? { orAccount: accountId } : undefined
+    accountId ? { account: accountId } : undefined
   )
   return refused(answer) ? answer : changesOf(answer)
 }

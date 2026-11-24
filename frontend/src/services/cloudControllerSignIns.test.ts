@@ -385,6 +385,7 @@ describe('an event about a device two accounts here both hold', () => {
     })
   beforeEach(() => {
     held.device = copy('personal') as any
+    state.connections = { all: [] }
     // By row (helpers/rowKey): Work's own account under its sign-in; Acme, which both belong to, once under each.
     state.devices = {
       personal: { all: [copy('personal')] },
@@ -412,6 +413,27 @@ describe('an event about a device two accounts here both hold', () => {
     ])
     // The copies in the store are not written to in place.
     expect(state.devices[WORK].all[0].state).toBe('inactive')
+  })
+
+  it('a service coming up is said of every sign-in’s connection to it, not the one the event found alone', async () => {
+    const { setConnection } = await import('../helpers/connectionHelper')
+    vi.mocked(setConnection).mockClear()
+    inUse('sub-work')
+    state.connections = {
+      all: [
+        { id: 'svc-1', online: false },
+        { id: 'svc-1', sub: 'sub-work', online: false },
+        { id: 'svc-2', online: false },
+      ],
+    }
+    cloudController.init()
+    const data = stateOf('svc-1').replace(new Date().toISOString().slice(0, 4), '2099')
+    sockets[0].handlers.message({ data })
+    sockets[1].handlers.message({ data })
+    expect(vi.mocked(setConnection).mock.calls.map(([set]) => [set.id, set.sub, set.online])).toEqual([
+      ['svc-1', undefined, true],
+      ['svc-1', 'sub-work', true],
+    ])
   })
 
   it('a connection to a device both hold is a session in each one’s row: its own account, with its own sign-in', () => {

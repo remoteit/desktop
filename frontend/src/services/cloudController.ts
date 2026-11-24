@@ -580,10 +580,14 @@ ${await productFullEventFields()}
 
           // Update connection state
           // Only on change: on desktop this store copy can be older than the backend's and would overwrite it
-          if (target.connection && target.connection.online !== (onlineState === 'active')) {
-            target.connection.online = onlineState === 'active'
-            setConnection(target.connection)
-          }
+          // Every record of the service: each sign-in that connected to it has its own (helpers/connectionRecords), and
+          // the service being up or down is said of them all — the event is handled once, whoever's copy it found.
+          const online = onlineState === 'active'
+          const records = (store.getState().connections?.all || []).filter(connection => connection.id === target.id)
+          const stated = records.length ? records : target.connection ? [target.connection] : []
+          stated.forEach(connection => {
+            if (connection.online !== online) setConnection({ ...structuredClone(connection), online })
+          })
 
           // if device exists
           copies.forEach(([accountId, device, row]) => {
