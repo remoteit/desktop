@@ -23,7 +23,8 @@ import {
 import { registrationCodesToRetire } from '../helpers/productCredentials'
 import { rowSaid, selectRow } from '../selectors/accounts'
 import { asRow, rowGone } from '../selectors/signIns'
-import { RowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
+import { RowKey, rowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
+import { findElsewhere } from '../services/elsewhere'
 import { State } from '../store'
 
 export interface IProductService {
@@ -182,6 +183,28 @@ export default createModel<RootModel>()({
           })
           dispatch.products.set({ fetching: false, accountId, row })
           return product
+        }
+        // Opened at its address, and not this row's: another sign-in's here to see, maybe — whose row is then
+        // selected, and the product put in it (services/elsewhere).
+        const found = await findElsewhere<IDeviceProduct>({
+          ids: [id],
+          asked: row,
+          byAccount: true,
+          read: async (of, requestFor) => {
+            const answer = await graphQLDeviceProduct(id, of, requestFor)
+            return answer === 'ERROR' ? undefined : answer?.data?.data?.login?.account?.deviceProducts?.items?.[0]
+          },
+        })
+        if (found) {
+          const theirs = rowKey(found.accountId, found.sub)
+          const held = getProductModel(state, undefined, theirs).all
+          dispatch.products.set({
+            all: [...held.filter(p => p.id !== id), found.answer],
+            accountId: found.accountId,
+            row: theirs,
+          })
+          dispatch.products.set({ fetching: false, accountId, row })
+          return found.answer
         }
       }
       dispatch.products.set({ fetching: false, accountId, row })

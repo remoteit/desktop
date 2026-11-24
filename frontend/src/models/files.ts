@@ -6,7 +6,8 @@ import { graphQLFiles } from '../services/graphQLRequest'
 import { graphQLDeleteFile, graphQLModifyFile } from '../services/graphQLMutation'
 import { RowSaid, rowSaid, selectActiveAccountId } from '../selectors/accounts'
 import { asRow, rowGone, selectRowOf } from '../selectors/signIns'
-import { RowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
+import { RowKey, rowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
+import { findElsewhere } from '../services/elsewhere'
 import { RootModel } from '.'
 import { postFile } from '../services/post'
 import { get } from '../services/get'
@@ -75,6 +76,24 @@ export default createModel<RootModel>()({
       const files = await dispatch.files.parse(result)
       if (files?.[0]) {
         await dispatch.files.setFile({ accountId, row, file: files[0] })
+      } else if (!of.accountId && !of.row && of.sub === undefined) {
+        // Opened at its address, the caller naming no row, and not this row's: another sign-in's here to see, maybe —
+        // whose row is then selected, and the file put in it (services/elsewhere).
+        const found = await findElsewhere<IFile>({
+          ids: [fileId],
+          asked: row,
+          byAccount: true,
+          read: async (id, requestFor) => {
+            const answer = await graphQLFiles(id, [fileId], requestFor)
+            return answer === 'ERROR' ? undefined : (await dispatch.files.parse(answer))?.[0]
+          },
+        })
+        if (found)
+          await dispatch.files.setFile({
+            accountId: found.accountId,
+            row: rowKey(found.accountId, found.sub),
+            file: found.answer,
+          })
       }
       dispatch.files.set({ fetching: false })
       dispatch.files.fetchSizes({ accountId, row })

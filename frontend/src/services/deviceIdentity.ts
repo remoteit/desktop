@@ -3,7 +3,7 @@ import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
 import { SchemaField, TypeRef, buildCall, named } from './graphQLSchema'
 import { deviceDisableFields, disabledAdaptor } from './deviceDisable'
 import { accountCache, forgotten, rowNow } from './accountCaches'
-import { noteAccountOf } from '../selectors/signIns'
+import { RequestFor, asRow, noteAccountOf } from '../selectors/signIns'
 
 /* A device's identity (graphql-api docs/PROXY-GROUPS.md §11, "Wave 3: device identity"): the join keys that bring a
    device that starts fresh at every boot back as itself, a device added ahead of its first boot, and duplicates — two
@@ -457,7 +457,10 @@ const copyOf = (d: any): DuplicateCopy | undefined => {
   }
 }
 
-export async function graphQLFetchDuplicateCopies(accountId: string): Promise<DuplicateCopy[] | 'ERROR'> {
+export async function graphQLFetchDuplicateCopies(
+  accountId: string,
+  requestFor?: RequestFor
+): Promise<DuplicateCopy[] | 'ERROR'> {
   const identity = await deviceIdentity()
   if (!identity.served.duplicates) return []
   const disabled = await deviceDisableFields()
@@ -482,7 +485,9 @@ export async function graphQLFetchDuplicateCopies(accountId: string): Promise<Du
             }
           }
         }`,
-      { accountId, size: COPIES_PAGE, from }
+      { accountId, size: COPIES_PAGE, from },
+      false,
+      requestFor
     )
     if (response === 'ERROR') return 'ERROR'
     const devices = response?.data?.data?.login?.account?.devices
@@ -496,7 +501,8 @@ export async function graphQLFetchDuplicateCopies(accountId: string): Promise<Du
   // Copies are disabled, so in no stored list: kept, made the original or removed as the sign-in serving the account.
   noteAccountOf(
     accountId,
-    found.map(copy => copy.id)
+    found.map(copy => copy.id),
+    requestFor?.sub
   )
   return found
 }
@@ -567,7 +573,8 @@ function requestAccountCopies(accountId: string, again?: boolean): Promise<void>
   if (!again && copies.has(row)) return Promise.resolve()
   const pending = reading.get(row)
   if (pending) return pending
-  const read: Promise<void> = graphQLFetchDuplicateCopies(accountId).then(result => {
+  // Asked as the row's sign-in, and kept under the row whichever row is looked at by the time it answers.
+  const read: Promise<void> = graphQLFetchDuplicateCopies(accountId, asRow(row)).then(result => {
     if (reading.get(row) !== read) return
     reading.delete(row)
     if (result === 'ERROR') return

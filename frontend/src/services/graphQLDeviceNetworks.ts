@@ -124,7 +124,8 @@ export const roleFor = (initiator: boolean, exposing: boolean): NetworkDeviceRol
   initiator && exposing ? 'BOTH' : initiator ? 'INITIATOR' : 'TARGET'
 
 export async function graphQLDeviceNetworks(
-  accountId?: string
+  accountId?: string,
+  requestFor?: RequestFor
 ): Promise<DeviceNetwork[] | 'ERROR' | typeof UNSUPPORTED> {
   const policy = await memberPolicyFields()
   const query = `query DeviceNetworks($accountId: String) {
@@ -150,7 +151,7 @@ export async function graphQLDeviceNetworks(
     }
   }`
   const variables = { accountId }
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, 'kind')) return UNSUPPORTED

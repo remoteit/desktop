@@ -3,15 +3,16 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccountId, selectRow } from '../selectors/accounts'
 import { accountCache, forgotten, rowNow } from '../services/accountCaches'
 import { RowKey } from '../helpers/rowKey'
+import { RequestFor, asRow } from '../selectors/signIns'
 import { State } from '../store'
 
 /* Something of the active account read once and shared — by a list and the page beside it, where a change made on the
    page is read again for the list (reload) — as hooks/useDeviceNetworks.ts shares the networks. undefined while it is
    first read. A reload asked for during a read reads again once that read is done, so the last change is never
    missed. Kept by ROW (services/accountCaches): the account as the sign-in whose row is looked at sees it, each row
-   of an organization keeping its own. A read is made as the row looked at when it is asked: one that answers after
-   another row was picked is not kept — that row is read when it is next looked at — nor one whose row is gone. */
-export function accountStore<T>(read: (accountId: string) => Promise<T>) {
+   of an organization keeping its own. A read is made for a row — asked as its sign-in — and its answer is kept under
+   that row whichever row is looked at by the time it answers; not one whose row is gone by then. */
+export function accountStore<T>(read: (accountId: string, requestFor?: RequestFor) => Promise<T>) {
   const byRow = new Map<string, T>()
   const reading = new Set<string>()
   const again = new Set<string>()
@@ -40,15 +41,15 @@ export function accountStore<T>(read: (accountId: string) => Promise<T>) {
       return
     }
     reading.add(row)
-    const value = await read(accountId)
+    const value = await read(accountId, asRow(row))
     reading.delete(row)
-    // Still the row looked at: kept — or, dropped while it was read, read again. Another row picked since: not kept.
-    const looked = rowNow(accountId) === row
-    if (dropped.delete(row) && looked) again.add(row)
-    else if (looked) {
+    // Dropped while it was read: read again where it is the row looked at still (its account's data was dropped, not
+    // the row), and not kept.
+    if (dropped.delete(row)) rowNow(accountId) === row ? again.add(row) : again.delete(row)
+    else {
       byRow.set(row, value)
       listeners.forEach(listener => listener())
-    } else again.delete(row)
+    }
     if (again.delete(row)) await load(accountId, row)
   }
 

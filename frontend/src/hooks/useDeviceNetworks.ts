@@ -2,6 +2,7 @@ import { useCallback, useEffect, useSyncExternalStore } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccountId, selectRow } from '../selectors/accounts'
 import { RowKey } from '../helpers/rowKey'
+import { asRow } from '../selectors/signIns'
 import { State } from '../store'
 import { DeviceNetwork, graphQLDeviceNetworks } from '../services/graphQLDeviceNetworks'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
@@ -9,9 +10,8 @@ import { accountCache, forgotten, rowNow } from '../services/accountCaches'
 
 /* The active account's device networks (services/graphQLDeviceNetworks), shared by the Networks list and a network's
    page: read when first asked for, and again after a change (reload). undefined while it is read. Kept by ROW
-   (services/accountCaches): the account as the sign-in whose row is looked at sees it. A read is made as the row
-   looked at when it is asked: one that answers after another row was picked is not kept — that row is read when it
-   is next looked at. */
+   (services/accountCaches): the account as the sign-in whose row is looked at sees it. A read is made for a row —
+   asked as its sign-in — and kept under it whichever row is looked at by the time it answers. */
 
 type Networks = DeviceNetwork[] | 'ERROR' | typeof UNSUPPORTED
 
@@ -39,12 +39,10 @@ const subscribe = (listener: () => void) => {
 async function read(accountId: string, row: RowKey) {
   if (reading.has(row)) return
   reading.add(row)
-  const networks = await graphQLDeviceNetworks(accountId)
+  const networks = await graphQLDeviceNetworks(accountId, asRow(row))
   reading.delete(row)
-  // Another row picked while it was read: not kept. Dropped while it was read, and looked at still: read again.
-  const looked = rowNow(accountId) === row
-  if (dropped.delete(row)) return looked ? read(accountId, row) : undefined
-  if (!looked) return
+  // Dropped while it was read: not kept, and read again where it is the row looked at still.
+  if (dropped.delete(row)) return rowNow(accountId) === row ? read(accountId, row) : undefined
   byRow.set(row, networks)
   listeners.forEach(listener => listener())
 }

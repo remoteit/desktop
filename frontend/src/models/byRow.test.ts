@@ -25,7 +25,8 @@ import { getPartnerStats } from './partnerStats'
 import { selectApplicationTypesGrouped } from '../selectors/applications'
 import { selectOrganization, selectPermissions, selectRole } from '../selectors/organizations'
 import { selectConnections, selectSessions } from '../selectors/connections'
-import { requestSignIn } from '../selectors/signIns'
+import { actingFor, requestSignIn, resetNotedAccounts, selectActiveRowKey } from '../selectors/signIns'
+import { resetElsewhere } from '../services/elsewhere'
 
 const { dispatch } = store
 const WORK = 'sub-work'
@@ -92,12 +93,21 @@ const given = (sub: string) => {
   }
 }
 
-const queryName = (query: string) => /query\s+(\w+)/.exec(query)?.[1] || query.trim().slice(0, 20)
+const queryName = (query: string) => /(?:query|mutation)\s+(\w+)/.exec(query)?.[1] || query.trim().slice(0, 20)
 const answerAll = () =>
-  post.mockImplementation(async (data: { query: string; variables: object }, _path, _silent, _retry, requestFor) => {
-    const sub = requestFor?.sub ?? requestSignIn(store.getState(), requestFor, data.variables) ?? ''
+  post.mockImplementation(async (data: { query: string; variables: any }, _path, _silent, _retry, requestFor) => {
+    // As services/post does: what an effect sends for the row it acts for is that row's sign-in's (sendAs).
+    const sub = requestSignIn(store.getState(), actingFor(requestFor), data.variables) ?? ''
     asked.push([queryName(data.query), sub])
-    return given(sub)
+    const answer = given(sub)
+    // A product only Work is given, of an organization only Work belongs to: no row here is known to hold it.
+    if (data.variables?.id === 'product-elsewhere') {
+      const theirs = !!sub && data.variables.accountId === 'labs'
+      answer.data.data.login.account.deviceProducts.items = theirs
+        ? [{ id: 'product-elsewhere', name: 'theirs', services: [] }]
+        : []
+    }
+    return answer
   })
 
 const state = () => store.getState()
@@ -149,6 +159,8 @@ async function look(sub: string) {
 }
 
 beforeEach(async () => {
+  resetNotedAccounts()
+  resetElsewhere()
   post.mockReset()
   asked.length = 0
   answerAll()
@@ -335,5 +347,115 @@ describe('one sign-in in use', () => {
       applicationTypes: 'acme',
     })
     expect(new Set(asked.map(([, sub]) => sub))).toEqual(new Set(['']))
+  })
+})
+
+describe('what an effect sends after waiting', () => {
+  it('goes as the row it began in, though another row is picked before it is sent', async () => {
+    await dispatch.organization.fetch()
+    await look(WORK)
+    asked.length = 0
+    // Begun in Work's row: it writes first, and sends once that is done.
+    const saving = dispatch.organization.setOrganization({ name: 'Renamed' })
+    await dispatch.accounts.selectAs({ accountId: 'acme', sub: '' })
+    await saving
+    expect(asked.find(([query]) => query === 'SetOrganization')).toEqual(['SetOrganization', WORK])
+  })
+})
+
+describe('an organization two sign-ins reach that is not the selected one', () => {
+  it('has what is read of it in the background read into both rows, each as its own sign-in', async () => {
+    await dispatch.accounts.select('personal')
+    await settled()
+    asked.length = 0
+    await dispatch.organization.fetch()
+    await dispatch.sessions.fetch()
+    expect(Object.keys(state().organization.accounts).sort()).toEqual(
+      ['acme', ACME_AS_WORK, 'personal', rowKey('work', WORK)].sort()
+    )
+    expect(state().organization.accounts.acme.name).toBe('Acme as me')
+    expect(state().organization.accounts[ACME_AS_WORK].name).toBe('Acme as work')
+    expect(asked.sort()).toEqual(
+      [
+        ['Organizations', ''],
+        ['Organizations', WORK],
+        ['Sessions', ''],
+        ['Sessions', WORK],
+      ].sort()
+    )
+    // Asked about by its id alone, it is looked at through the page's own person's row, who belongs to it.
+    expect(requestSignIn(state(), undefined, { accountId: 'acme' })).toBeUndefined()
+  })
+})
+
+describe('a page opened at the address of something no row here is known to hold', () => {
+  const labs = () =>
+    dispatch.accounts.set({
+      signIns: {
+        [WORK]: {
+          sub: WORK,
+          id: 'work',
+          email: 'work@x.test',
+          membership: [member('acme', 'role-guest'), member('labs', 'role-admin')],
+        },
+      },
+    })
+  const reads = () => asked.filter(([query]) => query === 'DeviceProduct')
+
+  it('is looked for as the other sign-ins: found, its row is selected, and it is that row’s from then on', async () => {
+    labs()
+    await look('')
+    asked.length = 0
+    const product = await dispatch.products.fetchSingle('product-elsewhere')
+    expect(product).toMatchObject({ id: 'product-elsewhere' })
+    // Asked as the row looked at, then of the other rows in the sign-ins' order, until one sees it.
+    expect(reads()[0]).toEqual(['DeviceProduct', ''])
+    expect(reads()[reads().length - 1]).toEqual(['DeviceProduct', WORK])
+    // The row that sees it is the selected one, and holds it: what is asked of it next is that sign-in's.
+    expect(selectActiveRowKey(state())).toBe(rowKey('labs', WORK))
+    expect(names(getProducts(state()))).toContain('product-elsewhere')
+    expect(requestSignIn(state(), undefined, { id: 'product-elsewhere' })).toBe(WORK)
+    // Known now: read again, it is one request.
+    asked.length = 0
+    await dispatch.products.fetchSingle('product-elsewhere')
+    expect(reads()).toEqual([['DeviceProduct', WORK]])
+  })
+
+  it('is not looked for elsewhere when it is found, nor again once it was found nowhere', async () => {
+    labs()
+    await look('')
+    asked.length = 0
+    await dispatch.products.fetchSingle('product-me')
+    expect(reads()).toEqual([['DeviceProduct', '']])
+    asked.length = 0
+    post.mockImplementation(async (data: { query: string }, _path, _silent, _retry, requestFor) => {
+      asked.push([queryName(data.query), requestFor?.sub ?? ''])
+      const answer = given('')
+      answer.data.data.login.account.deviceProducts.items = []
+      return answer
+    })
+    expect(await dispatch.products.fetchSingle('product-nowhere')).toBeNull()
+    expect(reads().length).toBeGreaterThan(1)
+    expect(selectActiveRowKey(state())).toBe('acme')
+    asked.length = 0
+    await dispatch.products.fetchSingle('product-nowhere')
+    expect(reads()).toHaveLength(1)
+  })
+
+  it('is one request, as ever, with one sign-in in use — and a change is never looked for elsewhere', async () => {
+    dispatch.accounts.set({ signIns: {} })
+    await dispatch.accounts.select('acme')
+    await settled()
+    asked.length = 0
+    await dispatch.products.fetchSingle('product-elsewhere')
+    expect(reads()).toEqual([['DeviceProduct', '']])
+    labs()
+    asked.length = 0
+    post.mockImplementation(async (data: { query: string }) => {
+      asked.push([queryName(data.query), ''])
+      return 'ERROR'
+    })
+    await dispatch.tags.create({ tag: { name: 'new', color: 1 } as ITag })
+    expect(asked).toEqual([['SetTag', '']])
   })
 })

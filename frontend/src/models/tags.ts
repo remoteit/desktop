@@ -4,7 +4,7 @@ import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
 import { RowSaid, rowSaid, selectActiveAccountId } from '../selectors/accounts'
-import { asRow, rowGone, selectRowOf } from '../selectors/signIns'
+import { asRow, rowGone, selectRowOf, sendAs } from '../selectors/signIns'
 import { RowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
 import { selectPermissions } from '../selectors/organizations'
 import { selectTags } from '../selectors/tags'
@@ -205,7 +205,7 @@ export default createModel<RootModel>()({
       const index = findTagIndex(tags, tag.name)
       if (found >= 0 && tag.name.toLowerCase() !== name.toLowerCase()) {
         // merge
-        const result = await graphQLMergeTag(tag.name, name, accountId)
+        const result = await sendAs(selectRowOf(state, accountId), () => graphQLMergeTag(tag.name, name, accountId))
         if (result === 'ERROR') {
           dispatch.tags.set({ updating: undefined })
           return
@@ -219,7 +219,7 @@ export default createModel<RootModel>()({
         })
       } else {
         // rename
-        const result = await graphQLRenameTag(tag.name, name, accountId)
+        const result = await sendAs(selectRowOf(state, accountId), () => graphQLRenameTag(tag.name, name, accountId))
         if (result === 'ERROR' || !result?.data?.data?.renameTag) {
           dispatch.ui.set({
             errorMessage: i18n.t('notices:tag.renameError', {

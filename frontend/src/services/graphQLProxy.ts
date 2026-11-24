@@ -2,7 +2,8 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
-import { RequestFor, isNoted, noteAccountOf, selectedAccountId } from '../selectors/signIns'
+import { RequestFor, isNoted, noteAccountOf, selectRowNow, selectedAccountId } from '../selectors/signIns'
+import { findElsewhere } from './elsewhere'
 import { store } from '../store'
 
 /* Proxies and their endpoints (graphql-api docs/PROXY-GROUPS.md §13 and §14, presence-server docs/proxy-plan.md): a
@@ -159,7 +160,7 @@ export const graphQLProxies = (requestFor?: RequestFor) =>
   )
 
 // An account's own proxies you manage, those no device runs too.
-export const graphQLAccountProxies = (accountId: string) =>
+export const graphQLAccountProxies = (accountId: string, requestFor?: RequestFor) =>
   read<ListedProxy[]>(
     `query AccountProxies($accountId: String) { login { id account(id: $accountId) { id proxies { ${LIST_FIELDS} } } } }`,
     { accountId },
@@ -169,28 +170,46 @@ export const graphQLAccountProxies = (accountId: string) =>
       // A proxy is in no stored list: what is asked of it by its id alone is asked as this account's sign-in.
       noteAccountOf(
         accountId,
-        proxies.map(proxy => proxy.id)
+        proxies.map(proxy => proxy.id),
+        requestFor?.sub
       )
       return proxies
-    }
+    },
+    requestFor
   )
 
 // One proxy, with its endpoints: one you manage, or one you may make endpoints on. None for another.
 // Where nothing read so far says whose the proxy is (the page opened at its address, before any list), the selected
 // account's sign-in is asked, and the proxy then remembered under it for what is asked of it next.
-export const graphQLProxy = (id: string) => {
+// Found by none as the row looked at, and nothing known saying whose it is: the other sign-ins here are asked, and
+// the one that sees it has its row selected (services/elsewhere).
+export const graphQLProxy = async (id: string) => {
   const accountId = selectedAccountId(store.getState())
   const unknown = !isNoted(id)
-  return read<Proxy | null>(
-    `query Proxy($id: String!) { proxy(id: $id) { ${PAGE_FIELDS} } }`,
-    { id },
-    'proxy',
-    data => {
-      if (data?.proxy && unknown) noteAccountOf(accountId, [id])
-      return data?.proxy ?? null
+  const asked = selectRowNow(accountId)
+  const proxy = (requestFor: RequestFor, note?: string) =>
+    read<Proxy | null>(
+      `query Proxy($id: String!) { proxy(id: $id) { ${PAGE_FIELDS} } }`,
+      { id },
+      'proxy',
+      data => {
+        if (data?.proxy && note) noteAccountOf(note, [id])
+        return data?.proxy ?? null
+      },
+      requestFor
+    )
+  const first = await proxy({ orAccount: accountId }, unknown ? accountId : undefined)
+  if (first !== null || !unknown) return first
+  const found = await findElsewhere<Proxy>({
+    ids: [id],
+    asked,
+    read: async (_own, requestFor) => {
+      const answer = await proxy(requestFor)
+      return answer && typeof answer === 'object' ? answer : undefined
     },
-    { orAccount: accountId }
-  )
+    accountOf: answer => answer.owner?.id,
+  })
+  return found ? found.answer : first
 }
 
 // Made in your account, or one you manage, under <label>-<slug> of the stage's proxy domain (the label made from the
@@ -329,12 +348,13 @@ export type BaseMove = { moves: ProxyMove[]; applied: boolean }
 const BASE_MOVE_FIELDS = `moves { proxy { id name } host ownName ${OWN_NAME_MOVE_FIELDS} } applied`
 
 // The account's base as it stands, for an admin of it; none for another, or before one is set.
-export const graphQLProxyBase = (accountId: string) =>
+export const graphQLProxyBase = (accountId: string, requestFor?: RequestFor) =>
   read<AccountProxyBase | null>(
     `query ProxyBase($accountId: String) { proxyBase(accountId: $accountId) { ${BASE_FIELDS} } }`,
     { accountId },
     'proxyBase',
-    data => data?.proxyBase ?? null
+    data => data?.proxyBase ?? null,
+    requestFor
   )
 
 // A base claimed: pending until its delegation is seen, with the NS records to add.

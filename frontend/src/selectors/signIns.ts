@@ -27,9 +27,7 @@ export type RequestFor = {
 }
 
 const NONE: ILookup<ISignIn> = {}
-const NO_CHOICE: ILookup<string> = {}
 export const getSignIns = (state: State): ILookup<ISignIn> => state.accounts?.signIns || NONE
-export const getVia = (state: State): ILookup<string> => state.accounts?.via || NO_CHOICE
 const NO_MEMBERSHIPS: IMembership[] = []
 const getPrimaryMemberships = (state: State) => state.accounts?.membership || NO_MEMBERSHIPS
 const getUserId = (state: State) => state.auth?.user?.id || ''
@@ -47,12 +45,17 @@ export type AccountRoute = {
   signIn?: boolean
 }
 
-/* One row per account or organization id. An id two sign-ins reach is served by the primary, else by the first
-   sign-in that reaches it — unless the person picked another for it (accounts.via), a choice kept only while that
-   sign-in still reaches it. */
+const getActiveSub = (state: State) => state.accounts?.activeSub
+
+/* EVERY ACCOUNT HERE, AND THE ROW IT IS LOOKED AT THROUGH. An account is reached by each sign-in that belongs to it
+   (`reach`), and has a row under each. The one it is looked at through — whose sign-in asks where a request names the
+   account alone (`sub`) — is: for the SELECTED account, the selected row (accounts.activeId with accounts.activeSub),
+   while that sign-in still reaches it; for any other account, the page's own person's row where they belong to it,
+   else the first sign-in's that does. Nothing else picks a sign-in for an account. */
 export const selectAccountRoutes = createSelector(
-  [getUserId, (state: State) => state.user?.email, getPrimaryMemberships, getSignIns, getVia],
-  (userId, userEmail, memberships, signIns, via): ILookup<AccountRoute> => {
+  [getUserId, (state: State) => state.user?.email, getPrimaryMemberships, getSignIns, getActiveId, getActiveSub],
+  (userId, userEmail, memberships, signIns, activeId, activeSub): ILookup<AccountRoute> => {
+    const selected = activeId || userId
     const routes: ILookup<AccountRoute> = {}
     const reach = (
       id: string,
@@ -63,7 +66,7 @@ export const selectAccountRoutes = createSelector(
       const route = (routes[id] ??= { reach: [] })
       const first = !route.reach.length
       route.reach.push(who)
-      if (first || via[id] === who.sub) {
+      if (first || (id === selected && who.sub === activeSub)) {
         route.sub = who.sub || undefined
         route.email = who.sub ? who.email : undefined
         route.membership = found.membership
@@ -82,32 +85,24 @@ export const selectAccountRoutes = createSelector(
   }
 )
 
-/** The sign-in that serves an account: its sub, or undefined for the primary and for an account no sign-in reaches. */
+/** The sign-in an account is looked at through (selectAccountRoutes): its sub, or undefined for the page's own person
+ *  and for an account no sign-in reaches. */
 export const selectSignInSub = (state: State, accountId?: string): string | undefined =>
   accountId ? selectAccountRoutes(state)[accountId]?.sub : undefined
 
 /* THE SELECTED ROW: an account (accounts.activeId, else the page's own) and the sign-in whose row of it was picked
-   (accounts.activeSub, '' the page's own person) — kept while that sign-in still reaches the account, else the one
-   that serves it (selectAccountRoutes). */
-export const selectActiveSub = (state: State): string => {
-  const route = selectAccountRoutes(state)[getActiveId(state) || getUserId(state)]
-  const picked = state.accounts?.activeSub
-  if (picked !== undefined && route?.reach.some(who => who.sub === picked)) return picked
-  return route?.sub || ''
-}
+   (accounts.activeSub, '' the page's own person) — kept while that sign-in still reaches the account. */
+export const selectActiveSub = (state: State): string =>
+  selectAccountRoutes(state)[getActiveId(state) || getUserId(state)]?.sub || ''
 
 export const selectActiveRowKey = (state: State): RowKey =>
   rowKey(getActiveId(state) || getUserId(state), selectActiveSub(state))
 
-/* THE ROW AN ACCOUNT IS LOOKED AT THROUGH (helpers/rowKey). Callers say an account by its id; where the store keeps
-   something by row, the row is this one: for the selected account, the selected row; for any other account, the row
-   under the sign-in last picked for it, else the page's own person's where they belong to it, else the first
-   sign-in's that does (what selectAccountRoutes answers). An account no one here reaches — and the lists the store
-   keeps beside the accounts' — is its own key. */
+/* THE ROW AN ACCOUNT IS LOOKED AT THROUGH (helpers/rowKey), as selectAccountRoutes says it: callers say an account by
+   its id, and where the store keeps something by row, the row is this one. An account no one here reaches — and the
+   lists the store keeps beside the accounts' — is its own key. */
 export const selectRowOf = (state: State, accountId: string): RowKey =>
-  accountId === (getActiveId(state) || getUserId(state))
-    ? selectActiveRowKey(state)
-    : rowKey(accountId, selectAccountRoutes(state)[accountId]?.sub)
+  rowKey(accountId, selectAccountRoutes(state)[accountId]?.sub)
 
 /** The sign-in a connection or a session is of: the one it says (`sub`), and where it says none — it was stored before
  *  they were said — the page's own person where they belong to its account, else the sign-in that serves it. */
@@ -255,6 +250,10 @@ const notedRows = (state: State, id: string): RowKey[] =>
 export const selectRowNow = (accountId: string): RowKey =>
   stateNow ? selectRowOf(stateNow(), accountId) : rowKey(accountId)
 
+/** Whether anything known says whose one of these ids is: a row's list holds it, or it was read or made under one. */
+export const idsKnown = (state: State, ids: string[]): boolean =>
+  ids.some(id => noted.has(id)) || selectHeldRows(state).some(row => ids.some(id => row.ids.has(id)))
+
 export const isNoted = (id: string) => noted.has(id)
 
 /** The selected account, read where no hook is: by a request that asks as it when nothing says whose its id is. */
@@ -332,6 +331,29 @@ export const servingChanged = (state: State, serving: Serving): boolean => {
   const routes = selectAccountRoutes(state)
   return serving.some(([accountId, sub]) => routes[accountId]?.sub !== sub)
 }
+
+/* THE ROW AN EFFECT ACTS FOR. An effect that began in a row and has waited since sends what follows as that row's
+   sign-in, whichever row is looked at by then: it says so around the call that sends it (sendAs), and the request
+   made inside — one that does not itself say whose it is — is that sign-in's. Only for as long as the call takes to
+   send: what a request function does after waiting is not covered, so it is for functions that send at once. */
+let acting: RowKey | undefined
+
+export function sendAs<T>(row: RowKey, send: () => T): T {
+  const before = acting
+  acting = row
+  try {
+    return send()
+  } finally {
+    acting = before
+  }
+}
+
+/** What a request is asked as where the effect making it said its row (sendAs) and the request says no sign-in or
+ *  account of its own. */
+export const actingFor = (requestFor?: RequestFor): RequestFor | undefined =>
+  acting !== undefined && requestFor?.sub === undefined && !requestFor?.account
+    ? { ...requestFor, sub: rowSub(acting) }
+    : requestFor
 
 /* The same, of the state as it is now, for a service that has no hook to read it by and must not bring the store in
    with it (the store says where its state is read, once it is made). The page's own person until then. */

@@ -4,7 +4,8 @@ import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { EXIT_DEVICE_FIELDS, ExitDevice } from './graphQLDeviceRuns'
 import { PersonRef, exitErrorFields, exitSignInFields } from './deviceSignIns'
 import { ExitServing, exitServingFields } from './exitServing'
-import { RequestFor, isNoted, noteAccountOf, selectedAccountId } from '../selectors/signIns'
+import { RequestFor, isNoted, noteAccountOf, selectRowNow, selectedAccountId } from '../selectors/signIns'
+import { findElsewhere } from './elsewhere'
 import { store } from '../store'
 
 /* Exits (graphql-api docs/PROXY-GROUPS.md §13): what devices send their traffic out through, run by devices — remote.it
@@ -75,7 +76,7 @@ async function read<T>(
 }
 
 // An account's own exits you manage — those no device runs too — and those other accounts share with it.
-export const graphQLAccountExits = (accountId: string) =>
+export const graphQLAccountExits = (accountId: string, requestFor?: RequestFor) =>
   read<{ own: Exit[]; shared: Exit[] }>(
     `query AccountExits($accountId: String) {
       login { id account(id: $accountId) { id exits { ${FIELDS} } sharedExits { ${FIELDS} } } }
@@ -88,10 +89,12 @@ export const graphQLAccountExits = (accountId: string) =>
       // An exit is in no stored list: what is asked of it by its id alone is asked as this account's sign-in.
       noteAccountOf(
         accountId,
-        [...own, ...shared].map(exit => exit.id)
+        [...own, ...shared].map(exit => exit.id),
+        requestFor?.sub
       )
       return { own, shared }
-    }
+    },
+    requestFor
   )
 
 // The exits you may send a device's traffic through, offered now — remote.it's by plan, your own, those shared with you,
@@ -119,20 +122,36 @@ export const graphQLOfferedExits = async (deviceId?: string) =>
 // role. None for one you may not see.
 // Where nothing read so far says whose the exit is (the page opened at its address, before any list), the selected
 // account's sign-in is asked, and the exit then remembered under it for what is asked of it next.
-export const graphQLExit = (id: string) => {
+// Found by none as the row looked at, and nothing known saying whose it is: the other sign-ins here are asked, and
+// the one that sees it has its row selected (services/elsewhere).
+export const graphQLExit = async (id: string) => {
   const accountId = selectedAccountId(store.getState())
   const unknown = !isNoted(id)
-  return read<Exit | null>(
-    `query Exit($id: String!) { exit(id: $id) { ${FIELDS} networks { id name } } }`,
-    { id },
-    'exit',
-    data => {
-      if (!data?.exit) return null
-      if (unknown) noteAccountOf(accountId, [id])
-      return parsed(data.exit)
+  const asked = selectRowNow(accountId)
+  const exit = (requestFor: RequestFor, note?: string) =>
+    read<Exit | null>(
+      `query Exit($id: String!) { exit(id: $id) { ${FIELDS} networks { id name } } }`,
+      { id },
+      'exit',
+      data => {
+        if (!data?.exit) return null
+        if (note) noteAccountOf(note, [id])
+        return parsed(data.exit)
+      },
+      requestFor
+    )
+  const first = await exit({ orAccount: accountId }, unknown ? accountId : undefined)
+  if (first !== null || !unknown) return first
+  const found = await findElsewhere<Exit>({
+    ids: [id],
+    asked,
+    read: async (_own, requestFor) => {
+      const answer = await exit(requestFor)
+      return answer && typeof answer === 'object' ? answer : undefined
     },
-    { orAccount: accountId }
-  )
+    accountOf: answer => answer.owner?.id,
+  })
+  return found ? found.answer : first
 }
 
 // Made in your account, or one you manage: then devices are added to run it.

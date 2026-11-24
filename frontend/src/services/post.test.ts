@@ -33,7 +33,7 @@ beforeEach(() => {
     ui: {},
     auth: { user: { id: 'me' } },
     user: { id: 'me', email: 'me@x.test' },
-    accounts: { membership: [member('shared')], signIns: { 'sub-work': work }, via: {} },
+    accounts: { activeId: 'shared', activeSub: '', membership: [member('shared')], signIns: { 'sub-work': work } },
   })
   request.mockReset().mockImplementation(() => new Promise(resolve => (answer = resolve)))
   vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -52,7 +52,7 @@ describe('a read answered after another sign-in serves its account', () => {
     const reading = post({ query: READ, variables: { accountId: 'shared' } })
     await vi.waitFor(() => expect(asked()).toEqual(['token-of:primary']))
     const old = answer
-    state.accounts = { ...state.accounts, via: { shared: 'sub-work' } }
+    state.accounts = { ...state.accounts, activeSub: 'sub-work' }
     old({ data: { data: { as: 'primary' } } })
     await vi.waitFor(() => expect(asked()).toEqual(['token-of:primary', 'token-of:sub-work']))
     answer({ data: { data: { as: 'work' } } })
@@ -80,8 +80,7 @@ describe('a read answered after another sign-in serves its account', () => {
   it('is not asked again without end while the account keeps changing hands', async () => {
     request.mockReset().mockImplementation(async () => {
       // Each answer finds another sign-in serving the account.
-      const now = state.accounts.via.shared ? {} : { shared: 'sub-work' }
-      state.accounts = { ...state.accounts, via: now }
+      state.accounts = { ...state.accounts, activeSub: state.accounts.activeSub ? '' : 'sub-work' }
       return { data: {} }
     })
     expect(await post({ query: READ, variables: { accountId: 'shared' } })).toBe('ERROR')
@@ -91,16 +90,16 @@ describe('a read answered after another sign-in serves its account', () => {
   it('a change made meanwhile is still answered for: it happened', async () => {
     const changing = post({ query: CHANGE, variables: { accountId: 'shared' } })
     await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(1))
-    state.accounts = { ...state.accounts, via: { shared: 'sub-work' } }
+    state.accounts = { ...state.accounts, activeSub: 'sub-work' }
     answer({ data: { data: { rename: true } } })
     expect(await changing).toEqual({ data: { data: { rename: true } } })
   })
 
   it('nothing is looked at with one sign-in in use', async () => {
-    state.accounts = { membership: [member('shared')], signIns: {}, via: {} }
+    state.accounts = { membership: [member('shared')], signIns: {} }
     const reading = post({ query: READ, variables: { accountId: 'shared' } })
     await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(1))
-    state.accounts = { ...state.accounts, signIns: { 'sub-work': work }, via: { shared: 'sub-work' } }
+    state.accounts = { ...state.accounts, signIns: { 'sub-work': work }, activeSub: 'sub-work' }
     answer({ data: {} })
     expect(await reading).toEqual({ data: {} })
   })
@@ -114,7 +113,7 @@ describe('a read answered after another sign-in serves its account', () => {
     const reading = post({ query: READ, variables: { accountId: 'shared' } }, '', false, true)
     await vi.waitFor(() => expect(asked()).toEqual(['token-of:primary']))
     // The person picks the other sign-in for the account while it is out, and then the connection drops.
-    state.accounts = { ...state.accounts, via: { shared: 'sub-work' } }
+    state.accounts = { ...state.accounts, activeSub: 'sub-work' }
     fail(dropped)
     await vi.waitFor(() => expect(asked()).toEqual(['token-of:primary', 'token-of:primary']))
     // The retry's answer is the sign-in before's, judged by who served the account when the read was first asked:

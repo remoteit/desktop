@@ -15,7 +15,7 @@ import { getAccountIds, accountIdsByReach } from './accounts'
 import { graphQLFetchOrganizations, graphQLFetchGuests, graphQLGetResellerReportUrl } from '../services/graphQLRequest'
 import { selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
 import { rowSaid, selectActiveAccountId, selectRow } from '../selectors/accounts'
-import { asRow, rowGone } from '../selectors/signIns'
+import { asRow, rowGone, sendAs } from '../selectors/signIns'
 import { RowKey, rowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
@@ -211,7 +211,8 @@ export default createModel<RootModel>()({
       // request that names no account is the page's own person's.
       const accountId = organization.id || selectActiveAccountId(state)
       await dispatch.organization.setActive({ ...params, id: accountId, row: selectRow(state) })
-      const result = await graphQLSetOrganization({ ...params, accountId })
+      // Sent as the row it began in, whichever row is looked at once the write above is done.
+      const result = await sendAs(selectRow(state), () => graphQLSetOrganization({ ...params, accountId }))
       if (result !== 'ERROR') {
         if (!organization.id)
           dispatch.ui.set({
@@ -255,11 +256,13 @@ export default createModel<RootModel>()({
 
       const action = updated.length > organization.members.length ? 'added' : 'updated'
       const member = members[0]
-      const result = await graphQLSetMembers(
-        members.map(member => member.user.email),
-        organization.id || selectActiveAccountId(state),
-        member.roleId,
-        member.license
+      const result = await sendAs(selectRow(state), () =>
+        graphQLSetMembers(
+          members.map(member => member.user.email),
+          organization.id || selectActiveAccountId(state),
+          member.roleId,
+          member.license
+        )
       )
       if (result !== 'ERROR') {
         dispatch.ui.set({
@@ -320,9 +323,9 @@ export default createModel<RootModel>()({
       let result
       if (index > -1) {
         roles[index] = role
-        result = await graphQLUpdateRole(data)
+        result = await sendAs(selectRow(state), () => graphQLUpdateRole(data))
       } else {
-        result = await graphQLCreateRole(data)
+        result = await sendAs(selectRow(state), () => graphQLCreateRole(data))
         if (result !== 'ERROR') role.id = result?.data?.data?.createRole?.id
         roles.push(role)
         dispatch.ui.set({ redirect: `/organization/roles/${role.id}` })

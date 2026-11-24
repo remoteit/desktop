@@ -7,7 +7,7 @@ import { RowKey, rowSub } from '../helpers/rowKey'
 
 /* Every row of the switcher beyond the page's own account (selectors/signIns): the organizations the primary
    belongs to, then each further sign-in's own account and its organizations — one row per id. A row another sign-in
-   serves says so (`via`); one more than one sign-in reaches lists them (`reach`), which is the choice offered. */
+   is looked at through says so (`under`); one more than one sign-in reaches lists them (`reach`), which is the choice offered. */
 export const selectMemberships = createSelector(
   [(state: State) => state.auth?.user?.id || '', getMemberships, getSignIns, selectAccountRoutes],
   (userId, memberships, signIns, routes): IMembership[] => {
@@ -28,7 +28,7 @@ export const selectMemberships = createSelector(
             account: { id, email: own?.email || route.email || '' },
           }
       if (route.signIn) row.signIn = true
-      if (route.sub) row.via = { sub: route.sub, email: route.email || '' }
+      if (route.sub) row.under = { sub: route.sub, email: route.email || '' }
       if (route.reach.length > 1) row.reach = route.reach
       rows.push(row)
     }

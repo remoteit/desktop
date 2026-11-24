@@ -69,7 +69,7 @@ describe('the sign-ins beside the page’s own person', () => {
   const signedIn = (signIns: object = {}, more: object = {}) => ({
     auth: { user: { id: 'personal' } },
     user: { id: 'personal', email: 'personal@x.test' },
-    accounts: { activeId: undefined, membership: [member('acme')], signIns, via: {}, ...more },
+    accounts: { activeId: undefined, membership: [member('acme')], signIns, ...more },
     devices: {} as Record<string, object>,
   })
   const answer = (id: string, orgs: string[]) => ({
@@ -104,7 +104,6 @@ describe('the sign-ins beside the page’s own person', () => {
     const effects = (accounts as any).effects(dispatch)
     dispatch.accounts.setSignIns = vi.fn((signIns: object) => effects.setSignIns(signIns, current))
     dispatch.accounts.readAgain = vi.fn((ids: string[]) => effects.readAgain(ids, current))
-    dispatch.accounts.setVia = vi.fn((payload: object) => effects.setVia(payload, current))
     return {
       dispatch,
       effects,
@@ -213,12 +212,10 @@ describe('the sign-ins beside the page’s own person', () => {
       expect(dispatch.accounts.select).not.toHaveBeenCalled()
     })
 
-    it('hand it back to the page’s person when the sign-in picked for it leaves', async () => {
+    it('hand it back to the page’s person when the sign-in whose row of it was selected leaves', async () => {
       inUse()
       const both = { ...work, membership: [member('labs'), member('acme')] }
-      const { dispatch, run } = effectsWith(
-        signedIn({ 'sub-work': both }, { activeId: 'acme', via: { acme: 'sub-work' } })
-      )
+      const { dispatch, run } = effectsWith(signedIn({ 'sub-work': both }, { activeId: 'acme', activeSub: 'sub-work' }))
       await run('fetchSignIns')
       expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['work', 'labs']]])
       expect(dispatch.accounts.readAgain).toHaveBeenCalledWith(['acme'])
@@ -267,20 +264,18 @@ describe('the sign-ins beside the page’s own person', () => {
       expect(dispatch.accounts.select.mock.calls).toEqual([['personal']])
     })
 
-    it('leave it as the page’s person, whose membership it is, though the other is picked to serve it', async () => {
+    it('leave it as the page’s person, whose membership it is, though the other’s row of it is the selected one', async () => {
       graphQLLeaveMembership.mockReset().mockResolvedValue({})
       const both = { ...work, membership: [member('labs'), member('acme')] }
-      const { dispatch, run } = effectsWith(
-        signedIn({ 'sub-work': both }, { activeId: 'acme', via: { acme: 'sub-work' } })
-      )
+      const { dispatch, run } = effectsWith(signedIn({ 'sub-work': both }, { activeId: 'acme', activeSub: 'sub-work' }))
       dispatch.ui = { set: vi.fn() }
       await run('leaveMembership', 'acme')
       expect(graphQLLeaveMembership).toHaveBeenCalledWith('acme', '')
       expect(dispatch.accounts.set).toHaveBeenCalledWith({ membership: [] })
-      // The other is a member still: its row, and what was read for it as them, stay.
+      // The other is a member still: its row, and what was read for it as them, stay. Their own row of it goes.
       expect(dispatch.accounts.setSignIns).not.toHaveBeenCalled()
       expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
-      expect(dispatch.accounts.forgetRows).not.toHaveBeenCalled()
+      expect(dispatch.accounts.forgetRows.mock.calls).toEqual([[['acme']]])
     })
   })
 
@@ -428,39 +423,25 @@ describe('the sign-ins beside the page’s own person', () => {
     expect(dispatch.accounts.select).not.toHaveBeenCalled()
   })
 
-  it('look at an organization both reach through the one the person picks: nothing dropped, the row selected', async () => {
-    const told = vi.fn()
-    const stop = followAccountsDropped(told)
+  it('select an organization as the account whose row is picked: nothing dropped, that row the selected one', async () => {
     const both = { ...work, membership: [member('labs'), member('acme')] }
     const state: any = signedIn({ 'sub-work': both }, { activeId: 'acme' })
     state.devices = { acme: {}, [rowKey('acme', 'sub-work')]: {} }
     const { dispatch, run } = effectsWith(state)
-    expect(await run('setVia', { accountId: 'acme', sub: 'sub-work' })).toBe(true)
-    // Selected: the selected row is the account under that sign-in from now on.
-    expect(dispatch.accounts.set).toHaveBeenCalledWith({ via: { acme: 'sub-work' }, activeSub: 'sub-work' })
+    await run('selectAs', { accountId: 'acme', sub: 'sub-work' })
+    // The row: the account, and the sign-in.
+    expect(dispatch.accounts.select.mock.calls).toEqual([[{ accountId: 'acme', sub: 'sub-work' }]])
     // Each row is kept as read: nothing is forgotten, nothing asked again of the organization.
     expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
     expect(dispatch.accounts.forgetRows).not.toHaveBeenCalled()
     expect(dispatch.organization.fetch).not.toHaveBeenCalled()
-    // It is selected as that row (read where it never was), and what a page read for itself is read again as it.
-    expect(dispatch.accounts.select).toHaveBeenCalledWith('acme')
-    expect(told).toHaveBeenCalledTimes(1)
-    stop()
+    expect(dispatch.accounts.set).not.toHaveBeenCalled()
   })
 
-  it('select an organization as the account whose row is picked: looked at through it from now on, and selected', async () => {
-    const both = { ...work, membership: [member('labs'), member('acme')] }
-    const { dispatch, run } = effectsWith(signedIn({ 'sub-work': both }))
+  it('select an account as it is looked at where the sign-in said does not reach it', async () => {
+    const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
     await run('selectAs', { accountId: 'acme', sub: 'sub-work' })
-    expect(dispatch.accounts.set).toHaveBeenCalledWith({ via: { acme: 'sub-work' } })
-    expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
-    expect(dispatch.accounts.forgetRows).not.toHaveBeenCalled()
     expect(dispatch.accounts.select.mock.calls).toEqual([['acme']])
-    // The row of the account already serving it: selected, nothing read again.
-    dispatch.accounts.set.mockClear()
-    await run('selectAs', { accountId: 'labs', sub: 'sub-work' })
-    expect(dispatch.accounts.set).not.toHaveBeenCalled()
-    expect(dispatch.accounts.select).toHaveBeenLastCalledWith('labs')
   })
 
   it('tell what a page reads for itself to read again when the row selected is another sign-in’s', async () => {
@@ -470,6 +451,7 @@ describe('the sign-ins beside the page’s own person', () => {
       logs: { reset: vi.fn() },
       ui: { set: vi.fn() },
       accounts: { set: vi.fn() },
+      jobs: { fetch: vi.fn() },
       ...Object.fromEntries(
         ['networks', 'devices', 'files', 'tags', 'products', 'partnerStats'].map(model => [
           model,
@@ -477,13 +459,27 @@ describe('the sign-ins beside the page’s own person', () => {
         ])
       ),
     }
-    const state = signedIn({ 'sub-work': work }, { activeId: 'acme' })
+    const both = { ...work, membership: [member('labs'), member('acme')] }
+    const state: any = signedIn({ 'sub-work': both }, { activeId: 'acme' })
+    state.jobs = { all: { acme: [] } }
+    const select = (row: unknown) => (accounts as any).effects(dispatch).select(row, state)
     // From the page's own person's organization to another of theirs: the same sign-in, nothing to read again.
-    await (accounts as any).effects(dispatch).select('personal', state)
+    await select('personal')
     expect(told).not.toHaveBeenCalled()
     // To a row of Work's: another sign-in's.
-    await (accounts as any).effects(dispatch).select('labs', state)
+    await select('labs')
     expect(told).toHaveBeenCalledTimes(1)
+    // To the other row of the organization selected: nothing dropped, the page's own reads made again as it — and
+    // its runs read for that row, where this one's had been.
+    await select({ accountId: 'acme', sub: 'sub-work' })
+    expect(dispatch.accounts.set).toHaveBeenLastCalledWith({ activeId: 'acme', activeSub: 'sub-work' })
+    expect(told).toHaveBeenCalledTimes(2)
+    expect(dispatch.jobs.fetch.mock.calls).toEqual([[{ accountId: 'acme', sub: 'sub-work' }]])
+    // Selected again by its id alone: the selected row stays the one picked.
+    const picked = { ...state, accounts: { ...state.accounts, activeSub: 'sub-work' } }
+    await (accounts as any).effects(dispatch).select('acme', picked)
+    expect(dispatch.accounts.set).toHaveBeenLastCalledWith({ activeId: 'acme', activeSub: 'sub-work' })
+    expect(told).toHaveBeenCalledTimes(2)
     stop()
   })
 
@@ -491,13 +487,14 @@ describe('the sign-ins beside the page’s own person', () => {
     const both = { ...work, membership: [member('labs'), member('acme')] }
     // As it was stored: every account's devices under its own id — Work's, Labs' and (picked for it) Acme's read as
     // Work. A plain id is the page's own person's row now.
-    const state = signedIn({ 'sub-work': both }, { via: { acme: 'sub-work' }, byRow: undefined })
+    const state = signedIn({ 'sub-work': both }, { activeId: 'acme', via: { acme: 'sub-work' }, byRow: undefined })
     state.devices = { default: {}, connections: {}, personal: {}, acme: {}, work: {}, labs: {} }
     Object.assign(state, { networks: { all: { acme: [], personal: [] } }, organization: { accounts: { labs: {} } } })
     const { dispatch, run } = effectsWith(state)
     run('keepByRow')
     expect(dispatch.accounts.forgetRows.mock.calls).toEqual([[['acme', 'work', 'labs']]])
-    expect(dispatch.accounts.set).toHaveBeenCalledWith({ byRow: 2 })
+    // What was picked for the selected account is the selected row from now on; `via` is kept no more.
+    expect(dispatch.accounts.set).toHaveBeenCalledWith({ byRow: 3, activeSub: 'sub-work', via: undefined })
     // Stored by row already: nothing is looked for.
     run('keepByRow')
     expect(dispatch.accounts.forgetRows).toHaveBeenCalledTimes(1)
@@ -522,19 +519,6 @@ describe('the sign-ins beside the page’s own person', () => {
     expect(dispatch.accounts.set).toHaveBeenLastCalledWith({ activeId: 'acme', activeSub: '' })
   })
 
-  it('serve nothing through a sign-in that does not reach the organization', async () => {
-    const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
-    await run('setVia', { accountId: 'acme', sub: 'sub-work' })
-    expect(dispatch.accounts.set).not.toHaveBeenCalled()
-  })
-
-  it('change nothing when the organization is already served by that sign-in', async () => {
-    const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
-    await run('setVia', { accountId: 'acme', sub: '' })
-    expect(dispatch.accounts.set).not.toHaveBeenCalled()
-    expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
-  })
-
   it('keep the selected row through a refresh of the primary’s memberships when another sign-in serves it', async () => {
     const dispatch: any = { ui: { set: vi.fn() }, accounts: { set: vi.fn() } }
     const state = signedIn({ 'sub-work': work }, { activeId: 'labs' })
@@ -556,7 +540,6 @@ describe('a device taken out of some accounts’ lists', () => {
     accounts: {
       membership: [],
       signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
-      via: {},
     },
     devices: {
       personal: { all: [device('D1'), device('D2')], total: 2 },

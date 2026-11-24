@@ -3,7 +3,7 @@ import structuredClone from '@ungap/structured-clone'
 import { State } from '../store'
 import { createModel } from '@rematch/core'
 import { selectConnection } from '../selectors/connections'
-import { asRow, rowGone, selectRowOf } from '../selectors/signIns'
+import { asRow, rowGone, selectRowOf, sendAs } from '../selectors/signIns'
 import { RowKey, rowSub, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
 import { selectActiveAccountId, selectActiveUser } from '../selectors/accounts'
 import { selectNetworks, selectNetworkByService } from '../selectors/networks'
@@ -270,7 +270,7 @@ export default createModel<RootModel>()({
       copy.serviceIds.splice(index, 1)
       dispatch.networks.setNetworkIn({ network: copy, ...at })
       if (networkId && !clearOnly) {
-        const result = await graphQLRemoveConnection(networkId, serviceId)
+        const result = await sendAs(at.row, () => graphQLRemoveConnection(networkId, serviceId))
         if (result === 'ERROR' || !result?.data?.data?.removeNetworkConnection) {
           console.error('Failed to remove network connection', serviceId, network, result)
           dispatch.ui.set({
@@ -323,8 +323,10 @@ export default createModel<RootModel>()({
     },
 
     async updateNetwork(network: INetwork, state) {
-      await dispatch.networks.setNetworkIn({ network, ...rowNow(state) })
-      await graphQLUpdateNetwork(network)
+      const at = rowNow(state)
+      await dispatch.networks.setNetworkIn({ network, ...at })
+      // Sent as the row it began in, whichever row is looked at once the write above is done.
+      await sendAs(at.row, () => graphQLUpdateNetwork(network))
       await dispatch.networks.fetch()
     },
 

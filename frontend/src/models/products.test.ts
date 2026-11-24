@@ -35,6 +35,7 @@ vi.mock('../services/graphQLDeviceProducts', () => ({
   graphQLCreateDeviceProductOneTimeCode,
   graphQLSetDeviceProductLifecycle,
 }))
+vi.mock('../services/elsewhere', () => ({ findElsewhere: vi.fn() }))
 vi.mock('../selectors/accounts', () => ({
   selectActiveAccountId: () => 'acct',
   // One sign-in: a row is its account's own id.

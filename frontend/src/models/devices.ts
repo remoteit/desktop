@@ -59,6 +59,7 @@ import { RowSaid, rowSaid, selectActiveAccountId } from '../selectors/accounts'
 import {
   asRow,
   rowFor,
+  sendAs,
   noteAccountOf,
   rowGone,
   selectActiveRowKey,
@@ -73,6 +74,7 @@ import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { State, store } from '../store'
 import { inOrder } from '../helpers/inOrder'
+import { findElsewhere } from '../services/elsewhere'
 
 export type IDeviceState = {
   all: IDevice[]
@@ -272,6 +274,9 @@ export default createModel<RootModel>()({
     ) {
       if (!id) return
 
+      // Read for whatever row is looked at, the caller naming none: where it is not found, it may be looked for in
+      // the other sign-ins' (services/elsewhere).
+      const unnamed = !accountId && sub === undefined && !newDevice
       accountId = accountId || selectActiveAccountId(state)
       const row = rowFor(state, accountId, sub)
       let result: IDevice | undefined
@@ -318,6 +323,33 @@ export default createModel<RootModel>()({
           suppressAdd: newDevice && !matchesFilter,
         })
       } else {
+        // Opened at its address, and no row here known to hold it: another sign-in's to see, maybe — whose row is
+        // then selected, and the device read into it.
+        const elsewhere =
+          unnamed && gqlResponse !== 'ERROR'
+            ? await findElsewhere({
+                ids: [id],
+                asked: row,
+                read: async (own, requestFor) => {
+                  const answer = await graphQLFetchFullDevice(id, own, serviceTimeSeries, deviceTimeSeries, requestFor)
+                  return answer === 'ERROR' ? undefined : [answer?.data?.data?.login?.device].flat()[0]
+                },
+                accountOf: (found: any) => found?.owner?.id,
+              })
+            : undefined
+        if (elsewhere) {
+          if (!silent) dispatch.devices.set({ fetching: false, accountId, row })
+          await dispatch.devices.fetchSingleFull({
+            id,
+            hidden,
+            thisDevice,
+            isService,
+            silent,
+            accountId: elsewhere.accountId,
+            sub: elsewhere.sub,
+          })
+          return
+        }
         if (gqlResponse !== 'ERROR' && !isService && !quiet && state.ui.silent !== id)
           dispatch.ui.set({
             noticeMessage: isService
@@ -551,7 +583,9 @@ export default createModel<RootModel>()({
         if (id) {
           // The new service is in no list yet to say whose it is: its device's sign-in made it, and sets what follows.
           noteAccountOf(accountId, [id])
-          await graphQLSetAttributes(form.attributes, id, { about: [deviceId] })
+          await sendAs(rowFor(state, begun(state, accountId).accountId), () =>
+            graphQLSetAttributes(form.attributes, id, { about: [deviceId] })
+          )
           dispatch.devices.addService({ deviceId, service: { ...form, ports, id }, ...begun(state, accountId) })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
           // The form is not the service: read the device for its state — online already when its daemon took it up
@@ -637,7 +671,7 @@ export default createModel<RootModel>()({
 
     async removeLink(id: string, state) {
       await dispatch.devices.updateService({ id, set: { link: undefined } })
-      const result = await graphQLRemoveLink(id)
+      const result = await sendAs(selectRowOf(state, selectActiveAccountId(state)), () => graphQLRemoveLink(id))
 
       if (result === 'ERROR') {
         dispatch.ui.set({

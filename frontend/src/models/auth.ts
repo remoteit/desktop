@@ -749,16 +749,10 @@ export default createModel<RootModel>()({
       const signIns: ILookup<ISignIn> = {}
       people.forEach(({ sub, primary }) => !primary && known[sub] && (signIns[sub] = known[sub]))
       const membership = (primarySub && before[primarySub]?.membership) || []
-      // A sign-in picked for an organization is said by sub, '' the page's person: said again for the new one.
-      const via: ILookup<string> = {}
-      Object.entries(accounts.via || {}).forEach(([id, sub]) => {
-        const picked = sub || formerSub
-        if (picked && inUse.has(picked)) via[id] = picked === primarySub ? '' : picked
-      })
       const reached = selectAccountRoutes({
         auth: { user: { id: userId } },
         user,
-        accounts: { membership, signIns, via },
+        accounts: { membership, signIns },
       } as State)
       const rows: ILookup<RowKey> = {}
       storedRows(state).forEach(row => {
@@ -773,7 +767,6 @@ export default createModel<RootModel>()({
       dispatch.accounts.set({
         membership,
         signIns,
-        via,
         activeId: undefined,
         activeSub: undefined,
         primarySub: undefined,

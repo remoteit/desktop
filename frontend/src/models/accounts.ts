@@ -31,8 +31,6 @@ export type IAccountsState = {
   byRow?: boolean | number
   // The sign-ins in use beside the page's own person, by sub (selectors/signIns): each one's account and organizations.
   signIns?: ILookup<ISignIn>
-  // The sign-in the person picked for an organization more than one reaches, by account id.
-  via?: ILookup<string>
   // The page's own person's sub, as last signed in: says whose the stored data is when another person's page boots.
   primarySub?: string
   standaloneOrganizations?: boolean
@@ -88,14 +86,14 @@ const BY_ROW = [
 const goneRows = (state: State): RowKey[] => storedRows(state).filter(row => rowGone(state, row))
 
 /* State stored by row to this version. Before it, every account's data was under its plain id (1: the devices alone
-   by row). */
-const KEPT_BY_ROW = 2
+   by row; 2: everything by row, with the sign-in an organization was looked at through kept apart from the selected
+   row, by account id — `via`). */
+const KEPT_BY_ROW = 3
 
 const accountsState: IAccountsState = {
   membership: [],
   activeId: undefined,
   signIns: {},
-  via: {},
   byRow: KEPT_BY_ROW,
 }
 
@@ -261,40 +259,33 @@ export default createModel<RootModel>()({
     rekey(rows: ILookup<RowKey>) {
       BY_ROW.forEach(model => dispatch[model].rekey(rows))
     },
-    /** Look at an organization more than one sign-in reaches through `sub` ('' the page's own person) from now on.
-     *  Each sign-in's row of it is kept as read, so nothing is dropped; where the organization is the selected one,
-     *  the selected row is this one — read if it never was — and what a page reads for itself is read again as it
-     *  (rowChanged). Nothing for a sign-in that does not reach it. True when it was selected, as this row. */
-    async setVia({ accountId, sub }: { accountId: string; sub: string }, state): Promise<boolean> {
-      if ((selectSignInSub(state, accountId) || '') === sub) return false
-      if (!selectAccountRoutes(state)[accountId]?.reach.some(who => who.sub === sub)) return false
-      const selected = accountId === selectActiveAccountId(state)
-      // Its runs where the row left had them read: the runs page is not opened again by this.
-      const runs = selected && !!state.jobs?.all?.[selectRowOf(state, accountId)]
-      await dispatch.accounts.set({
-        via: { ...state.accounts.via, [accountId]: sub },
-        ...(selected ? { activeSub: sub } : {}),
-      })
-      if (!selected) return false
-      rowChanged()
-      await dispatch.accounts.select(accountId)
-      if (runs && !state.jobs.all[rowKey(accountId, sub)]) dispatch.jobs.fetch({ accountId, sub })
-      return true
-    },
-    /** A row of the switcher picked: the organization selected AS the account the row is under — that row is the
-     *  selected one, and the account is looked at through its sign-in from now on (setVia). */
-    async selectAs({ accountId, sub }: { accountId: string; sub: string }) {
-      if (!(await dispatch.accounts.setVia({ accountId, sub }))) await dispatch.accounts.select(accountId)
+    /** A row of the switcher picked: the account selected AS the sign-in the row is under (`sub`, '' the page's own
+     *  person). Each sign-in's row of it is kept as read, so nothing is dropped: the row is read if it never was, and
+     *  what a page reads for itself is read again as it (select). A sign-in that does not reach the account picks
+     *  nothing: the account is selected as it is looked at. */
+    async selectAs({ accountId, sub }: { accountId: string; sub: string }, state) {
+      const reaches = selectAccountRoutes(state)[accountId]?.reach.some(who => who.sub === sub)
+      await dispatch.accounts.select(reaches ? { accountId, sub } : accountId)
     },
     /** State stored before it was kept by row had every account's data under its plain id — which is now the page's
      *  own person's row of it. What was read as another sign-in (its own account, an organization it serves) is
      *  dropped, once, the moment the stored state is read back (store.ts) — before anything asks of it — and read
      *  again into that sign-in's row when the row is looked at. */
     keepByRow(_: void, state) {
-      if (state.accounts.byRow === KEPT_BY_ROW) return
-      const routes = selectAccountRoutes(state)
-      dispatch.accounts.forgetRows(storedRows(state).filter(row => !rowSub(row) && !!routes[rowAccount(row)]?.sub))
-      dispatch.accounts.set({ byRow: KEPT_BY_ROW })
+      const kept = state.accounts.byRow === true ? 1 : state.accounts.byRow || 0
+      if (kept === KEPT_BY_ROW) return
+      // The sign-in each account was looked at through then (`via`, where another was picked for it): whose what is
+      // stored under a plain id was read as. Of it, the selected account's becomes the selected row; the rest is not
+      // kept — an account not selected is looked at through the page's own person's row where they belong to it.
+      const via: ILookup<string> = (state.accounts as { via?: ILookup<string> }).via || {}
+      const active = selectActiveAccountId(state)
+      const activeSub = state.accounts.activeSub ?? via[active]
+      if (kept < 2) {
+        const routes = selectAccountRoutes(state)
+        const readAs = (id: string) => via[id] ?? routes[id]?.reach[0]?.sub ?? ''
+        dispatch.accounts.forgetRows(storedRows(state).filter(row => !rowSub(row) && !!readAs(rowAccount(row))))
+      }
+      dispatch.accounts.set({ byRow: KEPT_BY_ROW, activeSub, ...({ via: undefined } as object) })
     },
     async fetchOrganizationClosures() {
       const result = await graphQLBasicRequest(
@@ -332,16 +323,23 @@ export default createModel<RootModel>()({
       The one way to switch accounts - every account scoped list has to be re-fetched
       or it keeps showing the previous account's data. Callers own their navigation.
     */
-    async select(accountId: string, state) {
+    async select(row: string | { accountId: string; sub: string }, state) {
+      const accountId = typeof row === 'string' ? row : row.accountId
+      const before = selectActiveAccountId(state)
       await dispatch.logs.reset()
-      if (accountId !== selectActiveAccountId(state))
-        await dispatch.ui.set({ selected: [], selectionAnchor: undefined })
-      // The row selected: the account, under the sign-in it is looked at through.
-      const sub = selectSignInSub(state, accountId) || ''
+      if (accountId !== before) await dispatch.ui.set({ selected: [], selectionAnchor: undefined })
+      // The row selected: the account, under the sign-in said; with none said, the row it is looked at through — the
+      // selected one where it is selected already, else the page's own person's where they belong to it, else the
+      // first sign-in's that does (selectors/signIns selectAccountRoutes).
+      const sub = typeof row === 'string' ? selectSignInSub(state, accountId) || '' : row.sub
+      // Its runs where the row left had them read and this one's never were: the runs page is not opened again by a
+      // change of row alone.
+      const runs = accountId === before && !!state.jobs?.all?.[selectRowOf(state, accountId)]
       await dispatch.accounts.set({ activeId: accountId, activeSub: sub })
-      // Another account's row, looked at through another sign-in: what a page reads for itself by a device's or a
-      // service's id, which may be in both rows, is read again as this one (hooks/useReadAgain).
+      // Another row, looked at through another sign-in: what a page reads for itself by a device's or a service's id,
+      // which may be in both rows, is read again as this one (hooks/useReadAgain).
       if (selectActiveSub(state) !== sub) rowChanged()
+      if (runs && !state.jobs.all[rowKey(accountId, sub)]) dispatch.jobs.fetch({ accountId, sub })
       dispatch.networks.fetchIfEmpty()
       dispatch.devices.fetchIfEmpty()
       dispatch.files.fetchIfEmpty()
@@ -356,14 +354,11 @@ export default createModel<RootModel>()({
       const result = await graphQLLeaveMembership(id, '')
       if (result !== 'ERROR') {
         const remaining = membership.filter(m => m.account.id !== id)
-        // Left as the primary, and still a row through another sign-in: read as that one from now on.
-        const { moved } = rowsAfter(state, { membership: remaining })
         dispatch.accounts.set({ membership: remaining })
-        if (moved.length) {
-          // Theirs no longer: their rows of it go, the other sign-in's stay as read.
-          dispatch.accounts.forgetRows(moved.map(id => rowKey(id)))
-          void dispatch.organization.fetch()
-        }
+        // Theirs no longer: their row of it goes. Another sign-in's row of it, where one here belongs to it still,
+        // stays as read — and its organization is read for whoever looks at it next.
+        dispatch.accounts.forgetRows([rowKey(id)])
+        if (selectAccountRoutes(state)[id]?.reach.some(who => who.sub)) void dispatch.organization.fetch()
         await dispatch.accounts.select(state.user.id)
         dispatch.ui.set({
           successMessage: i18n.t('notices:organization.left', {

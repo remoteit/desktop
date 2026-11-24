@@ -17,7 +17,7 @@ import {
   selectSignInSub,
 } from './signIns'
 import { selectMemberships, selectActiveUser, selectShowOrganizations } from './accounts'
-import { selectOrganizationOptions, selectServingAccount, selectSwitcherRows } from './organizations'
+import { selectOrganizationOptions, selectRowAccount, selectSwitcherRows } from './organizations'
 import { rowKey } from '../helpers/rowKey'
 
 /* Personal is the page's own person: a member of Acme and of Shared. Work is signed in beside them: its own account,
@@ -47,7 +47,6 @@ const state = (accounts: object = {}): any => ({
         membership: [member('labs', 'Labs'), member('shared', 'Shared', 'Guest')],
       },
     },
-    via: {},
     ...accounts,
   },
   devices: {
@@ -78,19 +77,22 @@ describe('the sign-in that serves an account', () => {
     expect(selectSignInSub(s, undefined)).toBeUndefined()
   })
 
-  it('is the primary for an organization both reach, unless the person picked the other', () => {
+  it('is the page’s own person for an organization both reach, unless the other’s row of it is the selected one', () => {
     expect(selectSignInSub(state(), 'shared')).toBeUndefined()
     expect(selectAccountRoutes(state()).shared.reach).toEqual([
       { sub: '', email: 'personal@x.test' },
       { sub: 'sub-work', email: 'work@x.test' },
     ])
-    expect(selectSignInSub(state({ via: { shared: 'sub-work' } }), 'shared')).toBe('sub-work')
-    expect(selectSignInSub(state({ via: { shared: '' } }), 'shared')).toBeUndefined()
+    expect(selectSignInSub(state({ activeId: 'shared', activeSub: 'sub-work' }), 'shared')).toBe('sub-work')
+    expect(selectSignInSub(state({ activeId: 'shared', activeSub: '' }), 'shared')).toBeUndefined()
+    // The other's row is the selected one only while the organization is selected: not selected, it is looked at
+    // through the page's own person's again.
+    expect(selectSignInSub(state({ activeId: 'acme', activeSub: 'sub-work' }), 'shared')).toBeUndefined()
   })
 
   it('ignores a pick for a sign-in that no longer reaches the organization', () => {
-    expect(selectSignInSub(state({ via: { shared: 'sub-gone', acme: 'sub-work' } }), 'shared')).toBeUndefined()
-    expect(selectSignInSub(state({ via: { acme: 'sub-work' } }), 'acme')).toBeUndefined()
+    expect(selectSignInSub(state({ activeId: 'shared', activeSub: 'sub-gone' }), 'shared')).toBeUndefined()
+    expect(selectSignInSub(state({ activeId: 'acme', activeSub: 'sub-work' }), 'acme')).toBeUndefined()
   })
 })
 
@@ -101,7 +103,7 @@ describe('the switcher’s rows', () => {
   })
 
   it('are every sign-in’s account and organizations, one row per id, saying how each is available', () => {
-    const rows = selectMemberships(state()).map(row => [row.account.id, row.via?.email, row.signIn, row.roleName])
+    const rows = selectMemberships(state()).map(row => [row.account.id, row.under?.email, row.signIn, row.roleName])
     expect(rows).toEqual([
       ['acme', undefined, undefined, 'Member'],
       ['shared', undefined, undefined, 'Admin'],
@@ -112,12 +114,14 @@ describe('the switcher’s rows', () => {
   })
 
   it('serve a shared organization through the sign-in the person picked, with that sign-in’s role', () => {
-    const shared = selectMemberships(state({ via: { shared: 'sub-work' } })).find(row => row.account.id === 'shared')
-    expect([shared?.via?.sub, shared?.roleName]).toEqual(['sub-work', 'Guest'])
+    const shared = selectMemberships(state({ activeId: 'shared', activeSub: 'sub-work' })).find(
+      row => row.account.id === 'shared'
+    )
+    expect([shared?.under?.sub, shared?.roleName]).toEqual(['sub-work', 'Guest'])
   })
 
   it('are options of the switcher: another sign-in’s account by its email, never disabled for having no organization', () => {
-    const options = selectOrganizationOptions(state()).map(o => [o.id, o.name, o.disabled, o.via?.email, !!o.reach])
+    const options = selectOrganizationOptions(state()).map(o => [o.id, o.name, o.disabled, o.under?.email, !!o.reach])
     expect(options).toEqual([
       ['acme', 'Acme', false, undefined, false],
       ['labs', 'Labs', false, 'work@x.test', false],
@@ -129,8 +133,7 @@ describe('the switcher’s rows', () => {
   /* An organization two accounts belong to is a row under each: the page's own person's organizations, then each
      further sign-in's own account and its organizations. Picking a row is choosing who to act as there. */
   describe('one for each account an organization is reached through', () => {
-    const rows = (s: any) =>
-      selectSwitcherRows(s).map(r => [r.key, r.account, r.roleName, r.shared, r.serving] as const)
+    const rows = (s: any) => selectSwitcherRows(s).map(r => [r.key, r.account, r.roleName, r.shared, r.looked] as const)
 
     it('the shared organization under both accounts, each in that account’s role, the page’s own person’s serving', () => {
       expect(rows(state())).toEqual([
@@ -142,24 +145,24 @@ describe('the switcher’s rows', () => {
       ])
       const keys = selectSwitcherRows(state()).map(r => r.key)
       expect(new Set(keys).size).toBe(keys.length)
-      expect(selectServingAccount(state(), 'shared')).toBe('personal@x.test')
-      expect(selectServingAccount(state(), 'acme')).toBeUndefined()
+      expect(selectRowAccount(state(), 'shared')).toBe('personal@x.test')
+      expect(selectRowAccount(state(), 'acme')).toBeUndefined()
     })
 
     it('the other account’s row picked: served as that account, and only that row is the serving one — kept as stored', () => {
-      // What picking the row stores (accounts.via), as it is read back after a reload.
-      const picked = JSON.parse(JSON.stringify(state({ via: { shared: 'sub-work' } })))
+      // What picking the row stores (the selected row), as it is read back after a reload.
+      const picked = JSON.parse(JSON.stringify(state({ activeId: 'shared', activeSub: 'sub-work' })))
       const shared = selectSwitcherRows(picked).filter(r => r.id === 'shared')
-      expect(shared.map(r => [r.sub, r.serving])).toEqual([
+      expect(shared.map(r => [r.sub, r.looked])).toEqual([
         ['', false],
         ['sub-work', true],
       ])
       expect(selectSignInSub(picked, 'shared')).toBe('sub-work')
-      expect(selectServingAccount(picked, 'shared')).toBe('work@x.test')
+      expect(selectRowAccount(picked, 'shared')).toBe('work@x.test')
     })
 
     it('that account unchecked or signed out: its rows are gone, and the organization is the other’s to serve', () => {
-      const left = state({ via: { shared: 'sub-work' }, signIns: {} })
+      const left = state({ activeId: 'shared', activeSub: 'sub-work', signIns: {} })
       expect(rows(left)).toEqual([
         [':acme', 'personal@x.test', 'Member', false, true],
         [':shared', 'personal@x.test', 'Admin', false, true],
@@ -328,7 +331,7 @@ describe('the sign-ins a read was asked as', () => {
     expect(servingChanged(state(), asked)).toBe(false)
     expect(servingChanged(state({ activeId: 'labs' }), asked)).toBe(false)
     // The person picks the other sign-in for it.
-    expect(servingChanged(state({ via: { shared: 'sub-work' } }), asked)).toBe(true)
+    expect(servingChanged(state({ activeId: 'shared', activeSub: 'sub-work' }), asked)).toBe(true)
     // The sign-in that served it leaves.
     const labs = requestServing(state(), undefined, { accountId: 'labs' })
     expect(servingChanged(state({ signIns: {} }), labs)).toBe(true)

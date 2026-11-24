@@ -1195,12 +1195,11 @@ describe('auth model — booting as another person over stored state', () => {
   })
 
   /* A and B both belong to org-s: each has read it, into its row under each. */
-  const shared = (via: object = {}) => {
+  const shared = () => {
     stored()
     const member = (id: string) => ({ account: { id } })
     storeState.accounts.membership.push(member('org-s'))
     storeState.accounts.signIns['sub-b'].membership.push(member('org-s'))
-    storeState.accounts.via = via
     storeState.organization.accounts['org-s'] = {}
     storeState.organization.accounts[B('org-s')] = {}
     storeState.devices['org-s'] = {}
@@ -1224,13 +1223,6 @@ describe('auth model — booting as another person over stored state', () => {
     expect(adopt().rows).toMatchObject({ 'org-s': rowKey('org-s', 'sub-a'), [B('org-s')]: 'org-s' })
   })
 
-  it('says the sign-in picked for an organization again for the new person', () => {
-    shared({ 'org-s': 'sub-b', 'org-a': '' })
-    oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }, { sub: 'sub-a', primary: false }])
-    const { models } = adopt()
-    expect(models.accounts.set.mock.calls[0][0].via).toEqual({ 'org-s': '', 'org-a': 'sub-a' })
-  })
-
   it('keeps nothing of the former person when one is used at a time: the account switched to read none of it', () => {
     stored()
     storeState.accounts.signIns = {}
@@ -1238,7 +1230,7 @@ describe('auth model — booting as another person over stored state', () => {
     const { models, rows } = adopt()
     // Their own account's row alone: nothing stored says what else they reach.
     expect(rows).toEqual({ [B('USER-B')]: 'USER-B' })
-    expect(models.accounts.set).toHaveBeenCalledWith(expect.objectContaining({ membership: [], signIns: {}, via: {} }))
+    expect(models.accounts.set).toHaveBeenCalledWith(expect.objectContaining({ membership: [], signIns: {} }))
   })
 
   it('keeps no plain row of state with no record of whose it was', () => {

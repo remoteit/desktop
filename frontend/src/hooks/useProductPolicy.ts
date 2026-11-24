@@ -14,7 +14,8 @@ import {
   productPolicyServed,
 } from '../services/productPolicy'
 import { useReadCallback, useReadEffect } from './useReadAgain'
-import { accountCache, forgotten, rowNow } from '../services/accountCaches'
+import { accountCache, forgotten } from '../services/accountCaches'
+import { RequestFor, asRow } from '../selectors/signIns'
 
 /* Product policy's reads (services/productPolicy), behind the device-sessions gate as the rest of Control Link is: what
    the API serves of it, a product's policy, and a device's product. A product's and a device's are shared by every part
@@ -43,10 +44,9 @@ export function useProductPolicyServed(): ProductPolicyServed | undefined {
 
 // A shared read: each key's answer, its listeners told when it changes. The latest read of a key wins: one started
 // before a change cannot land after the read that follows it. Kept by ROW (services/accountCaches): a key is the row
-// of the account it was read under — as the sign-in whose row was looked at — and an id. A read is made as the row
-// looked at when it is asked: one that answers after another row was picked is not kept, and is read again when its
-// row is next looked at.
-function shared<T>(load: (id: string, accountId: string) => Promise<T | 'ERROR'>) {
+// of the account it was read under and an id. A read is made for a row — asked as its sign-in — and kept under it
+// whichever row is looked at by the time it answers.
+function shared<T>(load: (id: string, accountId: string, requestFor: RequestFor) => Promise<T | 'ERROR'>) {
   const answers = new Map<string, T | null>()
   const latest = new Map<string, number>()
   const rowOf = new Map<string, RowKey>()
@@ -60,9 +60,8 @@ function shared<T>(load: (id: string, accountId: string) => Promise<T | 'ERROR'>
     const request = ++count
     latest.set(key, request)
     rowOf.set(key, row)
-    const answer = await load(id, accountId)
+    const answer = await load(id, accountId, asRow(row))
     if (latest.get(key) !== request) return
-    if (rowNow(accountId) !== row) return void latest.delete(key)
     answers.set(key, answer === 'ERROR' ? null : answer)
     listeners.forEach(listener => listener())
   }
@@ -100,8 +99,8 @@ function shared<T>(load: (id: string, accountId: string) => Promise<T | 'ERROR'>
   return { answers, read, first, subscribe, clear, keyOf }
 }
 
-const products = shared<ProductPolicy>((productId, accountId) => graphQLProductPolicy(productId, accountId))
-const devices = shared<DeviceProductState>((deviceId, accountId) => graphQLDeviceProduct(deviceId, accountId))
+const products = shared<ProductPolicy>(graphQLProductPolicy)
+const devices = shared<DeviceProductState>(graphQLDeviceProduct)
 
 // For tests, and for a change of sign-in.
 export function resetProductPolicyReads() {

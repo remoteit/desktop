@@ -2,7 +2,15 @@ import axios, { AxiosResponse } from 'axios'
 import { getApiRestURL, getApiURL } from '../helpers/apiHelper'
 import { apiRequest } from './remoteit'
 import { store } from '../store'
-import { requestSignIn, requestServing, servingChanged, servingGone, RequestFor, Serving } from '../selectors/signIns'
+import {
+  actingFor,
+  requestSignIn,
+  requestServing,
+  servingChanged,
+  servingGone,
+  RequestFor,
+  Serving,
+} from '../selectors/signIns'
 import network from './Network'
 import sleep from '../helpers/sleep'
 
@@ -26,6 +34,8 @@ export async function post(
   retried?: { sub: string | undefined; serving: Serving | undefined }
 ): Promise<AxiosResponse | 'ERROR'> {
   if (store.getState().ui.offline) return 'ERROR'
+  // Sent by an effect that said the row it acts for (sendAs): that row's sign-in's, read before anything is awaited.
+  requestFor = retried ? requestFor : actingFor(requestFor)
   const sub = retried ? retried.sub : requestSignIn(store.getState(), requestFor, data?.variables)
   // A read: its answer is only good while the sign-ins that served its accounts still do (requestServing) — those
   // that did when it was FIRST asked, through a retry made as that same sign-in.

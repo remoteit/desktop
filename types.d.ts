@@ -658,8 +658,9 @@ declare global {
     account: IUserRef
     name?: string
     standalone?: boolean
-    // Set on a row another sign-in serves (selectors/accounts selectMemberships): whose token its requests carry.
-    via?: { sub: string; email: string }
+    // Set on a row looked at through another sign-in than the page's own person (selectors/accounts
+    // selectMemberships): whose token its requests carry.
+    under?: { sub: string; email: string }
     // The row is that sign-in's own account, not an organization it belongs to.
     signIn?: boolean
     // Every sign-in that reaches the row, where more than one does ('' is the page's own person): the choice offered.

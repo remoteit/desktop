@@ -42,7 +42,9 @@ describe('selectPrimaryOrganizationOptions', () => {
           ],
         },
       },
-      via: { acme: 'sub-work' },
+      // Acme is selected, in the other sign-in's row of it.
+      activeId: 'acme',
+      activeSub: 'sub-work',
     },
     organization: {
       accounts: {
@@ -59,11 +61,11 @@ describe('selectPrimaryOrganizationOptions', () => {
     },
   }
 
-  it('lists the organizations the person belongs to, in their own role, whichever sign-in serves each row', () => {
-    // The row is the other sign-in's to serve, in its role.
+  it('lists the organizations the person belongs to, in their own role, whichever row each is looked at through', () => {
+    // The row looked at is the other sign-in's, in its role.
     expect(selectOrganizationOptions(state).find(o => o.id === 'acme')).toMatchObject({
       roleName: 'Guest',
-      via: { sub: 'sub-work' },
+      under: { sub: 'sub-work' },
     })
     expect(selectPrimaryOrganizationOptions(state)).toEqual([
       expect.objectContaining({ id: 'acme', name: 'Acme', roleName: 'Admin', disabled: false, canRegister: true }),

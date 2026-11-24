@@ -33,14 +33,14 @@ export const selectOrganization = createSelector(
   }
 )
 
-// `via`: the sign-in a row is reached through when it is not the page's own person; `reach`: every sign-in that
+// `under`: the sign-in a row is looked at through when it is not the page's own person; `reach`: every sign-in that
 // reaches it, where more than one does. A sign-in's own account is a row whether or not it is an organization.
 export const selectOrganizationOptions = createSelector(
   [selectMemberships, getOrganizations],
   (memberships, organizations) =>
     memberships
       .map(m => {
-        const org = organizations[rowKey(m.account.id, m.via?.sub)] || defaultState
+        const org = organizations[rowKey(m.account.id, m.under?.sub)] || defaultState
         return {
           id: m.account.id,
           email: m.account.email,
@@ -48,7 +48,7 @@ export const selectOrganizationOptions = createSelector(
           roleId: m.roleId,
           roleName: m.roleName,
           disabled: !org.id && !m.signIn,
-          via: m.via,
+          under: m.under,
           reach: m.reach,
           signIn: m.signIn,
         }
@@ -61,7 +61,7 @@ export const selectOrganizationOptions = createSelector(
    sign-in's own account and its organizations — and picking a row is how the person says who they act as there
    (models/accounts selectAs). `sub` is the row's sign-in ('' the page's own person) and `account` its email; `role`s
    are that account's own; `shared` where another account here has a row for the same organization, which is when a
-   row says whose it is; `serving` on the row whose account the organization is served by now — the one row of an
+   row says whose it is; `looked` on the row the organization is looked at through now — the one row of an
    organization that can be the selected one. */
 export type SwitcherRow = {
   key: string
@@ -75,7 +75,7 @@ export type SwitcherRow = {
   disabled: boolean
   signIn?: boolean
   shared: boolean
-  serving: boolean
+  looked: boolean
 }
 
 export const selectSwitcherRows = createSelector(
@@ -96,7 +96,7 @@ export const selectSwitcherRows = createSelector(
         disabled: !org.id && !signIn,
         ...(signIn && { signIn }),
         shared: (routes[id]?.reach.length || 0) > 1,
-        serving: (routes[id]?.sub || '') === sub,
+        looked: (routes[id]?.sub || '') === sub,
       }
     }
     const of = (sub: string, account: string, list: IMembership[]) => list.map(m => row(sub, account, m)).sort(byName)
@@ -121,9 +121,9 @@ export const selectSwitcherRows = createSelector(
   }
 )
 
-/** Whose an account's row is where more than one account here has one for it: the email of the account serving it
+/** Whose an account's row is where more than one account here has one for it: the email of the account it is looked at through
  *  now. Undefined where one account alone reaches it — nothing to say. */
-export const selectServingAccount = (state: State, accountId?: string): string | undefined => {
+export const selectRowAccount = (state: State, accountId?: string): string | undefined => {
   const route = accountId ? selectAccountRoutes(state)[accountId] : undefined
   return route && route.reach.length > 1 ? route.email || state.user?.email || '' : undefined
 }

@@ -4,7 +4,8 @@ import { selectJobs } from '../selectors/scripting'
 import { getDevices } from '../selectors/devices'
 import { RowSaid, rowSaid, selectActiveAccountId } from '../selectors/accounts'
 import { asRow, rowGone, selectRowOf } from '../selectors/signIns'
-import { RowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
+import { RowKey, rowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
+import { findElsewhere } from '../services/elsewhere'
 import { graphQLSetJob, graphQLStartJob, graphQLCancelJob, graphQLDeleteJob } from '../services/graphQLMutation'
 import { jobRunOptionFields, JobRunOptions, parseJobRunOptions } from '../services/jobRunOptions'
 import { AxiosResponse } from 'axios'
@@ -86,6 +87,28 @@ export default createModel<RootModel>()({
       }
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED JOB', accountId, jobs)
+      // Opened at its address, the caller naming no row, and not this row's: another sign-in's here to see, maybe —
+      // whose row is then selected, and the job put in it (services/elsewhere).
+      if (!jobs.length && !of.accountId && !of.row && of.sub === undefined) {
+        const found = await findElsewhere<IJob[]>({
+          ids: [jobId],
+          asked: row,
+          byAccount: true,
+          read: async (id, requestFor) => {
+            const answer = await graphQLJobs({ accountId: id, ids: [jobId], requestFor })
+            const theirs: IJob[] = answer === 'ERROR' ? [] : await dispatch.jobs.parse(answer)
+            return theirs.length ? theirs : undefined
+          },
+        })
+        if (found)
+          dispatch.jobs.setJobs({
+            accountId: found.accountId,
+            row: rowKey(found.accountId, found.sub),
+            jobs: found.answer,
+          })
+        dispatch.jobs.set({ fetching: false })
+        return
+      }
       dispatch.jobs.setJobs({ accountId, row, jobs })
       dispatch.jobs.set({ fetching: false })
     },

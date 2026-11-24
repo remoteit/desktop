@@ -85,7 +85,7 @@ describe('product policy’s reads', () => {
       </>
     )
     expect(productPolicy).toHaveBeenCalledTimes(1)
-    expect(productPolicy).toHaveBeenCalledWith('P1', 'A1')
+    expect(productPolicy).toHaveBeenCalledWith('P1', 'A1', { sub: '', row: true })
     expect(seen.a.policy).toEqual({ sync: 'synced' })
     expect(seen.b.policy).toEqual({ sync: 'synced' })
   })
@@ -118,7 +118,7 @@ describe('product policy’s reads', () => {
       </>
     )
     expect(deviceProduct).toHaveBeenCalledTimes(1)
-    expect(deviceProduct).toHaveBeenCalledWith('D1', 'A2')
+    expect(deviceProduct).toHaveBeenCalledWith('D1', 'A2', { sub: '', row: true })
     expect(seen.d.state).toEqual({ product: null, origin: null, tags: [], services: [] })
     expect(seen.v.state).toBeNull()
   })

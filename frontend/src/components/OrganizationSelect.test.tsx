@@ -96,7 +96,6 @@ beforeEach(() => {
           membership: [member('acme', 'Acme', 'Guest')],
         },
       },
-      via: {},
     },
     // The organization as each of them read it: a row under each (helpers/rowKey).
     organization: {
@@ -146,7 +145,7 @@ describe('the switcher, with an organization two signed-in accounts belong to', 
   })
 
   it('marks only the row of the account serving it, once the other’s was picked', async () => {
-    state.accounts = { ...state.accounts, via: { acme: 'sub-work' } }
+    state.accounts = { ...state.accounts, activeSub: 'sub-work' }
     const rows = await rail()
     expect(rows.map(row => [row.key, row.selected])).toEqual([
       [null, false],
