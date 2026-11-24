@@ -201,6 +201,20 @@ describe('connections — with several sign-ins in use', () => {
     expect(cleanOrphans).toHaveBeenCalledWith(['s-me'])
   })
 
+  it('a service two sign-ins are connected to is answered for only when both were: one read failing keeps its device, and neither connection is an orphan', async () => {
+    const both = { ...state(), connections: { all: [mine, { ...mine, accountId: 'work', sub: 'sub-work' }] } }
+    both.devices = { connections: { all: [device('d-me', 's-me')] } }
+    fetchIds.mockReturnValue(['s-me'])
+    // The page's own person no longer reaches it (no device), and Work could not be asked.
+    graphQLFetchConnections.mockImplementation(async (_: unknown, requestFor: any) =>
+      requestFor.sub ? 'ERROR' : { data: { data: { login: { device: [] } } } }
+    )
+    await effects.fetch(undefined, both)
+    const [{ devices }] = dispatch.accounts.truncateMergeDevices.mock.calls[0]
+    expect(devices.map((d: any) => d.id)).toEqual(['d-me'])
+    expect(cleanOrphans).toHaveBeenCalledWith([])
+  })
+
   it('with one sign-in in use, the one request as ever', async () => {
     graphQLFetchConnections.mockResolvedValue({ data: { data: { login: { device: [] } } } })
     await effects.fetch(undefined, { ...state(), accounts: { membership: [], signIns: {} } })

@@ -112,15 +112,22 @@ export default createModel<RootModel>()({
         records.forEach(c => ask(id, c.accountId, c.sub))
       })
       const several = Object.keys(groups).some(sub => sub)
-      const answered: string[] = []
+      const told: string[] = []
+      const untold: string[] = []
       const answers = await Promise.all(
         Object.entries(groups).map(async ([sub, { ids, accounts }]) => {
           const response = await graphQLFetchConnections({ ids }, several ? { sub, about: accounts } : undefined)
-          if (response === 'ERROR') return undefined
-          answered.push(...ids)
+          if (response === 'ERROR') {
+            untold.push(...ids)
+            return undefined
+          }
+          told.push(...ids)
           return (response?.data?.data?.login?.device || []) as any[]
         })
       )
+      // A service is answered for only when every sign-in with a connection to it was: one that could not be asked
+      // may still reach it, whatever another found — its device is kept, and its connection is no orphan.
+      const answered = told.filter(id => !untold.includes(id))
       if (answers.every(answer => !answer)) {
         await dispatch.connections.set({ initialized: true })
         return
