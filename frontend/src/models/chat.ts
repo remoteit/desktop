@@ -32,6 +32,7 @@ import { withTimeout } from '../helpers/sleep'
 import { latestWins } from '../helpers/latestWins'
 import { formatReset } from '../helpers/dateHelper'
 import { selectActiveAccountId, isUserAccount } from '../selectors/accounts'
+import { rowKey } from '../helpers/rowKey'
 
 export type ChatToolCall = {
   id: string
@@ -83,7 +84,8 @@ export function resolveChatOrg(state: State): OrgSelection | null {
   const orgId = selectActiveAccountId(state)
   const membership = state.accounts.membership.find(m => m.account.id === orgId)
   if (!membership) return null
-  const name = (state.organization.accounts[orgId]?.name || membership.name || '').trim()
+  // The page's own person's row of it (helpers/rowKey), as the membership is theirs.
+  const name = (state.organization.accounts[rowKey(orgId)]?.name || membership.name || '').trim()
   return { id: orgId, name }
 }
 

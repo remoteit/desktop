@@ -4,7 +4,8 @@ import { DEFAULT_CONNECTION } from '@common/constants'
 import { Application, getApplicationType } from '@common/applications'
 import { State, store } from '../store'
 import { selectEnabledConnections } from '../selectors/connections'
-import { selectActiveUser } from '../selectors/accounts'
+import { selectActiveUser, selectRow } from '../selectors/accounts'
+import { rowSub } from './rowKey'
 import { getAllDevices } from '../selectors/devices'
 import { selectById } from '../selectors/devices'
 import browser from '../services/browser'
@@ -77,13 +78,16 @@ export function newConnection(service?: IService | null): IConnection {
 
   if (service) {
     const [_, device] = selectById(state, undefined, service.deviceID)
+    const accountId = device?.accountId || user.id
     connection = {
       ...connection,
       name: service.subdomain,
       id: service.id,
       deviceID: service.deviceID,
       owner: device?.owner || connection.owner,
-      accountId: device?.accountId || user.id,
+      accountId,
+      // Made from the row its account is looked at through: that row's sign-in's (helpers/rowKey).
+      sub: rowSub(selectRow(state, accountId)),
       online: service.state === 'active',
       typeID: service.typeID,
       targetHost: service.attributes.targetHost,

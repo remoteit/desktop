@@ -1,26 +1,31 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react'
 import { useSelector } from 'react-redux'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId, selectRow } from '../selectors/accounts'
+import { RowKey } from '../helpers/rowKey'
+import { State } from '../store'
 import { DeviceNetwork, graphQLDeviceNetworks } from '../services/graphQLDeviceNetworks'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
-import { accountCache } from '../services/accountCaches'
+import { accountCache, forgotten, rowNow } from '../services/accountCaches'
 
 /* The active account's device networks (services/graphQLDeviceNetworks), shared by the Networks list and a network's
-   page: read when first asked for, and again after a change (reload). undefined while it is read. Dropped when the
-   account's stored data is (services/accountCaches), and read again by whoever shows it. */
+   page: read when first asked for, and again after a change (reload). undefined while it is read. Kept by ROW
+   (services/accountCaches): the account as the sign-in whose row is looked at sees it. A read is made as the row
+   looked at when it is asked: one that answers after another row was picked is not kept — that row is read when it
+   is next looked at. */
 
 type Networks = DeviceNetwork[] | 'ERROR' | typeof UNSUPPORTED
 
-const byAccount = new Map<string, Networks>()
+const byRow = new Map<string, Networks>()
 const reading = new Set<string>()
 const dropped = new Set<string>()
 const listeners = new Set<() => void>()
 
-accountCache(accountIds => {
-  accountIds.forEach(id => {
-    byAccount.delete(id)
-    if (reading.has(id)) dropped.add(id)
-  })
+accountCache((accountIds, rows) => {
+  for (const row of new Set([...byRow.keys(), ...reading])) {
+    if (!forgotten(row, accountIds, rows)) continue
+    byRow.delete(row)
+    if (reading.has(row)) dropped.add(row)
+  }
   listeners.forEach(listener => listener())
 })
 
@@ -31,25 +36,28 @@ const subscribe = (listener: () => void) => {
   }
 }
 
-async function read(accountId: string) {
-  if (reading.has(accountId)) return
-  reading.add(accountId)
+async function read(accountId: string, row: RowKey) {
+  if (reading.has(row)) return
+  reading.add(row)
   const networks = await graphQLDeviceNetworks(accountId)
-  reading.delete(accountId)
-  // Dropped while it was read: read as the sign-in before, so read again, not kept.
-  if (dropped.delete(accountId)) return read(accountId)
-  byAccount.set(accountId, networks)
+  reading.delete(row)
+  // Another row picked while it was read: not kept. Dropped while it was read, and looked at still: read again.
+  const looked = rowNow(accountId) === row
+  if (dropped.delete(row)) return looked ? read(accountId, row) : undefined
+  if (!looked) return
+  byRow.set(row, networks)
   listeners.forEach(listener => listener())
 }
 
 export const useDeviceNetworks = () => {
   const accountId = useSelector(selectActiveAccountId)
-  const networks = useSyncExternalStore(subscribe, () => byAccount.get(accountId))
+  const row = useSelector((state: State) => selectRow(state))
+  const networks = useSyncExternalStore(subscribe, () => byRow.get(row))
 
   useEffect(() => {
-    if (!byAccount.has(accountId)) read(accountId)
-  }, [accountId, networks])
+    if (!byRow.has(row)) read(accountId, row)
+  }, [row, networks])
 
-  const reload = useCallback(() => read(accountId), [accountId])
+  const reload = useCallback(() => read(accountId, row), [row])
   return { networks, reload }
 }

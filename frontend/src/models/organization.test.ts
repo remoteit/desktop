@@ -16,16 +16,22 @@ vi.mock('../services/graphQLMutation', () => mutations)
 vi.mock('./accounts', () => ({
   getAccountIds: () => ['me', 'org-a', 'org-b', 'work', 'org-w'],
   // work and org-w are another sign-in's: asked as that sign-in, apart from the page's own person's accounts.
-  accountIdsBySignIn: (_state: unknown, ids: string[]) => [
+  accountIdsByReach: (_state: unknown, ids: string[]) => [
     ['', ids.filter(id => !['work', 'org-w'].includes(id))],
     ['sub-work', ids.filter(id => ['work', 'org-w'].includes(id))],
   ],
 }))
 vi.mock('../selectors/organizations', () => ({ selectOrganization, selectOrganizationReseller: vi.fn() }))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId }))
+vi.mock('../selectors/accounts', () => ({
+  selectActiveAccountId,
+  // The row looked at: the account's, under the sign-in that serves it (work's are sub-work's).
+  selectRow: (_state: unknown, accountId?: string) => `row of ${accountId || selectActiveAccountId()}`,
+  rowSaid: () => ({ accountId: selectActiveAccountId(), row: `row of ${selectActiveAccountId()}` }),
+}))
 vi.mock('../i18n', () => ({ default: { t: (k: string) => k } }))
 
 import organization from './organization'
+import { rowKey } from '../helpers/rowKey'
 
 describe('organization.fetch', () => {
   it('applies the orgs that resolved and keeps what the failed ones had', async () => {
@@ -66,17 +72,19 @@ describe('organization.fetch', () => {
 
     // Only what was answered is written, beside what is stored: what failed keeps what it had (the reducer below).
     const [accounts] = dispatch.organization.merge.mock.calls[0]
-    expect(Object.keys(accounts).sort()).toEqual(['org-a', 'org-w', 'work'])
+    // Each under its row (helpers/rowKey): the account, and the sign-in that was asked.
+    const WORKS = [rowKey('org-w', 'sub-work'), rowKey('work', 'sub-work')]
+    expect(Object.keys(accounts).sort()).toEqual(['org-a', ...WORKS].sort())
     expect(accounts['org-a'].name).toBe('Cat Demo')
     const merged = (organization as any).reducers.merge({ initialized: false, accounts: { 'org-b': loaded } }, accounts)
-    expect(Object.keys(merged.accounts).sort()).toEqual(['org-a', 'org-b', 'org-w', 'work'])
+    expect(Object.keys(merged.accounts).sort()).toEqual(['org-a', 'org-b', ...WORKS].sort())
     expect(merged.accounts['org-b']).toBe(loaded)
     expect(merged.initialized).toBe(true)
     // Each sign-in is asked about the accounts it serves, in a request of its own.
     const asked = graphQLFetchOrganizations.mock.calls.map(([ids, requestFor]) => [ids, requestFor])
     expect(asked).toEqual([
-      [['me', 'org-a', 'org-b'], { sub: '', about: ['me', 'org-a', 'org-b'] }],
-      [['work', 'org-w'], { sub: 'sub-work', about: ['work', 'org-w'] }],
+      [['me', 'org-a', 'org-b'], { sub: '', about: ['me', 'org-a', 'org-b'], row: true }],
+      [['work', 'org-w'], { sub: 'sub-work', about: ['work', 'org-w'], row: true }],
     ])
   })
 })
@@ -105,11 +113,11 @@ describe('organization.fetch — two readings that overlap', () => {
     answers[2](answered({ _0: null, _1: org('org-a'), _2: null }))
     answers[3](answered({ _0: null, _1: org('org-w') }))
     await newer
-    expect(Object.keys(stored.accounts).sort()).toEqual(['org-a', 'org-w'])
+    expect(Object.keys(stored.accounts).sort()).toEqual(['org-a', rowKey('org-w', 'sub-work')])
     answers[0](answered({ _0: null, _1: org('org-a'), _2: null }))
     answers[1](answered({ _0: null, _1: null }))
     await older
-    expect(Object.keys(stored.accounts).sort()).toEqual(['org-a', 'org-w'])
+    expect(Object.keys(stored.accounts).sort()).toEqual(['org-a', rowKey('org-w', 'sub-work')])
   })
 })
 
@@ -135,7 +143,7 @@ describe('an account with no organization yet', () => {
 
   it('has its organization made for it, as the sign-in that serves it', async () => {
     await effects.setOrganization({ name: 'Work Org' }, state)
-    expect(dispatch.organization.setActive).toHaveBeenCalledWith({ name: 'Work Org', id: 'work' })
+    expect(dispatch.organization.setActive).toHaveBeenCalledWith({ name: 'Work Org', id: 'work', row: 'row of work' })
     const [variables] = mutations.graphQLSetOrganization.mock.calls[0]
     expect(variables).toEqual({ name: 'Work Org', accountId: 'work' })
     expect(requestSignIn(state as any, undefined, variables)).toBe('sub-work')

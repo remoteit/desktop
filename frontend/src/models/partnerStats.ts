@@ -1,7 +1,9 @@
 import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { graphQLPartnerEntities } from '../services/graphQLRequest'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { rowSaid, selectRow } from '../selectors/accounts'
+import { asRow, rowGone } from '../selectors/signIns'
+import { RowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
 import { State } from '../store'
 
 export interface IPartnerEntityUser {
@@ -50,7 +52,7 @@ export const defaultState: PartnerStatsState = {
 }
 
 type PartnerStatsAccountState = {
-  [accountId: string]: PartnerStatsState
+  [row: string]: PartnerStatsState // by ROW (helpers/rowKey); beside the rows, `default`
 }
 
 const defaultAccountState: PartnerStatsAccountState = {
@@ -58,9 +60,9 @@ const defaultAccountState: PartnerStatsAccountState = {
 }
 
 // Helper to get partner stats state for a specific account
-export function getPartnerStats(state: State, accountId?: string): PartnerStatsState {
-  const activeAccountId = selectActiveAccountId(state)
-  return state.partnerStats[accountId || activeAccountId] || state.partnerStats.default || defaultState
+// The partner stats of the row an account is looked at through (the selected row's where none is named), or of `row`.
+export function getPartnerStats(state: State, accountId?: string, row?: RowKey): PartnerStatsState {
+  return state.partnerStats[row ?? selectRow(state, accountId)] || state.partnerStats.default || defaultState
 }
 
 export function getHasPartner(state: State, accountId?: string): boolean {
@@ -131,20 +133,20 @@ export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
     async fetch(_: void, state) {
-      const accountId = selectActiveAccountId(state)
-      dispatch.partnerStats.set({ fetching: true, accountId })
-      const response = await graphQLPartnerEntities(accountId)
+      // The row they are read for: asked as its sign-in, and kept under it whichever row is looked at by then.
+      const { accountId, row } = rowSaid(state)
+      dispatch.partnerStats.set({ fetching: true, accountId, row })
+      const response = await graphQLPartnerEntities(accountId, asRow(row))
       if (response !== 'ERROR') {
         const entities = response?.data?.data?.login?.account?.partnerEntities || []
         const flattened = flattenPartners(entities)
-        dispatch.partnerStats.set({ all: entities, flattened, initialized: true, accountId })
+        dispatch.partnerStats.set({ all: entities, flattened, initialized: true, accountId, row })
       }
-      dispatch.partnerStats.set({ fetching: false, accountId })
+      dispatch.partnerStats.set({ fetching: false, accountId, row })
     },
 
     async fetchIfEmpty(_: void, state) {
-      const accountId = selectActiveAccountId(state)
-      const ps = getPartnerStats(state, accountId)
+      const ps = getPartnerStats(state)
       // Only fetch if not initialized for this account
       if (!ps.initialized) {
         await dispatch.partnerStats.fetch()
@@ -152,17 +154,19 @@ export default createModel<RootModel>()({
     },
 
     // Set effect that updates state for a specific account
-    async set(params: Partial<PartnerStatsState> & { accountId?: string }, state) {
-      const accountId = params.accountId || selectActiveAccountId(state)
-      const partnerStatsState = { ...getPartnerStats(state, accountId) }
+    async set(params: Partial<PartnerStatsState> & { accountId?: string; row?: RowKey }, state) {
+      const row = params.row ?? selectRow(state, params.accountId)
+      // An answer for a row whose sign-in has left since it was asked: the row is gone, and is not put back.
+      if (params.row && rowGone(state, params.row)) return
+      const partnerStatsState = { ...getPartnerStats(state, undefined, row) }
 
       Object.keys(params).forEach(key => {
-        if (key !== 'accountId') {
+        if (key !== 'accountId' && key !== 'row') {
           partnerStatsState[key] = params[key]
         }
       })
 
-      await dispatch.partnerStats.rootSet({ [accountId]: partnerStatsState })
+      await dispatch.partnerStats.rootSet({ [row]: partnerStatsState })
     },
   }),
   reducers: {
@@ -172,8 +176,13 @@ export default createModel<RootModel>()({
     },
     /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
     forget(state: PartnerStatsAccountState, accountIds: string[]) {
-      accountIds.forEach(id => delete state[id])
-      return state
+      return withoutAccounts(state, accountIds)
+    },
+    forgetRows(state: PartnerStatsAccountState, rows: string[]) {
+      return withoutRows(state, rows)
+    },
+    rekey(state: PartnerStatsAccountState, rows: ILookup<RowKey>) {
+      return { default: state.default, ...rekeyed(state, rows) }
     },
     rootSet(state: PartnerStatsAccountState, params: PartnerStatsAccountState) {
       Object.keys(params).forEach(key => (state[key] = params[key]))

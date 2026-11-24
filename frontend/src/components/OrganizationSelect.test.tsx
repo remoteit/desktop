@@ -52,6 +52,7 @@ vi.mock('@mui/material', async importOriginal => ({
 }))
 
 import { OrganizationSelect } from './OrganizationSelect'
+import { rowKey } from '../helpers/rowKey'
 import { ThemeProvider, createTheme } from '@mui/material'
 
 // The app's own colours, which the rail's styles name.
@@ -97,7 +98,10 @@ beforeEach(() => {
       },
       via: {},
     },
-    organization: { accounts: { acme: { id: 'acme', name: 'Acme' } } },
+    // The organization as each of them read it: a row under each (helpers/rowKey).
+    organization: {
+      accounts: { acme: { id: 'acme', name: 'Acme' }, [rowKey('acme', 'sub-work')]: { id: 'acme', name: 'Acme' } },
+    },
   })
 })
 

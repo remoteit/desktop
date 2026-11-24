@@ -13,15 +13,18 @@ import {
   optionalCustomerId,
   optionalSecondParam,
 } from './state'
-import { selectActiveAccountId, isUserAccount, selectActiveUser } from './accounts'
+import { selectRow, isUserAccount, selectActiveUser } from './accounts'
+import { rowKey } from '../helpers/rowKey'
 import { defaultState, canMemberView, DEFAULT_ROLE } from '../models/organization'
 import { selectMembership, selectMemberships } from './accounts'
 import { getSignIns, selectAccountRoutes } from './signIns'
 
+/* An account's organization as the row it is looked at through sees it (helpers/rowKey): the selected row's copy for
+   the selected account — its sign-in's own role, members, licenses and limits, which is what the page allows. */
 export const selectOrganization = createSelector(
-  [selectActiveAccountId, getOrganizations, selectMembership, getUser],
-  (accountId, organizations, myMembership, user) => {
-    const organization = organizations[accountId] || defaultState
+  [selectRow, getOrganizations, selectMembership, getUser],
+  (row, organizations, myMembership, user) => {
+    const organization = organizations[row] || defaultState
     const membership: IOrganizationMember = { ...myMembership, user, organizationId: organization.id }
     return {
       ...organization,
@@ -37,7 +40,7 @@ export const selectOrganizationOptions = createSelector(
   (memberships, organizations) =>
     memberships
       .map(m => {
-        const org = organizations[m.account.id] || defaultState
+        const org = organizations[rowKey(m.account.id, m.via?.sub)] || defaultState
         return {
           id: m.account.id,
           email: m.account.email,
@@ -80,7 +83,7 @@ export const selectSwitcherRows = createSelector(
   (memberships, signIns, routes, organizations, userEmail): SwitcherRow[] => {
     const row = (sub: string, account: string, m: IMembership, signIn?: boolean): SwitcherRow => {
       const id = m.account.id
-      const org = organizations[id] || defaultState
+      const org = organizations[rowKey(id, sub)] || defaultState
       return {
         key: `${sub}:${id}`,
         id,
@@ -133,7 +136,8 @@ export const selectPrimaryOrganizationOptions = createSelector(
   (memberships, organizations) =>
     memberships
       .map(m => {
-        const org = organizations[m.account.id] || defaultState
+        // Their own row of it: the organization under its plain id.
+        const org = organizations[rowKey(m.account.id)] || defaultState
         return {
           id: m.account.id,
           email: m.account.email,

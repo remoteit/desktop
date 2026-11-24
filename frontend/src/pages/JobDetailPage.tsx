@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Box, Stack, List, ListItem, ListItemIcon, ListItemText, Typography, Button } from '@mui/material'
 import { State, Dispatch } from '../store'
 import { selectJob, selectScript } from '../selectors/scripting'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId, selectRow } from '../selectors/accounts'
 import { initialForm } from '../models/files'
 import { ScriptRunSummary } from '../components/ScriptRunSummary'
 import { JobStatusIcon } from '../components/JobStatusIcon'
@@ -49,7 +49,7 @@ export const JobDetailPage: React.FC<Props> = () => {
   const isFileMissing = !jobName(job)
   const file = isPrivateScript ? undefined : script
   const scriptFileRef = file || (!isPrivateScript ? job?.file : undefined)
-  const files = useSelector((state: State) => state.files.all[accountId] || [])
+  const files = useSelector((state: State) => state.files.all[selectRow(state, accountId)] || [])
   const fetching = useSelector((state: State) => state.files.fetching)
   const jobsFetching = useSelector((state: State) => state.jobs.fetching)
   const scriptName = file?.name || jobName(job)

@@ -4,7 +4,15 @@ import { describe, it, expect, vi } from 'vitest'
 
 const { account } = vi.hoisted(() => ({ account: { id: 'A' } }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select({}) }))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => account.id }))
+vi.mock('../selectors/accounts', () => ({
+  selectActiveAccountId: () => account.id,
+  // One sign-in: a row is its account's own id.
+  selectRow: (_state: unknown, accountId?: string) => accountId || account.id,
+  rowSaid: (_state: unknown, of?: any) => {
+    const accountId = (typeof of === 'string' ? of : of?.accountId) || account.id
+    return { accountId, row: of?.row ?? accountId }
+  },
+}))
 
 import { accountStore } from './useAccountStore'
 import { forgetAccountCaches } from '../services/accountCaches'

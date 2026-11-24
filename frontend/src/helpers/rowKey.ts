@@ -27,3 +27,18 @@ export const rowSub = (key: string): string => {
   const at = key.indexOf(SEPARATOR)
   return at < 0 ? '' : key.slice(at + SEPARATOR.length)
 }
+
+/* What the store keeps by row, as each model keeps it: a lookup whose keys are rows. These say how such a lookup loses
+   accounts (every row of each), loses rows, and has its rows said again by new keys (a row not said is dropped). */
+export const withoutAccounts = <T>(byRow: ILookup<T>, accountIds: string[]): ILookup<T> =>
+  Object.fromEntries(Object.entries(byRow).filter(([row]) => !accountIds.includes(rowAccount(row))))
+
+export const withoutRows = <T>(byRow: ILookup<T>, rows: string[]): ILookup<T> =>
+  Object.fromEntries(Object.entries(byRow).filter(([row]) => !rows.includes(row)))
+
+export const rekeyed = <T>(byRow: ILookup<T>, rows: ILookup<RowKey>): ILookup<T> =>
+  Object.fromEntries(
+    Object.keys(rows)
+      .filter(row => row in byRow)
+      .map(row => [rows[row], byRow[row]])
+  )

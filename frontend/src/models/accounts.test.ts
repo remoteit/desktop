@@ -95,11 +95,10 @@ describe('the sign-ins beside the page’s own person', () => {
       accounts: {
         set: vi.fn((params: object) => void (current = { ...current, accounts: { ...current.accounts, ...params } })),
         select: vi.fn(),
-        // Accounts that are rows no more, and those another sign-in serves from now on.
+        // Accounts that are rows no more, and rows whose sign-in left.
         forgetData: vi.fn(),
-        forgetByAccount: vi.fn(),
+        forgetRows: vi.fn(),
       },
-      devices: { forgetRows: vi.fn() },
       organization: { fetch: vi.fn() },
     }
     const effects = (accounts as any).effects(dispatch)
@@ -200,7 +199,6 @@ describe('the sign-ins beside the page’s own person', () => {
       const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work, 'sub-third': third }, { activeId: 'labs' }))
       await run('fetchSignIns')
       expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['work']]])
-      expect(dispatch.accounts.forgetByAccount.mock.calls).toEqual([[['labs']]])
       expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
       // Selected, and still a row: it stays selected, its lists read again as the sign-in that serves it now.
       expect(dispatch.accounts.select.mock.calls).toEqual([['labs']])
@@ -211,7 +209,7 @@ describe('the sign-ins beside the page’s own person', () => {
       graphQLBasicRequest.mockReset().mockResolvedValue(answer('third', ['labs']))
       const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work, 'sub-third': third }))
       await run('fetchSignIns')
-      expect(dispatch.accounts.forgetByAccount).toHaveBeenCalledWith(['labs'])
+      expect(dispatch.accounts.readAgain).toHaveBeenCalledWith(['labs'])
       expect(dispatch.accounts.select).not.toHaveBeenCalled()
     })
 
@@ -223,14 +221,14 @@ describe('the sign-ins beside the page’s own person', () => {
       )
       await run('fetchSignIns')
       expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['work', 'labs']]])
-      expect(dispatch.accounts.forgetByAccount.mock.calls).toEqual([[['acme']]])
+      expect(dispatch.accounts.readAgain).toHaveBeenCalledWith(['acme'])
       expect(dispatch.accounts.select.mock.calls).toEqual([['acme']])
     })
 
     it('hand it over when one joins that is put before the one serving it', async () => {
       const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
       await run('setSignIns', { 'sub-third': third, 'sub-work': work })
-      expect(dispatch.accounts.forgetByAccount.mock.calls).toEqual([[['labs']]])
+      expect(dispatch.accounts.readAgain).toHaveBeenCalledWith(['labs'])
       expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
       expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
     })
@@ -254,7 +252,6 @@ describe('the sign-ins beside the page’s own person', () => {
       )
       expect(dispatch.accounts.set).toHaveBeenCalledWith({ membership: [] })
       expect(dispatch.accounts.readAgain).toHaveBeenCalledWith(['acme'])
-      expect(dispatch.accounts.forgetByAccount).toHaveBeenCalledWith(['acme'])
     })
 
     it('hand it over when the page’s person leaves it', async () => {
@@ -264,9 +261,8 @@ describe('the sign-ins beside the page’s own person', () => {
       dispatch.ui = { set: vi.fn() }
       await run('leaveMembership', 'acme')
       expect(dispatch.accounts.set).toHaveBeenCalledWith({ membership: [] })
-      expect(dispatch.accounts.forgetByAccount).toHaveBeenCalledWith(['acme'])
-      // Their row of its devices goes; the other sign-in's stays.
-      expect(dispatch.devices.forgetRows).toHaveBeenCalledWith(['acme'])
+      // Their row of it goes; the other sign-in's stays.
+      expect(dispatch.accounts.forgetRows).toHaveBeenCalledWith(['acme'])
       expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
       expect(dispatch.accounts.select.mock.calls).toEqual([['personal']])
     })
@@ -284,7 +280,7 @@ describe('the sign-ins beside the page’s own person', () => {
       // The other is a member still: its row, and what was read for it as them, stay.
       expect(dispatch.accounts.setSignIns).not.toHaveBeenCalled()
       expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
-      expect(dispatch.accounts.forgetByAccount).not.toHaveBeenCalled()
+      expect(dispatch.accounts.forgetRows).not.toHaveBeenCalled()
     })
   })
 
@@ -329,7 +325,11 @@ describe('the sign-ins beside the page’s own person', () => {
 
   it('have the selected row’s runs read again with its lists, where they had been read', async () => {
     const both = { ...work, membership: [member('labs'), member('acme')] }
-    const state = { ...signedIn({ 'sub-work': both }, { activeId: 'acme' }), jobs: { all: { acme: [], labs: [] } } }
+    // Acme's runs were read through Work's row of it; it is looked at through the page's own person's now.
+    const state = {
+      ...signedIn({ 'sub-work': both }, { activeId: 'acme' }),
+      jobs: { all: { [rowKey('acme', 'sub-work')]: [], [rowKey('labs', 'sub-work')]: [] } },
+    }
     const { dispatch, run } = effectsWith(state)
     dispatch.jobs = { fetch: vi.fn() }
     await run('readAgain', ['labs'])
@@ -377,51 +377,84 @@ describe('the sign-ins beside the page’s own person', () => {
     expect(dispatch.accounts.setSignIns).toHaveBeenCalledWith({})
   })
 
-  it('drop every list kept by account id for the accounts forgotten', () => {
-    const models = [
-      'devices',
-      'products',
-      'partnerStats',
-      'networks',
-      'files',
-      'jobs',
-      'tags',
-      'organization',
-      'applicationTypes',
-    ]
-    const dispatch: any = Object.fromEntries(models.map(model => [model, { forget: vi.fn() }]))
-    const effects = (accounts as any).effects(dispatch)
-    dispatch.accounts = { forgetByAccount: effects.forgetByAccount }
+  const BY_ROW = [
+    'devices',
+    'products',
+    'partnerStats',
+    'networks',
+    'files',
+    'jobs',
+    'tags',
+    'organization',
+    'applicationTypes',
+  ]
+
+  it('drop every row of the accounts forgotten, out of every model, and what is kept of them outside the store', () => {
+    const dispatch: any = Object.fromEntries(BY_ROW.map(model => [model, { forget: vi.fn() }]))
     const outside = vi.fn()
     accountCache(outside)
-    effects.forgetData(['work', 'labs'])
-    models.forEach(model => expect(dispatch[model].forget).toHaveBeenCalledWith(['work', 'labs']))
-    // And what hooks and services keep of them outside the store (services/accountCaches).
-    expect(outside).toHaveBeenCalledWith(['work', 'labs'])
+    ;(accounts as any).effects(dispatch).forgetData(['work', 'labs'])
+    BY_ROW.forEach(model => expect(dispatch[model].forget).toHaveBeenCalledWith(['work', 'labs']))
+    expect(outside).toHaveBeenCalledWith(['work', 'labs'], [])
   })
 
-  it('serve an organization both reach through the one the person picks, reading it again as that sign-in', async () => {
+  it('drop rows that are no more out of every model, and say them again by new keys in every model', () => {
+    const dispatch: any = Object.fromEntries(BY_ROW.map(model => [model, { forgetRows: vi.fn(), rekey: vi.fn() }]))
+    const outside = vi.fn()
+    accountCache(outside)
+    const gone = [rowKey('acme', 'sub-work')]
+    ;(accounts as any).effects(dispatch).forgetRows(gone)
+    BY_ROW.forEach(model => expect(dispatch[model].forgetRows).toHaveBeenCalledWith(gone))
+    expect(outside).toHaveBeenCalledWith([], gone)
+    const said = { acme: rowKey('acme', 'sub-a') }
+    ;(accounts as any).effects(dispatch).rekey(said)
+    BY_ROW.forEach(model => expect(dispatch[model].rekey).toHaveBeenCalledWith(said))
+  })
+
+  it('drop the rows of a sign-in that left, of every model, and no other', async () => {
+    inUse()
     const both = { ...work, membership: [member('labs'), member('acme')] }
-    const state = signedIn({ 'sub-work': both }, { activeId: 'acme' })
+    const state: any = signedIn({ 'sub-work': both }, { activeId: 'acme' })
+    const theirs = rowKey('acme', 'sub-work')
+    state.devices = { default: {}, acme: {}, [theirs]: {}, personal: {} }
+    state.networks = { all: { acme: [], [theirs]: [] } }
+    state.organization = { accounts: { acme: {}, [theirs]: {}, [rowKey('labs', 'sub-work')]: {} } }
+    state.tags = { all: { [theirs]: [] } }
+    const { dispatch, run } = effectsWith(state)
+    await run('fetchSignIns')
+    // Labs and Work's own account are rows no more (forgetData); Acme is still one, the page's own person's.
+    expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['work', 'labs'])
+    expect(dispatch.accounts.forgetRows.mock.calls[0][0].sort()).toEqual([theirs, rowKey('labs', 'sub-work')].sort())
+    expect(dispatch.accounts.select).not.toHaveBeenCalled()
+  })
+
+  it('look at an organization both reach through the one the person picks: nothing dropped, the row selected', async () => {
+    const told = vi.fn()
+    const stop = followAccountsDropped(told)
+    const both = { ...work, membership: [member('labs'), member('acme')] }
+    const state: any = signedIn({ 'sub-work': both }, { activeId: 'acme' })
     state.devices = { acme: {}, [rowKey('acme', 'sub-work')]: {} }
     const { dispatch, run } = effectsWith(state)
-    await run('setVia', { accountId: 'acme', sub: 'sub-work' })
+    expect(await run('setVia', { accountId: 'acme', sub: 'sub-work' })).toBe(true)
     // Selected: the selected row is the account under that sign-in from now on.
     expect(dispatch.accounts.set).toHaveBeenCalledWith({ via: { acme: 'sub-work' }, activeSub: 'sub-work' })
-    // What is kept by account id alone is read again; each row's devices stay, both sign-ins reaching it still.
-    expect(dispatch.accounts.forgetByAccount).toHaveBeenCalledWith(['acme'])
+    // Each row is kept as read: nothing is forgotten, nothing asked again of the organization.
     expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
-    expect(dispatch.devices.forgetRows.mock.calls).toEqual([[[]]])
-    expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
+    expect(dispatch.accounts.forgetRows).not.toHaveBeenCalled()
+    expect(dispatch.organization.fetch).not.toHaveBeenCalled()
+    // It is selected as that row (read where it never was), and what a page read for itself is read again as it.
     expect(dispatch.accounts.select).toHaveBeenCalledWith('acme')
+    expect(told).toHaveBeenCalledTimes(1)
+    stop()
   })
 
-  it('select an organization as the account whose row is picked: served by it from now on, and selected', async () => {
+  it('select an organization as the account whose row is picked: looked at through it from now on, and selected', async () => {
     const both = { ...work, membership: [member('labs'), member('acme')] }
     const { dispatch, run } = effectsWith(signedIn({ 'sub-work': both }))
     await run('selectAs', { accountId: 'acme', sub: 'sub-work' })
     expect(dispatch.accounts.set).toHaveBeenCalledWith({ via: { acme: 'sub-work' } })
-    expect(dispatch.accounts.forgetByAccount).toHaveBeenCalledWith(['acme'])
+    expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
+    expect(dispatch.accounts.forgetRows).not.toHaveBeenCalled()
     expect(dispatch.accounts.select.mock.calls).toEqual([['acme']])
     // The row of the account already serving it: selected, nothing read again.
     dispatch.accounts.set.mockClear()
@@ -454,19 +487,20 @@ describe('the sign-ins beside the page’s own person', () => {
     stop()
   })
 
-  it('drop, once, what state stored before devices were kept by row holds of another sign-in under a plain id', () => {
+  it('drop, once, what state stored before it was kept by row holds of another sign-in under a plain id', () => {
     const both = { ...work, membership: [member('labs'), member('acme')] }
     // As it was stored: every account's devices under its own id — Work's, Labs' and (picked for it) Acme's read as
     // Work. A plain id is the page's own person's row now.
     const state = signedIn({ 'sub-work': both }, { via: { acme: 'sub-work' }, byRow: undefined })
     state.devices = { default: {}, connections: {}, personal: {}, acme: {}, work: {}, labs: {} }
+    Object.assign(state, { networks: { all: { acme: [], personal: [] } }, organization: { accounts: { labs: {} } } })
     const { dispatch, run } = effectsWith(state)
     run('keepByRow')
-    expect(dispatch.devices.forgetRows.mock.calls).toEqual([[['acme', 'work', 'labs']]])
-    expect(dispatch.accounts.set).toHaveBeenCalledWith({ byRow: true })
+    expect(dispatch.accounts.forgetRows.mock.calls).toEqual([[['acme', 'work', 'labs']]])
+    expect(dispatch.accounts.set).toHaveBeenCalledWith({ byRow: 2 })
     // Stored by row already: nothing is looked for.
     run('keepByRow')
-    expect(dispatch.devices.forgetRows).toHaveBeenCalledTimes(1)
+    expect(dispatch.accounts.forgetRows).toHaveBeenCalledTimes(1)
   })
 
   it('select a row: the account, and the sign-in it is looked at through', async () => {

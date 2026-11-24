@@ -20,7 +20,7 @@ export async function graphQLLogin() {
   )
 }
 
-export async function graphQLFiles(accountId: string, ids?: string[]) {
+export async function graphQLFiles(accountId: string, ids?: string[], requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query Files($accountId: String, $ids: [ID!]) {
         login {
@@ -49,7 +49,9 @@ export async function graphQLFiles(accountId: string, ids?: string[]) {
           }
         }
       }`,
-    { accountId, ids }
+    { accountId, ids },
+    false,
+    requestFor
   )
 }
 
@@ -60,8 +62,9 @@ export async function graphQLJobs(args: {
   from?: number
   size?: number
   sort?: string
+  requestFor?: RequestFor
 }): Promise<AxiosResponse | 'ERROR'> {
-  const { accountId, fileIds, ids, from, size, sort = '-updated' } = args
+  const { accountId, fileIds, ids, from, size, sort = '-updated', requestFor } = args
   const paged = jobRunsPaged()
   const query = `${jobsQueryHead(paged)}${paged ? JOB_RUNS_PREVIEW : JOB_RUNS_ALL}
               }
@@ -70,7 +73,7 @@ export async function graphQLJobs(args: {
         }
       }`
   const variables = { accountId, fileIds, ids, from, size, sort, ...(paged ? { preview: JOB_PREVIEW_RUNS } : {}) }
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return response
   // An API without runCounts reads every run with its job, as it always has.
   if (paged && withoutDeviceSessions(response.data?.errors, 'runCounts')) {
@@ -256,7 +259,7 @@ export async function graphQLRestoreDevice(props: { id: string; accountId: strin
   )
 }
 
-export async function graphQLPreloadNetworks(accountId: string) {
+export async function graphQLPreloadNetworks(accountId: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query Networks($accountId: String) {
       login {
@@ -297,14 +300,16 @@ export async function graphQLPreloadNetworks(accountId: string) {
         }
       }
     }`,
-    { accountId }
+    { accountId },
+    false,
+    requestFor
   )
 }
 
 /* 
   Fetches single network across shared accounts by id
 */
-export async function graphQLFetchNetworkSingle(id: string) {
+export async function graphQLFetchNetworkSingle(id: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query NetworkServices($id: String!) {
         login {
@@ -320,7 +325,9 @@ export async function graphQLFetchNetworkSingle(id: string) {
           }
         }
       }`,
-    { id }
+    { id },
+    false,
+    requestFor
   )
 }
 
@@ -565,7 +572,7 @@ export async function graphQLAdminUser(accountId: string) {
 }
 
 
-export async function graphQLFetchGuests(accountId: string) {
+export async function graphQLFetchGuests(accountId: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query Guests($accountId: String) {
         login {
@@ -586,7 +593,9 @@ export async function graphQLFetchGuests(accountId: string) {
           }
         }
       }`,
-    { accountId }
+    { accountId },
+    false,
+    requestFor
   )
 }
 
@@ -1045,7 +1054,7 @@ export async function graphQLExportPartnerDevices(entityId: string) {
   )
 }
 
-export async function graphQLPartnerEntities(accountId?: string) {
+export async function graphQLPartnerEntities(accountId?: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     `query PartnerEntities($accountId: String) {
       login {
@@ -1122,7 +1131,9 @@ export async function graphQLPartnerEntities(accountId?: string) {
         }
       }
     }`,
-    { accountId }
+    { accountId },
+    false,
+    requestFor
   )
 }
 

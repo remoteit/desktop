@@ -5,7 +5,7 @@ import network from '../services/Network'
 import pushNotifications from '../services/pushNotifications'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
-import { BESIDE_ROWS, deviceRows, selectDeviceModelAttributes } from '../selectors/devices'
+import { selectDeviceModelAttributes } from '../selectors/devices'
 import { RowKey, rowAccount, rowKey, rowSub } from '../helpers/rowKey'
 import {
   AGENT_RELEASE_TIMEOUT,
@@ -57,7 +57,7 @@ import {
   OidcErrorCode,
 } from '../services/oidc'
 import { createModel } from '@rematch/core'
-import { ISignIn, getSignIns, selectAccountRoutes } from '../selectors/signIns'
+import { ISignIn, getSignIns, selectAccountRoutes, storedRows } from '../selectors/signIns'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
 import i18n from '../i18n'
@@ -449,7 +449,6 @@ export default createModel<RootModel>()({
       // Switching accounts reloads without signing out, so a window's persisted state, and any chat popout still paired
       // with it, can be the last account's. With no owner recorded neither can be trusted.
       await rehydrated()
-      dispatch.accounts.keepByRow()
       const owner = store.getState().user.id
       if (persistsState && user?.id && owner !== user.id) {
         auth.adoptAccountData(user.id)
@@ -728,12 +727,12 @@ export default createModel<RootModel>()({
       dispatch.contacts.reset()
     },
     /** The page boots as `userId` over state stored for another person. What is about one person goes. What is
-     *  kept by account id stays only for the accounts that the SAME sign-in serves now as when it was stored — so
-     *  signing one account out, or making another the page's person, costs the others nothing, and nothing is left
-     *  to show that was read as someone else: a signed-out account's, or an organization two of them reach that
-     *  another of them serves from now on, maybe in another role. With no record of whose the state was, none of
-     *  it is kept. The rows are laid out again as stored for the people still signed in — the new person's own
-     *  memberships theirs, the former person a sign-in beside them — so that when they are read again
+     *  kept by row (helpers/rowKey) — an account's data as each sign-in read it — stays for every sign-in still in
+     *  use, said again for the new person: their rows become the plain ones, the former person's the rows under
+     *  their sub. So signing one account out, or making another the page's person, costs the others nothing, and
+     *  nothing is left to show that was read as someone who has left. With no record of whose the plain rows were,
+     *  none of them is kept. The rows are laid out again as stored for the people still signed in — the new person's
+     *  own memberships theirs, the former person a sign-in beside them — so that when they are read again
      *  (accounts.fetch, fetchSignIns) a row whose sign-in changes then is still seen to (models/accounts rowsAfter). */
     adoptAccountData(userId: string) {
       const state = store.getState()
@@ -756,35 +755,19 @@ export default createModel<RootModel>()({
         const picked = sub || formerSub
         if (picked && inUse.has(picked)) via[id] = picked === primarySub ? '' : picked
       })
-      // Whose token each account's stored data was read with, and whose serves it now.
-      const served = (person: string, own: string | undefined, rows: Partial<typeof accounts>) => {
-        const routes = selectAccountRoutes({ auth: { user: { id: person } }, user, accounts: rows } as State)
-        return (id: string) => (routes[id] ? routes[id].sub || own : undefined)
-      }
-      const was = served(user.id, formerSub, accounts)
-      const now = served(userId, primarySub, { membership, signIns, via })
-      const kept = (id: string) => !!formerSub && !!now(id) && now(id) === was(id)
-      const stored = new Set<string>()
-      const { devices, products, networks, files, jobs, tags, organization, applicationTypes } = state
-      ;[products, networks.all, files.all, jobs.all, tags.all, organization.accounts, applicationTypes.account]
-        .flatMap(byAccount => Object.keys(byAccount || {}))
-        .forEach(id => id !== 'default' && stored.add(id))
-      dispatch.accounts.forgetByAccount([...stored].filter(id => !kept(id)))
-      // Devices are kept by row — the account and the sign-in — so every row of a sign-in still in use stays, said
-      // again for the new person: theirs become the plain rows, the former person's the rows under their sub.
       const reached = selectAccountRoutes({
         auth: { user: { id: userId } },
         user,
         accounts: { membership, signIns, via },
       } as State)
       const rows: ILookup<RowKey> = {}
-      deviceRows(devices).forEach(row => {
+      storedRows(state).forEach(row => {
         const sub = rowSub(row) || formerSub
-        if (BESIDE_ROWS.includes(row) || !sub || !inUse.has(sub)) return
+        if (!sub || !inUse.has(sub)) return
         const as = sub === primarySub ? '' : sub
         if (reached[rowAccount(row)]?.reach.some(who => who.sub === as)) rows[row] = rowKey(rowAccount(row), as)
       })
-      dispatch.devices.rekey(rows)
+      dispatch.accounts.rekey(rows)
       dispatch.auth.resetPersonData()
       // The new person starts on their own account.
       dispatch.accounts.set({

@@ -2,7 +2,7 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
 import { SchemaField, TypeRef, buildCall, named } from './graphQLSchema'
 import { deviceDisableFields, disabledAdaptor } from './deviceDisable'
-import { accountCache } from './accountCaches'
+import { accountCache, forgotten, rowNow } from './accountCaches'
 import { noteAccountOf } from '../selectors/signIns'
 
 /* A device's identity (graphql-api docs/PROXY-GROUPS.md §11, "Wave 3: device identity"): the join keys that bring a
@@ -414,15 +414,16 @@ const copies = new Map<string, DuplicateCopy[]>()
 const reading = new Map<string, Promise<void>>()
 const listeners = new Set<Listener>()
 
-export const duplicateCopies = (accountId: string): DuplicateCopy[] | undefined => copies.get(accountId)
+// Kept by ROW (services/accountCaches): those the reader may manage, as the sign-in whose row of the account is
+// looked at — each row of an organization keeps its own.
+export const duplicateCopies = (accountId: string): DuplicateCopy[] | undefined => copies.get(rowNow(accountId))
 
-// Those the reader may manage: another sign-in serving the account reads its own (services/accountCaches).
-accountCache(accountIds => {
-  // A read still out was asked as the sign-in before: whoever asks after is given one of their own, and what the
-  // old one brings is not kept.
+accountCache((accountIds, rows) => {
+  // A read still out was asked as the sign-in of the row looked at then: whoever asks after is given one of their
+  // own, and what the old one brings is not kept.
   reading.clear()
   readingOf.clear()
-  const dropped = accountIds.filter(id => copies.delete(id))
+  const dropped = [...copies.keys()].filter(row => forgotten(row, accountIds, rows) && copies.delete(row))
   if (dropped.length) notify()
 })
 
@@ -562,17 +563,18 @@ export async function requestDuplicateCopies(accountId: string, again?: boolean)
 }
 
 function requestAccountCopies(accountId: string, again?: boolean): Promise<void> {
-  if (!again && copies.has(accountId)) return Promise.resolve()
-  const pending = reading.get(accountId)
+  const row = rowNow(accountId)
+  if (!again && copies.has(row)) return Promise.resolve()
+  const pending = reading.get(row)
   if (pending) return pending
   const read: Promise<void> = graphQLFetchDuplicateCopies(accountId).then(result => {
-    if (reading.get(accountId) !== read) return
-    reading.delete(accountId)
+    if (reading.get(row) !== read) return
+    reading.delete(row)
     if (result === 'ERROR') return
-    copies.set(accountId, result)
+    copies.set(row, result)
     notify()
   })
-  reading.set(accountId, read)
+  reading.set(row, read)
   return read
 }
 

@@ -2,7 +2,8 @@ import { createSelector } from 'reselect'
 import { dateSort } from '../helpers/utilHelper'
 import { State } from '../store'
 import { getUserId, getUser, getActiveId, optionalAccountId, getMemberships } from './state'
-import { getSignIns, selectAccountRoutes } from './signIns'
+import { getSignIns, rowFor, selectAccountRoutes, selectRowOf } from './signIns'
+import { RowKey, rowSub } from '../helpers/rowKey'
 
 /* Every row of the switcher beyond the page's own account (selectors/signIns): the organizations the primary
    belongs to, then each further sign-in's own account and its organizations — one row per id. A row another sign-in
@@ -61,6 +62,21 @@ export const selectActiveAccountId = createSelector(
   (accountId, activeId, userId) => accountId || activeId || userId
 )
 
+/** The row an account is looked at through (selectors/signIns selectRowOf): the selected row where none is named. */
+export const selectRow = (state: State, accountId?: string): RowKey =>
+  selectRowOf(state, selectActiveAccountId(state, accountId))
+
+export type RowSaid = { accountId?: string; sub?: string; row?: RowKey }
+
+/** The row an effect acts for, and its account: the row said (one it began in, or a read was made for); the account
+ *  under the sign-in said (`sub`: an event that sign-in was sent); else the row the account — the selected one where
+ *  none is named — is looked at through now. */
+export function rowSaid(state: State, of?: string | RowSaid | void): { accountId: string; row: RowKey } {
+  const said = typeof of === 'string' ? { accountId: of } : of || {}
+  const accountId = said.accountId || selectActiveAccountId(state)
+  return { accountId, row: said.row ?? rowFor(state, accountId, said.sub) }
+}
+
 export const isUserAccount = createSelector(
   [selectActiveAccountId, getUserId],
   (activeAccountId, userId) => activeAccountId === userId
@@ -90,13 +106,27 @@ const getThisMembership = createSelector([getUser], user => ({
   },
 }))
 
+// The sign-in of the row an account is looked at through ('' the page's own person): the selected row's where none
+// is named.
+const selectRowSub = (state: State, accountId?: string) => rowSub(selectRow(state, accountId))
+
+/* The membership the account is looked at as: that of its row's own sign-in (helpers/rowKey) — in an organization two
+   people here belong to, each row has its own role. */
 export const selectMembership = createSelector(
-  [selectActiveAccountId, selectMemberships, getThisMembership, isUserAccount],
-  (accountId, memberships, thisMembership, isUserAccount): IMembership => {
+  [
+    selectActiveAccountId,
+    selectMemberships,
+    getThisMembership,
+    isUserAccount,
+    getMemberships,
+    getSignIns,
+    selectRowSub,
+  ],
+  (accountId, memberships, thisMembership, isUserAccount, primary, signIns, sub): IMembership => {
     if (isUserAccount) return thisMembership
-    return (
-      memberships.find(m => m.account.id === accountId) ||
-      (console.log('CANT FIND THIS MEMBERSHIP', thisMembership.license), thisMembership)
-    )
+    const found = memberships.find(m => m.account.id === accountId)
+    const own = (sub ? signIns[sub]?.membership : primary)?.find(m => m.account.id === accountId)
+    if (found && own) return { ...found, ...own }
+    return found || (console.log('CANT FIND THIS MEMBERSHIP', thisMembership.license), thisMembership)
   }
 )

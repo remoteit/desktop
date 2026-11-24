@@ -1,4 +1,5 @@
 import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
+import type { RequestFor } from '../selectors/signIns'
 
 const SERVICE_FIELDS = 'id name type { id name } host port enabled'
 
@@ -17,12 +18,15 @@ export async function graphQLPlatformTypes() {
   )
 }
 
-export async function graphQLDeviceProducts(options?: {
-  accountId?: string
-  size?: number
-  from?: number
-  after?: string
-}) {
+export async function graphQLDeviceProducts(
+  options?: {
+    accountId?: string
+    size?: number
+    from?: number
+    after?: string
+  },
+  requestFor?: RequestFor
+) {
   return await graphQLBasicRequest(
     ` query DeviceProducts($accountId: String, $size: Int, $from: Int, $after: ID) {
         login {
@@ -48,7 +52,9 @@ export async function graphQLDeviceProducts(options?: {
           }
         }
       }`,
-    options || {}
+    options || {},
+    false,
+    requestFor
   )
 }
 
@@ -56,7 +62,7 @@ export async function graphQLDeviceProducts(options?: {
 export const JOIN_KEY_FIELDS =
   'id name creator { id email } created expires revoked lastUsed joins maxJoins joinRate inForce unused suggestion'
 
-export async function graphQLDeviceProduct(id: string, accountId?: string) {
+export async function graphQLDeviceProduct(id: string, accountId?: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query DeviceProduct($id: String!, $accountId: String) {
         login {
@@ -96,7 +102,9 @@ export async function graphQLDeviceProduct(id: string, accountId?: string) {
           }
         }
       }`,
-    { id, accountId }
+    { id, accountId },
+    false,
+    requestFor
   )
 }
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { rowKey } from '../helpers/rowKey'
+import { selectAccountRoutes } from '../selectors/signIns'
 
 // Work's own account, in its row: under the sign-in that read it.
 const WORK = rowKey('work', 'sub-work')
@@ -263,7 +264,12 @@ describe('an event between two people signed in here', () => {
       held.device = { id: 'dev-1' }
       both(first, transfer('work'))
       await vi.waitFor(() => expect(devices.fetchSingleFull).toHaveBeenCalledTimes(1))
-      expect(devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'dev-1', newDevice: true, accountId: 'work' })
+      expect(devices.fetchSingleFull).toHaveBeenCalledWith({
+        id: 'dev-1',
+        newDevice: true,
+        accountId: 'work',
+        sub: 'sub-work',
+      })
       // Out of the old owner's list, into the new owner's — never dropped as if it had left.
       expect(dispatched.removeDevice).toHaveBeenCalledWith('dev-1')
       expect(devices.cleanup).not.toHaveBeenCalled()
@@ -284,7 +290,12 @@ describe('an event between two people signed in here', () => {
     }`, () => {
       both(first, share('add', 'personal', 'work'))
       expect(devices.fetchSingleFull).toHaveBeenCalledTimes(1)
-      expect(devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'dev-1', newDevice: true, accountId: 'work' })
+      expect(devices.fetchSingleFull).toHaveBeenCalledWith({
+        id: 'dev-1',
+        newDevice: true,
+        accountId: 'work',
+        sub: 'sub-work',
+      })
     })
 
   it('an unshare from one to the other leaves the owner’s list alone', () => {
@@ -310,9 +321,35 @@ describe('an event between two people signed in here', () => {
     expect(devices.fetchSingleFull).not.toHaveBeenCalled()
   })
 
+  it('a device shared with an organization both belong to is read into its row under each, as each', () => {
+    const member = { account: { id: 'acme' } }
+    const before = { accounts: state.accounts, devices: state.devices }
+    state.accounts = {
+      ...state.accounts,
+      membership: [member],
+      signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [member] } },
+    }
+    state.devices = { acme: { all: [] }, [rowKey('acme', 'sub-work')]: { all: [] } }
+    // The one state object every test here changes: what was worked out of it before is let go.
+    selectAccountRoutes.clearCache()
+    both(0, share('add', 'someone', 'acme'))
+    // The row looked at, then the other: a sign-in that may not see the device says nothing of it (quiet).
+    expect(devices.fetchSingleFull.mock.calls.map(([asked]) => asked)).toEqual([
+      { id: 'dev-1', newDevice: true, accountId: 'acme', sub: '' },
+      { id: 'dev-1', newDevice: true, accountId: 'acme', sub: 'sub-work', quiet: true },
+    ])
+    Object.assign(state, before)
+    selectAccountRoutes.clearCache()
+  })
+
   it('a share by someone who is not here is handled for whoever it is with', () => {
     both(0, share('add', 'someone', 'personal'))
-    expect(devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'dev-1', newDevice: true, accountId: 'personal' })
+    expect(devices.fetchSingleFull).toHaveBeenCalledWith({
+      id: 'dev-1',
+      newDevice: true,
+      accountId: 'personal',
+      sub: '',
+    })
     both(0, share('remove', 'someone', 'work'))
     expect(devices.cleanupFor).toHaveBeenCalledWith({ ids: ['dev-1'], accountIds: ['work'] })
   })

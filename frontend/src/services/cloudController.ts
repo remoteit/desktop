@@ -17,6 +17,8 @@ import {
   selectAccountRoutes,
   selectPersonIds,
   selectPersonSub,
+  selectRowOf,
+  rowGone,
 } from '../selectors/signIns'
 import { resourceForEventsURL } from '../constants'
 import { version } from '../helpers/versionHelper'
@@ -24,7 +26,7 @@ import { store } from '../store'
 import { notify } from './Notifications'
 import { productFullEventFields } from './productMaxDevices'
 import { deviceRows, selectById } from '../selectors/devices'
-import { RowKey, rowAccount, rowSub } from '../helpers/rowKey'
+import { RowKey, rowAccount, rowKey, rowSub } from '../helpers/rowKey'
 import { combinedName } from '@common/nameHelper'
 import {
   setConnection,
@@ -71,8 +73,21 @@ function copiesOf(state: any, deviceId?: string): [row: RowKey, device: IDevice]
   return held.filter(([row]) => accounts.includes(rowAccount(row)))
 }
 
-// A row as the devices model is told it: the account, and the sign-in whose row of it.
+// A row as a model is told it: the account, and the sign-in whose row of it.
 const rowOf = (row: RowKey) => ({ accountId: rowAccount(row), sub: rowSub(row) })
+
+/* Every row of an account that a model keeps something for (`byRow`, its lookup) — one for each sign-in here that
+   has read it — and the row the account is looked at through, first, kept yet or not. An event is handled once here
+   though each sign-in's socket brings it (seenBefore), so what it adds is added to each of the account's rows, read as
+   that row's own sign-in: not to the row looked at alone. `quiet` on the rest: a sign-in that may not see what was
+   added says nothing of it. */
+function rowsOf(state: any, byRow: ILookup<unknown> | undefined, accountId: string) {
+  const looked = selectRowOf(state, accountId)
+  const rest = (Object.keys(byRow || {}) as RowKey[]).filter(
+    row => row !== looked && rowAccount(row) === accountId && !rowGone(state, row)
+  )
+  return [{ ...rowOf(looked) }, ...rest.map(row => ({ ...rowOf(row), quiet: true }))]
+}
 
 // How long an event delivered to one sign-in's socket is remembered, so its copy on another's is passed over.
 const SEEN_FOR_MS = 60_000
@@ -601,7 +616,9 @@ ${await productFullEventFields()}
             ) {
               if (state.ui.registrationCommand) dispatch.ui.set({ redirect: `/devices/${target.deviceId}` })
               dispatch.ui.set({ successMessage: `${target.name} registered successfully!` })
-              dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: true })
+              rowsOf(state, state.devices, target.owner.id).forEach(row =>
+                dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: true, ...row })
+              )
             }
           }
         })
@@ -629,9 +646,13 @@ ${await productFullEventFields()}
             setConnection(target.connection)
           }
 
-          // session state
+          // session state: in each row whose list holds the device (copiesOf), else the row its account is looked at
+          // through
           if (event.state === 'connected') {
-            dispatch.sessions.setSession({
+            const state = store.getState()
+            const holding = copiesOf(state, target.deviceId).map(([row]) => rowSub(row))
+            const subs = holding.length ? holding : [rowSub(selectRowOf(state, target.accountId ?? ''))]
+            const session: ISession = {
               id: event.sessionId,
               manufacturer: event.manufacturerType,
               reverseProxy: event.reverseProxy,
@@ -648,7 +669,8 @@ ${await productFullEventFields()}
                 platform: target.platform,
                 name: target.name,
               },
-            })
+            }
+            new Set(subs).forEach(sub => dispatch.sessions.setSession({ ...session, sub }))
           } else {
             dispatch.sessions.removeSession(event.sessionId)
           }
@@ -678,7 +700,9 @@ ${await productFullEventFields()}
         else if (['add', 'update'].includes(event.action)) {
           shared.forEach(target =>
             accountsTo.forEach(accountId =>
-              dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: event.action === 'add', accountId })
+              rowsOf(state, state.devices, accountId).forEach(row =>
+                dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: event.action === 'add', ...row })
+              )
             )
           )
         }
@@ -689,36 +713,37 @@ ${await productFullEventFields()}
         if (!event.job) break
         console.log('JOB EVENT', event.job)
 
+        // Each row of the job's account that has read its jobs holds the job: every one is told.
+        const jobId = event.job.id
+        const jobRows = rowsOf(store.getState(), store.getState().jobs.all, event.job.owner.id).map(
+          ({ accountId, sub }) => ({ accountId, sub })
+        )
+
         if (!event.job.target) {
           const state = store.getState()
-          if (!state.jobs.fetching) dispatch.jobs.fetchSingle({ accountId: event.job.owner.id, jobId: event.job.id })
+          if (!state.jobs.fetching) jobRows.forEach(row => dispatch.jobs.fetchSingle({ ...row, jobId }))
           break
         }
 
         const jobDevice = event.job.jobDevice
         const jobDevices = event.job.target.jobDevices
 
-        dispatch.jobs.setJobs({
-          accountId: event.job.owner.id,
-          jobs: [
-            {
-              ...event.job.target,
-              status: event.job.status,
-              jobDevices: jobDevice
-                ? jobDevices.map(jd =>
-                    jd.device.id === jobDevice.device.id ? { ...jd, status: jobDevice.status } : jd
-                  )
-                : jobDevices,
-            },
-          ],
-        })
-
-        // A run's event changes its job's counts, which only the job read again says (its runs are not all held).
-        if (jobDevice) dispatch.jobs.refreshSoon({ accountId: event.job.owner.id, jobId: event.job.id })
-
-        if (event.type === 'JOB' && event.job?.status === 'SUCCESS') {
-          dispatch.jobs.fetchSingle({ accountId: event.job.owner.id, jobId: event.job.id })
+        const changed: IJob = {
+          ...event.job.target,
+          status: event.job.status,
+          jobDevices: jobDevice
+            ? jobDevices.map(jd => (jd.device.id === jobDevice.device.id ? { ...jd, status: jobDevice.status } : jd))
+            : jobDevices,
         }
+        const succeeded = event.type === 'JOB' && event.job.status === 'SUCCESS'
+        jobRows.forEach(row => {
+          dispatch.jobs.setJobs({ accountId: row.accountId, row: rowKey(row.accountId, row.sub), jobs: [changed] })
+
+          // A run's event changes its job's counts, which only the job read again says (its runs are not all held).
+          if (jobDevice) dispatch.jobs.refreshSoon({ ...row, jobId })
+
+          if (succeeded) dispatch.jobs.fetchSingle({ ...row, jobId })
+        })
 
         break
 
@@ -770,7 +795,9 @@ ${await productFullEventFields()}
             if (target.device) await dispatch.accounts.removeDevice(target.deviceId)
             // NEW OWNER: Refresh device list to show transferred device
             dispatch.ui.set({ successMessage: `${target.name} was transferred to you!` })
-            dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: true, accountId: newOwnerId })
+            rowsOf(store.getState(), store.getState().devices, newOwnerId).forEach(row =>
+              dispatch.devices.fetchSingleFull({ id: target.deviceId, newDevice: true, ...row })
+            )
           } else {
             // OLD OWNER or ORG MEMBER: Remove from local list
             if (target.device) {

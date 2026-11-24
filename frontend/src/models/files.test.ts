@@ -18,7 +18,15 @@ vi.mock('../services/graphQLRequest', () => ({ graphQLFiles: vi.fn() }))
 vi.mock('../services/graphQLMutation', () => ({ graphQLDeleteFile: vi.fn(), graphQLModifyFile: vi.fn() }))
 vi.mock('../services/get', () => ({ get: vi.fn() }))
 vi.mock('../services/fileStorage', () => ({ fetchFileSizes: vi.fn() }))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'acct' }))
+vi.mock('../selectors/accounts', () => ({
+  selectActiveAccountId: () => 'acct',
+  // One sign-in: a row is its account's own id.
+  selectRow: (_state: unknown, accountId?: string) => accountId || 'acct',
+  rowSaid: (_state: unknown, of?: any) => {
+    const accountId = (typeof of === 'string' ? of : of?.accountId) || 'acct'
+    return { accountId, row: of?.row ?? accountId }
+  },
+}))
 vi.mock('../i18n', () => ({
   default: { t: (_key: string, options: any) => options.defaultValue.replace('{{message}}', options.message) },
 }))
@@ -60,7 +68,7 @@ describe('files.upload', () => {
       arguments: form.argumentDefinitions,
     })
     expect(postFile).not.toHaveBeenCalled()
-    expect(dispatch.files.fetchSingle).toHaveBeenCalledWith({ fileId: 'f1' })
+    expect(dispatch.files.fetchSingle).toHaveBeenCalledWith({ fileId: 'f1', accountId: 'acct', row: 'acct' })
     expect(dispatch.ui.set).toHaveBeenLastCalledWith({ fileUpload: undefined })
   })
 
@@ -97,7 +105,7 @@ describe('files.upload', () => {
       '/file/upload',
       { account: 'acct' }
     )
-    expect(dispatch.files.fetchSingle).toHaveBeenCalledWith({ fileId: 'f2' })
+    expect(dispatch.files.fetchSingle).toHaveBeenCalledWith({ fileId: 'f2', accountId: 'acct', row: 'acct' })
   })
 
   it("shows the server's refusal", async () => {
@@ -128,9 +136,9 @@ describe('files.upload', () => {
 describe('what each file stores', () => {
   it('sizes merge into the account’s files; a file the API gave none for is left as it was', () => {
     const state: any = { all: { acct: [{ id: 'F1' }, { id: 'F2', storedSize: 7 }], other: [{ id: 'F1' }] } }
-    const next = (files as any).reducers.setSizes(state, { accountId: 'acct', sizes: { F1: 5 } })
+    const next = (files as any).reducers.setSizes(state, { row: 'acct', sizes: { F1: 5 } })
     expect(next.all.acct).toEqual([{ id: 'F1', storedSize: 5 }, { id: 'F2', storedSize: 7 }])
     expect(next.all.other).toEqual([{ id: 'F1' }])
-    expect((files as any).reducers.setSizes({ all: {} }, { accountId: 'acct', sizes: { F1: 5 } }).all).toEqual({})
+    expect((files as any).reducers.setSizes({ all: {} }, { row: 'acct', sizes: { F1: 5 } }).all).toEqual({})
   })
 })

@@ -1,31 +1,54 @@
 import { createSelector } from 'reselect'
 import { DEFAULT_NETWORK } from '../models/networks'
 import { newConnection } from '../helpers/connectionHelper'
-import { selectActiveAccountId, selectActiveUser } from './accounts'
+import { selectRow, selectActiveUser } from './accounts'
+import { AccountRoute, selectAccountRoutes, selectActiveRowKey, subOf } from './signIns'
+import { RowKey, rowAccount, rowKey } from '../helpers/rowKey'
 import { getUser, getConnections, getSessions, optionalService } from './state'
 
+/* A connection and a session belong to a ROW (helpers/rowKey): the account, and the sign-in it was made or read as.
+   What is listed is the selected row's — the two rows of an organization two people here belong to each show their
+   own. */
+const inRow = (row: RowKey, routes: ILookup<AccountRoute>, accountId?: string, sub?: string) =>
+  !!accountId && rowKey(accountId, subOf(routes, accountId, sub)) === row
+
 export const getConnectionsLookup = createSelector(
-  [getConnections, selectActiveAccountId],
-  (allConnections, accountId) =>
+  [getConnections, selectRow, selectAccountRoutes],
+  (allConnections, row, routes) =>
     allConnections.reduce((lookup: { [deviceID: string]: IConnection[] }, c: IConnection) => {
-      if (!c.deviceID || accountId !== c.accountId) return lookup
+      if (!c.deviceID || !inRow(row, routes, c.accountId, c.sub)) return lookup
       if (lookup[c.deviceID]) lookup[c.deviceID].push(c)
       else lookup[c.deviceID] = [c]
       return lookup
     }, {})
 )
 
-export const selectSessions = createSelector([getSessions, selectActiveAccountId], (sessions, accountId) => {
-  return sessions.filter(s => s.target.accountId === accountId)
+export const selectSessions = createSelector([getSessions, selectRow, selectAccountRoutes], (sessions, row, routes) => {
+  return sessions.filter(s => inRow(row, routes, s.target.accountId, s.sub))
 })
+
+/* Every account's sessions, each as the row its account is looked at through has them: a session two rows of an
+   organization both hold is one here, not two. */
+export const selectLookedAtSessions = createSelector(
+  [getSessions, selectAccountRoutes, selectActiveRowKey],
+  (sessions, routes, active) =>
+    sessions.filter(s => {
+      const { accountId } = s.target
+      const row = accountId === rowAccount(active) ? active : rowKey(accountId, routes[accountId]?.sub)
+      return inRow(row, routes, accountId, s.sub)
+    })
+)
 
 export const selectEnabledConnections = createSelector([getConnections], connections => {
   return connections.filter(c => !!c.createdTime || c.enabled)
 })
 
-export const selectConnections = createSelector([getConnections, selectActiveAccountId], (connections, accountId) => {
-  return connections.filter(c => c.accountId === accountId && (!!c.createdTime || c.enabled))
-})
+export const selectConnections = createSelector(
+  [getConnections, selectRow, selectAccountRoutes],
+  (connections, row, routes) => {
+    return connections.filter(c => inRow(row, routes, c.accountId, c.sub) && (!!c.createdTime || c.enabled))
+  }
+)
 
 export const selectEnabledConnectionsCount = createSelector(
   [selectConnections, selectSessions],
@@ -46,7 +69,7 @@ export const selectIdleConnections = createSelector([selectConnections], connect
 })
 
 export const selectAllConnectionSessions = createSelector(
-  [getConnections, getSessions, getUser],
+  [getConnections, selectLookedAtSessions, getUser],
   (connections, sessions, user) => {
     const active: ISession[] = connections
       .filter(c => c.online && c.connected && !sessions.find(s => s.target.id === c.id))
@@ -57,6 +80,7 @@ export const selectAllConnectionSessions = createSelector(
         manufacturer: 'UNKNOWN',
         reverseProxy: false,
         user: user,
+        sub: c.sub,
         target: {
           id: c.id,
           accountId: c.accountId || user.id,
@@ -70,8 +94,8 @@ export const selectAllConnectionSessions = createSelector(
 )
 
 export const selectConnectionSessions = createSelector(
-  [selectAllConnectionSessions, selectActiveAccountId],
-  (sessions, accountId) => sessions.filter(s => s.target.accountId === accountId)
+  [selectAllConnectionSessions, selectRow, selectAccountRoutes],
+  (sessions, row, routes) => sessions.filter(s => inRow(row, routes, s.target.accountId, s.sub))
 )
 
 export const selectConnection = createSelector([getConnections, optionalService], (connections, service?: IService) => {

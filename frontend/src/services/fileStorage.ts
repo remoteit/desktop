@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import { post } from './post'
+import type { RequestFor } from '../selectors/signIns'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { withoutDeviceSessions as refusesField, UNSUPPORTED } from './graphQLDaemon'
 
@@ -49,8 +50,8 @@ export function uploadRefusal(t: TFunction, storage: FileStorage | null | undefi
 type Failed = 'ERROR' | typeof UNSUPPORTED
 const failed = (account: any): account is Failed => account === 'ERROR' || account === UNSUPPORTED
 
-async function read(query: string, variables: ILookup<any>, marker: string): Promise<any> {
-  const response = await post({ query, variables })
+async function read(query: string, variables: ILookup<any>, marker: string, requestFor?: RequestFor): Promise<any> {
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (refusesField(errors, marker)) return UNSUPPORTED
@@ -69,11 +70,15 @@ export async function fetchFileStorage(accountId: string): Promise<FileStorage |
 }
 
 // What each of the account's files stores, all its versions, by file id; a file the API keeps no size for is left out.
-export async function fetchFileSizes(accountId: string): Promise<ILookup<number> | 'ERROR' | typeof UNSUPPORTED> {
+export async function fetchFileSizes(
+  accountId: string,
+  requestFor?: RequestFor
+): Promise<ILookup<number> | 'ERROR' | typeof UNSUPPORTED> {
   const account = await read(
     `query FileSizes($accountId: String) { login { account(id: $accountId) { files { id storedSize } } } }`,
     { accountId },
-    'storedSize'
+    'storedSize',
+    requestFor
   )
   if (failed(account)) return account
   const sizes: ILookup<number> = {}

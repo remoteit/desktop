@@ -1,6 +1,7 @@
 import network from './Network'
 import { store, dispatch } from '../store'
 import { selectDeviceModelAttributes } from '../selectors/devices'
+import { selectRow } from '../selectors/accounts'
 
 class CloudSync {
   initialized = false
@@ -75,11 +76,13 @@ class CloudSync {
     // Preserve pagination: re-fetch all loaded devices instead of resetting to first page
     const state = store.getState()
     const deviceModel = selectDeviceModelAttributes(state)
+    // The row whose list is read whole (helpers/rowKey): its page is put back in it, whichever row is looked at by then.
+    const row = selectRow(state)
     const loadedCount = deviceModel.from + deviceModel.size
     if (loadedCount > deviceModel.size) {
-      await dispatch.devices.set({ from: 0, size: loadedCount })
+      await dispatch.devices.set({ from: 0, size: loadedCount, row })
     } else {
-      await dispatch.devices.set({ from: 0 })
+      await dispatch.devices.set({ from: 0, row })
     }
     await this.call([
       dispatch.files.fetch,
@@ -92,7 +95,7 @@ class CloudSync {
     ])
     // Restore original pagination position after refresh
     if (loadedCount > deviceModel.size) {
-      await dispatch.devices.set({ from: deviceModel.from, size: deviceModel.size })
+      await dispatch.devices.set({ from: deviceModel.from, size: deviceModel.size, row })
     }
   }
 }

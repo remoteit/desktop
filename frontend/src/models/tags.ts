@@ -3,7 +3,9 @@ import i18n from '../i18n'
 import { createModel } from '@rematch/core'
 import { AxiosResponse } from 'axios'
 import { eachSelectedDevice } from '../helpers/selectedHelper'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { RowSaid, rowSaid, selectActiveAccountId } from '../selectors/accounts'
+import { asRow, rowGone, selectRowOf } from '../selectors/signIns'
+import { RowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
 import { selectPermissions } from '../selectors/organizations'
 import { selectTags } from '../selectors/tags'
 import {
@@ -23,7 +25,8 @@ import { getNextLabel } from './labels'
 import { RootModel } from '.'
 
 type ITagState = {
-  all: { [accountId: string]: ITag[] }
+  // By ROW (helpers/rowKey): an account's tags as each sign-in that belongs to it is given them.
+  all: { [row: string]: ITag[] }
   adding?: boolean
   creating?: boolean
   removing?: boolean
@@ -38,8 +41,9 @@ const defaultState: ITagState = {
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(accountId: string | void, state) {
-      accountId = accountId || selectActiveAccountId(state)
+    // Read for a row (selectors/accounts rowSaid): asked as its sign-in, and kept under it.
+    async fetch(of: string | RowSaid | void, state) {
+      const { accountId, row } = rowSaid(state, of)
       const result = await graphQLBasicRequest(
         ` query Tags($account: String) {
             login {
@@ -54,16 +58,18 @@ export default createModel<RootModel>()({
           }`,
         {
           account: accountId,
-        }
+        },
+        false,
+        asRow(row)
       )
       if (result === 'ERROR') return
       const tags = await dispatch.tags.parse(result)
-      if (tags) dispatch.tags.setTags({ tags, accountId })
+      if (tags) dispatch.tags.setTags({ tags, accountId, row })
     },
 
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
-      if (!state.tags.all[accountId]) dispatch.tags.fetch(accountId)
+      if (!state.tags.all[selectRowOf(state, accountId)]) dispatch.tags.fetch(accountId)
     },
 
     async parse(result: AxiosResponse<any>) {
@@ -77,25 +83,28 @@ export default createModel<RootModel>()({
       return parsed
     },
 
-    async addDevice({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }) {
+    async addDevice({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }, state) {
       if (!device) return
+      // The row the device is in when this begins: where it is written, and put back if the tag is refused.
+      const row = deviceRow(state, device)
       const copy = structuredClone(device)
       copy.tags.push(tag)
-      dispatch.accounts.setDevice({ id: copy.id, device: copy })
+      dispatch.accounts.setDevice({ id: copy.id, device: copy, row })
       const result = await graphQLAddDeviceTag(copy.id, tag.name, accountId)
       if (result === 'ERROR' || !result?.data?.data?.addTag) {
-        dispatch.accounts.setDevice({ id: device.id, device })
+        dispatch.accounts.setDevice({ id: device.id, device, row })
       }
     },
 
-    async addNetwork({ tag, network }: { tag: ITag; network: INetwork }) {
+    async addNetwork({ tag, network }: { tag: ITag; network: INetwork }, state) {
       if (!network) return
+      const at = rowSaid(state)
       const copy = structuredClone(network)
       copy.tags.push(tag)
-      dispatch.networks.setNetwork(copy)
+      dispatch.networks.setNetworkIn({ network: copy, ...at })
       const result = await graphQLAddNetworkTag(copy.id, tag.name)
       if (result === 'ERROR' || !result?.data?.data?.addNetworkTag) {
-        dispatch.networks.setNetwork(network)
+        dispatch.networks.setNetworkIn({ network, ...at })
       }
     },
 
@@ -123,21 +132,23 @@ export default createModel<RootModel>()({
       dispatch.tags.set({ adding: false })
     },
 
-    async removeDevice({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }) {
+    async removeDevice({ tag, device, accountId }: { tag: ITag; device: IDevice; accountId: string }, state) {
+      const row = deviceRow(state, device)
       const copy: IDevice = removeTag(device, tag)
-      dispatch.accounts.setDevice({ id: copy.id, device: copy })
+      dispatch.accounts.setDevice({ id: copy.id, device: copy, row })
       const result = await graphQLRemoveDeviceTag(device.id, tag.name, accountId)
       if (result === 'ERROR' || !result?.data?.data?.removeTag) {
-        dispatch.accounts.setDevice({ id: device.id, device })
+        dispatch.accounts.setDevice({ id: device.id, device, row })
       }
     },
 
-    async removeNetwork({ tag, network }: { tag: ITag; network: INetwork }) {
+    async removeNetwork({ tag, network }: { tag: ITag; network: INetwork }, state) {
+      const at = rowSaid(state)
       const copy = removeTag(network, tag)
-      dispatch.networks.setNetwork(copy)
+      dispatch.networks.setNetworkIn({ network: copy, ...at })
       const result = await graphQLRemoveNetworkTag(copy.id, tag.name)
       if (result === 'ERROR' || !result?.data?.data?.removeNetworkTag) {
-        dispatch.networks.setNetwork(network)
+        dispatch.networks.setNetworkIn({ network, ...at })
       }
     },
 
@@ -162,11 +173,13 @@ export default createModel<RootModel>()({
 
     async create({ tag, accountId }: { tag: ITag; accountId?: string }, state) {
       accountId = accountId || selectActiveAccountId(state)
-      const tags = selectTags(state)
+      // The row it began in (this effect's own state): where the list is written once the request has answered.
+      const row = selectRowOf(state, accountId)
+      const tags = selectTags(state, accountId)
       dispatch.tags.set({ creating: true })
       tag.color = tag.color || getNextLabel(state)
       const result = await graphQLSetTag({ name: tag.name, color: tag.color }, accountId)
-      if (result !== 'ERROR') dispatch.tags.setTags({ tags: [...tags, tag], accountId })
+      if (result !== 'ERROR') dispatch.tags.setTags({ tags: [...tags, tag], accountId, row })
       dispatch.tags.set({ creating: false })
     },
 
@@ -180,7 +193,7 @@ export default createModel<RootModel>()({
       }
       const index = findTagIndex(tags, tag.name)
       tags[index] = tag
-      dispatch.tags.setTags({ tags, accountId })
+      dispatch.tags.setTags({ tags, accountId, row: selectRowOf(state, accountId) })
       dispatch.tags.set({ updating: undefined })
       dispatch.devices.fetchList()
     },
@@ -219,13 +232,13 @@ export default createModel<RootModel>()({
         }
         tags[index].name = name
       }
-      dispatch.tags.setTags({ tags, accountId })
+      dispatch.tags.setTags({ tags, accountId, row: selectRowOf(state, accountId) })
       dispatch.tags.set({ updating: undefined })
       dispatch.devices.fetchList()
     },
 
     async delete({ tag, accountId }: { tag: ITag; accountId: string }, state) {
-      const tags = [...selectTags(state)]
+      const tags = [...selectTags(state, accountId)]
       dispatch.tags.set({ deleting: tag.name })
       const result = await graphQLDeleteTag(tag.name, accountId)
       if (result === 'ERROR') {
@@ -234,16 +247,18 @@ export default createModel<RootModel>()({
       }
       const index = findTagIndex(tags, tag.name)
       tags.splice(index, 1)
-      dispatch.tags.setTags({ tags, accountId })
+      dispatch.tags.setTags({ tags, accountId, row: selectRowOf(state, accountId) })
       dispatch.tags.set({ deleting: undefined })
       dispatch.devices.fetchList()
     },
 
-    async setTags({ tags, accountId }: { tags: ITag[]; accountId: string }, state) {
+    /* The one write of a row's tags. `row` is the key (helpers/rowKey): the row said — the one a read was made for, or
+       an effect began in — else the one the account is looked at through. */
+    async setTags({ tags, accountId, row }: { tags: ITag[]; accountId: string; row?: RowKey }, state) {
+      // An answer for a row whose sign-in has left since it was asked: the row is gone, and is not put back.
+      if (row && rowGone(state, row)) return
       tags = tags.sort((a, b) => (b.created?.getTime() || 0) - (a.created?.getTime() || 0))
-      let all = { ...state.tags.all }
-      all[accountId] = tags
-      dispatch.tags.set({ all })
+      dispatch.tags.setRow({ row: row ?? selectRowOf(state, accountId), tags })
     },
   }),
   reducers: {
@@ -253,7 +268,19 @@ export default createModel<RootModel>()({
     },
     /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
     forget(state: ITagState, accountIds: string[]) {
-      state.all = Object.fromEntries(Object.entries(state.all).filter(([id]) => !accountIds.includes(id)))
+      state.all = withoutAccounts(state.all, accountIds)
+      return state
+    },
+    forgetRows(state: ITagState, rows: string[]) {
+      state.all = withoutRows(state.all, rows)
+      return state
+    },
+    rekey(state: ITagState, rows: ILookup<RowKey>) {
+      state.all = rekeyed(state.all, rows)
+      return state
+    },
+    setRow(state: ITagState, { row, tags }: { row: RowKey; tags: ITag[] }) {
+      state.all = { ...state.all, [row]: tags }
       return state
     },
     set(state: ITagState, params: Partial<ITagState>) {
@@ -274,3 +301,7 @@ export function canEditTags(state: State, accountId?: string) {
   const permissions = selectPermissions(state, accountId)
   return !!permissions.includes('ADMIN')
 }
+
+// The row a device is in: its account's, as that account is looked at.
+const deviceRow = (state: State, device: IDevice) =>
+  selectRowOf(state, device.accountId || selectActiveAccountId(state))

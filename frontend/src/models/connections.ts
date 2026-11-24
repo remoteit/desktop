@@ -35,7 +35,8 @@ import { selectApplication } from '../selectors/applications'
 import { accountFromDevice } from './accounts'
 import { selectConnection } from '../selectors/connections'
 import { selectById } from '../selectors/devices'
-import { RequestFor, requestSignIn } from '../selectors/signIns'
+import { RequestFor, requestSignIn, selectRowOf } from '../selectors/signIns'
+import { rowSub } from '../helpers/rowKey'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import heartbeat from '../services/Heartbeat'
@@ -63,11 +64,15 @@ const defaultState: IConnectionsState = {
   updating: false,
 }
 
-/* Whose a request about a connection is. Its service is asked as the sign-in whose stored lists hold it; where none
-   does (the connection's device is kept with the connections alone, or is not on the page of its account's list that
-   is loaded) the connection's own account says, not the page's own person by default. */
+/* Whose a request about a connection is: the sign-in it was made as (`sub`: with its account, the row it belongs to).
+   One that says none was stored before they were said: its service is asked as the sign-in whose stored lists hold
+   it, and where none does the connection's own account says, not the page's own person by default. */
 const forConnection = (connection: IConnection): RequestFor | undefined =>
-  connection.accountId ? { orAccount: connection.accountId } : undefined
+  connection.sub !== undefined
+    ? { sub: connection.sub }
+    : connection.accountId
+    ? { orAccount: connection.accountId }
+    : undefined
 
 export default createModel<RootModel>()({
   state: { ...defaultState },
@@ -96,10 +101,12 @@ export default createModel<RootModel>()({
       // One request per sign-in, each about the connections of the accounts it serves: a service another sign-in
       // alone reaches is not the page's own person's to read. With one sign-in in use, the one request as ever.
       const accountOf: ILookup<string | undefined> = {}
-      state.connections.all.forEach(c => (accountOf[c.id] = c.accountId))
+      const subOf: ILookup<string | undefined> = {}
+      state.connections.all.forEach(c => ((accountOf[c.id] = c.accountId), (subOf[c.id] = c.sub)))
       const groups: ILookup<{ ids: string[]; accounts: string[] }> = {}
       serviceIds.forEach(id => {
-        const sub = requestSignIn(state, { about: [id], orAccount: accountOf[id] }) || ''
+        // As the sign-in the connection was made as, where it says.
+        const sub = subOf[id] ?? (requestSignIn(state, { about: [id], orAccount: accountOf[id] }) || '')
         const group = (groups[sub] ??= { ids: [], accounts: [] })
         group.ids.push(id)
         if (accountOf[id] && !group.accounts.includes(accountOf[id]!)) group.accounts.push(accountOf[id]!)
@@ -139,7 +146,9 @@ export default createModel<RootModel>()({
       await dispatch.connections.updateCLI()
     },
 
-    async updateConnectionState({ devices }: { devices: IDevice[]; accountId: string }, state) {
+    // `sub`: the sign-in the devices were read as, where they were read for a row of it: a connection made here for
+    // one of their links is that row's.
+    async updateConnectionState({ devices, sub }: { devices: IDevice[]; accountId: string; sub?: string }, state) {
       let lookup = getConnectionLookup(state)
       let result: IConnection[] = []
 
@@ -174,6 +183,8 @@ export default createModel<RootModel>()({
               d.owner.id,
               d.access.map(a => a.id)
             )
+            // Its row's sign-in: as it was made; else as its device was read; else as its account is looked at.
+            if (!lookup[s.id]) connection.sub = sub ?? rowSub(selectRowOf(state, connection.accountId))
 
             // disable connection if service is offline
             if (!online && !connection.connectLink && connection.enabled) {

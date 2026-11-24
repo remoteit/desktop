@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
+import { selectRow } from '../selectors/accounts'
 import { fetchFileStorage, FileStorage } from '../services/fileStorage'
 import { useReadEffect } from './useReadAgain'
 import { sharedRead } from '../services/accountCaches'
@@ -12,7 +13,7 @@ const read = sharedRead(fetchFileStorage)
    without it, one the person may not script, or direct uploads off (its numbers are not kept then). Read again
    whenever the account's files are, so an upload or a delete shows in it. */
 export function useFileStorage(accountId?: string): FileStorage | null | undefined {
-  const files = useSelector((state: State) => (accountId ? state.files.all[accountId] : undefined))
+  const files = useSelector((state: State) => (accountId ? state.files.all[selectRow(state, accountId)] : undefined))
   const [storage, setStorage] = useState<FileStorage | null>()
 
   useReadEffect(() => {

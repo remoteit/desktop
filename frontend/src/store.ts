@@ -77,6 +77,12 @@ readStateWith(() => store.getState())
 
 export const persistor = getPersistor()
 
+// State stored before it was kept by row is put right the moment it is read back, before anything asks of it
+// (models/accounts keepByRow).
+const keepByRow = () => persistor.getState().bootstrapped && (keptByRow(), dispatch.accounts.keepByRow())
+const keptByRow = persistor.subscribe(keepByRow)
+keepByRow()
+
 export type Store = typeof store
 export type Dispatch = RematchDispatch<RootModel>
 export type State = RematchRootState<RootModel>

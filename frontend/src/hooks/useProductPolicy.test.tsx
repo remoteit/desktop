@@ -16,7 +16,15 @@ vi.mock('../services/productPolicy', () => ({
 }))
 vi.mock('./useDeviceSessions', () => ({ useDeviceSessions: () => sessions.on }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select({}) }))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'A1' }))
+vi.mock('../selectors/accounts', () => ({
+  selectActiveAccountId: () => 'A1',
+  // One sign-in: a row is its account's own id.
+  selectRow: (_state: unknown, accountId?: string) => accountId || 'A1',
+  rowSaid: (_state: unknown, of?: any) => {
+    const accountId = (typeof of === 'string' ? of : of?.accountId) || 'A1'
+    return { accountId, row: of?.row ?? accountId }
+  },
+}))
 
 import { resetProductPolicyReads, useDeviceProduct, useProductPolicy, useProductPolicyServed } from './useProductPolicy'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true

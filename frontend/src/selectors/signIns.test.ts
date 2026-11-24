@@ -57,11 +57,13 @@ const state = (accounts: object = {}): any => ({
     [rowKey('work', 'sub-work')]: { all: [device('d-work')] },
     [rowKey('labs', 'sub-work')]: { all: [device('d-labs'), device('d-acme')] },
   },
-  networks: { all: { labs: [{ id: 'net-labs' }] } },
-  jobs: { all: { work: [{ id: 'job-work' }] } },
-  files: { all: { labs: [{ id: 'file-labs' }] } },
+  networks: { all: { [rowKey('labs', 'sub-work')]: [{ id: 'net-labs' }] } },
+  jobs: { all: { [rowKey('work', 'sub-work')]: [{ id: 'job-work' }] } },
+  files: { all: { [rowKey('labs', 'sub-work')]: [{ id: 'file-labs' }] } },
   products: {},
-  organization: { accounts: { acme: { id: 'acme', name: 'Acme' }, labs: { id: 'labs', name: 'Labs' } } },
+  organization: {
+    accounts: { acme: { id: 'acme', name: 'Acme' }, [rowKey('labs', 'sub-work')]: { id: 'labs', name: 'Labs' } },
+  },
 })
 const single = (): any => ({ ...state({ signIns: {} }) })
 

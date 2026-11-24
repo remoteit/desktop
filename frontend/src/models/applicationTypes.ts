@@ -2,13 +2,16 @@ import { createModel } from '@rematch/core'
 import { DEFAULT_SERVICE } from '@common/constants'
 import { getApplicationType } from '@common/applications'
 import { graphQLBasicRequest } from '../services/graphQL'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { rowSaid } from '../selectors/accounts'
+import { asRow, rowGone } from '../selectors/signIns'
+import { RowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
 import { RootModel } from '.'
 import { State } from '../store'
 
 type IApplicationTypeState = {
   all: IApplicationType[]
   groups: Pick<IApplicationTypeGroup, 'ids' | 'name'>[]
+  // By ROW (helpers/rowKey): the types an account's services have, as each sign-in that belongs to it is given them.
   account: ILookup<IApplicationType[]>
 }
 
@@ -35,7 +38,8 @@ export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
     async fetch(_: void, state) {
-      const accountId = selectActiveAccountId(state)
+      // The row they are read for: asked as its sign-in, and kept under it whichever row is looked at by then.
+      const { accountId, row } = rowSaid(state)
       const result = await graphQLBasicRequest(
         ` query ApplicationTypes($accountId: String) {
             login {
@@ -44,13 +48,13 @@ export default createModel<RootModel>()({
               }
             }
           }`,
-        { accountId }
+        { accountId },
+        false,
+        asRow(row)
       )
-      if (result === 'ERROR') return
+      if (result === 'ERROR' || rowGone(state, row)) return
       const applicationTypes: IApplicationType[] = result?.data?.data?.login?.account?.applicationTypes
-      dispatch.applicationTypes.set({
-        account: { ...state.applicationTypes.account, [accountId]: applicationTypes.sort(sortFunction) },
-      })
+      dispatch.applicationTypes.setRow({ row, types: applicationTypes.sort(sortFunction) })
     },
     async fetchAll(_: void) {
       const result = await graphQLBasicRequest(
@@ -71,7 +75,19 @@ export default createModel<RootModel>()({
     },
     /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
     forget(state: IApplicationTypeState, accountIds: string[]) {
-      state.account = Object.fromEntries(Object.entries(state.account).filter(([id]) => !accountIds.includes(id)))
+      state.account = withoutAccounts(state.account, accountIds)
+      return state
+    },
+    forgetRows(state: IApplicationTypeState, rows: string[]) {
+      state.account = withoutRows(state.account, rows)
+      return state
+    },
+    rekey(state: IApplicationTypeState, rows: ILookup<RowKey>) {
+      state.account = rekeyed(state.account, rows)
+      return state
+    },
+    setRow(state: IApplicationTypeState, { row, types }: { row: RowKey; types: IApplicationType[] }) {
+      state.account = { ...state.account, [row]: types }
       return state
     },
     set(state: IApplicationTypeState, params: Partial<IApplicationTypeState>) {

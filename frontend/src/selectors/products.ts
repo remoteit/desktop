@@ -1,26 +1,24 @@
 import { createSelector } from 'reselect'
 import { State } from '../store'
-import { selectActiveAccountId } from './accounts'
+import { selectRow } from './accounts'
+import { RowKey } from '../helpers/rowKey'
 import { defaultState, IDeviceProduct, ProductsState } from '../models/products'
 
 const getProductsState = (state: State) => state.products
 
-export function getProductModelFn(
-  products: State['products'],
-  activeAccountId: string,
-  accountId?: string
-): ProductsState {
-  return products[accountId || activeAccountId] || products.default || defaultState
+// `row`: the key the store keeps a row's products by (helpers/rowKey).
+export function getProductModelFn(products: State['products'], row: RowKey): ProductsState {
+  return products[row] || products.default || defaultState
 }
 
-export const getProductModel = createSelector(
-  [getProductsState, selectActiveAccountId],
-  (products, activeAccountId) => getProductModelFn(products, activeAccountId)
+// The products of the row an account is looked at through: the selected row's where none is named.
+export const getProductModel = createSelector([getProductsState, selectRow], (products, row) =>
+  getProductModelFn(products, row)
 )
 
 export const getProducts = createSelector(
-  [getProductsState, selectActiveAccountId],
-  (products, activeAccountId): IDeviceProduct[] => getProductModelFn(products, activeAccountId).all || []
+  [getProductsState, selectRow],
+  (products, row): IDeviceProduct[] => getProductModelFn(products, row).all || []
 )
 
 export const getHasProducts = createSelector([getProducts], products => products.length > 0)

@@ -216,6 +216,7 @@ declare global {
 
   interface IConnection {
     accountId?: string // organization id
+    sub?: string // the sign-in it was made as ('' the page's own person): with accountId, the row it belongs to
     autoLaunch?: boolean
     autoClose?: boolean // run close command on disconnect
     autoStart?: boolean
@@ -695,6 +696,7 @@ declare global {
 
   type ISession = {
     id?: string
+    sub?: string // the sign-in it was read as ('' the page's own person): with target.accountId, the row it is of
     isP2P?: boolean
     timestamp: Date
     platform: number

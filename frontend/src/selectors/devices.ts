@@ -1,7 +1,7 @@
 import { State } from '../store'
 import { defaultState, IDeviceState } from '../models/devices'
 import { createSelector } from 'reselect'
-import { selectActiveAccountId } from './accounts'
+import { selectRow } from './accounts'
 import { removeObject, removeObjectAttribute } from '../helpers/utilHelper'
 import { getUserId, getDevicesState, getColumns, optionalId, optionalSecondParam, optionalThirdParam } from './state'
 import { deviceAttributes, DeviceAttribute, deviceAttributesAll, serviceAttributesAll } from '../components/Attributes'
@@ -9,7 +9,6 @@ import { selectLimitsLookup } from './organizations'
 import { Attribute } from '../components/Attribute'
 import { selectVirtualDevices } from '../hooks/useVirtualDevices'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
-import { selectRowOf } from './signIns'
 import { RowKey, rowKey } from '../helpers/rowKey'
 
 // `row`: the key the store keeps a row's devices by (helpers/rowKey) — never an account's id from anywhere else.
@@ -17,16 +16,14 @@ export function getDeviceModelFn(devices: State['devices'], row: RowKey) {
   return devices[row] || devices.default
 }
 
-// The lists the store keeps beside the rows': the model's defaults, and the devices of connections no list holds.
-export const BESIDE_ROWS: string[] = ['default', 'connections']
+export { BESIDE_ROWS } from './signIns'
 
 /** Every key the store keeps devices by: each row's, and the lists kept beside them. */
 export const deviceRows = (devices: State['devices']) => Object.keys(devices) as RowKey[]
 
 /** The row an account's devices are looked at through (selectors/signIns selectRowOf): the selected account's where
  *  none is named — the selected row. */
-export const selectDeviceRow = (state: State, accountId?: string): RowKey =>
-  selectRowOf(state, selectActiveAccountId(state, accountId))
+export const selectDeviceRow = selectRow
 
 export function findById(devices: IDevice[], id?: string) {
   let service: IService | undefined
