@@ -256,6 +256,19 @@ export const idsKnown = (state: State, ids: string[]): boolean =>
 
 export const isNoted = (id: string) => noted.has(id)
 
+/** The rows known to hold one of these ids — in a stored list, or noted — as account and sign-in: where an item
+ *  opened by its address is, when it is not the row looked at. */
+export const rowsKnowing = (state: State, ids: string[]): { accountId: string; sub: string }[] => {
+  const known = new Map<string, { accountId: string; sub: string }>()
+  selectHeldRows(state)
+    .filter(row => ids.some(id => row.ids.has(id)))
+    .forEach(row => known.set(rowKey(row.accountId, row.sub), { accountId: row.accountId, sub: row.sub }))
+  ids.forEach(id =>
+    notedRows(state, id).forEach(row => known.set(row, { accountId: rowAccount(row), sub: rowSub(row) }))
+  )
+  return [...known.values()]
+}
+
 /** The selected account, read where no hook is: by a request that asks as it when nothing says whose its id is. */
 export const selectedAccountId = (state: State): string => state.accounts?.activeId || state.auth?.user?.id || ''
 

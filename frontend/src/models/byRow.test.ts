@@ -442,6 +442,25 @@ describe('a page opened at the address of something no row here is known to hold
     expect(reads()).toHaveLength(1)
   })
 
+  // Already another row's — read there, and so known —, and opened at its address with a different row looked at (a
+  // notification's link): asked of the row that has it, which is then the one selected.
+  it('is found in the row known to hold it, when another row is looked at', async () => {
+    labs()
+    await look('')
+    await dispatch.products.fetchSingle('product-elsewhere')
+    expect(selectActiveRowKey(state())).toBe(rowKey('labs', WORK))
+    await look('')
+    expect(selectActiveRowKey(state())).toBe('acme')
+    asked.length = 0
+    expect(await dispatch.products.fetchSingle('product-elsewhere')).toMatchObject({ id: 'product-elsewhere' })
+    expect(selectActiveRowKey(state())).toBe(rowKey('labs', WORK))
+    // The row looked at, then the one that has it: no one else is asked.
+    expect(reads()).toEqual([
+      ['DeviceProduct', ''],
+      ['DeviceProduct', WORK],
+    ])
+  })
+
   it('is looked for again once another account is in use: found nowhere is said of those who were asked', async () => {
     // Work belongs to Acme alone, and has no such product there: asked, and found nowhere.
     dispatch.accounts.set({
