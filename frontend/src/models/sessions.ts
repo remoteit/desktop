@@ -119,7 +119,10 @@ export default createModel<RootModel>()({
       const publicConnections = state.connections.all.filter(c => c.public && !c.connectLink)
       console.log('PUBLIC CONNECTIONS', publicConnections)
       publicConnections.forEach(connection => {
-        const session = all.find(s => s.id === connection.sessionId)
+        // Its own sign-in's session: one two rows hold is one for each, as a connection to its service is.
+        const session =
+          all.find(s => s.id === connection.sessionId && (s.sub ?? '') === (connection.sub ?? '')) ||
+          (connection.sub === undefined ? all.find(s => s.id === connection.sessionId) : undefined)
         if (connection.connecting !== false || connection.enabled !== !!session || connection.connected !== !!session) {
           setConnection({ ...connection, connecting: false, enabled: !!session, connected: !!session })
         }

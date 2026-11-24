@@ -524,7 +524,8 @@ ${await productFullEventFields()}
         },
         target: event.target.map(t => {
           const [service, device] = selectById(state, undefined, t.id)
-          const connection = findLocalConnection(state, t.id, event.session)
+          // The record of whoever connected, where they are signed in here (helpers/connectionRecords).
+          const connection = findLocalConnection(state, t.id, event.session, selectPersonSub(state, event.actor?.id))
           return {
             id: t.id,
             name: combinedName(t, t.device),

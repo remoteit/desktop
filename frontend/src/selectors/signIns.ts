@@ -250,11 +250,15 @@ const notedRows = (state: State, id: string): RowKey[] =>
 export const selectRowNow = (accountId: string): RowKey =>
   stateNow ? selectRowOf(stateNow(), accountId) : rowKey(accountId)
 
-/** Whether anything known says whose one of these ids is: a row's list holds it, or it was read or made under one. */
+/** Whether anything known says whose one of these ids is: a row's list holds it, or it was read or made under one —
+ *  a row that is one STILL. What was noted under a sign-in that has left, or an account no one here reaches now, says
+ *  nothing: it must not stand in the way of finding the thing through someone else. */
 export const idsKnown = (state: State, ids: string[]): boolean =>
-  ids.some(id => noted.has(id)) || selectHeldRows(state).some(row => ids.some(id => row.ids.has(id)))
+  ids.some(id => notedRows(state, id).length > 0) ||
+  selectHeldRows(state).some(row => ids.some(id => row.ids.has(id)))
 
-export const isNoted = (id: string) => noted.has(id)
+/** Whether an id was read or made under a row that is one still (the same rule), of the state as it is now. */
+export const isNoted = (id: string) => (stateNow ? notedRows(stateNow(), id).length > 0 : noted.has(id))
 
 /** The rows known to hold one of these ids — in a stored list, or noted — as account and sign-in: where an item
  *  opened by its address is, when it is not the row looked at. */

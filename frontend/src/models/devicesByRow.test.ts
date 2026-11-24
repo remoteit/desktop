@@ -154,6 +154,31 @@ describe('an organization two sign-ins reach, one row under each', () => {
   })
 })
 
+describe('a device opened at its address in an organization two sign-ins reach', () => {
+  it('is found in the other account’s row of the same organization, which is then the selected one', async () => {
+    const { resetElsewhere } = await import('../services/elsewhere')
+    const { resetNotedAccounts } = await import('../selectors/signIns')
+    resetElsewhere()
+    resetNotedAccounts()
+    // A link that names the organization lands on the page's own person's row of it.
+    await dispatch.accounts.select('acme')
+    await vi.waitFor(() => expect(shown()).toEqual(['shared', 'mine']))
+    // Only Work's role is given the device.
+    const device = { id: 'works-alone', name: 'theirs', owner: { id: 'acme' } }
+    full.mockImplementation(
+      async (_id: string, _accountId: string, _s: unknown, _d: unknown, requestFor?: { sub?: string }) => ({
+        data: { data: { login: { device: requestFor?.sub === WORK ? [device] : [] } } },
+      })
+    )
+    await dispatch.devices.fetchSingleFull({ id: 'works-alone', hidden: true })
+    // Asked as the row landed on, then as Work — and read into Work's row of the organization, now selected.
+    expect(full.mock.calls.map(call => call[4]?.sub)).toEqual(['', WORK, WORK])
+    expect(selectActiveRowKey(store.getState())).toBe(ACME_AS_WORK)
+    expect(stored(ACME_AS_WORK)).toContain('works-alone')
+    expect(stored('acme')).toEqual(['shared', 'mine'])
+  })
+})
+
 describe('one sign-in in use', () => {
   it('keeps each account’s devices under the account’s own id, as ever', async () => {
     dispatch.accounts.set({ signIns: {} })

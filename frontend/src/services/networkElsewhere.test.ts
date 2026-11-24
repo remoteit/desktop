@@ -16,7 +16,15 @@ vi.mock('./graphQLRequest', () => ({ graphQLPreloadNetworks: preloadNetworks }))
 
 import { findDeviceNetworkElsewhere, findStoredNetworkElsewhere } from './networkElsewhere'
 import { resetElsewhere } from './elsewhere'
-import { requestSignIn, resetNotedAccounts } from '../selectors/signIns'
+import {
+  idsKnown,
+  isNoted,
+  noteAccountOf,
+  readStateWith,
+  requestSignIn,
+  resetNotedAccounts,
+} from '../selectors/signIns'
+import { findElsewhere } from './elsewhere'
 import { rowKey } from '../helpers/rowKey'
 
 const WORK = 'sub-work'
@@ -128,5 +136,33 @@ describe('what is found', () => {
       listed(accountId, requestFor?.sub)
     )
     expect(await findDeviceNetworkElsewhere('net-labs')).toBeTruthy()
+  })
+})
+
+/* An exit shared with B's organization and with C's: read with B's exits, so noted under B's row. B is then taken out
+   of use. What was noted under a row that is gone says nothing of where the exit is. */
+describe('something noted under a sign-in that has since left', () => {
+  const B = { sub: 'sub-b', id: 'bee', email: 'b@x.test', membership: [member('bees')] }
+  const C = { sub: 'sub-c', id: 'cee', email: 'c@x.test', membership: [member('cees')] }
+
+  it('is not known for that: it is looked for through the others, and found', async () => {
+    readStateWith(() => ({ ...state } as any))
+    state.accounts = { ...state.accounts, signIns: { 'sub-b': B, 'sub-c': C } }
+    noteAccountOf('bees', ['exit-1'], 'sub-b')
+    expect(isNoted('exit-1')).toBe(true)
+    expect(idsKnown({ ...state } as any, ['exit-1'])).toBe(true)
+    // B leaves.
+    state.accounts = { ...state.accounts, signIns: { 'sub-c': C } }
+    expect(isNoted('exit-1')).toBe(false)
+    expect(idsKnown({ ...state } as any, ['exit-1'])).toBe(false)
+    const read = vi.fn(async (_accountId: string, requestFor: { sub?: string }) =>
+      requestFor.sub === 'sub-c' ? { id: 'exit-1' } : undefined
+    )
+    const found = await findElsewhere({ ids: ['exit-1'], asked: rowKey('acme'), read })
+    expect(found).toMatchObject({ sub: 'sub-c', accountId: 'cee' })
+    expect(selectAs.mock.calls).toEqual([[{ accountId: 'cee', sub: 'sub-c' }]])
+    // Known again, under the row that has it now.
+    expect(isNoted('exit-1')).toBe(true)
+    expect(requestSignIn({ ...state } as any, undefined, { id: 'exit-1' })).toBe('sub-c')
   })
 })

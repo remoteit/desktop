@@ -5,7 +5,9 @@ import { Application, getApplicationType } from '@common/applications'
 import { State, store } from '../store'
 import { selectEnabledConnections } from '../selectors/connections'
 import { selectActiveUser, selectRow } from '../selectors/accounts'
-import { rowSub } from './rowKey'
+import { rowAccount, rowSub } from './rowKey'
+import { pickRecord, recordSub } from './connectionRecords'
+import { RequestFor, selectAccountRoutes, selectActiveRowKey, subOf } from '../selectors/signIns'
 import { getAllDevices } from '../selectors/devices'
 import { selectById } from '../selectors/devices'
 import browser from '../services/browser'
@@ -57,8 +59,34 @@ export function saveLaunchTokens(serviceId: string | undefined, tokens: ILookup<
   store.dispatch.user.setAttribute({ launch: { ...launch, [serviceId]: { ...launch[serviceId], ...kept } } })
 }
 
-export function findLocalConnection(state: State, id: string, sessionId: string | undefined) {
-  return state.connections.all.find(c => c.id === id || c.sessionId === sessionId)
+/* The record an event about a service's connection is for: the one that has its session; else the one of the person
+   who connected (`sub`, where they are signed in here); else the one the row looked at sees. */
+export function findLocalConnection(state: State, id: string, sessionId: string | undefined, sub?: string) {
+  const { all } = state.connections
+  const routes = selectAccountRoutes(state)
+  return (
+    (sessionId ? all.find(c => c.sessionId === sessionId) : undefined) ||
+    (sub !== undefined
+      ? all.find(c => c.id === id && recordSub(routes, c) === (browser.hasBackend ? '' : sub))
+      : undefined) ||
+    lookedRecord(state, id)
+  )
+}
+
+/** How a record says its sign-in: by its sub, and for the page's own person by saying none. */
+export const subSaid = (sub?: string): { sub?: string } => (sub ? { sub } : {})
+
+/** Whose a request about a connection is: the sign-in its record is of (helpers/connectionRecords) — the one it
+ *  says, and for one that says none the page's own person where they belong to its account. */
+export function connectionAs(connection: IConnection): RequestFor | undefined {
+  if (!connection.accountId && connection.sub === undefined) return undefined
+  return { sub: subOf(selectAccountRoutes(store.getState()), connection.accountId, connection.sub) }
+}
+
+/** A service's connection as the row looked at has it (helpers/connectionRecords pickRecord). */
+export function lookedRecord(state: State, id?: string): IConnection | undefined {
+  const active = selectActiveRowKey(state)
+  return pickRecord(selectAccountRoutes(state), state.connections.all, id, rowAccount(active), rowSub(active))
 }
 
 export function newConnection(service?: IService | null): IConnection {
@@ -86,8 +114,9 @@ export function newConnection(service?: IService | null): IConnection {
       deviceID: service.deviceID,
       owner: device?.owner || connection.owner,
       accountId,
-      // Made from the row its account is looked at through: that row's sign-in's (helpers/rowKey).
-      sub: rowSub(selectRow(state, accountId)),
+      // Made from the row its account is looked at through: that row's sign-in's (helpers/rowKey). The page's own
+      // person's says none, as a connection always has: one account's stored connections are as they ever were.
+      ...subSaid(rowSub(selectRow(state, accountId))),
       online: service.state === 'active',
       typeID: service.typeID,
       targetHost: service.attributes.targetHost,
@@ -204,8 +233,9 @@ export function getConnectionSessionIds() {
 
 export function getConnectionLookup(state: State) {
   const { all } = state.connections
+  // By service, each as the row looked at has it: its own record where two rows have one.
   return all.reduce((result: ConnectionLookup, c: IConnection) => {
-    result[c.id] = c
+    result[c.id] ??= lookedRecord(state, c.id) || c
     return result
   }, {})
 }
@@ -237,7 +267,7 @@ export function cleanOrphanConnections(expectedIds?: IService['id'][]) {
 
   expectedIds.forEach(id => {
     if (!loadedIds.includes(id)) {
-      store.dispatch.connections.forget(id)
+      store.dispatch.connections.forget({ id, every: true })
       console.log('FORGET ORPHANED CONNECTION', id)
     }
   })

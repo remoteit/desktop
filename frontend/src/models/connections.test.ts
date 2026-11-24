@@ -18,6 +18,9 @@ vi.mock('../helpers/connectionHelper', () => ({
   setConnection,
   getFetchConnectionIds: fetchIds,
   cleanOrphanConnections: cleanOrphans,
+  // Whose a request about a connection is: its record's sign-in — Work's own account is looked at through Work's.
+  connectionAs: (c: IConnection) =>
+    c.accountId || c.sub !== undefined ? { sub: c.sub ?? (c.accountId === 'work' ? 'sub-work' : '') } : undefined,
 }))
 vi.mock('../services/graphQLMutation', () => ({ graphQLConnect, graphQLDisconnect: vi.fn(), graphQLSetLink }))
 vi.mock('../services/graphQLDevice', () => ({
@@ -168,7 +171,7 @@ describe('connections — with several sign-ins in use', () => {
   it('a connection is made as the sign-in of the account it is of, where nothing stored says whose its service is', async () => {
     graphQLConnect.mockResolvedValue('ERROR')
     await effects.proxyConnect(theirs)
-    expect(graphQLConnect).toHaveBeenCalledWith('s-work', theirs.publicRestriction, { orAccount: 'work' })
+    expect(graphQLConnect).toHaveBeenCalledWith('s-work', theirs.publicRestriction, { sub: 'sub-work' })
     expect(requestSignIn(state() as any, { orAccount: 'work' }, { serviceId: 's-work' })).toBe('sub-work')
     expect(requestSignIn(state() as any, { orAccount: 'me' }, { serviceId: 's-me' })).toBeUndefined()
   })

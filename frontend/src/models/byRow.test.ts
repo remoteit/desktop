@@ -24,7 +24,7 @@ import { getProducts } from '../selectors/products'
 import { getPartnerStats } from './partnerStats'
 import { selectApplicationTypesGrouped } from '../selectors/applications'
 import { selectOrganization, selectPermissions, selectRole } from '../selectors/organizations'
-import { selectConnections, selectSessions } from '../selectors/connections'
+import { selectConnection, selectConnectionSessions, selectConnections, selectSessions } from '../selectors/connections'
 import { actingFor, requestSignIn, resetNotedAccounts, selectActiveRowKey } from '../selectors/signIns'
 import { resetElsewhere } from '../services/elsewhere'
 
@@ -99,7 +99,22 @@ const answerAll = () =>
     // As services/post does: what an effect sends for the row it acts for is that row's sign-in's (sendAs).
     const sub = requestSignIn(store.getState(), actingFor(requestFor), data.variables) ?? ''
     asked.push([queryName(data.query), sub])
-    const answer = given(sub)
+    const answer: any = given(sub)
+    // A connection made, and ended, as whoever asks.
+    if (/mutation\s+\w*\s*\(?[^{]*\{\s*connect\(/.test(data.query))
+      return {
+        data: {
+          data: { connect: { id: `session-${who(sub)}`, created: 1, timeout: 60, port: 1, host: `${who(sub)}.proxy` } },
+        },
+      }
+    if (/\bdisconnect\(/.test(data.query)) return { data: { data: { disconnect: true } } }
+    // A product of the organization both belong to that only Work's role is given.
+    if (data.variables?.id === 'product-sibling') {
+      const theirs = sub === WORK && data.variables.accountId === 'acme'
+      answer.data.data.login.account.deviceProducts.items = theirs
+        ? [{ id: 'product-sibling', name: 'theirs', services: [] }]
+        : []
+    }
     // A product only Work is given, of an organization only Work belongs to: no row here is known to hold it.
     if (data.variables?.id === 'product-elsewhere') {
       const theirs = !!sub && data.variables.accountId === 'labs'
@@ -421,6 +436,22 @@ describe('a page opened at the address of something no row here is known to hold
     expect(reads()).toEqual([['DeviceProduct', WORK]])
   })
 
+  it('is found in the other account’s row of the SAME organization, where the row landed on does not have it', async () => {
+    // A link that names the organization lands on the page's own person's row of it.
+    await dispatch.accounts.select('personal')
+    await dispatch.accounts.select('acme')
+    await settled()
+    expect(selectActiveRowKey(state())).toBe('acme')
+    asked.length = 0
+    expect(await dispatch.products.fetchSingle('product-sibling')).toMatchObject({ id: 'product-sibling' })
+    expect(selectActiveRowKey(state())).toBe(ACME_AS_WORK)
+    expect(reads()[0]).toEqual(['DeviceProduct', ''])
+    expect(reads()[reads().length - 1]).toEqual(['DeviceProduct', WORK])
+    expect(names(getProducts(state()))).toContain('product-sibling')
+    // The page's own person's row of it is as it was.
+    expect(names(state().products.acme.all)).not.toContain('product-sibling')
+  })
+
   it('is not looked for elsewhere when it is found, nor again once it was found nowhere', async () => {
     labs()
     await look('')
@@ -511,5 +542,75 @@ describe('a page opened at the address of something no row here is known to hold
     })
     await dispatch.tags.create({ tag: { name: 'new', color: 1 } as ITag })
     expect(asked).toEqual([['SetTag', '']])
+  })
+})
+
+describe('a service two rows both hold', () => {
+  const SERVICE = { id: 'svc-1', deviceID: 'dev-1', typeID: 28, attributes: {}, state: 'active' } as unknown as IService
+  const record = (sub?: string): IConnection => ({
+    id: 'svc-1',
+    deviceID: 'dev-1',
+    name: 'shared',
+    accountId: 'acme',
+    typeID: 28,
+    public: true,
+    enabled: true,
+    ...(sub ? { sub } : {}),
+  })
+  const records = () => state().connections.all.map(c => [c.id, c.sub, c.sessionId, !!c.connected])
+  const mine = () => selectConnection(state(), SERVICE)
+
+  it('has a connection from each, each made, listed, ended and forgotten as its own sign-in', async () => {
+    await look('')
+    asked.length = 0
+    await dispatch.connections.proxyConnect(record())
+    await look(WORK)
+    // Not the other row's to see: this row has none of its own yet.
+    expect(mine().sessionId).toBeUndefined()
+    await dispatch.connections.proxyConnect(record(WORK))
+    await settled()
+    // Two records of the one service — its id is the service's in both — each connected as its own sign-in.
+    expect(records()).toEqual([
+      ['svc-1', undefined, 'session-me', true],
+      ['svc-1', WORK, 'session-work', true],
+    ])
+    expect(asked.filter(([query]) => /connect/i.test(query)).map(([, sub]) => sub)).toEqual(['', WORK])
+    expect(names(selectConnections(state()))).toEqual(['svc-1'])
+    expect(mine()).toMatchObject({ sub: WORK, sessionId: 'session-work', host: 'work.proxy' })
+    await look('')
+    expect(mine()).toMatchObject({ sessionId: 'session-me', host: 'me.proxy' })
+    expect(mine().sub).toBeUndefined()
+
+    // A session from each sign-in pairs with its own record: one line in each row, not two.
+    const session = (sub: string) => ({ id: `session-${who(sub)}`, sub, target: { id: 'svc-1', accountId: 'acme' } })
+    dispatch.sessions.set({ all: [session(''), session(WORK)] as ISession[] })
+    expect(selectConnectionSessions(state()).map(s => s.id)).toEqual(['session-me'])
+    await look(WORK)
+    expect(selectConnectionSessions(state()).map(s => s.id)).toEqual(['session-work'])
+
+    // Ended as Work: the page's own person's is as it was.
+    asked.length = 0
+    await dispatch.connections.proxyDisconnect(mine())
+    await settled()
+    expect(asked.filter(([query]) => /disconnect/i.test(query)).map(([, sub]) => sub)).toEqual([WORK])
+    expect(records()[0]).toEqual(['svc-1', undefined, 'session-me', true])
+    expect(records()[1][3]).toBe(false)
+    // Forgotten as Work: one record left, the other's.
+    await dispatch.connections.forget(mine())
+    expect(records()).toEqual([['svc-1', undefined, 'session-me', true]])
+    await look('')
+    await dispatch.connections.forget('svc-1')
+    expect(records()).toEqual([])
+  })
+
+  it('is stored for one sign-in exactly as it ever was: no sign-in said', async () => {
+    dispatch.accounts.set({ signIns: {} })
+    await dispatch.accounts.select('acme')
+    await dispatch.connections.proxyConnect(record())
+    await settled()
+    const [stored] = state().connections.all
+    expect(state().connections.all).toHaveLength(1)
+    expect(stored.id).toBe('svc-1')
+    expect('sub' in stored).toBe(false)
   })
 })

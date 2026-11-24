@@ -364,7 +364,8 @@ export default createModel<RootModel>()({
           })
         if (redirect) dispatch.ui.set({ redirect })
         if (gqlResponse !== 'ERROR') {
-          if (isService) dispatch.connections.forget(id)
+          // This row's connection to it: another row's, made as a sign-in that sees it still, stays.
+          if (isService) dispatch.connections.forget({ id, accountId, sub: rowSub(row) })
           // Not this row's any more: another row here may hold it still.
           else if (!(await dispatch.accounts.removeDeviceFrom({ id, rows: [row] }))) dispatch.devices.cleanup([id])
         }
@@ -1267,7 +1268,7 @@ export default createModel<RootModel>()({
 
     async cleanupService(serviceId: string) {
       await dispatch.devices.removeService(serviceId)
-      await dispatch.connections.clear(serviceId)
+      await dispatch.connections.clear({ id: serviceId, every: true })
       await dispatch.networks.clearById(serviceId)
     },
 

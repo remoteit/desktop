@@ -9,6 +9,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { selectSharedNetwork } from '../models/networks'
 import { selectConnection } from '../selectors/connections'
+import { selectAccountRoutes, selectActiveRowKey } from '../selectors/signIns'
+import { pickRecord } from '../helpers/connectionRecords'
+import { rowAccount, rowSub } from '../helpers/rowKey'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { useReadEffect } from '../hooks/useReadAgain'
@@ -24,7 +27,13 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
     networkID ? selectNetwork(state, networkID) : selectSharedNetwork(state, serviceID)
   )
   const connection = useSelector((state: State) => selectConnection(state, service))
-  const connections = useSelector((state: State) => state.connections.all).filter(c => c.deviceID === deviceID)
+  // The device's connections as the row looked at has them: each service's own record of it.
+  const routes = useSelector(selectAccountRoutes)
+  const active = useSelector(selectActiveRowKey)
+  const all = useSelector((state: State) => state.connections.all)
+  const connections = all.filter(
+    c => c.deviceID === deviceID && pickRecord(routes, all, c.id, rowAccount(active), rowSub(active)) === c
+  )
   const remoteUI = useSelector(isRemoteUI)
   const thisId = useSelector((state: State) => state.backend.thisId)
   const { fetching, initialized } = useSelector(selectDeviceModelAttributes)

@@ -3,7 +3,8 @@ import { DEFAULT_NETWORK } from '../models/networks'
 import { newConnection } from '../helpers/connectionHelper'
 import { selectRow, selectActiveUser } from './accounts'
 import { AccountRoute, selectAccountRoutes, selectActiveRowKey, subOf } from './signIns'
-import { RowKey, rowAccount, rowKey } from '../helpers/rowKey'
+import { RowKey, rowAccount, rowKey, rowSub } from '../helpers/rowKey'
+import { pickRecord } from '../helpers/connectionRecords'
 import { getUser, getConnections, getSessions, optionalService } from './state'
 
 /* A connection and a session belong to a ROW (helpers/rowKey): the account, and the sign-in it was made or read as.
@@ -72,7 +73,10 @@ export const selectAllConnectionSessions = createSelector(
   [getConnections, selectLookedAtSessions, getUser],
   (connections, sessions, user) => {
     const active: ISession[] = connections
-      .filter(c => c.online && c.connected && !sessions.find(s => s.target.id === c.id))
+      // A session is its sign-in's, as a record is: each record pairs with its own.
+      .filter(
+        c => c.online && c.connected && !sessions.find(s => s.target.id === c.id && (s.sub ?? '') === (c.sub ?? ''))
+      )
       .map(c => ({
         timestamp: new Date(c.startTime || 0),
         platform: 1, // FIXME this device state platform
@@ -98,12 +102,16 @@ export const selectConnectionSessions = createSelector(
   (sessions, row, routes) => sessions.filter(s => inRow(row, routes, s.target.accountId, s.sub))
 )
 
-export const selectConnection = createSelector([getConnections, optionalService], (connections, service?: IService) => {
-  let connection = connections.find(c => c.id === service?.id)
-  if (!connection?.typeID && service) return { ...newConnection(service), ...connection }
-  if (!connection) return newConnection(service)
-  return connection
-})
+// A service's connection as the row looked at has it (helpers/connectionRecords): its own, never the other row's.
+export const selectConnection = createSelector(
+  [getConnections, optionalService, selectAccountRoutes, selectActiveRowKey],
+  (connections, service: IService | undefined, routes, active) => {
+    let connection = pickRecord(routes, connections, service?.id, rowAccount(active), rowSub(active))
+    if (!connection?.typeID && service) return { ...newConnection(service), ...connection }
+    if (!connection) return newConnection(service)
+    return connection
+  }
+)
 
 export const selectConnectionsByType = createSelector(
   [selectActiveUser, selectIdleConnections],
