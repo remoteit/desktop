@@ -216,6 +216,7 @@ declare global {
 
   interface IConnection {
     accountId?: string // organization id
+    sub?: string // the sign-in it was made as ('' the page's own person): with accountId, the row it belongs to
     autoLaunch?: boolean
     autoClose?: boolean // run close command on disconnect
     autoStart?: boolean
@@ -657,6 +658,13 @@ declare global {
     account: IUserRef
     name?: string
     standalone?: boolean
+    // Set on a row looked at through another sign-in than the page's own person (selectors/accounts
+    // selectMemberships): whose token its requests carry.
+    under?: { sub: string; email: string }
+    // The row is that sign-in's own account, not an organization it belongs to.
+    signIn?: boolean
+    // Every sign-in that reaches the row, where more than one does ('' is the page's own person): the choice offered.
+    reach?: { sub: string; email: string }[]
   }
 
   type IOrganizationRoleIdType = 'OWNER' | 'ADMIN' | 'MEMBER' | 'CUSTOM' | 'REMOVE' | string
@@ -689,6 +697,7 @@ declare global {
 
   type ISession = {
     id?: string
+    sub?: string // the sign-in it was read as ('' the page's own person): with target.accountId, the row it is of
     isP2P?: boolean
     timestamp: Date
     platform: number
@@ -872,6 +881,8 @@ declare global {
     users: IUserRef[]
     platform: number
     authUserId: string
+    // Everyone signed in here, the one whose socket brought the event among them: "you" is any of them.
+    authUserIds: string[]
     geo?: IGeo
     reverseProxy: boolean
     manufacturer?: number

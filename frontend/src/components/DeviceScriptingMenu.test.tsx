@@ -19,7 +19,7 @@ const device = (ownerId: string, hidden = false) =>
 
 const offered = (shown: IDevice, lists: Record<string, IDevice[]> = {}, activeId = 'ORG-B') => {
   redux.state = {
-    accounts: { activeId },
+    accounts: { activeId, membership: [] },
     auth: { user: { id: 'USER' } },
     devices: { default: { all: [] }, ...Object.fromEntries(Object.entries(lists).map(([id, all]) => [id, { all }])) },
   }

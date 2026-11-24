@@ -68,6 +68,11 @@ const DECLARATION_KEY = 'oidc.declaration'
 // saved: impersonation must not become a stored identity (support tabs keep an isolated
 // per-tab store anyway).
 const ACCOUNTS_KEY = 'oidc.accounts'
+// SINGLE MODE AND MULTI MODE (graphql-api docs/ACCOUNT-LINKS.md): whether the saved accounts are used several at once,
+// or one at a time — the page's own person, the others kept for switching to. This browser's own setting, off unless
+// the person turned it on, so no one gets the combined reach of several accounts without choosing it. In an app the
+// setting is the shell's (Shell.several), never this.
+const SEVERAL_KEY = 'oidc.several'
 
 /* Authorizes this tab has started on its OWN — no click, nobody asked. This client is
    first-party skipConsent, so an automatic authorize shows the person NOTHING: a loop
@@ -266,8 +271,21 @@ type Stored = {
   support?: { access_token: string; exp: number; type?: string }
 }
 
-let access: { [resource: string]: { token: string; exp: number; type?: string } } = {}
-let minting: Promise<unknown> = Promise.resolve()
+/* SEVERAL SIGN-INS ARE IN USE AT ONCE (docs/ACCOUNT-LINKS.md, "The portal"): every saved account's token set mints
+   for the requests about that account, beside the PRIMARY one — the active set in TOKENS_KEY, whose person the
+   single-account pages (profile, billing, keys, chat) are about. A token is therefore cached per (sign-in,
+   audience), and mints queue per sign-in: one account's refresh neither waits on another's nor hands it a token.
+   The primary's slot is keyed '' so it is the same slot whether it is asked for by its sub or by no sub at all. */
+type Minted = { token: string; exp: number; type?: string }
+let access: { [key: string]: Minted } = {}
+const minting: { [who: string]: Promise<unknown> } = {}
+const slot = (who: string, resource: string) => `${who}\u0000${resource}`
+/** Mints for one sign-in run one at a time (see oidcAccessToken): `mint` joins that sign-in's queue. */
+function queued<T>(who: string, mint: () => T | Promise<T>): Promise<T> {
+  const next = (minting[who] ?? Promise.resolve()).then(mint)
+  minting[who] = next.catch(() => {})
+  return next
+}
 let discovery:
   | { authorization_endpoint: string; token_endpoint: string; prompt_values_supported?: string[] }
   | undefined
@@ -285,15 +303,48 @@ let discovery:
 /* Not known yet ('unavailable' from auth.accounts): the shell cannot say yet whose sign-in this is — its device has not
    said which stage it is on — which is not signed out. The page boots with no one, and the shell's auth event, which
    it sends once it can say, brings the person (a reload, as any change of person does). */
-type Shell = { device: ThisDevice; accounts: AuthAccount[]; expected?: string; pending?: boolean }
+/* A shell that keeps several credentials in use says so in its mode (`auth.mode`'s `several`) and on each account
+   (`signedIn`), and mints for the one a call names (`sub`). The page's person is then the one it booted as
+   (`primary`), whoever the shell makes active afterwards; every other signed-in account is a sign-in beside it. A
+   shell in single mode — `several` off, or no `auth.mode` at all — has one credential in use, the active one, and is
+   used as it always was: a change of its active account is a change of the page's person, with a reload. */
+type Shell = {
+  device: ThisDevice
+  accounts: AuthAccount[]
+  expected?: string
+  pending?: boolean
+  primary?: string
+  /** The shell's setting, Use several at once (auth.mode). Undefined on a shell that has none: one credential is in
+   *  use, as it always was there, and the page offers no setting. */
+  several?: boolean
+  /** The page's person signed out, or was found signed out: no one's page until it boots again, whoever the shell
+   *  has active — the models still hold that person's data. */
+  gone?: boolean
+}
 let shell: Shell | undefined
+const shellMulti = (s: Shell) => !!s.several && s.accounts.some(a => typeof a.signedIn === 'boolean')
 // Any account at all: a sign-in the page started, whoever it ends as.
 const ANY_ACCOUNT = '\u0000any'
 export const oidcShellHooks = { reload: () => window.location.reload() }
 /** The shell signs in for this page (oidcUseShell found one). */
 export const oidcShell = (): boolean => !!shell
-const shellActive = (): AuthAccount | undefined => shell?.accounts.find(a => a.active)
-const shellSignedOut = (s: Shell) => (s.accounts = s.accounts.map(a => ({ ...a, active: false })))
+/** The page's person under the shell: the account it booted as while that is still signed in, on a shell with several
+ *  in use; the shell's active account otherwise. */
+const shellActive = (): AuthAccount | undefined => {
+  if (!shell || shell.gone) return undefined
+  const s = shell
+  if (shellMulti(s) && s.primary) return s.accounts.find(a => a.sub === s.primary && a.signedIn)
+  return s.accounts.find(a => a.active && a.signedIn !== false)
+}
+/** The page's person is signed out. A shell with one credential in use has then no one; one with several keeps the
+ *  others signed in, listed for the boot that follows (models/auth signedOut). */
+const shellSignedOut = (s: Shell) => {
+  const left = shellActive()?.sub
+  s.gone = true
+  s.accounts = shellMulti(s)
+    ? s.accounts.map(a => (a.sub === left ? { ...a, active: false, signedIn: false } : a))
+    : s.accounts.map(a => ({ ...a, active: false }))
+}
 /** The shell's accounts read again; the error's code when it gave none. */
 async function readShellAccounts(s: Shell): Promise<string | undefined> {
   try {
@@ -305,6 +356,15 @@ async function readShellAccounts(s: Shell): Promise<string | undefined> {
     return error?.code ?? 'failed'
   }
 }
+/** The shell's mode read: undefined from a shell that has none (no `auth.mode`), or cannot say yet — its auth event
+ *  carries it once it can. */
+async function readShellMode(s: Shell): Promise<void> {
+  try {
+    s.several = !!(await s.device.call('auth.mode', {})).several
+  } catch {
+    s.several = undefined
+  }
+}
 /** Use the shell's sign-in when there is one: thisDevice present, its bridge's major version this page's, and `auth`
  *  offered. Once, at boot (models/auth init), before anything asks for a token. False: the browser's own sign-in. */
 export async function oidcUseShell(): Promise<boolean> {
@@ -314,19 +374,37 @@ export async function oidcUseShell(): Promise<boolean> {
   if (!device?.compatible || !device.has('auth')) return false
   const s: Shell = { device, accounts: [] }
   await readShellAccounts(s)
+  await readShellMode(s)
   shell = s
-  device.on('auth', async ({ active }) => {
+  device.on('auth', async ({ active, several }) => {
     access = {}
+    const held = new Set(s.accounts.filter(a => a.signedIn).map(a => a.sub))
+    // The mode changed (here, or in the app's menu): who is in use is read by it from here on.
+    const flipped = typeof several === 'boolean' && several !== !!s.several
+    if (typeof several === 'boolean') s.several = several
     // No longer offered (the stage turned out to have no sign-in of the shell's): a reload reads what the shell offers.
     if ((await readShellAccounts(s)) === 'unsupported') return oidcShellHooks.reload()
-    if (s.expected !== ANY_ACCOUNT && active?.sub === s.expected) return
+    if (shellMulti(s) && s.primary) {
+      /* Several in use: the page keeps its person while they stay signed in, and the others come and go beside them
+         with no reload. It boots again when its person is gone (unless it signed them out itself), or when the shell
+         makes active someone the page holds nothing for and did not ask for. */
+      const now = s.accounts.find(a => a.active)?.sub
+      if (!shellActive()) {
+        if (s.expected === undefined) return signInsChanged()
+      } else if (!now || held.has(now) || s.expected === ANY_ACCOUNT || s.expected === now) return signInsChanged()
+      console.log('AUTH: the app’s sign-in changed — reloading as', active?.email ?? 'no one')
+      return oidcShellHooks.reload()
+    }
+    // One in use. The page's person still the shell's: nothing to do, unless several were in use until now — the
+    // others' rows go.
+    if (s.expected !== ANY_ACCOUNT && active?.sub === s.expected) return flipped ? signInsChanged() : undefined
     console.log('AUTH: the app’s sign-in changed — reloading as', active?.email ?? 'no one')
     oidcShellHooks.reload()
   })
   // Not known yet: asked again now that its auth event is listened for — a change between the first answer and the
   // listening would be told to no one.
   if (s.pending) await readShellAccounts(s)
-  s.expected = s.accounts.find(a => a.active)?.sub
+  s.expected = s.primary = s.accounts.find(a => a.active && a.signedIn !== false)?.sub
   return true
 }
 /* Whose sign-in this page is — the shell's or the browser's — is decided once, at boot, from what the shell offered
@@ -354,6 +432,7 @@ async function shellSignIn(s: Shell, opts: { prompt?: string }): Promise<boolean
   // A silent round (prompt=none: recovering, activating, selecting a known account) is the shell's own business.
   if (opts.prompt === 'none') return false
   const before = s.expected
+  const joins = shellMulti(s) && !!shellActive()
   s.expected = ANY_ACCOUNT
   try {
     await s.device.call('auth.signIn', { addAccount: !!shellActive() })
@@ -361,6 +440,13 @@ async function shellSignIn(s: Shell, opts: { prompt?: string }): Promise<boolean
     s.expected = before
     if (error?.code === 'cancelled') return false
     throw shellOidcError(error)
+  }
+  // Beside the page's person, on a shell that keeps several in use: nothing reloads, and the new account's rows appear.
+  if (joins) {
+    await readShellAccounts(s)
+    s.expected = before
+    signInsChanged()
+    return true
   }
   if (s.device.has('registration')) {
     const status = await s.device.call('status', {}).catch(() => undefined)
@@ -372,29 +458,35 @@ async function shellSignIn(s: Shell, opts: { prompt?: string }): Promise<boolean
   return true
 }
 
-async function shellAccessToken(s: Shell, resource: string): Promise<string> {
+async function shellAccessToken(s: Shell, resource: string, who: string): Promise<string> {
+  // Another sign-in's token is asked for by name, which only a shell that keeps several in use understands: one that
+  // does not would answer with the active account's token.
+  if (who && !(shellMulti(s) && s.accounts.some(a => a.sub === who && a.signedIn))) return ''
+  const key = slot(who, resource)
   const fresh = () => {
-    const cached = access[resource]
+    const cached = access[key]
     return cached && cached.exp - Math.floor(Date.now() / 1000) > 30 ? cached.token : undefined
   }
   const hit = fresh()
   if (hit) return hit
-  const next = minting.then(async () => {
+  return queued(who, async () => {
     const again = fresh()
     if (again) return again
     try {
-      const r = await s.device.call('auth.accessToken', { resource })
-      access[resource] = { token: r.accessToken, exp: expirySeconds(r.expiresAt), type: r.tokenType }
+      // The page's person is named too once the shell may have made someone else active.
+      const sub = who || (shellMulti(s) ? s.primary : undefined)
+      const r = await s.device.call('auth.accessToken', { resource, ...(sub && { sub }) })
+      access[key] = { token: r.accessToken, exp: expirySeconds(r.expiresAt), type: r.tokenType }
       return r.accessToken
     } catch (error: any) {
-      // Signed out in the app (by its code: a BridgeError, whichever copy of the class threw it): no token, and the page is signed out with it. Anything else is this call's alone.
-      if (error?.code === 'notSignedIn') shellSignedOut(s)
-      else console.warn(`AUTH: the app gave no token for ${resource} —`, error?.message)
+      // Signed out in the app (by its code: a BridgeError, whichever copy of the class threw it): no token, and the page is signed out with it. Another sign-in gone is that one's alone: the shell's list says who is left. Anything else is this call's alone.
+      if (error?.code === 'notSignedIn') {
+        if (who) void readShellAccounts(s).then(signInsChanged)
+        else shellSignedOut(s)
+      } else console.warn(`AUTH: the app gave no token for ${resource} —`, error?.message)
       return ''
     }
   })
-  minting = next.catch(() => {})
-  return next
 }
 
 /* Sign-in failures the person reading them can DO something different about. The message
@@ -869,7 +961,8 @@ export async function oidcCompleteFromUrl(
   // not signed in mid-request, and its callback needs the flow the interrupted one never finished with.
   try {
     const done = await exchangeCallback(flow, query, admit)
-    if (done?.previousSub && done.claims?.sub && done.claims.sub !== done.previousSub) route = undefined
+    // A sign-in that joined the page's person leaves them where they were, so their route stands.
+    if (done?.previousSub && done.claims?.sub && done.claims.sub !== done.previousSub && !done.joined) route = undefined
     return done?.claims
   } finally {
     dropFlow(state)
@@ -877,13 +970,13 @@ export async function oidcCompleteFromUrl(
   }
 }
 
-/** The callback's code exchanged for this flow's tokens, stored, with whose session was active before; undefined when
- *  `admit` refused the account; a refusal or failure thrown. */
+/** The callback's code exchanged for this flow's tokens, stored, with whose session was active before and whether the
+ *  new one `joined` it as a further sign-in; undefined when `admit` refused the account; a refusal or failure thrown. */
 async function exchangeCallback(
   flow: Flow,
   query: URLSearchParams,
   admit?: (claims: OidcClaims | undefined) => Promise<boolean>
-): Promise<{ claims: OidcClaims | undefined; previousSub?: string } | undefined> {
+): Promise<{ claims: OidcClaims | undefined; previousSub?: string; joined?: boolean } | undefined> {
   const error = query.get('error')
   if (error) {
     const refused = new OidcError('refused', query.get('error_description') || error)
@@ -911,12 +1004,27 @@ async function exchangeCallback(
     if (!admitted) return undefined
   }
   // Sub-aware handover: the SAME account signing in again replaces its family (revoke the
-  // old refresh token — it is dead weight); a DIFFERENT account arriving is the
-  // add-account path, and the previous account's set is a LIVING saved session — persist()
-  // already filed it in the registry, so it must absolutely not be revoked here.
+  // old refresh token — it is dead weight). A DIFFERENT account arriving, with several in use at once, JOINS the
+  // one signed in: its set is filed beside the primary's, which stays the page's person and keeps minting, so
+  // nothing of the primary's is revoked or replaced here. With one in use it becomes the page's person, and the
+  // previous account's set stays a LIVING saved session in the registry (persist filed it): never revoked here.
   const previousSet = stored()
   const previousSub = decodeJwt(previousSet?.id_token)?.sub
   const previous = previousSet?.refresh_token
+  const joined =
+    browserSeveral() && !!previous && !!previousSub && !!claims?.sub && claims.sub !== previousSub && !claims.act
+  if (joined) {
+    // Signing in again as an account already beside the primary replaces that account's family, as above.
+    const before = readRegistry()[claims.sub]?.refresh_token
+    if (before && before !== body.refresh_token) revoke(before)
+    fileAccount({ refresh_token: body.refresh_token, id_token: body.id_token }, declarationFingerprint())
+    access[slot(claims.sub, OAUTH_GRAPHQL_RESOURCE)] = {
+      token: body.access_token,
+      exp: tokenExpiry(body),
+      type: body.token_type,
+    }
+    return { claims, previousSub, joined }
+  }
   if (previous && previous !== body.refresh_token && (!claims?.sub || previousSub === claims.sub)) revoke(previous)
 
   if (claims?.act) {
@@ -946,8 +1054,12 @@ async function exchangeCallback(
   } catch {
     /* non-fatal */
   }
-  access[OAUTH_GRAPHQL_RESOURCE] = { token: body.access_token, exp: tokenExpiry(body), type: body.token_type }
-  return { claims, previousSub }
+  access[slot(who(claims?.sub), OAUTH_GRAPHQL_RESOURCE)] = {
+    token: body.access_token,
+    exp: tokenExpiry(body),
+    type: body.token_type,
+  }
+  return { claims, previousSub, joined }
 }
 
 function revoke(refreshToken: string) {
@@ -964,31 +1076,38 @@ function revoke(refreshToken: string) {
  * caller whichever audience happened to be minting, so an agent-audience token would go
  * out to the account API and come back 401. Queue instead, and re-read the cache after
  * the wait so N callers for one audience still cost one refresh. */
-export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE): Promise<string> {
-  if (shell) return shellAccessToken(shell, resource)
+export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE, sub?: string): Promise<string> {
+  const other = who(sub)
+  if (shell) return shellAccessToken(shell, resource, other)
+  // A saved account that is not in use mints nothing: its tokens are kept for when it is switched to, or checked.
+  if (other && !inUse(readRegistry()[other])) return ''
+  const key = slot(other, resource)
   // A support session's token IS the session: served until it expires (a reload restores it from
   // the tab store), never refreshed, and '' — the end — once it is gone. Other audiences have
-  // nothing to mint from; their features fail closed, as writes do under `act`.
+  // nothing to mint from; their features fail closed, as writes do under `act`. No other sign-in
+  // is in use beside it: the tab's registry is its own, and empty.
   const s = stored()
-  if (s?.support) {
+  if (s?.support && !other) {
     if (resource !== OAUTH_GRAPHQL_RESOURCE || !supportLive(s)) return ''
     // Cached with its scheme: authHeaders reads the type from here, and a reloaded tab
     // that served the bound token without it presented it as Bearer — which is refused.
-    access[resource] = { token: s.support.access_token, exp: s.support.exp, type: s.support.type }
+    access[key] = { token: s.support.access_token, exp: s.support.exp, type: s.support.type }
     return s.support.access_token
   }
   const fresh = () => {
-    const cached = access[resource]
+    const cached = access[key]
     return cached && cached.exp - serverSeconds() > 30 ? cached.token : undefined
   }
   const hit = fresh()
   if (hit) return hit
-  const next = minting.then(() => fresh() ?? refresh(resource))
-  minting = next.catch(() => {})
-  return next
+  return queued(other, () => fresh() ?? refresh(resource, other))
 }
 
-// CROSS-TAB single-flight. The `minting` queue above stops a tab racing itself, but the refresh
+/** Which cache slot and queue a sign-in uses: '' for the primary — asked for by its own sub or by none — else the
+ *  sub. A primary that changes (activation, sign-out) empties the cache, so '' never serves the last one's token. */
+const who = (sub?: string): string => (sub && sub !== oidcClaims()?.sub ? sub : '')
+
+// CROSS-TAB single-flight. The per-sign-in queue above stops a tab racing itself, but the refresh
 // token lives in localStorage and every tab of this origin shares it — so two tabs redeem the SAME
 // token, the AS sees a double-spend and answers as theft: the family is revoked and the person is
 // mailed "A sign-in was ended as a precaution". Not hypothetical — dev logged two reuse_detected
@@ -1000,6 +1119,9 @@ export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE)
 // wrote instead of the token it saw before waiting — which would be the very double-spend this
 // exists to prevent. Costs the waiter one extra rotation; costs nobody an alarm.
 //
+// One lock PER ACCOUNT, named by its sub: each account's family rotates on its own, and one
+// account's slow refresh must not hold up the requests about another.
+//
 // Bounded wait, because tokenRequest has no timeout: a hung fetch holds the lock, and without a
 // bound that would stall EVERY tab where today it stalls only the one. On timeout we proceed
 // unlocked — which is exactly today's behaviour, so the fallback can only be as bad as the status
@@ -1008,23 +1130,60 @@ export async function oidcAccessToken(resource: string = OAUTH_GRAPHQL_RESOURCE)
 const REFRESH_LOCK = 'oidc.refresh'
 const REFRESH_LOCK_WAIT_MS = 10_000
 
-async function refresh(resource: string): Promise<string> {
+async function refresh(resource: string, other: string): Promise<string> {
   const locks = (navigator as { locks?: { request: Function } } | undefined)?.locks
-  if (!locks?.request) return refreshOnce(resource)
+  if (!locks?.request) return refreshOnce(resource, other)
+  const sub = other || oidcClaims()?.sub
   try {
-    return await locks.request(REFRESH_LOCK, { signal: timeoutSignal(REFRESH_LOCK_WAIT_MS) }, () =>
-      refreshOnce(resource)
+    return await locks.request(
+      sub ? `${REFRESH_LOCK}:${sub}` : REFRESH_LOCK,
+      { signal: timeoutSignal(REFRESH_LOCK_WAIT_MS) },
+      () => refreshOnce(resource, other)
     )
   } catch (error: any) {
     // Only the WAIT aborts here — refreshOnce swallows its own failures and returns ''. Waiting
     // longer than the bound means some tab is wedged mid-refresh; go ahead unlocked rather than
     // leave this tab unable to call anything.
     console.warn('OIDC REFRESH LOCK: proceeding unlocked —', error?.name || error?.message)
-    return refreshOnce(resource)
+    return refreshOnce(resource, other)
   }
 }
 
-async function refreshOnce(resource: string): Promise<string> {
+/** A refresh for a sign-in BESIDE the primary: its set lives in the registry alone, so the rotation is written
+ *  there — onto the entry that still holds the token it was rotated from, never a new one (an account signed out
+ *  mid-flight has no entry and must stay gone). A dead grant makes the entry a known account again (signed in on
+ *  this browser, no tokens here): its rows go, the others' stay, and the menu still offers it. */
+async function refreshOther(resource: string, sub: string): Promise<string> {
+  const current = readRegistry()[sub]
+  if (!current?.refresh_token) return ''
+  try {
+    const body = await tokenRequest({ grant_type: 'refresh_token', refresh_token: current.refresh_token, resource })
+    const next = {
+      refresh_token: body.refresh_token || current.refresh_token,
+      id_token: body.id_token || current.id_token,
+    }
+    if (!refileSuccessor(current.refresh_token, next)) return ''
+    // Made the primary mid-flight (activation copies the entry's set): its active copy holds the spent token too.
+    if (stored()?.refresh_token === current.refresh_token) tokenStore().setItem(TOKENS_KEY, JSON.stringify(next))
+    access[slot(who(sub), resource)] = { token: body.access_token, exp: tokenExpiry(body), type: body.token_type }
+    return body.access_token
+  } catch (error: any) {
+    console.error('OIDC REFRESH FAILED', sub, error?.message)
+    if (error?.oauthError === 'invalid_grant') {
+      const reg = readRegistry()
+      if (reg[sub]?.refresh_token === current.refresh_token) {
+        const { refresh_token, id_token, declaration, ...identity } = reg[sub]
+        reg[sub] = identity
+        dropAccess(sub)
+        writeRegistry(reg)
+      }
+    }
+    return ''
+  }
+}
+
+async function refreshOnce(resource: string, other: string): Promise<string> {
+  if (other) return refreshOther(resource, other)
   const current = stored()
   if (!current?.refresh_token) return ''
   try {
@@ -1039,7 +1198,7 @@ async function refreshOnce(resource: string): Promise<string> {
     // resurrect the signed-out account (persist() re-files it in the registry — caught by
     // the multi-account e2e, ~50% of runs) or clobber the activated one. The successor is
     // not dropped, though: it still belongs to the account we rotated FOR, whose saved
-    // registry token is now the SPENT one — switching back would replay it (dev: the app.ai
+    // registry token is now the SPENT one — its next mint would replay it (dev: the app.ai
     // replays a minute after a switch). Re-file it there — update only; a signed-out account
     // has no entry left, so nothing comes back.
     if (stored()?.refresh_token !== current.refresh_token) {
@@ -1050,7 +1209,7 @@ async function refreshOnce(resource: string): Promise<string> {
       return ''
     }
     persist({ refresh_token: body.refresh_token || current.refresh_token, id_token: body.id_token || current.id_token })
-    access[resource] = { token: body.access_token, exp: tokenExpiry(body), type: body.token_type }
+    access[slot('', resource)] = { token: body.access_token, exp: tokenExpiry(body), type: body.token_type }
     return body.access_token
   } catch (error: any) {
     console.error('OIDC REFRESH FAILED', error?.message)
@@ -1078,6 +1237,12 @@ async function refreshOnce(resource: string): Promise<string> {
   }
 }
 
+/** One sign-in's cached tokens, dropped: it signed out, or its grant died. */
+function dropAccess(sub: string) {
+  const prefix = slot(who(sub), '')
+  for (const key of Object.keys(access)) if (key.startsWith(prefix)) delete access[key]
+}
+
 export function invalidateOidcToken() {
   access = {}
   // A 401 can follow a clock fixed mid-session; a still-wrong clock is measured again on its next refusal.
@@ -1103,13 +1268,19 @@ export async function oidcEndSession(): Promise<number | undefined> {
   }
   const hint = stored()?.id_token
   if (!hint || oidcActor()) return undefined
-  const r = await fetch(`${OAUTH_ISSUER}/session/end`, {
+  return (await endSessionAt(hint)).status
+}
+
+// How long the AS is given to end a session. A sign-out never waits on it longer: the request is given up, not left
+// open behind a caller that stopped waiting.
+const SESSION_END_WAIT_MS = 5000
+const endSessionAt = (hint: string) =>
+  fetch(`${OAUTH_ISSUER}/session/end`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ id_token_hint: hint }),
+    signal: timeoutSignal(SESSION_END_WAIT_MS),
   })
-  return r.status
-}
 
 /** Local teardown: clears the ACTIVE account's tokens (and its registry entry) and NOTHING
  * else. It never touches the AS — the failure paths land here and a dead refresh token is not
@@ -1180,7 +1351,15 @@ function persist(tokens: Stored) {
 
 // The account registry (multi-account menu).
 
-type RegistryEntry = Stored & { email?: string; name?: string; picture?: string; declaration?: string }
+/** `idle`: saved, and not in use while several are used at once — unchecked in the menu. Turning several on clears it:
+ *  use. A set filed anew (fileAccount: the page's person, an account that just signed in) is in use. */
+type RegistryEntry = Stored & {
+  email?: string
+  name?: string
+  picture?: string
+  declaration?: string
+  idle?: boolean
+}
 
 const readRaw = (): string | null => {
   try {
@@ -1199,7 +1378,7 @@ const parseRegistry = (raw: string | null): { [sub: string]: RegistryEntry } => 
 const readRegistry = () => parseRegistry(readRaw())
 const registryListeners = new Set<() => void>()
 window.addEventListener('storage', event => {
-  if (event.key === ACCOUNTS_KEY) registryListeners.forEach(listener => listener())
+  if (event.key === ACCOUNTS_KEY || event.key === SEVERAL_KEY) registryListeners.forEach(listener => listener())
 })
 
 /** Hear about registry changes — this tab's writes, and another tab's through `storage` — so a
@@ -1218,8 +1397,105 @@ const writeRegistry = (reg: { [sub: string]: RegistryEntry }) => {
   registryListeners.forEach(listener => listener())
 }
 
-/** File a token set under its subject — silently NOT for support sessions (`act`). */
-function fileAccount(tokens: Stored) {
+/** Sign-ins came or went (the registry's, the shell's list, or the mode that says which are in use): whoever listens
+ *  reads them again. */
+function signInsChanged() {
+  registryListeners.forEach(listener => listener())
+}
+
+// A change of the setting that storage refused, kept for this page: the person's choice still holds while it is open.
+let severalUnsaved: boolean | undefined
+const browserSeveral = (): boolean => {
+  if (oidcIsSupportTab()) return false
+  if (severalUnsaved !== undefined) return severalUnsaved
+  try {
+    return window.localStorage.getItem(SEVERAL_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+/** A saved account beside the page's person that is in use: only with several used at once, and not set aside. */
+const inUse = (entry?: RegistryEntry): boolean => !!entry?.refresh_token && !entry.idle && browserSeveral()
+
+/** Use several at once: every checked account is in use beside the page's person. Off — as it is until chosen — one
+ *  is in use, the page's own. The shell's setting in an app, this browser's own otherwise. */
+export const oidcSeveral = (): boolean => (shell ? !!shell.several : browserSeveral())
+/** Whether there is a setting to offer: not from a shell that has none (it keeps one credential in use), nor in a
+ *  support tab, which has its one session. */
+export const oidcSeveralOffered = (): boolean => (shell ? shell.several !== undefined : !oidcIsSupportTab())
+
+/** Turn Use several at once on or off. On: every saved account comes into use beside the page's person, each
+ *  checked, to be unchecked by the person (in an app, the shell signs each in on the device). Off: the page's person stays, and every other
+ *  account is taken out of use and kept saved (in an app, signed out on the device and remembered). False when
+ *  there is no setting, or the shell refused. */
+export async function oidcSetSeveral(several: boolean): Promise<boolean> {
+  if (!oidcSeveralOffered()) return false
+  if (shell) {
+    const s = shell
+    const own = shellActive()?.sub
+    const before = s.expected
+    // The page's person stays through the change: the shell's auth events about it are no change of person.
+    if (own) s.expected = own
+    try {
+      // The shell keeps its ACTIVE account when several are no longer used: the page's person is made that first.
+      if (!several && own && shellMulti(s) && s.accounts.find(a => a.active)?.sub !== own)
+        await s.device.call('auth.switch', { sub: own })
+      s.several = !!(await s.device.call('auth.setMode', { several })).several
+    } catch (error: any) {
+      s.expected = before
+      console.warn('AUTH: the app did not change its mode —', error?.message)
+      return false
+    }
+    access = {}
+    await readShellAccounts(s)
+    signInsChanged()
+    return s.several === several
+  }
+  if (several === browserSeveral()) return true
+  if (several) {
+    // Every saved account starts in use — checked — and the person unchecks who they do not want.
+    const reg = readRegistry()
+    for (const entry of Object.values(reg)) delete entry.idle
+    writeRegistry(reg)
+  }
+  try {
+    if (several) window.localStorage.setItem(SEVERAL_KEY, '1')
+    else window.localStorage.removeItem(SEVERAL_KEY)
+    severalUnsaved = undefined
+  } catch {
+    severalUnsaved = several
+  }
+  // The others' tokens go from memory with them; the page's person's are their own slot.
+  if (!several) for (const key of Object.keys(access)) if (!key.startsWith(slot('', ''))) delete access[key]
+  signInsChanged()
+  return true
+}
+
+/** Bring a saved or known account into use beside the page's person, or take one out of use and keep it saved —
+ *  the check beside it, with several used at once. Signing out is another thing: it forgets the account
+ *  (oidcSignOutAccount). False when `sub` is not such an account, or is the page's own person. */
+export async function oidcUseAccount(sub: string, use: boolean): Promise<boolean> {
+  if (!oidcSeveral() || !who(sub)) return false
+  // The shell's accounts come into use through it, and leave by its sign-out, which keeps them remembered.
+  if (shell) {
+    if (use && shell.accounts.some(a => a.sub === sub && a.signedIn)) return true
+    return use ? oidcSelectKnownAccount(sub) : oidcSignOutAccount(sub)
+  }
+  const reg = readRegistry()
+  const entry = reg[sub]
+  if (!entry) return false
+  // Known to the browser only: signed in here by a silent selection, which files it in use.
+  if (!entry.refresh_token) return use ? oidcSelectKnownAccount(sub) : false
+  if (use) delete entry.idle
+  else entry.idle = true
+  if (!use) dropAccess(sub)
+  writeRegistry(reg)
+  return true
+}
+
+/** File a token set under its subject — silently NOT for support sessions (`act`). `declaration`: what the grant
+ *  behind a set just authorized was written from; a refresh keeps the entry's own. */
+function fileAccount(tokens: Stored, declaration?: string) {
   const claims = decodeJwt(tokens.id_token)
   const sub = claims?.sub
   if (!sub || claims?.act) return
@@ -1231,20 +1507,22 @@ function fileAccount(tokens: Stored) {
     // Belt on the AS's own https-only guard — this string lands in an <img src>. A refresh that
     // brings no new id_token keeps the picture set since (oidcSetPicture), not the sign-in's.
     picture: tokens.id_token === reg[sub]?.id_token ? reg[sub]?.picture : httpsOnly(claims?.picture),
-    declaration: reg[sub]?.declaration,
+    declaration: declaration ?? reg[sub]?.declaration,
   }
   writeRegistry(reg)
 }
 
-/** A rotation that completed for an account no longer in the active store: put its successor on
+/** A rotation that completed for an account whose set is not the active one: put its successor on
  *  that account's registry entry — UPDATE only, never insert (a signed-out account has no entry and
- *  must stay gone). Without this the entry keeps the spent token and the next activation replays it. */
-function refileSuccessor(spent: string, tokens: Stored) {
+ *  must stay gone). Without this the entry keeps the spent token and its next mint replays it. False when no entry
+ *  held the spent token. */
+function refileSuccessor(spent: string, tokens: Stored): boolean {
   const reg = readRegistry()
   const sub = Object.keys(reg).find(k => reg[k].refresh_token === spent)
-  if (!sub) return
+  if (!sub) return false
   reg[sub] = { ...reg[sub], refresh_token: tokens.refresh_token, id_token: tokens.id_token ?? reg[sub].id_token }
   writeRegistry(reg)
+  return true
 }
 
 /** `known`: signed in on this BROWSER (the AS's session set) but not in this app yet — no tokens
@@ -1256,14 +1534,31 @@ export type OidcAccount = {
   picture?: string
   active: boolean
   known: boolean
+  /** A sign-in in use: requests about this account and its orgs are made as it (oidcSignIns). With one used at a
+   *  time that is the page's person alone, whatever else is saved. */
+  signedIn: boolean
+  /** It can be signed out on its own (oidcSignOutAccount), which forgets it: an account with tokens here, in use or
+   *  not; under the shell, one in use beside the page's person. */
+  saved: boolean
 }
 
-/** The accounts this app has signed into, for the avatar menu. Active first. */
+/** The accounts this app has signed into, for the avatar menu. Active — the page's person — first. */
 export function oidcAccounts(): OidcAccount[] {
-  if (shell)
-    return shell.accounts
-      .map(a => ({ sub: a.sub, email: a.email, name: a.name, active: a.active, known: false }))
+  if (shell) {
+    const s = shell
+    const primary = shellActive()?.sub
+    return s.accounts
+      .map(a => ({
+        sub: a.sub,
+        email: a.email,
+        name: a.name,
+        active: a.sub === primary,
+        known: false,
+        signedIn: shellMulti(s) ? !!a.signedIn : a.sub === primary,
+        saved: shellMulti(s) && !!a.signedIn,
+      }))
       .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
+  }
   const activeSub = oidcClaims()?.sub
   const reg = readRegistry()
   return Object.entries(reg)
@@ -1274,6 +1569,8 @@ export function oidcAccounts(): OidcAccount[] {
       picture: e.picture,
       active: sub === activeSub,
       known: !e.refresh_token && !e.support,
+      signedIn: sub === activeSub || inUse(e),
+      saved: !!e.refresh_token,
     }))
     .sort((a, b) => Number(b.active) - Number(a.active) || (a.email ?? a.sub).localeCompare(b.email ?? b.sub))
 }
@@ -1334,6 +1631,60 @@ const clearActivationHint = () => {
  *  accounts switch through it (oidcSelectKnownAccount). */
 export const oidcIsSavedAccount = (sub: string): boolean => !shell && !!readRegistry()[sub]?.refresh_token
 
+/** A sign-in in use: requests about this account and its orgs carry its token (oidcAccessToken's `sub`). */
+export type OidcSignIn = { sub: string; email?: string; name?: string; picture?: string; primary: boolean }
+
+/** Every sign-in in use, the primary first: the page's person and, with several used at once, each further account
+ *  in use beside them — the saved accounts that are checked in a browser; under the shell, every credential it has
+ *  in use. With one used at a time, the page's person alone. A support tab has its one session. */
+export function oidcSignIns(): OidcSignIn[] {
+  return oidcAccounts()
+    .filter(a => a.signedIn)
+    .map(({ sub, email, name, picture, active }) => ({ sub, email, name, picture, primary: active }))
+}
+
+/** Signs out ONE sign-in beside the primary and leaves the rest: its session at the AS is ended on its own
+ *  id_token (under the shell, by the shell), and its tokens and registry entry go. The primary's sign-out is the
+ *  app's (models/auth signOut). False when `sub` is not such a sign-in. A refused, unreachable or silent AS still
+ *  signs it out here: the person asked for it gone from this app. */
+export async function oidcSignOutAccount(sub: string): Promise<boolean> {
+  if (!who(sub)) return false
+  if (shell) {
+    const s = shell
+    if (!shellMulti(s) || !s.accounts.some(a => a.sub === sub && a.signedIn)) return false
+    await s.device.call('auth.signOut', { sub })
+    dropAccess(sub)
+    await readShellAccounts(s)
+    signInsChanged()
+    return true
+  }
+  const reg = readRegistry()
+  const entry = reg[sub]
+  if (!entry?.refresh_token) return false
+  // Gone from here first, before anything is waited on: an AS that never answers cannot leave it signed in.
+  delete reg[sub]
+  dropAccess(sub)
+  writeRegistry(reg)
+  if (entry.id_token) {
+    try {
+      const r = await endSessionAt(entry.id_token)
+      if (r.status !== 204) console.warn('SIGN OUT: AS session end refused', r.status)
+    } catch (error) {
+      console.warn('SIGN OUT: AS session end failed — the account is signed out here', error)
+    }
+  }
+  return true
+}
+
+/** After the page's person signed out with others still signed in: the next of them becomes the page's person —
+ *  the first saved account is made the active set; under the shell, whoever it now has active is. The caller
+ *  reloads, as after any activation. False when no one is left. */
+export function oidcPromoteSignIn(): boolean {
+  const next = oidcSignIns()[0]
+  if (!next) return false
+  return shell ? true : oidcActivateAccount(next.sub)
+}
+
 /** Make a saved account the ACTIVE one. Storage-only — the caller reloads the app so
  *  every model boots as the new identity (a soft swap would bleed one account's data
  *  into the other's view). Returns false when the account is unknown. */
@@ -1349,6 +1700,12 @@ export function oidcActivateAccount(sub: string): boolean {
   }
   access = {}
   tokenStore().setItem(TOKENS_KEY, JSON.stringify({ refresh_token: entry.refresh_token, id_token: entry.id_token }))
+  // The page's person is in use, whatever was said of the account while it was beside another.
+  if (entry.idle) {
+    const reg = readRegistry()
+    delete reg[sub].idle
+    writeRegistry(reg)
+  }
   // The declaration stamp is per-GRANT, and the grant is per-account: swap it with the
   // tokens or the boot check would measure account B against account A's grant.
   try {
@@ -1490,18 +1847,27 @@ async function dpopProof(htm: string, htu: string, accessToken?: string): Promis
 async function authHeaders(
   method: string,
   url: string,
-  resource: string
+  resource: string,
+  sub?: string
 ): Promise<{ headers: Record<string, string>; proof?: DpopProof }> {
-  const token = await oidcAccessToken(resource)
+  const token = await oidcAccessToken(resource, sub)
   if (!token) return { headers: {} }
-  if (access[resource]?.type === 'DPoP' && shell) {
+  const other = who(sub)
+  const bound = access[slot(other, resource)]?.type === 'DPoP'
+  if (bound && shell) {
     try {
-      const { proof } = await shell.device.call('auth.dpopProof', { method, url, accessToken: token })
+      const named = other || (shellMulti(shell) ? shell.primary : undefined)
+      const { proof } = await shell.device.call('auth.dpopProof', {
+        method,
+        url,
+        accessToken: token,
+        ...(named && { sub: named }),
+      })
       return { headers: { authorization: `DPoP ${token}`, DPoP: proof } }
     } catch (error: any) {
       console.warn(`AUTH: the app made no DPoP proof for ${resource} —`, error?.message)
     }
-  } else if (access[resource]?.type === 'DPoP') {
+  } else if (bound) {
     const proof = await dpopProof(method, url, token)
     if (proof) return { headers: { authorization: `DPoP ${token}`, DPoP: proof.jwt }, proof }
     // A bound token with no proof to present. Falling through to Bearer is deliberate — the AS
@@ -1530,7 +1896,7 @@ const asksForNonce = (answer: DpopAnswer): boolean =>
   answer.status === 401 &&
   (/use_dpop_nonce/.test(answer.header('www-authenticate') ?? '') || !!answer.header('dpop-nonce'))
 
-/** Sends one request on `resource`'s token: `send` gets the auth headers ({} when signed out) and makes
+/** Sends one request on `resource`'s token — the primary sign-in's, or the sign-in `sub` names: `send` gets the auth headers ({} when signed out) and makes
  *  the request; `answer` reads the status and headers off whatever it resolved or threw. Every answer's
  *  DPoP-Nonce is remembered. A refusal asking for a nonce the proof didn't carry gets the request ONCE
  *  more, with a freshly signed proof (new jti, new iat) carrying it, since a proof is single-use and
@@ -1541,10 +1907,11 @@ export async function oidcAuthorized<T>(
   url: string,
   resource: string,
   send: (auth: Record<string, string>) => Promise<T>,
-  answer: (outcome: unknown) => DpopAnswer | undefined
+  answer: (outcome: unknown) => DpopAnswer | undefined,
+  sub?: string
 ): Promise<T> {
   for (let attempt = 0; ; attempt++) {
-    const { headers, proof } = await authHeaders(method, url, resource)
+    const { headers, proof } = await authHeaders(method, url, resource, sub)
     let outcome: unknown
     let failed = false
     try {
@@ -1764,6 +2131,8 @@ export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {
     const s = shell
     if (!s.accounts.some(a => a.sub === sub)) return false
     const before = s.expected
+    // In use already: it is made the active one, and the page boots as them. Remembered only: it joins.
+    const joins = shellMulti(s) && !!shellActive() && !s.accounts.some(a => a.sub === sub && a.signedIn)
     s.expected = sub
     try {
       await s.device.call('auth.switch', { sub })
@@ -1771,6 +2140,13 @@ export async function oidcSelectKnownAccount(sub: string): Promise<boolean> {
       s.expected = before
       console.warn('AUTH: the app did not switch accounts —', error?.message)
       return false
+    }
+    // A shell that keeps several in use signs a remembered account in beside the page's person: nothing reloads.
+    if (joins) {
+      await readShellAccounts(s)
+      s.expected = before
+      signInsChanged()
+      return true
     }
     oidcShellHooks.reload()
     return true

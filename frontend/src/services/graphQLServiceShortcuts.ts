@@ -1,5 +1,6 @@
 import { graphQLBasicRequest } from './graphQL'
 import { getApiURL } from '../helpers/apiHelper'
+import { noteAccountOf } from '../selectors/signIns'
 
 type Support = { available: boolean; namedAddress: boolean }
 
@@ -64,7 +65,14 @@ export async function graphQLServiceShortcuts(
     true
   )
   if (response === 'ERROR') return response
-  return response.data?.data?.login?.account?.serviceShortcuts ?? 'ERROR'
+  const shortcuts: ServiceShortcut[] | undefined = response.data?.data?.login?.account?.serviceShortcuts
+  // Listed here alone, where their devices are in no stored list: opened, or looked up, as the sign-in serving the
+  // account they were listed for.
+  noteAccountOf(
+    accountId,
+    (shortcuts || []).flatMap(shortcut => [shortcut.id, shortcut.device?.id])
+  )
+  return shortcuts ?? 'ERROR'
 }
 
 export async function graphQLShowInServices(serviceId: string): Promise<boolean | 'ERROR'> {

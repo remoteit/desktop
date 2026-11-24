@@ -1,13 +1,21 @@
 import { addConnectionProps } from '../models/networks'
 import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
 import { store } from '../store'
+import type { RequestFor } from '../selectors/signIns'
 
-export async function graphQLSetAttributes(attributes: ILookup<string | number | undefined>, serviceId?: String) {
+// `requestFor`: whose request it is, where the service is too new to be in the store and say so itself.
+export async function graphQLSetAttributes(
+  attributes: ILookup<string | number | undefined>,
+  serviceId?: String,
+  requestFor?: RequestFor
+) {
   return await graphQLBasicRequest(
     ` mutation SetAttributes($attributes: Object!, $serviceId: String) {
         setAttributes(attributes: $attributes, serviceId: $serviceId)
       }`,
-    { attributes: { $remoteit: attributes }, serviceId }
+    { attributes: { $remoteit: attributes }, serviceId },
+    false,
+    requestFor
   )
 }
 
@@ -31,7 +39,9 @@ export async function graphQLSetDeviceNotification(deviceID: string, settings: I
 // before; none leaves it to the API stage's default.
 const proxyFleet = () => store?.getState().ui.proxyFleet
 
-export async function graphQLConnect(serviceId: string, hostIP?: string) {
+// `requestFor`, for the requests about a connection (connect, disconnect, rate, its link): the account the connection
+// is of, where the service is in no account's stored list to say whose it is (models/connections forConnection).
+export async function graphQLConnect(serviceId: string, hostIP?: string, requestFor?: RequestFor) {
   const fleet = proxyFleet()
   return await graphQLBasicRequest(
     ` mutation Connect($serviceId: String!, $hostIP: String${fleet ? ', $proxyFleet: ProxyFleet' : ''}) {
@@ -44,30 +54,39 @@ export async function graphQLConnect(serviceId: string, hostIP?: string) {
           timeout
         }
       }`,
-    { serviceId, hostIP, ...(fleet ? { proxyFleet: fleet } : {}) }
+    { serviceId, hostIP, ...(fleet ? { proxyFleet: fleet } : {}) },
+    false,
+    requestFor
   )
 }
 
-export async function graphQLDisconnect(serviceId: string, connectionId: string) {
+export async function graphQLDisconnect(serviceId: string, connectionId: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` mutation Disconnect($serviceId: String!, $connectionId: String!) {
         disconnect(serviceId: $serviceId, connectionId: $connectionId)
       }`,
-    { serviceId, connectionId }
+    { serviceId, connectionId },
+    false,
+    requestFor
   )
 }
 
-export async function graphQLSurvey(serviceId: string, sessionId: string, quality: number) {
+export async function graphQLSurvey(serviceId: string, sessionId: string, quality: number, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` mutation Survey($serviceId: String!, $sessionId: String!, $quality: Int!) {
         rateConnection(serviceId: $serviceId, sessionId: $sessionId, quality: $quality)
       }`,
-    { serviceId, sessionId, quality }
+    { serviceId, sessionId, quality },
+    false,
+    requestFor
   )
 }
 
 // A refusal comes back with graphql's reason — a password on a link that is not a web one, say — for the owner to read.
-export async function graphQLSetLink(params: { serviceId: string; password?: string | null; enabled?: boolean }) {
+export async function graphQLSetLink(
+  params: { serviceId: string; password?: string | null; enabled?: boolean },
+  requestFor?: RequestFor
+) {
   const fleet = proxyFleet()
   return await graphQLRequestWithReason(
     ` mutation SetLink($serviceId: String!, $password: String, $enabled: Boolean${
@@ -82,16 +101,19 @@ export async function graphQLSetLink(params: { serviceId: string; password?: str
           created
         }
       }`,
-    { ...params, ...(fleet ? { proxyFleet: fleet } : {}) }
+    { ...params, ...(fleet ? { proxyFleet: fleet } : {}) },
+    requestFor
   )
 }
 
-export async function graphQLRemoveLink(serviceId: string) {
+export async function graphQLRemoveLink(serviceId: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` mutation RemoveLink($serviceId: String!) {
         removeConnectLink(serviceId: $serviceId)
       }`,
-    { serviceId }
+    { serviceId },
+    false,
+    requestFor
   )
 }
 
@@ -131,12 +153,14 @@ export async function graphQLDeleteDevices(deviceId: string[]) {
   )
 }
 
-export async function graphQLUnShareDevice(params: IShareProps) {
+export async function graphQLUnShareDevice(params: IShareProps, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` mutation UnShare($deviceId: String!, $email: [String!]!) {
         share(deviceId: $deviceId, email: $email, action: REMOVE)
       }`,
-    params
+    params,
+    false,
+    requestFor
   )
 }
 
@@ -243,12 +267,16 @@ export async function graphQLRemoveMembers(email: string[], accountId?: string) 
   )
 }
 
-export async function graphQLLeaveMembership(id: string) {
+// `sub`: the sign-in whose membership it is ('' the page's own person) — said outright, since the organization's id
+// alone names whichever sign-in serves its row, who may be another member of it.
+export async function graphQLLeaveMembership(id: string, sub: string) {
   return await graphQLBasicRequest(
     ` mutation LeaveMembership($id: ID!) {
         leaveOrganization(id: $id)
       }`,
-    { id }
+    { id },
+    false,
+    { sub }
   )
 }
 
@@ -499,12 +527,16 @@ export async function graphQLNotificationSettings(params: INotificationSetting) 
   )
 }
 
+// The page's own person's setting for one of their organizations — as them outright: the organization's id alone
+// names whichever sign-in serves its row, and it is their settings that are read beside it.
 export async function graphQLSetOrganizationNotificationSettings(organizationId: string, pushNotifications: boolean | null) {
   return await graphQLBasicRequest(
     ` mutation SetOrganizationNotificationSettings($organizationId: ID!, $pushNotifications: Boolean) {
         setOrganizationNotificationSettings(organizationId: $organizationId, pushNotifications: $pushNotifications)
       }`,
-    { organizationId, pushNotifications }
+    { organizationId, pushNotifications },
+    false,
+    { sub: '' }
   )
 }
 
@@ -747,7 +779,9 @@ export async function graphQLRequestAdminPromotion(userId: string) {
     ` mutation RequestAdminPromotion($userId: String!) {
         requestAdminPromotion(userId: $userId)
       }`,
-    { userId }
+    { userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -756,7 +790,9 @@ export async function graphQLConfirmAdminPromotion(token?: string, code?: string
     ` mutation ConfirmAdminPromotion($token: String, $code: String) {
         confirmAdminPromotion(token: $token, code: $code)
       }`,
-    { token, code }
+    { token, code },
+    false,
+    { sub: '' }
   )
 }
 
@@ -765,7 +801,9 @@ export async function graphQLRemoveAdmin(userId: string) {
     ` mutation RemoveAdmin($userId: String!) {
         removeAdmin(userId: $userId)
       }`,
-    { userId }
+    { userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -782,7 +820,9 @@ export async function graphQLAddEnterpriseCustomer(email: string) {
           created
         }
       }`,
-    { email }
+    { email },
+    false,
+    { sub: '' }
   )
 }
 
@@ -791,7 +831,9 @@ export async function graphQLRemoveEnterpriseCustomer(userId: string) {
     ` mutation RemoveEnterpriseCustomer($userId: String!) {
         removeEnterpriseCustomer(userId: $userId)
       }`,
-    { userId }
+    { userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -813,7 +855,9 @@ export async function graphQLAddAddonCustomer(product: string, email: string, ex
           expiration
         }
       }`,
-    { product, email, expiration }
+    { product, email, expiration },
+    false,
+    { sub: '' }
   )
 }
 
@@ -822,7 +866,9 @@ export async function graphQLRemoveAddonCustomer(product: string, userId: string
     ` mutation RemoveAddonCustomer($product: String!, $userId: String!) {
         removeAddonCustomer(product: $product, userId: $userId)
       }`,
-    { product, userId }
+    { product, userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -831,7 +877,9 @@ export async function graphQLAdminUpdateEmail(from: string, to: string) {
     ` mutation UpdateEmail($from: String!, $to: String!) {
         updateEmail(from: $from, to: $to)
       }`,
-    { from, to }
+    { from, to },
+    false,
+    { sub: '' }
   )
 }
 
@@ -840,7 +888,9 @@ export async function graphQLAdminDeleteUser(id: string, force: boolean = false)
     ` mutation AdminDeleteUser($id: String!, $force: Boolean) {
         adminDeleteUser(id: $id, force: $force)
       }`,
-    { id, force }
+    { id, force },
+    false,
+    { sub: '' }
   )
 }
 
@@ -851,7 +901,9 @@ export async function graphQLCreateNotice(notice: INoticeInput) {
     ` mutation CreateNotice($notice: NoticeInput!) {
         createNotice(notice: $notice) {${NOTICE_FIELDS}}
       }`,
-    { notice }
+    { notice },
+    false,
+    { sub: '' }
   )
 }
 
@@ -860,7 +912,9 @@ export async function graphQLUpdateNotice(id: string, notice: INoticeInput) {
     ` mutation UpdateNotice($id: String!, $notice: NoticeInput!) {
         updateNotice(id: $id, notice: $notice) {${NOTICE_FIELDS}}
       }`,
-    { id, notice }
+    { id, notice },
+    false,
+    { sub: '' }
   )
 }
 
@@ -869,6 +923,8 @@ export async function graphQLDeleteNotice(id: string) {
     ` mutation DeleteNotice($id: String!) {
         deleteNotice(id: $id)
       }`,
-    { id }
+    { id },
+    false,
+    { sub: '' }
   )
 }

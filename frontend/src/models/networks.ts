@@ -3,11 +3,13 @@ import structuredClone from '@ungap/structured-clone'
 import { State } from '../store'
 import { createModel } from '@rematch/core'
 import { selectConnection } from '../selectors/connections'
+import { asRow, rowGone, selectRowOf, sendAs } from '../selectors/signIns'
+import { RowKey, rowSub, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
 import { selectActiveAccountId, selectActiveUser } from '../selectors/accounts'
 import { selectNetworks, selectNetworkByService } from '../selectors/networks'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
 import { graphQLFetchNetworkSingle, graphQLPreloadNetworks } from '../services/graphQLRequest'
-import { selectById, selectVisibleDevices } from '../selectors/devices'
+import { getDeviceModelFn, selectById } from '../selectors/devices'
 import {
   graphQLAddNetwork,
   graphQLDeleteNetwork,
@@ -91,6 +93,7 @@ export type addConnectionProps = {
 type INetworksAccountState = {
   initialized: boolean
   loading: boolean
+  // By ROW (helpers/rowKey): an account's networks as each sign-in that belongs to it is given them.
   all: ILookup<INetwork[]>
   default: INetwork
 }
@@ -111,9 +114,11 @@ export default createModel<RootModel>()({
 
     async fetch(fetchAll: boolean | void, state) {
       const accountId = selectActiveAccountId(state)
+      // The row they are read for: asked as its sign-in, and kept under it whichever row is looked at by then.
+      const row = selectRowOf(state, accountId)
 
       dispatch.networks.set({ loading: true })
-      const response = await graphQLPreloadNetworks(accountId)
+      const response = await graphQLPreloadNetworks(accountId, asRow(row))
 
       if (response === 'ERROR') {
         dispatch.networks.set({ loading: false, initialized: true })
@@ -125,8 +130,9 @@ export default createModel<RootModel>()({
         gqlNetworks: response?.data?.data?.login?.account?.networks,
         fetchAll: !!fetchAll,
         accountId,
+        row,
       })
-      await dispatch.networks.setNetworks({ networks, accountId })
+      await dispatch.networks.setNetworks({ networks, accountId, row })
 
       console.log('LOADED NETWORKS', networks)
       dispatch.networks.set({ loading: false, initialized: true })
@@ -140,36 +146,43 @@ export default createModel<RootModel>()({
       if (!network || !network.cloud) return
 
       const accountId = selectActiveAccountId(state)
-      await dispatch.devices.set({ fetching: true, accountId })
-      const gqlResponse = await graphQLFetchNetworkSingle(network.id)
+      // The row whose list says it is reading: the one looked at now, whichever is by the time this ends.
+      const row = selectRowOf(state, accountId)
+      await dispatch.devices.set({ fetching: true, accountId, row })
+      const gqlResponse = await graphQLFetchNetworkSingle(network.id, asRow(row))
 
       if (gqlResponse === 'ERROR') {
-        dispatch.devices.set({ fetching: false, accountId })
+        dispatch.devices.set({ fetching: false, accountId, row })
         if (redirect) dispatch.ui.set({ redirect })
         return
       }
 
       const gqlNetworks = [gqlResponse?.data?.data?.login?.network]
-      await dispatch.networks.preloadNetworkDevices({ gqlNetworks, accountId, fetchAll: true })
-      await dispatch.networks.setNetwork({ ...network, loaded: true })
+      await dispatch.networks.preloadNetworkDevices({ gqlNetworks, accountId, row, fetchAll: true })
+      await dispatch.networks.setNetworkIn({ network: { ...network, loaded: true }, accountId, row })
 
-      dispatch.devices.set({ fetching: false, accountId })
+      dispatch.devices.set({ fetching: false, accountId, row })
     },
 
     async fetchIfEmpty(_: void, state) {
       const accountId = selectActiveAccountId(state)
-      if (!state.networks.all[accountId]) {
+      if (!state.networks.all[selectRowOf(state, accountId)]) {
         await dispatch.networks.set({ initialized: false })
         await dispatch.networks.fetch()
         await dispatch.networks.set({ initialized: true })
       }
     },
 
-    async preloadNetworkDevices(props: { gqlNetworks?: any[]; accountId: string; fetchAll?: boolean }, state) {
+    async preloadNetworkDevices(
+      props: { gqlNetworks?: any[]; accountId: string; row?: RowKey; fetchAll?: boolean },
+      state
+    ) {
       const { gqlNetworks, accountId, fetchAll } = props
       if (!gqlNetworks) return
+      const row = props.row ?? selectRowOf(state, accountId)
 
-      const allDevices = new Set(fetchAll ? [] : selectVisibleDevices(state, accountId).map(device => device.id))
+      const held = getDeviceModelFn(state.devices, row).all.filter((d: IDevice) => !d.hidden && !d.disabled)
+      const allDevices = new Set(fetchAll ? [] : held.map(device => device.id))
 
       const ids = new Set<string>()
       for (const network of gqlNetworks) {
@@ -181,7 +194,7 @@ export default createModel<RootModel>()({
 
       if (ids.size) {
         console.log('PRELOAD NETWORK DEVICE IDS', ids)
-        await dispatch.devices.fetchDevices({ ids: Array.from(ids), accountId, hidden: true })
+        await dispatch.devices.fetchDevices({ ids: Array.from(ids), accountId, sub: rowSub(row), hidden: true })
       }
     },
 
@@ -223,10 +236,11 @@ export default createModel<RootModel>()({
 
     async add(props: addConnectionProps, state) {
       const network = selectNetwork(state, props.networkId)
+      const at = rowNow(state)
       let copy = { ...network }
       const unique = new Set(copy.serviceIds.concat(props.serviceId))
       copy.serviceIds = Array.from(unique)
-      dispatch.networks.setNetwork(copy)
+      dispatch.networks.setNetworkIn({ network: copy, ...at })
       if (props.networkId !== DEFAULT_ID) {
         const result = await graphQLSetConnection(props)
         if (result === 'ERROR' || !result?.data?.data?.addNetworkConnection) {
@@ -235,7 +249,7 @@ export default createModel<RootModel>()({
               defaultValue: 'Adding network failed. Please contact support.',
             }),
           })
-          dispatch.networks.setNetwork(network)
+          dispatch.networks.setNetworkIn({ network, ...at })
           return
         }
       }
@@ -247,15 +261,16 @@ export default createModel<RootModel>()({
     ) {
       const joined = selectNetworkByService(state, serviceId)
       let network = selectNetwork(state, networkId)
+      const at = rowNow(state)
 
       if (!network.permissions.includes('MANAGE')) return
 
       let copy = structuredClone(network)
       const index = copy.serviceIds.indexOf(serviceId)
       copy.serviceIds.splice(index, 1)
-      dispatch.networks.setNetwork(copy)
+      dispatch.networks.setNetworkIn({ network: copy, ...at })
       if (networkId && !clearOnly) {
-        const result = await graphQLRemoveConnection(networkId, serviceId)
+        const result = await sendAs(at.row, () => graphQLRemoveConnection(networkId, serviceId))
         if (result === 'ERROR' || !result?.data?.data?.removeNetworkConnection) {
           console.error('Failed to remove network connection', serviceId, network, result)
           dispatch.ui.set({
@@ -265,7 +280,7 @@ export default createModel<RootModel>()({
               defaultValue: 'Failed to remove network connection ({{serviceId}}) from {{network}}. Please contact support.',
             }),
           })
-          dispatch.networks.setNetwork(network)
+          dispatch.networks.setNetworkIn({ network, ...at })
           return
         }
       }
@@ -290,13 +305,11 @@ export default createModel<RootModel>()({
     },
 
     async deleteNetwork(params: INetwork, state) {
-      const id = selectActiveAccountId(state)
+      const at = rowNow(state)
       const response = await graphQLDeleteNetwork(params.id)
       if (response === 'ERROR') return
-      let networks = [...state.networks.all[id]]
-      const index = networks.findIndex(network => network.id === params.id)
-      networks.splice(index, 1)
-      dispatch.networks.set({ all: { ...state.networks.all, [id]: [...networks] } })
+      const networks = (state.networks.all[at.row] || []).filter(network => network.id !== params.id)
+      dispatch.networks.setNetworks({ networks, ...at })
     },
 
     async addNetwork(params: INetwork, state) {
@@ -305,14 +318,15 @@ export default createModel<RootModel>()({
       if (response === 'ERROR') return
       params.id = response?.data?.data?.createNetwork?.id
       console.log('ADDING NETWORK', params)
-      await dispatch.networks.setNetwork(params)
       await dispatch.networks.fetch()
       dispatch.ui.set({ redirect: `/networks/${params.id}` })
     },
 
-    async updateNetwork(network: INetwork) {
-      await dispatch.networks.setNetwork(network)
-      await graphQLUpdateNetwork(network)
+    async updateNetwork(network: INetwork, state) {
+      const at = rowNow(state)
+      await dispatch.networks.setNetworkIn({ network, ...at })
+      // Sent as the row it began in, whichever row is looked at once the write above is done.
+      await sendAs(at.row, () => graphQLUpdateNetwork(network))
       await dispatch.networks.fetch()
     },
 
@@ -335,30 +349,55 @@ export default createModel<RootModel>()({
       const network = structuredClone(selectNetwork(state, networkId))
       const index = network.access.findIndex(a => a.email === email)
       network.access.splice(index, 1)
-      await dispatch.networks.setNetwork(network)
+      await dispatch.networks.setNetworkIn({ network, ...rowNow(state) })
     },
 
+    // A network of the row looked at now; an effect that waits for an answer says the row it began in (setNetworkIn).
     async setNetwork(params: INetwork, state) {
-      const id = selectActiveAccountId(state)
-      if (params.id === DEFAULT_ID) return
+      await dispatch.networks.setNetworkIn({ network: params, ...rowNow(state) })
+    },
 
-      let networks: INetwork[] = [...(state.networks.all[id] || [])]
-      const index = networks.findIndex(network => network.id === params.id)
+    async setNetworkIn({ network, accountId, row }: { network: INetwork; accountId: string; row: RowKey }, state) {
+      if (network.id === DEFAULT_ID) return
+
+      let networks: INetwork[] = [...(state.networks.all[row] || [])]
+      const index = networks.findIndex(each => each.id === network.id)
 
       if (index >= 0) {
-        networks[index] = { ...networks[index], ...params }
-        dispatch.networks.setNetworks({ networks, accountId: id })
+        networks[index] = { ...networks[index], ...network }
+        dispatch.networks.setNetworks({ networks, accountId, row })
       }
     },
 
-    async setNetworks(props: { networks: INetwork[]; accountId?: string }, state) {
-      const id = props.accountId || selectActiveAccountId(state)
-      dispatch.networks.set({ all: { ...state.networks.all, [id]: [...props.networks] } })
+    /* The one write of a row's networks. `row` is the key (helpers/rowKey): the row said — the one a read was made
+       for, or an effect began in — else the one the account (`accountId`, or the selected one) is looked at through. */
+    async setNetworks(props: { networks: INetwork[]; accountId?: string; row?: RowKey }, state) {
+      const row = props.row ?? selectRowOf(state, props.accountId || selectActiveAccountId(state))
+      // An answer for a row whose sign-in has left since it was asked: the row is gone, and is not put back.
+      if (props.row && rowGone(state, props.row)) return
+      dispatch.networks.setRow({ row, networks: [...props.networks] })
     },
   }),
   reducers: {
     reset(state: INetworksAccountState) {
       state = { ...defaultAccountState }
+      return state
+    },
+    /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
+    forget(state: INetworksAccountState, accountIds: string[]) {
+      state.all = withoutAccounts(state.all, accountIds)
+      return state
+    },
+    forgetRows(state: INetworksAccountState, rows: string[]) {
+      state.all = withoutRows(state.all, rows)
+      return state
+    },
+    rekey(state: INetworksAccountState, rows: ILookup<RowKey>) {
+      state.all = rekeyed(state.all, rows)
+      return state
+    },
+    setRow(state: INetworksAccountState, { row, networks }: { row: RowKey; networks: INetwork[] }) {
+      state.all = { ...state.all, [row]: networks }
       return state
     },
     set(state: INetworksAccountState, params: Partial<INetworksAccountState>) {
@@ -367,6 +406,12 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+// The row looked at now, as an effect says it to a write it makes after waiting.
+const rowNow = (state: State) => {
+  const accountId = selectActiveAccountId(state)
+  return { accountId, row: selectRowOf(state, accountId) }
+}
 
 export function defaultNetwork(state?: State): INetwork {
   if (state) {

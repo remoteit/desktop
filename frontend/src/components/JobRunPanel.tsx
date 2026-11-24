@@ -18,6 +18,7 @@ import {
 } from '../services/jobRuns'
 import { watchJobRun } from '../services/jobOutputSocket'
 import { jobChangeKey } from '../hooks/useJobDevices'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* A job's runs on the job runner (device-package docs/scripting-plan.md, "As built (phase 4)"): each run's phase, its
    progress and why it failed, read on their own beside the job; and for the run shown, the account it ran as, its exit,
@@ -42,20 +43,26 @@ export function useJobRuns(
   const timer = useRef<ReturnType<typeof setTimeout>>()
   const key = job ? `${jobChangeKey(job)}:${tick}:${size}:${jobDeviceId}` : ''
 
-  useEffect(() => {
-    if (!job || unsupported.current) return
-    const load = async () => {
-      last.current = Date.now()
-      const result = await fetchJobRuns(accountId, job.id, size, jobDeviceId)
-      if (result === UNSUPPORTED) unsupported.current = true
-      else if (result !== 'ERROR') setRuns(result)
-    }
-    const wait = 1000 - (Date.now() - last.current)
-    if (timer.current) clearTimeout(timer.current)
-    if (wait <= 0) void load()
-    else timer.current = setTimeout(load, wait)
-    return () => timer.current && clearTimeout(timer.current)
-  }, [key, accountId])
+  useReadEffect(
+    again => {
+      if (!job || unsupported.current) return
+      const load = async () => {
+        last.current = Date.now()
+        const result = await fetchJobRuns(accountId, job.id, size, jobDeviceId)
+        if (result === UNSUPPORTED) unsupported.current = true
+        else if (result !== 'ERROR') setRuns(result)
+        // A refresh that fails keeps what is shown; the read made as another sign-in, failing, must not: those runs
+        // were the sign-in before's to see.
+        else if (again) setRuns(undefined)
+      }
+      const wait = 1000 - (Date.now() - last.current)
+      if (timer.current) clearTimeout(timer.current)
+      if (wait <= 0) void load()
+      else timer.current = setTimeout(load, wait)
+      return () => timer.current && clearTimeout(timer.current)
+    },
+    [key, accountId]
+  )
 
   useEffect(() => setRuns(undefined), [job?.id])
   return unsupported.current ? undefined : runs
@@ -172,16 +179,22 @@ export const JobRunPanel: React.FC<PanelProps> = ({ accountId, jobId, jobDeviceI
   const follow = useRef(true)
 
   // What it has said so far (the live tail, or once it has ended its output.log), read when shown and at its end.
-  useEffect(() => {
-    if (!run) return
-    let gone = false
-    fetchRunOutput(accountId, jobId, jobDeviceId).then(result => {
-      if (!gone && result && result !== 'ERROR' && result !== UNSUPPORTED) setRead(result)
-    })
-    return () => {
-      gone = true
-    }
-  }, [jobDeviceId, ended, !!run])
+  useReadEffect(
+    again => {
+      if (!run) return
+      let gone = false
+      fetchRunOutput(accountId, jobId, jobDeviceId).then(result => {
+        if (gone) return
+        if (result && result !== 'ERROR' && result !== UNSUPPORTED) setRead(result)
+        // As above: kept through a failed refresh, not through a failed read as another sign-in.
+        else if (again) setRead(undefined)
+      })
+      return () => {
+        gone = true
+      }
+    },
+    [jobDeviceId, ended, !!run]
+  )
 
   const chunks = read?.complete ? read.chunks : mergeChunks(read?.chunks || [], live.chunks)
 

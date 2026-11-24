@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { AppIcon } from '../components/AppIcon'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -41,6 +41,7 @@ import {
 } from '../helpers/appsHelper'
 import { opensTerminal } from '../helpers/sshHelper'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Move = { channel?: string; version?: string } // a channel ("" its account's) or a pin ("" none)
 
@@ -93,16 +94,19 @@ export const DeviceAppPage: React.FC = () => {
   const { flip, reconsent, consent } = useAppSwitch(deviceApps, failed, undefined, device?.accountId)
 
   const accountId = device?.accountId
-  useEffect(() => {
-    let current = true
-    setCatalog(undefined)
-    graphQLCatalogApp(appID, { accountId, releases: 100 }).then(
-      answer => current && setCatalog(typeof answer === 'object' ? answer : null)
-    )
-    return () => {
-      current = false
-    }
-  }, [appID, accountId])
+  useReadEffect(
+    again => {
+      let current = true
+      if (!again) setCatalog(undefined)
+      graphQLCatalogApp(appID, { accountId, releases: 100 }).then(
+        answer => current && setCatalog(typeof answer === 'object' ? answer : null)
+      )
+      return () => {
+        current = false
+      }
+    },
+    [appID, accountId]
+  )
 
   if (!device || apps === undefined) return <LoadingMessage />
   const app = apps?.find(a => a.id === appID)

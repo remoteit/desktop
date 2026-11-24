@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { List, ListSubheader } from '@mui/material'
 import { DeviceContext } from '../services/Context'
@@ -25,6 +25,7 @@ import { Notice } from '../components/Notice'
 import { BROWSER_PLATFORM } from '../services/browserClients'
 import { belowMinimumText, upkeepText, withAvailable } from '../services/upkeepText'
 import { useInterval } from '../hooks/useInterval'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 // How often an upgrade under way is looked at again: its states pass in seconds.
 const WATCH_INTERVAL = 3000
@@ -39,14 +40,17 @@ export const DeviceAgentPage: React.FC = () => {
   const [daemon, setDaemon] = useState<DeviceDaemon | null | 'ERROR' | typeof UNSUPPORTED>()
   const [saving, setSaving] = useState(false)
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     if (device?.id) setDaemon(await graphQLDeviceDaemon(device.id))
   }, [device?.id])
 
-  useEffect(() => {
-    setDaemon(undefined)
-    load()
-  }, [load])
+  useReadEffect(
+    again => {
+      if (!again) setDaemon(undefined)
+      load()
+    },
+    [load]
+  )
 
   useInterval(load, typeof daemon === 'object' && updating(daemon) ? WATCH_INTERVAL : undefined)
 

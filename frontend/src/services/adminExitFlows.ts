@@ -103,7 +103,7 @@ let schema: Promise<Served> | undefined
 
 function exitFlows(): Promise<Served> {
   if (!schema)
-    schema = post({ query: PROBE }).then(response => {
+    schema = post({ query: PROBE }, '', false, false, { sub: '' }).then(response => {
       if (response === 'ERROR') {
         schema = undefined
         return NONE
@@ -144,7 +144,7 @@ export async function fetchAdminExitFlows(
     },
     selection
   )
-  const result = await graphQLRequestWithReason(call.query, call.variables)
+  const result = await graphQLRequestWithReason(call.query, call.variables, { sub: '' })
   if (result === 'ERROR') return 'ERROR'
   if ('reason' in result) return { reason: result.reason }
   const found = result.data?.data?.adminExitFlows

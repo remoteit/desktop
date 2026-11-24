@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { List, ListItem, ListItemText, ListSubheader } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { TaggedInto, graphQLRemoveNetworkDeviceRule, graphQLTaggedInto } from '../services/graphQLDeviceNetworks'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { IconButton } from '../buttons/IconButton'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* Where this account's tags reach: other accounts' networks taking its devices by its tags, each set by someone who
    administers both (presence-server docs/device-principals.md §2). Tagging a device here can put it on those networks,
@@ -19,10 +20,11 @@ export const TaggedIntoList: React.FC<{ accountId?: string }> = ({ accountId }) 
 
   const load = async () => {
     const result = await graphQLTaggedInto(accountId || '')
-    if (result !== 'ERROR' && result !== UNSUPPORTED) setRules(result)
+    // Not read: nothing shown, rather than what was read before (as another sign-in, or of something else).
+    setRules(result !== 'ERROR' && result !== UNSUPPORTED ? result : undefined)
   }
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (enabled) load()
   }, [enabled, accountId])
 
@@ -32,7 +34,7 @@ export const TaggedIntoList: React.FC<{ accountId?: string }> = ({ accountId }) 
     if (!window.confirm(t('taggedInto.confirm', 'Take these devices off {{name}}?', { name: rule.network?.name })))
       return
     setBusy(true)
-    await graphQLRemoveNetworkDeviceRule(rule.id)
+    await graphQLRemoveNetworkDeviceRule(rule.id, accountId ? { account: accountId } : undefined)
     await load()
     setBusy(false)
   }

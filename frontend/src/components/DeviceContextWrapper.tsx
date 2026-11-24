@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react'
+import { useStoredNetworkElsewhere } from '../hooks/useNetworkElsewhere'
+import React from 'react'
 import { selectDeviceService } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
 import { selectNetwork } from '../models/networks'
@@ -8,8 +9,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import { State, Dispatch } from '../store'
 import { selectSharedNetwork } from '../models/networks'
 import { selectConnection } from '../selectors/connections'
-import { selectDeviceModelAttributes } from '../selectors/devices'
+import { selectAccountRoutes, selectActiveRowKey } from '../selectors/signIns'
+import { pickRecord, rowHolds } from '../helpers/connectionRecords'
+import { rowAccount, rowSub } from '../helpers/rowKey'
+import { getDeviceModelFn, selectDeviceModelAttributes } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   let { deviceID, serviceID, networkID } = useParams<{ deviceID?: string; serviceID?: string; networkID?: string }>()
@@ -22,18 +27,31 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
     networkID ? selectNetwork(state, networkID) : selectSharedNetwork(state, serviceID)
   )
   const connection = useSelector((state: State) => selectConnection(state, service))
-  const connections = useSelector((state: State) => state.connections.all).filter(c => c.deviceID === deviceID)
+  // The device's connections as the row looked at has them: each service's own record of it.
+  const routes = useSelector(selectAccountRoutes)
+  const active = useSelector(selectActiveRowKey)
+  const all = useSelector((state: State) => state.connections.all)
+  // The row has this device: its services are connected to as the row, never through another sign-in's connection.
+  const held = useSelector((state: State) =>
+    rowHolds(getDeviceModelFn(state.devices, selectActiveRowKey(state)).all, deviceID)
+  )
+  const connections = all.filter(
+    c => c.deviceID === deviceID && pickRecord(routes, all, c.id, rowAccount(active), rowSub(active), held) === c
+  )
   const remoteUI = useSelector(isRemoteUI)
   const thisId = useSelector((state: State) => state.backend.thisId)
   const { fetching, initialized } = useSelector(selectDeviceModelAttributes)
 
   const waiting = fetching || !initialized
+  // A network's page opened at its address, the network not this row's: looked for in the other rows here, whose
+  // row is then selected.
+  useStoredNetworkElsewhere(networkID)
 
   const dispatch = useDispatch<Dispatch>()
   const location = useLocation()
   const instance: IInstance | undefined = network || device
 
-  useEffect(() => {
+  useReadEffect(() => {
     if ((instance?.loaded && device?.loaded) || waiting) return
 
     if (deviceID && !(remoteUI && thisId)) {

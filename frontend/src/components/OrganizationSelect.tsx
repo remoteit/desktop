@@ -8,7 +8,9 @@ import { REGEX_FIRST_PATH } from '../constants'
 import { Typography, Tooltip, ButtonBase, Box, Badge, Divider, List, ListItem, Theme } from '@mui/material'
 import { getOwnOrganization } from '../models/organization'
 import { selectAllConnectionSessions } from '../selectors/connections'
-import { selectOrganization, selectOrganizationOptions } from '../selectors/organizations'
+import { selectOrganization, selectRowAccount, selectSwitcherRows } from '../selectors/organizations'
+import { selectActiveAccountId } from '../selectors/accounts'
+import { selectSignInSub } from '../selectors/signIns'
 import { GuideBubble } from './GuideBubble'
 import { fontSizes } from '../styling'
 import { Avatar } from './Avatar'
@@ -63,6 +65,22 @@ const badgeSx = {
   },
 }
 
+// Whose a shared organization's row is: a small mark of the account on the avatar's corner.
+const ACCOUNT_BADGE = 16
+const accountBadgeSx = (theme: Theme) => ({
+  width: ACCOUNT_BADGE + 4,
+  height: ACCOUNT_BADGE + 4,
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+  backgroundColor: theme.palette.white.main,
+  border: `2px solid ${theme.palette.grayLighter.main}`,
+  // The avatar inside is only a mark here: it neither explains itself nor takes the click.
+  pointerEvents: 'none' as const,
+})
+
 const buttonContainerSx = { width: 42 }
 
 const buttonSx = (theme: Theme) => ({
@@ -108,7 +126,8 @@ export const OrganizationSelect: React.FC = () => {
 
   let activeOrg = useSelector(selectOrganization)
   const defaultSelection = useSelector((state: State) => state.ui.defaultSelection)
-  const options = useSelector(selectOrganizationOptions)
+  // A row for each account an organization is reached through: picking one says who the person acts as there.
+  const options = useSelector(selectSwitcherRows)
 
   const ownOrg = useSelector(getOwnOrganization)
   const sessions = useSelector(selectAllConnectionSessions)
@@ -119,16 +138,29 @@ export const OrganizationSelect: React.FC = () => {
   const [closing, setClosing] = React.useState<PendingOrganizationClosure>()
 
   const ownOrgId = ownOrg?.id
+  const activeAccountId = useSelector(selectActiveAccountId)
   let menu = location.pathname.match(REGEX_FIRST_PATH)?.[0] || ''
 
+  // The row that is selected, by account: a signed-in account with no organization has no org id to compare, and its
+  // own row would otherwise leave the mark on the house.
+  const houseId = ownOrgId || userId
+  const selectedId = menu === '/account' ? houseId : activeAccountId || houseId
+  // Whose the selected row is, where another account here has a row for the same organization.
+  const rowAccount = useSelector((state: State) => selectRowAccount(state, selectedId))
+  // The page's own person's row is the selected one only while their own sign-in serves it; where another account
+  // here belongs to it too, it says it is theirs.
+  const houseLooked = useSelector((state: State) => !selectSignInSub(state, houseId))
+  const houseAccount = useSelector((state: State) =>
+    selectRowAccount(state, houseId) === undefined ? undefined : state.user.email
+  )
   if (menu === '/account') {
     activeOrg = ownOrg
     menu = '/devices'
   }
 
-  const onSelect = async (id: string) => {
+  const onSelect = async (id: string, sub = '') => {
     id = id || userId
-    await accounts.select(id.toString())
+    await accounts.selectAs({ accountId: id.toString(), sub })
     if (mobile) return
     if (['/devices', '/networks', '/connections', '/products', '/partner-stats'].includes(menu)) {
       history.push(defaultSelection[id]?.[menu] || menu)
@@ -147,7 +179,10 @@ export const OrganizationSelect: React.FC = () => {
       {creating && <CreateOrganizationDialog onClose={() => setCreating(false)} />}
       {closing && <CloseOrganizationDialog {...closing} onClose={() => setClosing(undefined)} />}
       <Box sx={nameSx}>
-        <Typography variant="h4">{activeOrg.name || t('organizationSelect.organizations', 'Organizations')}</Typography>
+        <Typography variant="h4">
+          {activeOrg.name || t('organizationSelect.organizations', 'Organizations')}
+          {!!rowAccount && ` · ${rowAccount}`}
+        </Typography>
       </Box>
       <GuideBubble
         sidebar
@@ -186,6 +221,7 @@ export const OrganizationSelect: React.FC = () => {
                       ? t('organizationSelect.ownerLabel', { name: ownOrg.name, defaultValue: '{{name}} - Owner' })
                       : t('organizationSelect.personalAccount', 'Personal Account')
                   }
+                  account={houseAccount}
                   count={mySessions}
                 />
               }
@@ -195,11 +231,16 @@ export const OrganizationSelect: React.FC = () => {
             >
               <ListItem disableGutters sx={buttonContainerSx}>
                 <ButtonBase
-                  sx={[buttonSx, ownOrgId === activeOrg.id ? activeSx : {}]}
+                  sx={[buttonSx, selectedId === houseId && houseLooked ? activeSx : {}]}
+                  aria-current={(selectedId === houseId && houseLooked) || undefined}
                   onClick={() => onSelect(ownOrgId || userId)}
                 >
                   <Box sx={homeSx}>
-                    <Icon size="md" name="house" color={ownOrgId === activeOrg.id ? 'black' : 'grayDarkest'} />
+                    <Icon
+                      size="md"
+                      name="house"
+                      color={selectedId === houseId && houseLooked ? 'black' : 'grayDarkest'}
+                    />
                   </Box>
                 </ButtonBase>
               </ListItem>
@@ -209,7 +250,7 @@ export const OrganizationSelect: React.FC = () => {
             const count = sessions.filter(s => s.target.accountId === option.id).length
             return (
               <Badge
-                key={option.id}
+                key={option.key}
                 overlap="circular"
                 sx={badgeSx}
                 anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
@@ -218,11 +259,17 @@ export const OrganizationSelect: React.FC = () => {
                 <Tooltip
                   title={
                     <Title
-                      primary={t('organizationSelect.memberLabel', {
-                        name: option.name,
-                        role: option.roleName,
-                        defaultValue: '{{name}} - {{role}}',
-                      })}
+                      primary={
+                        option.signIn
+                          ? option.name || option.email
+                          : t('organizationSelect.memberLabel', {
+                              name: option.name,
+                              role: option.roleName,
+                              defaultValue: '{{name}} - {{role}}',
+                            })
+                      }
+                      // Whose the row is: another sign-in's, or any account's where two have a row for it.
+                      account={option.signIn ? undefined : option.sub || option.shared ? option.account : undefined}
                       count={count}
                     />
                   }
@@ -233,10 +280,32 @@ export const OrganizationSelect: React.FC = () => {
                   <ListItem disableGutters>
                     <ButtonBase
                       disabled={option.disabled}
-                      onClick={() => onSelect(option.id)}
-                      sx={[buttonSx, option.id === activeOrg.id ? activeSx : {}]}
+                      aria-current={(option.id === selectedId && option.looked) || undefined}
+                      data-row={option.key}
+                      onClick={() => onSelect(option.id, option.sub)}
+                      sx={[buttonSx, option.id === selectedId && option.looked ? activeSx : {}]}
                     >
-                      <Avatar email={option.email} fallback={option.name} size={38} border={2} />
+                      {option.shared ? (
+                        // An organization with a row under more than one account: whose this row is, on its avatar —
+                        // as that account's own row in the rail shows it (the house for the page's own person).
+                        <Badge
+                          overlap="circular"
+                          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                          badgeContent={
+                            <Box sx={accountBadgeSx} role="img" aria-label={option.account} data-badge={option.account}>
+                              {option.sub ? (
+                                <Avatar email={option.account} size={ACCOUNT_BADGE} border={0} />
+                              ) : (
+                                <Icon size="xxs" name="house" color="grayDarkest" />
+                              )}
+                            </Box>
+                          }
+                        >
+                          <Avatar email={option.email} fallback={option.name} size={38} border={2} />
+                        </Badge>
+                      ) : (
+                        <Avatar email={option.email} fallback={option.name} size={38} border={2} />
+                      )}
                     </ButtonBase>
                   </ListItem>
                 </Tooltip>
@@ -290,11 +359,17 @@ export const OrganizationSelect: React.FC = () => {
   )
 }
 
-function Title({ primary, count }: { primary: string; count: number }) {
+function Title({ primary, account, count }: { primary: string; account?: string; count: number }) {
   const { t } = useTranslation()
   return (
     <>
       {primary}
+      {!!account && (
+        <>
+          <br />
+          {t('organizationSelect.via', { account, defaultValue: 'Via {{account}}' })}
+        </>
+      )}
       {!!count && (
         <>
           <Divider />

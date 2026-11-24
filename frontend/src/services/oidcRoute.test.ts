@@ -139,13 +139,25 @@ describe('the route a sign-in leaves from', () => {
     expect(location.hash).toBe('#/account/connected/some-app')
   })
 
-  it('is not where another account arriving lands: that starts at the app’s start, as activating one does', async () => {
+  it('is not where another account lands when it replaces the one signed in (one used at a time): its start', async () => {
     signedInAs('sub-a')
     const { state, nonce } = await startFrom('#/devices/DEVICE-OF-A')
     tokenReply = issued({ sub: 'sub-b', nonce })
     const oidc = await callback(`code=the-code&state=${state}`)
     expect(await oidc.oidcCompleteFromUrl()).toMatchObject({ sub: 'sub-b' })
-    expect(location.hash).toBe('')
+    expect(oidc.oidcClaims()?.sub).toBe('sub-b')
+    expect(location.hash).not.toBe('#/devices/DEVICE-OF-A')
+  })
+
+  it('is where the person lands when another account joins them: they stay the page’s person, on their route', async () => {
+    localStorage.setItem('oidc.several', '1')
+    signedInAs('sub-a')
+    const { state, nonce } = await startFrom('#/devices/DEVICE-OF-A')
+    tokenReply = issued({ sub: 'sub-b', nonce })
+    const oidc = await callback(`code=the-code&state=${state}`)
+    expect(await oidc.oidcCompleteFromUrl()).toMatchObject({ sub: 'sub-b' })
+    expect(oidc.oidcClaims()?.sub).toBe('sub-a')
+    expect(location.hash).toBe('#/devices/DEVICE-OF-A')
   })
 
   it.each([

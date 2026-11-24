@@ -2,6 +2,8 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
 import { SchemaField, TypeRef, buildCall, named } from './graphQLSchema'
 import { deviceDisableFields, disabledAdaptor } from './deviceDisable'
+import { accountCache, forgotten, rowNow } from './accountCaches'
+import { RequestFor, asRow, noteAccountOf } from '../selectors/signIns'
 
 /* A device's identity (graphql-api docs/PROXY-GROUPS.md §11, "Wave 3: device identity"): the join keys that bring a
    device that starts fresh at every boot back as itself, a device added ahead of its first boot, and duplicates — two
@@ -278,12 +280,17 @@ type Outcome<T = unknown> = { ok: true; data: T } | { ok: false; reason: string 
 
 // One of the identity mutations, as the API declares it. A refusal comes back in graphql's words, for the page to show;
 // '' where none was said.
-async function identityMutation(name: Mutation, variables: ILookup<any>): Promise<Outcome<any>> {
+// `orAccount`: the account to ask as where no stored list holds the device named — a copy, which is disabled.
+async function identityMutation(name: Mutation, variables: ILookup<any>, orAccount?: string): Promise<Outcome<any>> {
   const served = await deviceIdentity()
   const field = served.mutations[name]
   if (!field) return { ok: false, reason: '' }
   const request = buildCall('mutation', field, variables, served.selections[name] || '__typename')
-  const response = await graphQLRequestWithReason(request.query, request.variables)
+  const response = await graphQLRequestWithReason(
+    request.query,
+    request.variables,
+    orAccount ? { orAccount } : undefined
+  )
   if (response === 'ERROR') return { ok: false, reason: '' }
   if ('reason' in response) return { ok: false, reason: response.reason }
   return { ok: true, data: response.data?.data?.[name] }
@@ -371,17 +378,17 @@ export async function graphQLAddDevice(input: {
 
 // A copy kept as a new device: enabled, starting from its original's setup (services, tags, product) unless
 // fromOriginal is false.
-export async function graphQLKeepDuplicate(deviceId: string, fromOriginal: boolean) {
-  return failed(await identityMutation('keepDuplicate', { deviceId, fromOriginal }))
+export async function graphQLKeepDuplicate(deviceId: string, fromOriginal: boolean, accountId?: string) {
+  return failed(await identityMutation('keepDuplicate', { deviceId, fromOriginal }, accountId))
 }
 
-export async function graphQLKeepDuplicates(deviceIds: string[]) {
-  return failed(await identityMutation('keepDuplicates', { deviceIds }))
+export async function graphQLKeepDuplicates(deviceIds: string[], accountId?: string) {
+  return failed(await identityMutation('keepDuplicates', { deviceIds }, accountId))
 }
 
 // The copy's machine becomes the original and the original's the copy, disabled.
-export async function graphQLMakeOriginal(deviceId: string) {
-  return failed(await identityMutation('makeOriginal', { deviceId }))
+export async function graphQLMakeOriginal(deviceId: string, accountId?: string) {
+  return failed(await identityMutation('makeOriginal', { deviceId }, accountId))
 }
 
 // For a device whose join key is on two machines: a new device with its setup and a fresh device join key, shown once,
@@ -407,7 +414,22 @@ const copies = new Map<string, DuplicateCopy[]>()
 const reading = new Map<string, Promise<void>>()
 const listeners = new Set<Listener>()
 
-export const duplicateCopies = (accountId: string): DuplicateCopy[] | undefined => copies.get(accountId)
+// Kept by ROW (services/accountCaches): those the reader may manage, as the sign-in whose row of the account is
+// looked at — each row of an organization keeps its own.
+export const duplicateCopies = (accountId: string): DuplicateCopy[] | undefined => copies.get(rowNow(accountId))
+
+accountCache((accountIds, rows) => {
+  // A read still out was asked as the sign-in of the row looked at then: whoever asks after is given one of their
+  // own, and what the old one brings is not kept.
+  reading.clear()
+  readingOf.clear()
+  const dropped = [...copies.keys()].filter(row => forgotten(row, accountIds, rows) && copies.delete(row))
+  // By the device they copy, whoever read them: let go with any change of who reads, as what is kept by a device's id
+  // is (services/accountCaches rowChanged) — the copies and what may be done with them are the reader's.
+  const had = byOriginal.size
+  byOriginal = new Map()
+  if (dropped.length || had) notify()
+})
 
 // Each original's copies as read by it (Device.copies), a new map each time one is read.
 let byOriginal = new Map<string, DuplicateCopy[]>()
@@ -439,7 +461,10 @@ const copyOf = (d: any): DuplicateCopy | undefined => {
   }
 }
 
-export async function graphQLFetchDuplicateCopies(accountId: string): Promise<DuplicateCopy[] | 'ERROR'> {
+export async function graphQLFetchDuplicateCopies(
+  accountId: string,
+  requestFor?: RequestFor
+): Promise<DuplicateCopy[] | 'ERROR'> {
   const identity = await deviceIdentity()
   if (!identity.served.duplicates) return []
   const disabled = await deviceDisableFields()
@@ -464,7 +489,9 @@ export async function graphQLFetchDuplicateCopies(accountId: string): Promise<Du
             }
           }
         }`,
-      { accountId, size: COPIES_PAGE, from }
+      { accountId, size: COPIES_PAGE, from },
+      false,
+      requestFor
     )
     if (response === 'ERROR') return 'ERROR'
     const devices = response?.data?.data?.login?.account?.devices
@@ -475,6 +502,12 @@ export async function graphQLFetchDuplicateCopies(accountId: string): Promise<Du
     }
     if (from + items.length >= (devices?.total || 0) || !items.length) break
   }
+  // Copies are disabled, so in no stored list: kept, made the original or removed as the sign-in serving the account.
+  noteAccountOf(
+    accountId,
+    found.map(copy => copy.id),
+    requestFor?.sub
+  )
   return found
 }
 
@@ -516,11 +549,12 @@ export async function graphQLFetchCopiesOf(ids: string[]): Promise<Map<string, D
 export function requestCopiesOf(ids: string[], again?: boolean): Promise<void> {
   const wanted = [...new Set(ids)].filter(id => again || (!byOriginal.has(id) && !readingOf.has(id)))
   if (!wanted.length) return Promise.all(ids.map(id => readingOf.get(id))).then(() => undefined)
-  const read = graphQLFetchCopiesOf(wanted).then(result => {
-    wanted.forEach(id => readingOf.delete(id))
-    if (result === 'ERROR') return
+  const read: Promise<void> = graphQLFetchCopiesOf(wanted).then(result => {
+    const current = wanted.filter(id => readingOf.get(id) === read)
+    current.forEach(id => readingOf.delete(id))
+    if (result === 'ERROR' || !current.length) return
     byOriginal = new Map(byOriginal)
-    for (const id of wanted) byOriginal.set(id, result.get(id) || [])
+    for (const id of current) byOriginal.set(id, result.get(id) || [])
     notify()
   })
   wanted.forEach(id => readingOf.set(id, read))
@@ -539,16 +573,19 @@ export async function requestDuplicateCopies(accountId: string, again?: boolean)
 }
 
 function requestAccountCopies(accountId: string, again?: boolean): Promise<void> {
-  if (!again && copies.has(accountId)) return Promise.resolve()
-  const pending = reading.get(accountId)
+  const row = rowNow(accountId)
+  if (!again && copies.has(row)) return Promise.resolve()
+  const pending = reading.get(row)
   if (pending) return pending
-  const read = graphQLFetchDuplicateCopies(accountId).then(result => {
-    reading.delete(accountId)
+  // Asked as the row's sign-in, and kept under the row whichever row is looked at by the time it answers.
+  const read: Promise<void> = graphQLFetchDuplicateCopies(accountId, asRow(row)).then(result => {
+    if (reading.get(row) !== read) return
+    reading.delete(row)
     if (result === 'ERROR') return
-    copies.set(accountId, result)
+    copies.set(row, result)
     notify()
   })
-  reading.set(accountId, read)
+  reading.set(row, read)
   return read
 }
 

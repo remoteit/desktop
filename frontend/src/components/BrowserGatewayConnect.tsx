@@ -1,13 +1,14 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Typography } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { sshCommand } from '../helpers/sshHelper'
-import { gatewayURL, openThroughGateway } from '../services/browserGateway'
+import { OTHER_SIGN_IN, GatewayOpened, gatewayURL, openThroughGateway } from '../services/browserGateway'
 import browser from '../services/browser'
 import { openTerminal } from '../helpers/terminalHelper'
 import { Icon } from './Icon'
+import { useReadAgain } from '../hooks/useReadAgain'
 
 /* A web service with no agent here to reach it (services/browserGateway): it opens in its own tab, carried by this
    browser's remote.it client — nothing to install, and no connection to start. An SSH service opens a terminal in
@@ -16,12 +17,21 @@ import { Icon } from './Icon'
    which is shown instead when an agent here does reach it. The plain ssh command of an app's service that signs people
    in by certificate (byCertificate) is offered to copy as well: it works from a machine signed in on its remote.it
    device app. */
-type Props = { name: string; terminal?: { port: number; title?: string; service?: string; byCertificate?: boolean } }
+// `service`: the service's id — whose sign-in serves it is looked at: the browser's client is the page's own person's.
+type Props = {
+  name: string
+  service?: string
+  terminal?: { port: number; title?: string; service?: string; byCertificate?: boolean }
+}
 
-export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
+export const BrowserGatewayConnect: React.FC<Props> = ({ name, service, terminal }) => {
   const { t } = useTranslation()
   const [opening, setOpening] = useState(false)
-  const [failed, setFailed] = useState(false)
+  // What the last try to open it came to: nothing is said of one that opened, or of none yet.
+  const [opened, setOpened] = useState<GatewayOpened>(true)
+  // Said of the sign-in serving the service then: not left up when another comes to serve it.
+  const dropped = useReadAgain()
+  useEffect(() => setOpened(true), [dropped])
   const external = !terminal && browser.isIOSDeviceApp
   const address = gatewayURL(name)
     .replace(/^https:\/\//, '')
@@ -29,9 +39,12 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
 
   const open = async () => {
     // An SSH service: a terminal in this app, its session through the browser's client.
-    if (terminal) return openTerminal({ name, port: terminal.port, title: terminal.title, service: terminal.service })
+    if (terminal)
+      return setOpened(
+        openTerminal({ name, port: terminal.port, title: terminal.title, service: terminal.service ?? service })
+      )
     setOpening(true)
-    setFailed(!(await openThroughGateway(name)))
+    setOpened(await openThroughGateway(name, service))
     setOpening(false)
   }
 
@@ -57,9 +70,14 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name, terminal }) => {
         <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap title={address}>
           {address}
         </Typography>
-        {failed && (
+        {opened !== true && (
           <Typography variant="caption" color="error" component="div">
-            {t('browserGatewayConnect.failed', 'Could not open it: try again')}
+            {opened === OTHER_SIGN_IN
+              ? t(
+                  'browserGatewayConnect.otherSignIn',
+                  'Not in this browser: it is reached through another account signed in here. Use Connect instead.'
+                )
+              : t('browserGatewayConnect.failed', 'Could not open it: try again')}
           </Typography>
         )}
         {terminal?.byCertificate && (

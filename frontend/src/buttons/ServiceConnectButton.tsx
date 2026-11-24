@@ -151,6 +151,7 @@ export const ServiceConnectButton: React.FC = () => {
                 ) : (
                   <BrowserGatewayConnect
                     name={reach.name!}
+                    service={service?.id}
                     terminal={
                       ssh && service
                         ? {

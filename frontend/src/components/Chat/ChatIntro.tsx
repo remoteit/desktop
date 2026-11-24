@@ -6,6 +6,7 @@ import { Dispatch, State } from '../../store'
 import { resolveChatOrg } from '../../models/chat'
 import { getDeviceModelFn } from '../../selectors/devices'
 import { Icon } from '../Icon'
+import { selectRowOf } from '../../selectors/signIns'
 
 /* Empty-state introduction: shown before the first message so the panel reads as a chat,
    not a blank column. The headline floats in the open space; the example prompts sit at
@@ -26,7 +27,7 @@ export const ChatIntro: React.FC = () => {
   const chatOrg = useSelector(resolveChatOrg, (a, b) => a?.id === b?.id)
   const userId = useSelector((state: State) => state.user.id)
   const accountId = chatOrg?.id || userId
-  const deviceModel = useSelector((state: State) => getDeviceModelFn(state.devices, accountId, accountId))
+  const deviceModel = useSelector((state: State) => getDeviceModelFn(state.devices, selectRowOf(state, accountId)))
   const gettingStarted = deviceModel.initialized && !deviceModel.total
 
   const prompts = gettingStarted

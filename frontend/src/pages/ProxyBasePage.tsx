@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useSelector } from 'react-redux'
@@ -32,6 +32,7 @@ import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { PROXY_BASE_LIMIT } from '../constants'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 // The limit that includes a base (PROXY_BASE_LIMIT: the Enterprise plan's, or the Proxy base add-on licence's): an account
 // whose limits do not give it — absent is off, as every feature's — has none, said before anything is typed. Until the
@@ -76,14 +77,14 @@ const AccountBase: React.FC<{ accountId: string }> = ({ accountId }) => {
   const reads = useRef(0)
 
   // Only the last read asked for is shown: one answered late never overwrites a newer one. What was read is answered.
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     const read = ++reads.current
     const answer = await graphQLProxyBase(accountId)
     if (read === reads.current) setBase(answer)
     return answer
   }, [accountId])
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (admin) load()
   }, [admin, load])
 

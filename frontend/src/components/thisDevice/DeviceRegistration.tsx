@@ -14,7 +14,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { selectCanRegister, selectOrganizationOptions } from '../../selectors/organizations'
+import { selectPrimaryOrganizationOptions } from '../../selectors/organizations'
 import { State } from '../../store'
 import { DeviceStatus, ThisDevice } from '../../services/thisDevice'
 import {
@@ -24,6 +24,8 @@ import {
 } from '../../services/deviceOnboarding'
 
 const dismissed = new Set<string>()
+// This machine is registered by the page's own person, whichever sign-in serves the account's row.
+const AS_PERSON = { sub: '' }
 
 export const DeviceRegistration: React.FC<{ device: ThisDevice; status?: DeviceStatus }> = ({ device, status }) => {
   const userId = useSelector((state: State) => state.user.id)
@@ -63,9 +65,9 @@ const RegistrationForm: React.FC<{
   const user = useSelector((state: State) => state.user)
   const organizations = useSelector(
     (state: State) =>
-      selectOrganizationOptions(state).filter(
-        org => !org.disabled && org.id !== user.id && selectCanRegister(state, org.id)
-      ),
+      // The device is registered by the page's own person: to an organization they belong to, where their own
+      // role may — whichever sign-in is picked to serve its row.
+      selectPrimaryOrganizationOptions(state).filter(org => !org.disabled && org.id !== user.id && org.canRegister),
     shallowEqual
   )
   const [open, setOpen] = useState(!dismissed.has(setupKey))
@@ -117,12 +119,12 @@ const RegistrationForm: React.FC<{
       if (!current.registration || current.device?.uid) return
       const mobile = device.info.shell === 'capacitor'
       const pendingDesktopSetup = current.registration.pendingAccount && !mobile
-      if (pendingDesktopSetup) await verifyDeviceRegistrationAccount(accountId)
+      if (pendingDesktopSetup) await verifyDeviceRegistrationAccount(accountId, AS_PERSON)
       // Phones retain the first attempt's proof, so the service can recover a lost reply
       // before redeeming a fresh code when the saved one has expired.
       const code = pendingDesktopSetup
         ? undefined
-        : await createAppRegistration(accountId, confirmedName, current.registration.platform, mobile)
+        : await createAppRegistration(accountId, confirmedName, current.registration.platform, mobile, AS_PERSON)
       await device.call('device.register', { code, name: confirmedName, accountId })
       onAdded(accountName)
     } catch (err) {

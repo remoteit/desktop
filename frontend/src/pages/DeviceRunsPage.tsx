@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useSelector } from 'react-redux'
@@ -21,6 +21,7 @@ import { RunActions } from '../components/RunActions'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Icon } from '../components/Icon'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 /* What this device runs (graphql-api docs/PROXY-GROUPS.md §13): at most one exit and one proxy, each with the device's
    state in it — in service, draining, retired, or joining with what it waits for — and a link to it, and the actions on
@@ -43,15 +44,18 @@ export const DeviceRunsPage: React.FC = () => {
   const settings = useDeviceSettings(device?.id)
   const listening = settings.setting('proxy')
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     if (device?.id) setRuns(await graphQLDeviceRuns(device.id))
   }, [device?.id])
 
-  useEffect(() => {
-    setRuns(undefined)
-    setNotice(undefined)
-    load()
-  }, [load])
+  useReadEffect(
+    again => {
+      if (!again) setRuns(undefined)
+      if (!again) setNotice(undefined)
+      load()
+    },
+    [load]
+  )
 
   if (!device) return null
   const manage = device.permissions.includes('MANAGE') && !device.shared

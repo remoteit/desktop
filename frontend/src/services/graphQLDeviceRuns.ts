@@ -1,6 +1,17 @@
 import { post } from './post'
 import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
+import type { RequestFor } from '../selectors/signIns'
+
+/* Whose these requests are, with several sign-ins in use. A device is added to a proxy or an exit by someone who
+   manages both (graphql refuses anyone else), and its candidates are weighed for them: that is the sign-in that serves
+   the proxy or exit — the one its page reads it as — whichever account's list the device is in, or none (an account
+   of many devices). So an add, and the candidates, are asked as the run's sign-in. An action on a device in a run
+   (drain, retire, remove), taken from the run's page, is asked as the device's own sign-in where a stored list holds
+   the device, and else as the run's too. */
+const forRun = (run?: string): RequestFor | undefined => (run ? { about: [run] } : undefined)
+const forDeviceIn = (deviceId: string, run?: string): RequestFor | undefined =>
+  run ? { about: [deviceId, run] } : undefined
 
 /* What a device runs (graphql-api docs/PROXY-GROUPS.md §13): at most one proxy and one exit, its state in each — in
    service, draining or retired, and joining while it waits to go into service, with its checks. The actions on a device
@@ -102,8 +113,14 @@ export const RUNS_FIELDS = `proxy { ${PROXY_DEVICE_FIELDS} proxy { id name host 
   exit { ${EXIT_DEVICE_FIELDS} exit { id name remoteit } }`
 const EFFECT_FIELDS = 'kind id name state after sessions ends endpoints users moved inService dormant lanCloses refusal'
 
-async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
-  const response = await post({ query, variables })
+async function read<T>(
+  query: string,
+  variables: ILookup<any>,
+  marker: string,
+  pick: (data: any) => T,
+  requestFor?: RequestFor
+) {
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return 'ERROR' as const
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, marker)) return UNSUPPORTED
@@ -121,21 +138,28 @@ export const graphQLDeviceRuns = (deviceId: string) =>
   )
 
 // What an action on a device would do to each proxy and exit it runs; none for one it runs nothing of.
-export const graphQLActionEffects = (deviceId: string, action: DeviceAction, force = false) =>
+// `run`: the proxy or exit whose page asks, where it is one's.
+export const graphQLActionEffects = (deviceId: string, action: DeviceAction, force = false, run?: string) =>
   read<DeviceActionEffect[]>(
     `query DeviceActionEffects($id: [String!]!, $action: DeviceAction!, $force: Boolean) {
       login { device(id: $id) { id actionEffects(action: $action, force: $force) { ${EFFECT_FIELDS} } } }
     }`,
     { id: [deviceId], action, force },
     'actionEffects',
-    data => data?.login?.device?.[0]?.actionEffects ?? []
+    data => data?.login?.device?.[0]?.actionEffects ?? [],
+    forDeviceIn(deviceId, run)
   )
 
 // A change to what a device runs: what it runs after, or graphql's refusal in its words ('' where it said none).
 export type RunsChange = { runs: DeviceRuns } | { reason: string }
 
-async function change(field: string, mutation: string, variables: ILookup<any>): Promise<RunsChange> {
-  const result = await graphQLRequestWithReason(mutation, variables)
+async function change(
+  field: string,
+  mutation: string,
+  variables: ILookup<any>,
+  requestFor?: RequestFor
+): Promise<RunsChange> {
+  const result = await graphQLRequestWithReason(mutation, variables, requestFor)
   if (result === 'ERROR') return { reason: '' }
   if ('reason' in result) return { reason: result.reason }
   return { runs: result.data?.data?.[field] ?? { proxy: null, exit: null } }
@@ -143,7 +167,8 @@ async function change(field: string, mutation: string, variables: ILookup<any>):
 
 // drain, undrain, retire and remove: on every proxy and exit a device runs, or on one of them alone.
 export type RunAction = 'DRAIN' | 'UNDRAIN' | 'RETIRE' | 'REMOVE'
-export type RunActionOptions = { maxWaitMinutes?: number; force?: boolean }
+// `run`: the proxy or exit whose page takes the action, where it is one's.
+export type RunActionOptions = { maxWaitMinutes?: number; force?: boolean; run?: string }
 
 // The mutation for an action: on the device as a whole, or on its proxy or its exit.
 const MUTATIONS: Record<'device' | 'proxy' | 'exit', Record<RunAction, string>> = {
@@ -172,16 +197,18 @@ export function graphQLRunAction(
   scope: 'device' | 'proxy' | 'exit',
   deviceId: string,
   action: RunAction,
-  { maxWaitMinutes, force }: RunActionOptions = {}
+  { maxWaitMinutes, force, run }: RunActionOptions = {}
 ): Promise<RunsChange> {
   const field = MUTATIONS[scope][action]
+  const requestFor = forDeviceIn(deviceId, run)
   if (action === 'DRAIN')
     return change(
       field,
       ` mutation ${field}($deviceId: String!, $maxWaitMinutes: Int) {
         ${field}(deviceId: $deviceId, maxWaitMinutes: $maxWaitMinutes) { ${RUNS_FIELDS} }
       }`,
-      { deviceId, maxWaitMinutes }
+      { deviceId, maxWaitMinutes },
+      requestFor
     )
   if (action === 'RETIRE')
     return change(
@@ -189,12 +216,14 @@ export function graphQLRunAction(
       ` mutation ${field}($deviceId: String!, $force: Boolean) {
         ${field}(deviceId: $deviceId, force: $force) { ${RUNS_FIELDS} }
       }`,
-      { deviceId, force: !!force }
+      { deviceId, force: !!force },
+      requestFor
     )
   return change(
     field,
     ` mutation ${field}($deviceId: String!) { ${field}(deviceId: $deviceId) { ${RUNS_FIELDS} } }`,
-    { deviceId }
+    { deviceId },
+    requestFor
   )
 }
 
@@ -206,7 +235,8 @@ export const graphQLAddProxyDevice = (proxy: string, deviceId: string) =>
     ` mutation AddProxyDevice($proxy: String!, $deviceId: String!) {
       addProxyDevice(proxy: $proxy, deviceId: $deviceId) { ${RUNS_FIELDS} }
     }`,
-    { proxy, deviceId }
+    { proxy, deviceId },
+    forRun(proxy)
   )
 
 // A device added to an exit: it joins out of service and goes into service as the exit's activation says. It takes the
@@ -218,7 +248,8 @@ export const graphQLAddExitDevice = (exit: string, deviceId: string) =>
     ` mutation AddExitDevice($exit: String!, $deviceId: String!) {
       addExitDevice(exit: $exit, deviceId: $deviceId) { ${RUNS_FIELDS} }
     }`,
-    { exit, deviceId }
+    { exit, deviceId },
+    forRun(exit)
   )
 
 // A device that could run a proxy or an exit — the one named, or a new one of the account —, or why not, in the words
@@ -238,7 +269,8 @@ export async function graphQLRunCandidates(
     `query ${kind === 'proxy' ? 'ProxyCandidates' : 'ExitCandidates'}($id: String, $accountId: String, $deviceIds: [String!]) {
       ${field}(${kind}: $id, accountId: $accountId, deviceIds: $deviceIds) { id name fit refusal runs { ${RUNS_FIELDS} } }
     }`,
-    { id: of.id, accountId: of.accountId, deviceIds }
+    { id: of.id, accountId: of.accountId, deviceIds },
+    forRun(of.id)
   )
   if (result === 'ERROR') return { reason: '' }
   if ('reason' in result) return result

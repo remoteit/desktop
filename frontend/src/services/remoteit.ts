@@ -7,10 +7,10 @@ import { getApiResource, getTestHeader } from '../helpers/apiHelper'
  * what a graphql/REST call goes through). The token's audience FOLLOWS the switcher (D10, permitteer docs/remoteit-desktop-login.md Phase 4c):
  * pointing the app at another stage mints for that stage instead of replaying a
  * wrong-audience token into ambient 403s. Resolves to 'Bearer …' or '' (callers no-op on
- * empty).
+ * empty). `sub`: the sign-in to mint for; absent, the page's own person.
  */
-export async function getToken(): Promise<string> {
-  const token = await oidcAccessToken(getApiResource())
+export async function getToken(sub?: string): Promise<string> {
+  const token = await oidcAccessToken(getApiResource(), sub)
   return token ? 'Bearer ' + token : ''
 }
 
@@ -33,13 +33,16 @@ const axiosAnswer = (outcome: unknown): DpopAnswer | undefined => {
  * Because the proof is per request, a server asking for a DPoP nonce gets the call again from
  * `send`, with a new proof. getToken() stays for liveness probes and the events subscribe envelope
  * (in-band bearer, exempt by the frozen wire contract).
+ * `sub` names the sign-in whose token the call carries — the one that serves the account it asks about
+ * (selectors/signIns requestSignIn); absent, the page's own person.
  */
 export function apiAuthorized<T>(
   method: string,
   url: string,
-  send: (auth: Record<string, string>) => Promise<T>
+  send: (auth: Record<string, string>) => Promise<T>,
+  sub?: string
 ): Promise<T> {
-  return oidcAuthorized(method, url, getApiResource(), send, axiosAnswer)
+  return oidcAuthorized(method, url, getApiResource(), send, axiosAnswer, sub)
 }
 
 /** apiAuthorized for a call that carries the Test Settings header too: `send` gets the headers, or
@@ -47,7 +50,8 @@ export function apiAuthorized<T>(
 export function apiRequest<T>(
   method: string,
   url: string,
-  send: (headers: Record<string, string> | undefined) => Promise<T>
+  send: (headers: Record<string, string> | undefined) => Promise<T>,
+  sub?: string
 ): Promise<T> {
-  return apiAuthorized(method, url, auth => send(auth.authorization ? { ...auth, ...getTestHeader() } : undefined))
+  return apiAuthorized(method, url, auth => send(auth.authorization ? { ...auth, ...getTestHeader() } : undefined), sub)
 }

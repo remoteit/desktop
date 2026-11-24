@@ -552,6 +552,7 @@
   "browserGatewayConnect": {
     "failed": "",
     "launch": "",
+    "otherSignIn": "",
     "terminal": "",
     "title": ""
   },
@@ -2847,16 +2848,20 @@
     "services": "Servicios",
     "settings": "Configuración",
     "signedInOnBrowser": "Con sesión iniciada en este navegador",
+    "signInOnDevice": "Iniciar sesión en este dispositivo",
     "signOut": "Cerrar sesión",
     "signOutConfirm": "Al cerrar sesión, este dispositivo podrá transferirse o permitir que otro usuario inicie sesión. Esto detendrá todas las conexiones.",
     "support": "Soporte",
     "supportForum": "Foro de soporte",
-    "switchAccount": "Cambiar de cuenta",
     "testUI": "UI de prueba",
     "testUIConfirm": "Activar las funciones alfa puede provocar inestabilidad. Está pensado únicamente para pruebas y desarrollo.",
     "thisDevice": "Este dispositivo",
     "totalDevices": "Total de dispositivos",
-    "totalNetworks": "Total de redes"
+    "totalNetworks": "Total de redes",
+    "useSeveral": "Usar varias a la vez",
+    "useSeveralOffAction": "Desactivar",
+    "useSeveralOffConfirm": "Esto cierra aquí la sesión de {{accounts}}. Seguirás con la sesión iniciada como {{keep}}, y las demás quedan guardadas para que puedas cambiar a ellas.",
+    "useSeveralOffTitle": "¿Usar una sola cuenta a la vez?"
   },
   "network": {
     "active": "Activo",
@@ -3308,7 +3313,8 @@
     "memberLabel": "{{name}} - {{role}}",
     "organizations": "Organizaciones",
     "ownerLabel": "{{name}} - Propietario",
-    "personalAccount": "Cuenta personal"
+    "personalAccount": "Cuenta personal",
+    "via": "A través de {{account}}"
   },
   "organizationSelectList": {
     "membershipSettings": "Configuración de membresía",

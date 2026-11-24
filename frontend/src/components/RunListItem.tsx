@@ -13,6 +13,7 @@ type Props = {
   kind: 'proxy' | 'exit'
   run: ProxyDevice | ExitDevice
   name: string // the proxy's or exit's, for its actions
+  of?: string // its id, where its own page shows the device: whose sign-in its actions are asked as
   title?: React.ReactNode // the device's name, unless given
   activation?: string
   to?: string // where its title leads: the device's page, or the proxy's or exit's
@@ -38,6 +39,7 @@ export const RunListItem: React.FC<Props> = ({
   kind,
   run,
   name,
+  of,
   title,
   activation,
   to,
@@ -101,7 +103,12 @@ export const RunListItem: React.FC<Props> = ({
               </Typography>
             )}
             {actions && (
-              <RunActions device={device} scope={{ kind, name }} run={run} onDone={runs => onChanged?.(runs, device)} />
+              <RunActions
+                device={device}
+                scope={{ kind, name, ...(of && { id: of }) }}
+                run={run}
+                onDone={runs => onChanged?.(runs, device)}
+              />
             )}
             {children}
           </>

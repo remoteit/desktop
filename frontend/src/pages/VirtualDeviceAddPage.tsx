@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
 import { useHistory, useParams } from 'react-router-dom'
@@ -9,6 +9,7 @@ import { Gutters } from '../components/Gutters'
 import { Title } from '../components/Title'
 import { VirtualDeviceForm, VirtualDevicePrefill } from '../components/VirtualDeviceForm'
 import { takeVirtualDevicePrefill } from '../components/HostedDevices'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* /add/virtual/:gatewayID? — making a virtual device. Reached from Add device (no gateway yet: the form asks), from a
    gateway's Hosted devices, from discovery and from a jump service's menu, each handing over what it knows
@@ -23,7 +24,7 @@ export const VirtualDeviceAddPage: React.FC = () => {
   const prefill: VirtualDevicePrefill = { ...handedOver, gatewayId: handedOver?.gatewayId || gatewayID }
 
   // The gateways it can go on are the devices loaded so far.
-  useEffect(() => {
+  useReadEffect(() => {
     dispatch.devices.fetchIfEmpty()
   }, [])
 

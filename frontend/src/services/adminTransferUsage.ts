@@ -56,7 +56,7 @@ const EXITS_QUERY = `query AdminExitTransfer($month: String) {
 }`
 
 async function read<T>(query: string, variables: ILookup<any>, field: string): Promise<T | 'ERROR'> {
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', false, false, { sub: '' })
   if (response === 'ERROR') return 'ERROR'
   if (graphQLGetErrors(response, true, { query, variables })) return 'ERROR'
   return response.data?.data?.[field] ?? 'ERROR'

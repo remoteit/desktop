@@ -1,3 +1,4 @@
+import { useStoredNetworkElsewhere } from '../hooks/useNetworkElsewhere'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useLocation, useHistory } from 'react-router-dom'
@@ -15,6 +16,8 @@ import { Title } from '../components/Title'
 export const NetworkSharePage = () => {
   const { t } = useTranslation()
   const { networkID = '' } = useParams<{ networkID: string }>()
+  // Opened at its address, and not this row's: looked for in the other rows here, whose row is then selected.
+  useStoredNetworkElsewhere(networkID || undefined)
   const { network, contacts } = useSelector((state: State) => {
     const organization = selectOrganization(state)
     return {

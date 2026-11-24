@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useParams, useRouteMatch } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { selectJobs } from '../selectors/scripting'
@@ -13,6 +13,7 @@ import { jobAttributes } from '../components/JobAttributes'
 import { JobList } from '../components/JobList'
 import { Notice } from '../components/Notice'
 import { Body } from '../components/Body'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 export const JobsPage: React.FC = () => {
   const { t } = useTranslation()
@@ -25,7 +26,7 @@ export const JobsPage: React.FC = () => {
   const columnWidths = useSelector((state: State) => state.ui.columnWidths)
   const fetching = useSelector((state: State) => state.ui.fetching || state.jobs.fetching)
 
-  useEffect(() => {
+  useReadEffect(() => {
     dispatch.jobs.fetch({ fileID })
   }, [accountId, fileID])
 

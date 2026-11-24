@@ -18,6 +18,7 @@ import { Gutters } from '../components/Gutters'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
 import { IconButton } from '../buttons/IconButton'
+import { useReadAgain, useReadEffect } from '../hooks/useReadAgain'
 
 export function ServicesPage() {
   const accountId = useSelector(selectActiveAccountId)
@@ -34,22 +35,25 @@ function AccountServices({ accountId }: { accountId: string }) {
   const available = !!support && support !== 'ERROR' && support.available
   const namedAddress = available && support.namedAddress && deviceSessions
 
-  useEffect(() => {
-    if (!available) return
-    let current = true
-    setServices(undefined)
-    graphQLServiceShortcuts(accountId, namedAddress).then(result => {
-      if (!current) return
-      if (result === 'ERROR') setServices(result)
-      else
-        setServices(
-          [...result].sort((a, b) => a.name.localeCompare(b.name) || a.device.name.localeCompare(b.device.name))
-        )
-    })
-    return () => {
-      current = false
-    }
-  }, [accountId, available, namedAddress, revision])
+  useReadEffect(
+    again => {
+      if (!available) return
+      let current = true
+      if (!again) setServices(undefined)
+      graphQLServiceShortcuts(accountId, namedAddress).then(result => {
+        if (!current) return
+        if (result === 'ERROR') setServices(result)
+        else
+          setServices(
+            [...result].sort((a, b) => a.name.localeCompare(b.name) || a.device.name.localeCompare(b.device.name))
+          )
+      })
+      return () => {
+        current = false
+      }
+    },
+    [accountId, available, namedAddress, revision]
+  )
 
   return (
     <Container
@@ -98,6 +102,9 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   const { t } = useTranslation()
   const [opening, setOpening] = useState(false)
   const [failed, setFailed] = useState(false)
+  // Said of the sign-in serving the service then: not left up when another comes to serve it.
+  const dropped = useReadAgain()
+  useEffect(() => setFailed(false), [dropped])
   const to = `/devices/${service.device.id}/${service.id}/connect`
   const online = service.enabled && service.state === 'active'
   const type = useSelector((state: State) => state.applicationTypes.all.find(type => type.id === service.application))
@@ -118,7 +125,8 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
     if (!destination || !port) return
     setOpening(true)
     try {
-      if (port === 443) setFailed(!(await openThroughGateway(destination)))
+      // Not opened — or not the browser's client's to open (another sign-in's service): Connect is offered either way.
+      if (port === 443) setFailed((await openThroughGateway(destination, service.id)) !== true)
       else await openServiceURL(subnetWebURL(destination, port))
     } catch {
       setFailed(true)

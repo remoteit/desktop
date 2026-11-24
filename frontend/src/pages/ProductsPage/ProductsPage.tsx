@@ -14,6 +14,7 @@ import { removeObject } from '../../helpers/utilHelper'
 import { dispatch, State } from '../../store'
 import { getProductModel } from '../../selectors/products'
 import { selectPermissions } from '../../selectors/organizations'
+import { useReadEffect } from '../../hooks/useReadAgain'
 
 export const ProductsPage: React.FC<{ select?: boolean }> = ({ select }) => {
   const history = useHistory()
@@ -31,7 +32,7 @@ export const ProductsPage: React.FC<{ select?: boolean }> = ({ select }) => {
     a => a.required === true
   )
 
-  useEffect(() => {
+  useReadEffect(() => {
     dispatch.products.fetchIfEmpty()
   }, [])
 

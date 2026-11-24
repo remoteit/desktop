@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { TextField, MenuItem, Typography, Box, Stack } from '@mui/material'
 import { State, Dispatch } from '../store'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId, selectRow } from '../selectors/accounts'
 import { Quote } from './Quote'
 import { FileUpload } from './FileUpload'
 import { FileUploadProgress } from './FileUploadProgress'
@@ -30,7 +30,7 @@ export const ArgumentsValueForm: React.FC<Props> = ({ arguments: argDefs, values
   const { t } = useTranslation()
   // Get ALL files (both scripts and non-scripts) for FileSelect type
   const accountId = useSelector(selectActiveAccountId)
-  const files = useSelector((state: State) => state.files.all[accountId] || [])
+  const files = useSelector((state: State) => state.files.all[selectRow(state, accountId)] || [])
 
   // Sort arguments by order
   const sortedArgs = [...argDefs].sort((a, b) => a.order - b.order)

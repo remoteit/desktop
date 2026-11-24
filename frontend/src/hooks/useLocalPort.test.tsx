@@ -4,14 +4,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const api = vi.hoisted(() => ({
   machine: { id: '80:00:00:00:00:00:00:A1', platform: 'mac' } as any,
+  first: undefined as any, // the machine as first read, where it has changed since
   read: vi.fn(),
   open: vi.fn(),
   close: vi.fn(),
   ui: {} as any,
   auth: {} as any,
+  accounts: undefined as any,
+  devices: undefined as any,
   shell: undefined as any,
 }))
-vi.mock('react-redux', () => ({ useSelector: (select: any) => select({ ui: api.ui, auth: api.auth }) }))
+vi.mock('react-redux', () => ({
+  useSelector: (select: any) => select({ ui: api.ui, auth: api.auth, accounts: api.accounts, devices: api.devices }),
+}))
 vi.mock('./useDeviceSessions', () => ({ useDeviceSessions: () => true }))
 vi.mock('../services/browser', () => ({ default: { isIOS: false } }))
 vi.mock('../services/thisDevice', () => ({ thisDevice: async () => api.shell }))
@@ -19,13 +24,15 @@ vi.mock('../services/localSubnet', () => ({ beaconDevice: async () => null }))
 vi.mock('../services/graphQL', () => ({ graphQLBasicRequest: vi.fn(), graphQLRequestWithReason: vi.fn() }))
 vi.mock('../services/localPorts', async importOriginal => ({
   ...(await importOriginal<typeof import('../services/localPorts')>()),
-  thisMachine: async () => api.machine,
+  thisMachine: async () => api.first ?? api.machine,
+  thisMachineNow: async () => api.machine,
   graphQLLocalPort: (...args: unknown[]) => api.read(...args),
   openLocalPort: (...args: unknown[]) => api.open(...args),
   closeLocalPort: (...args: unknown[]) => api.close(...args),
 }))
 
 import { LocalPortState, useLocalPort } from './useLocalPort'
+import { rowKey } from '../helpers/rowKey'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
@@ -47,8 +54,11 @@ describe('useLocalPort', () => {
   beforeEach(() => {
     root = createRoot(document.createElement('div'))
     api.machine = { id: '80:00:00:00:00:00:00:A1', platform: 'mac' }
+    api.first = undefined
     api.ui = {}
     api.auth = { user: { id: 'U1' } }
+    api.accounts = undefined
+    api.devices = undefined
     api.read.mockReset().mockResolvedValue(null)
     api.open.mockReset()
     api.shell = undefined
@@ -89,7 +99,7 @@ describe('useLocalPort', () => {
   // Whose a port is (graphql-api docs/PROXY-GROUPS.md §15): opened by the app on this machine, for the person signed in
   // on its account, their account's; anywhere else, the machine's.
   it("the person signed in on this machine's account: their account's", async () => {
-    api.machine = { ...api.machine, signedIn: 'u1' }
+    api.machine = { ...api.machine, signIns: ['u1'] }
     await render()
     api.open.mockResolvedValue({ port: 33000, open: true, state: 'pending', scope: 'ACCOUNT' })
     await act(() => seen.open())
@@ -99,12 +109,67 @@ describe('useLocalPort', () => {
   it("someone else signed in on it, or a browser that cannot say: none asked, the machine's", async () => {
     api.open.mockResolvedValue({ port: 33000, open: true, state: 'pending' })
     for (const signedIn of ['U2', undefined]) {
-      api.machine = { id: '80:00:00:00:00:00:00:A1', platform: 'mac', ...(signedIn && { signedIn }) }
+      api.machine = { id: '80:00:00:00:00:00:00:A1', platform: 'mac', ...(signedIn && { signIns: [signedIn] }) }
       api.open.mockClear()
       await render()
       await act(() => seen.open())
       expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, undefined)
     }
+  })
+
+  // Several accounts signed in to the portal: the port is the person's whose sign-in serves the service's row.
+  describe('a service another sign-in serves', () => {
+    beforeEach(() => {
+      api.accounts = {
+        membership: [],
+        signIns: { 'sub-work': { sub: 'sub-work', id: 'WORK', email: 'work@x.test', membership: [] } },
+      }
+      api.devices = { [rowKey('WORK', 'sub-work')]: { all: [{ id: PI, services: [{ id: SERVICE }] }] } }
+      api.open.mockResolvedValue({ port: 33000, open: true, state: 'pending' })
+    })
+
+    it("that person among the people signed in on this machine: their account's", async () => {
+      api.machine = { ...api.machine, signIns: ['U1', 'work'] }
+      await render()
+      await act(() => seen.open())
+      expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, 'ACCOUNT')
+    })
+
+    it("that person signed in on this machine since the page loaded: their account's, read at the open", async () => {
+      api.first = { ...api.machine, signIns: ['U1'] }
+      await render()
+      api.machine = { ...api.machine, signIns: ['U1', 'work'] }
+      await act(() => seen.open())
+      expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, 'ACCOUNT')
+    })
+
+    it('another person comes to serve the service while its panel is up: the port is read again as theirs, the one before not left shown', async () => {
+      api.read.mockResolvedValue({ port: 33000, open: true, state: 'listening', initiatorId: 'i1' })
+      await render()
+      expect(seen.local).toMatchObject({ port: 33000, open: true })
+      const reads = api.read.mock.calls.length
+      // The page's own person now holds the service's row: the port asked about is theirs, and they have none.
+      api.devices = { U1: { all: [{ id: PI, services: [{ id: SERVICE }] }] } }
+      api.read.mockResolvedValue(null)
+      await render()
+      expect(api.read.mock.calls.length).toBeGreaterThan(reads)
+      expect(seen.local).toBeUndefined()
+    })
+
+    it("that person signed out of this machine since: the machine's", async () => {
+      api.first = { ...api.machine, signIns: ['U1', 'work'] }
+      await render()
+      api.machine = { ...api.machine, signIns: ['U1'] }
+      await act(() => seen.open())
+      expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, undefined)
+    })
+
+    it("only the page's own person signed in on this machine: the machine's", async () => {
+      api.machine = { ...api.machine, signIns: ['U1'] }
+      await render()
+      await act(() => seen.open())
+      expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, undefined)
+    })
   })
 
   /* The machine's ports as the daemon lists them to this OS account (graphql-api docs/PROXY-GROUPS.md §15, "Local ports

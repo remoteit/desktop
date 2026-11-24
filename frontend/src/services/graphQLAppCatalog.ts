@@ -2,6 +2,7 @@ import { post } from './post'
 import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import type { AppHeldBack, AppChange } from './deviceAppsShared'
 import type { AppCapability, AppProtocol } from './graphQLDeviceApps'
+import { noteAccountOf } from '../selectors/signIns'
 
 /* The account's app catalogue (presence-server docs/device-apps-design.md, "Lifecycle: add, disable, remove", API, and
    "The Apps pages"): every app the account may take — remote.it's, its own publisher's —, each with its publisher, how
@@ -298,7 +299,13 @@ export async function graphQLAppTargets(
   const response = await post({ query, variables })
   if (response === 'ERROR') return 'ERROR'
   if (graphQLGetErrors(response, true, { query, variables })) return 'ERROR'
-  return (response.data?.data?.login?.account?.devices?.items ?? []).map((device: any): AppTarget => {
+  const items: any[] = response.data?.data?.login?.account?.devices?.items ?? []
+  // Devices searched for here may be in no stored list: the app is added to them as the sign-in serving the account.
+  noteAccountOf(
+    accountId,
+    items.map(device => device.id)
+  )
+  return items.map((device: any): AppTarget => {
     const permissions: string[] = device.permissions ?? []
     const offer = (device.availableApps ?? []).find((a: any) => a.id === app)
     const there = (device.apps ?? []).find((a: any) => a.id === app)

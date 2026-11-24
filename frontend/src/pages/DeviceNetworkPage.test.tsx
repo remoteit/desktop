@@ -10,6 +10,7 @@ vi.mock('../services/graphQLDeviceNetworks', () => ({
 }))
 vi.mock('../services/graphQLMutation', () => ({}))
 vi.mock('../hooks/useDeviceNetworks', () => ({}))
+vi.mock('../hooks/useNetworkElsewhere', () => ({}))
 vi.mock('../hooks/useLabel', () => ({}))
 vi.mock('../selectors/devices', () => ({}))
 vi.mock('../selectors/tags', () => ({}))

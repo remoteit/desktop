@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Box, Button, Checkbox, List, Stack, Typography } from '@mui/material'
@@ -18,6 +18,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 type DisabledRow = Pick<IDevice, 'id' | 'name' | 'disabled' | 'disabledAt' | 'disabledReason' | 'disabledBy'> & {
   platform?: number
@@ -42,12 +43,20 @@ export const DisabledDevicesPage: React.FC = () => {
   const [selected, setSelected] = useState<string[]>([])
   const [decommission, setDecommission] = useState<DisabledRow[]>([])
 
-  const load = useCallback(
+  const load = useReadCallback(
     async (from = 0) => {
       setLoading(true)
       const response = await graphQLFetchDisabledDevices(accountId, from, await deviceDisableFields())
       setLoading(false)
-      if (response === 'ERROR') return setFailed(true)
+      if (response === 'ERROR') {
+        // The list not read: none shown, rather than those read before (as another sign-in, or of another account).
+        if (!from) {
+          setRows([])
+          setTotal(0)
+          setSelected([])
+        }
+        return setFailed(true)
+      }
       setFailed(false)
       const devices = response?.data?.data?.login?.account?.devices
       const page: DisabledRow[] = (devices?.items || []).map((d: any) => ({
@@ -59,12 +68,13 @@ export const DisabledDevicesPage: React.FC = () => {
       }))
       setTotal(devices?.total || 0)
       setRows(previous => (from ? [...previous, ...page.filter(p => !previous.some(r => r.id === p.id))] : page))
-      if (!from) setSelected([])
+      // Read anew — after a restore, or as another sign-in: what is ticked stays ticked where it is still listed.
+      if (!from) setSelected(ticked => ticked.filter(id => page.some(row => row.id === id)))
     },
     [accountId]
   )
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (served && access) load()
   }, [served, access, load])
 
@@ -78,7 +88,7 @@ export const DisabledDevicesPage: React.FC = () => {
     )
 
   const restore = async (ids: string[]) => {
-    if (await dispatch.devices.restore(ids)) load()
+    if (await dispatch.devices.restore({ ids, accountId })) load()
   }
 
   const byId = (ids: string[]) => rows.filter(r => ids.includes(r.id))
@@ -224,6 +234,7 @@ export const DisabledDevicesPage: React.FC = () => {
       <DecommissionDialog
         open={!!decommission.length}
         devices={decommission}
+        accountId={accountId}
         onClose={() => setDecommission([])}
         onDone={() => load()}
       />

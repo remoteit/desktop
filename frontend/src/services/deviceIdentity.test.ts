@@ -38,7 +38,10 @@ import {
   requestDuplicateCopies,
   copiesByOriginal,
   resetDeviceIdentity,
+  duplicateCopies,
+  subscribeDuplicateCopies,
 } from './deviceIdentity'
+import { forgetAccountCaches } from './accountCaches'
 
 const scalar = (name: string) => ({ kind: 'SCALAR', name })
 const object = (name: string, fields?: string[]) => ({ kind: 'OBJECT', name, fields: fields?.map(f => ({ name: f })) })
@@ -497,6 +500,24 @@ describe('the copies awaiting a decision', () => {
     const groups = groupCopies(found === 'ERROR' ? [] : found)
     expect([...groups.keys()]).toEqual(['X1'])
     expect(groups.get('X1')!.map(c => c.id)).toEqual(['Y1', 'Y2'])
+  })
+
+  it('are dropped for every account whose stored data is, not only the first: each is read again when asked', async () => {
+    answer = () => ({ data: { login: { account: { devices: { total: 1, items: [copy('Y1', 'X1')] } } } } })
+    await requestDuplicateCopies('A1')
+    await requestDuplicateCopies('A2')
+    expect(duplicateCopies('A1')).toHaveLength(1)
+    expect(duplicateCopies('A2')).toHaveLength(1)
+    const told = vi.fn()
+    const stop = subscribeDuplicateCopies(told)
+    forgetAccountCaches(['A1', 'A2', 'A3'])
+    stop()
+    expect(duplicateCopies('A1')).toBeUndefined()
+    expect(duplicateCopies('A2')).toBeUndefined()
+    expect(told).toHaveBeenCalledTimes(1)
+    const before = called('DuplicateCopies').length
+    await requestDuplicateCopies('A2')
+    expect(called('DuplicateCopies')).toHaveLength(before + 1)
   })
 
   it('none where the API has no duplicates', async () => {

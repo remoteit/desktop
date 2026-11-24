@@ -1,11 +1,11 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { requests } = vi.hoisted(() => ({ requests: [] as { query: string; variables: any }[] }))
+const { requests } = vi.hoisted(() => ({ requests: [] as { query: string; variables: any; requestFor?: any }[] }))
 vi.mock('./graphQL', () => ({
   // graphql as the publish sees it: presigned uploads under the stage's downloads, then the release set.
-  graphQLRequestWithReason: async (query: string, variables: any) => {
-    requests.push({ query, variables })
+  graphQLRequestWithReason: async (query: string, variables: any, requestFor?: any) => {
+    requests.push({ query, variables, requestFor })
     if (query.includes('appReleaseUploads'))
       return {
         data: {
@@ -144,5 +144,25 @@ describe('publishing a release', () => {
     fail = false
     expect('ok' in (await publishRelease('test.panel', '1.0.0', files, done, undefined, fetchImpl))).toBe(true)
     expect(urls).toEqual(['a.tar.gz', 'manifest.json', 'manifest.json', 'manifest.json.sig'])
+  })
+})
+
+/* The selected account's publisher, which the page's own person may have no part in: both steps are that account's. */
+describe('a release of another account’s publisher', () => {
+  it('names the account for its uploads, and is set as the sign-in that serves it', async () => {
+    requests.length = 0
+    const { publishRelease } = await import('./graphQLAppRelease')
+    const files = [{ name: 'manifest.json', data: new Uint8Array([1]) }]
+    const put = vi.fn(async () => new Response(null, { status: 200 }))
+    await publishRelease('acme.panel', '1.0.0', files, new Set(), undefined, put as any, 'ACME')
+    expect(requests[0].variables.accountId).toBe('ACME')
+    expect(requests[0].query).toContain('accountId: $accountId')
+    expect(requests[1].requestFor).toEqual({ account: 'ACME' })
+
+    // The person's own: nothing named, as before.
+    requests.length = 0
+    await publishRelease('me.panel', '1.0.0', files, new Set(), undefined, put as any)
+    expect(requests[0].variables.accountId).toBeUndefined()
+    expect(requests[1].requestFor).toBeUndefined()
   })
 })

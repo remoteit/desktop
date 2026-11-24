@@ -99,7 +99,7 @@ describe('Services page', () => {
     expect(first.querySelector('a:last-child')?.getAttribute('href')).toBe('/devices/builder/shell/connect')
     expect(second.textContent).toContain('Home Assistant')
     await act(async () => second.querySelector('button')?.click())
-    expect(open).toHaveBeenCalledWith('home-acme.on.remote.it')
+    expect(open).toHaveBeenCalledWith('home-acme.on.remote.it', 'home')
   })
 
   it('opens reachable web services at their respective ports on a shared device name', async () => {

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
@@ -18,6 +18,7 @@ import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 import { spacing } from '../../styling'
 import { Gutters } from '../../components/Gutters'
+import { useReadEffect } from '../../hooks/useReadAgain'
 
 export const ProductPage: React.FC = () => {
   const { t } = useTranslation()
@@ -26,13 +27,13 @@ export const ProductPage: React.FC = () => {
   const { all: products, fetching, initialized } = useSelector(getProductModel)
   const product = products.find(p => p.id === productId)
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (productId) {
       dispatch.products.fetchSingle(productId)
     }
   }, [productId])
 
-  useEffect(() => {
+  useReadEffect(() => {
     dispatch.tags.fetchIfEmpty()
   }, [])
 

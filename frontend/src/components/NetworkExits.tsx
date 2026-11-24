@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { ListItem, ListItemIcon, ListItemText, ListSubheader, MenuItem, TextField } from '@mui/material'
@@ -15,6 +15,7 @@ import { IconButton } from '../buttons/IconButton'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 import { Notice } from './Notice'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 /* A network's exits (graphql-api docs/PROXY-GROUPS.md §13): the own exits it makes available to its devices — each one
    initiating on it may send its traffic out through one, whichever of the exit's devices takes it, while it is offered.
@@ -29,7 +30,7 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
   const [refusal, setRefusal] = useState<string>()
   const manage = network.permissions.includes('MANAGE')
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     const all = await graphQLNetworkExits(accountId)
     setExits(all instanceof Map ? all.get(network.id) ?? [] : null)
     if (!(all instanceof Map) || !manage) return
@@ -38,7 +39,7 @@ export const NetworkExits: React.FC<{ network: DeviceNetwork; accountId: string 
     setChoices(own && typeof own === 'object' ? own.own : [])
   }, [accountId, network.id, manage])
 
-  useEffect(() => {
+  useReadEffect(() => {
     load()
   }, [load])
 

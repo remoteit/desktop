@@ -35,7 +35,16 @@ vi.mock('../services/graphQLDeviceProducts', () => ({
   graphQLCreateDeviceProductOneTimeCode,
   graphQLSetDeviceProductLifecycle,
 }))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'acct' }))
+vi.mock('../services/elsewhere', () => ({ findElsewhere: vi.fn(), FAILED: 'ERROR' }))
+vi.mock('../selectors/accounts', () => ({
+  selectActiveAccountId: () => 'acct',
+  // One sign-in: a row is its account's own id.
+  selectRow: (_state: unknown, accountId?: string) => accountId || 'acct',
+  rowSaid: (_state: unknown, of?: any) => {
+    const accountId = (typeof of === 'string' ? of : of?.accountId) || 'acct'
+    return { accountId, row: of?.row ?? accountId }
+  },
+}))
 
 import products from './products'
 
@@ -92,7 +101,7 @@ describe('a failed product request is not treated as a success', () => {
   it('deleteSelected removes only the products whose delete succeeded', async () => {
     graphQLDeleteDeviceProduct.mockImplementation(async (id: string) => (id === 'p1' ? 'ERROR' : ok))
     await effects().deleteSelected(undefined, state)
-    expect(dispatch.products.set).toHaveBeenCalledWith({ all: [pump], selected: [], accountId: 'acct' })
+    expect(dispatch.products.set).toHaveBeenCalledWith({ all: [pump], selected: [], accountId: 'acct', row: 'acct' })
   })
 
   it('removeService keeps the service and reports failure', async () => {
@@ -123,7 +132,11 @@ describe('join keys', () => {
     const input = { productId: 'p1', name: 'Fleet', joinRate: 5 }
     expect(await effects().createJoinKey(input, state)).toEqual({ key: SECRET })
     expect(graphQLCreateDeviceProductJoinKey).toHaveBeenCalledWith(input)
-    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({ productId: 'p1', accountId: 'acct' })
+    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({
+      productId: 'p1',
+      accountId: 'acct',
+      row: 'acct',
+    })
     // Nothing the store is given carries the key.
     expect(
       JSON.stringify([dispatch.products, dispatch.ui].map(group => Object.values(group).map(fn => fn.mock.calls)))
@@ -149,7 +162,11 @@ describe('join keys', () => {
     })
     expect(await effects().revokeJoinKey({ productId: 'p1', id: 'AAAA' }, state)).toBe(true)
     expect(graphQLRevokeDeviceProductJoinKey).toHaveBeenCalledWith('p1', 'AAAA')
-    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({ productId: 'p1', accountId: 'acct' })
+    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({
+      productId: 'p1',
+      accountId: 'acct',
+      row: 'acct',
+    })
   })
 })
 
@@ -160,7 +177,11 @@ describe('one-time codes', () => {
       data: { data: { createDeviceProductOneTimeCode: code } },
     })
     expect(await effects().createOneTimeCode('p1', state)).toEqual(code)
-    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({ productId: 'p1', accountId: 'acct' })
+    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({
+      productId: 'p1',
+      accountId: 'acct',
+      row: 'acct',
+    })
   })
 
   it('answers nothing when the request failed', async () => {
@@ -177,7 +198,11 @@ describe('lifecycle', () => {
     })
     expect(await effects().setLifecycle({ productId: 'p1', lifecycle: 'ephemeral' }, state)).toEqual({})
     expect(graphQLSetDeviceProductLifecycle).toHaveBeenCalledWith('p1', 'ephemeral')
-    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({ productId: 'p1', accountId: 'acct' })
+    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({
+      productId: 'p1',
+      accountId: 'acct',
+      row: 'acct',
+    })
   })
 
   it("refused, graphql's words are answered and nothing is read again; a failed request has none", async () => {
@@ -195,8 +220,9 @@ describe('refreshCredentials', () => {
   it('merges every credential field the product read carries, and nothing else', async () => {
     graphQLDeviceProduct.mockResolvedValue(productRead({ ...credentials, name: 'Renamed' }))
     await effects().refreshCredentials({ productId: 'p1', accountId: 'org' })
-    expect(graphQLDeviceProduct).toHaveBeenCalledWith('p1', 'org')
-    expect(dispatch.products.mergeCredentials).toHaveBeenCalledWith({ accountId: 'org', productId: 'p1', credentials })
+    // Asked as the row's sign-in, and kept under the row (one sign-in: the account's own id).
+    expect(graphQLDeviceProduct).toHaveBeenCalledWith('p1', 'org', { sub: '', row: true })
+    expect(dispatch.products.mergeCredentials).toHaveBeenCalledWith({ row: 'org', productId: 'p1', credentials })
   })
 
   it('clears the credentials when the read fails, rather than leave them stale', async () => {
@@ -225,14 +251,14 @@ describe('mergeCredentials', () => {
   const store = { org: { initialized: true, fetching: false, all: [pump, valve], selected: [] } }
 
   it('merges the credentials into the one product', () => {
-    const next = reducers.mergeCredentials(store, { accountId: 'org', productId: 'p1', credentials })
+    const next = reducers.mergeCredentials(store, { row: 'org', productId: 'p1', credentials })
     expect(next.org.all[0]).toEqual({ ...pump, ...credentials })
     expect(next.org.all[1]).toBe(valve)
   })
 
   it('leaves the state as it is when nothing changes', () => {
-    const merged = reducers.mergeCredentials(store, { accountId: 'org', productId: 'p1', credentials })
-    expect(reducers.mergeCredentials(merged, { accountId: 'org', productId: 'p1', credentials })).toBe(merged)
+    const merged = reducers.mergeCredentials(store, { row: 'org', productId: 'p1', credentials })
+    expect(reducers.mergeCredentials(merged, { row: 'org', productId: 'p1', credentials })).toBe(merged)
   })
 })
 
@@ -261,7 +287,11 @@ describe('replacing a registration code keeps at most two in use', () => {
       ['p3', 'C2'],
       ['p3', 'C1'],
     ])
-    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({ productId: 'p3', accountId: 'acct' })
+    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({
+      productId: 'p3',
+      accountId: 'acct',
+      row: 'acct',
+    })
   })
 
   it('revokes the replaced code too with revokePrevious', async () => {
@@ -292,7 +322,11 @@ describe('rotating a product with join keys leaves earlier reusable codes active
 
     expect(await effects().rotateCode({ productId: pump.id }, codedState)).toBe(true)
     expect(graphQLRevokeDeviceProductCode).not.toHaveBeenCalled()
-    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({ productId: pump.id, accountId: 'acct' })
+    expect(dispatch.products.refreshCredentials).toHaveBeenCalledWith({
+      productId: pump.id,
+      accountId: 'acct',
+      row: 'acct',
+    })
   })
 
   it('revokes just the current code when selected', async () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Link, Prompt, useHistory } from 'react-router-dom'
@@ -24,6 +24,7 @@ import {
   manifestText,
   newAppForm,
 } from '../helpers/appManifest'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* New app (/apps/new; presence-server docs/device-apps-new-app.md): a publisher's brand-new app, described with a
    guided form — or, with Edit as JSON, any contract-1 manifest — and checked as it changes with the very schema and
@@ -61,7 +62,7 @@ const NewAppFlow: React.FC<{ account?: string }> = ({ account }) => {
   const [publishing, setPublishing] = useState(false)
   const history = useHistory()
 
-  useEffect(() => {
+  useReadEffect(() => {
     let current = true
     graphQLAppPublisher(account).then(answer => current && setRead(answer ?? null))
     return () => {
@@ -318,6 +319,7 @@ const NewAppFlow: React.FC<{ account?: string }> = ({ account }) => {
               <NewAppPublish
                 built={built}
                 publisher={publisher.id}
+                account={account}
                 keys={standing}
                 onBusy={setPublishing}
                 onPublished={result => {

@@ -334,6 +334,9 @@ describe('the lifecycle: add, enable or disable, channel and pin, remove', () =>
     await graphQLSetDeviceAppsRelease('acme.backup', ['D1', 'D2'], { version: '' })
     expect(sent()[0]).toContain('$deviceIds: [String!]!')
     expect(sent()[1]).toEqual({ app: 'acme.backup', deviceIds: ['D1', 'D2'], version: '' })
+    // Listed under an account on the app's page: asked as that account, whoever else here holds the devices.
+    await graphQLSetDeviceAppsRelease('acme.backup', ['D1'], { version: '' }, 'A2')
+    expect(reasoned.mock.calls.at(-1)).toContainEqual({ account: 'A2' })
   })
 })
 

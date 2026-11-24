@@ -8,7 +8,8 @@ import { ServiceApp, useServiceApp } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
 import { useSubnetName } from '../hooks/useLocalSubnetName'
 import { opensTerminal } from '../helpers/sshHelper'
-import { openTerminal } from '../helpers/terminalHelper'
+import { openTerminal, terminalReaches } from '../helpers/terminalHelper'
+import { useReadAgain } from '../hooks/useReadAgain'
 import { IconButton } from '../buttons/IconButton'
 import { Link } from './Link'
 import { Icon } from './Icon'
@@ -40,10 +41,14 @@ export const AppTerminalAction: React.FC<{ device: IDevice; app: DeviceApp; serv
   service,
 }) => {
   const { t } = useTranslation()
+  // Whether the terminal reaches the service is whose sign-in serves it: looked at again when that changes.
+  useReadAgain()
   const terminal = opensTerminal(app, service)
   const name = useSubnetName(terminal ? device.id : undefined)
   const port = servicePort(device, service.serviceId)
   if (!terminal || app.state !== 'running' || !name || !port || !service.serviceId) return null
+  // Not offered for a service only another sign-in reaches: the terminal's session is the page's own person's.
+  if (!terminalReaches(service.serviceId)) return null
   const serviceId = service.serviceId
   return (
     <Button size="small" variant="contained" onClick={() => open(app, serviceId, name, port)} data-app-terminal>
@@ -56,10 +61,12 @@ export const AppTerminalAction: React.FC<{ device: IDevice; app: DeviceApp; serv
 export const AppTerminalButton: React.FC<{ device: IDevice; service: IService }> = ({ device, service }) => {
   const { t } = useTranslation()
   const { app, appService } = useServiceApp(device, service)
+  useReadAgain()
   const terminal = opensTerminal(app, appService)
   const name = useSubnetName(terminal ? device.id : undefined)
   const port = service.port
   if (!app || !terminal || app.state !== 'running' || appService?.serviceId !== service.id || !name || !port) return null
+  if (!terminalReaches(service.id)) return null
   return (
     <IconButton
       icon="terminal"
@@ -86,6 +93,7 @@ export const AppTerminalOption: React.FC<{ device?: IDevice; service?: IService;
   serving: { app, appService, switching, turn, setRelease },
 }) => {
   const { t } = useTranslation()
+  useReadAgain()
   const terminal = opensTerminal(app, appService)
   const name = useSubnetName(terminal ? device?.id : undefined)
   const { flip, consent } = useAppSwitch({ turn, setRelease }, undefined, undefined, device?.accountId)
@@ -97,7 +105,7 @@ export const AppTerminalOption: React.FC<{ device?: IDevice; service?: IService;
   const port = service?.port
   if (app.state === 'running' && !switching) {
     const serviceId = appService?.serviceId
-    if (!serviceId || !port) return null
+    if (!serviceId || !port || !terminalReaches(serviceId)) return null
     return (
       <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
         <Link onClick={() => open(app, serviceId, name, port)}>

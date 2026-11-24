@@ -1,10 +1,11 @@
-import { useEffect, useSyncExternalStore } from 'react'
+import { useSyncExternalStore } from 'react'
 import {
   DeviceSessionInfo,
   deviceSessionInfo,
   requestDeviceSessionInfo,
   subscribeDeviceSessionInfo,
 } from '../services/deviceSessionInfo'
+import { useReadEffect } from './useReadAgain'
 
 // A device's name in device subnets and who it acts for (services/deviceSessionInfo): undefined while it is read.
 export const useDeviceSessionInfo = (deviceId?: string): DeviceSessionInfo | undefined => {
@@ -12,7 +13,7 @@ export const useDeviceSessionInfo = (deviceId?: string): DeviceSessionInfo | und
     deviceId ? deviceSessionInfo(deviceId) : undefined
   )
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (deviceId) requestDeviceSessionInfo(deviceId)
   }, [deviceId])
 

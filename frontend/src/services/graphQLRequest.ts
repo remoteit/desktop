@@ -4,6 +4,7 @@ import { graphQLBasicRequest, graphQLGetErrors, graphQLPartialRequest } from './
 import { withoutDeviceSessions } from './graphQLDaemon'
 import { jobRunsPaged, setJobRunsPaged } from './jobDevices'
 import { JOB_PREVIEW_RUNS } from '../helpers/jobHelper'
+import { RequestFor } from '../selectors/signIns'
 
 export async function graphQLLogin() {
   return await graphQLBasicRequest(
@@ -19,7 +20,7 @@ export async function graphQLLogin() {
   )
 }
 
-export async function graphQLFiles(accountId: string, ids?: string[]) {
+export async function graphQLFiles(accountId: string, ids?: string[], requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query Files($accountId: String, $ids: [ID!]) {
         login {
@@ -48,7 +49,9 @@ export async function graphQLFiles(accountId: string, ids?: string[]) {
           }
         }
       }`,
-    { accountId, ids }
+    { accountId, ids },
+    false,
+    requestFor
   )
 }
 
@@ -59,8 +62,9 @@ export async function graphQLJobs(args: {
   from?: number
   size?: number
   sort?: string
+  requestFor?: RequestFor
 }): Promise<AxiosResponse | 'ERROR'> {
-  const { accountId, fileIds, ids, from, size, sort = '-updated' } = args
+  const { accountId, fileIds, ids, from, size, sort = '-updated', requestFor } = args
   const paged = jobRunsPaged()
   const query = `${jobsQueryHead(paged)}${paged ? JOB_RUNS_PREVIEW : JOB_RUNS_ALL}
               }
@@ -69,7 +73,7 @@ export async function graphQLJobs(args: {
         }
       }`
   const variables = { accountId, fileIds, ids, from, size, sort, ...(paged ? { preview: JOB_PREVIEW_RUNS } : {}) }
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return response
   // An API without runCounts reads every run with its job, as it always has.
   if (paged && withoutDeviceSessions(response.data?.errors, 'runCounts')) {
@@ -255,7 +259,7 @@ export async function graphQLRestoreDevice(props: { id: string; accountId: strin
   )
 }
 
-export async function graphQLPreloadNetworks(accountId: string) {
+export async function graphQLPreloadNetworks(accountId: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query Networks($accountId: String) {
       login {
@@ -296,14 +300,16 @@ export async function graphQLPreloadNetworks(accountId: string) {
         }
       }
     }`,
-    { accountId }
+    { accountId },
+    false,
+    requestFor
   )
 }
 
 /* 
   Fetches single network across shared accounts by id
 */
-export async function graphQLFetchNetworkSingle(id: string) {
+export async function graphQLFetchNetworkSingle(id: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query NetworkServices($id: String!) {
         login {
@@ -319,7 +325,9 @@ export async function graphQLFetchNetworkSingle(id: string) {
           }
         }
       }`,
-    { id }
+    { id },
+    false,
+    requestFor
   )
 }
 
@@ -405,7 +413,7 @@ export async function graphQLFetchPlans() {
   )
 }
 
-export async function graphQLFetchOrganizations(ids: string[]) {
+export async function graphQLFetchOrganizations(ids: string[], requestFor?: RequestFor) {
   return await graphQLPartialRequest(
     ` query Organizations {
         login {
@@ -485,7 +493,9 @@ export async function graphQLFetchOrganizations(ids: string[]) {
       )
       .join('\n')}
         }
-      }`
+      }`,
+    {},
+    requestFor
   )
 }
 
@@ -522,7 +532,9 @@ export async function graphQLAdminUsers(
       accountId: filters?.accountId,
       admin: filters?.admin,
       sort,
-    }
+    },
+    false,
+    { sub: '' }
   )
 }
 
@@ -553,12 +565,14 @@ export async function graphQLAdminUser(accountId: string) {
           }
         }
       }`,
-    { accountId }
+    { accountId },
+    false,
+    { sub: '' }
   )
 }
 
 
-export async function graphQLFetchGuests(accountId: string) {
+export async function graphQLFetchGuests(accountId: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query Guests($accountId: String) {
         login {
@@ -579,11 +593,13 @@ export async function graphQLFetchGuests(accountId: string) {
           }
         }
       }`,
-    { accountId }
+    { accountId },
+    false,
+    requestFor
   )
 }
 
-export async function graphQLFetchSessions(ids: string[]) {
+export async function graphQLFetchSessions(ids: string[], requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` query Sessions {
         login {
@@ -627,7 +643,10 @@ export async function graphQLFetchSessions(ids: string[]) {
       )
       .join('\n')}
         }
-      }`
+      }`,
+    {},
+    false,
+    requestFor
   )
 }
 
@@ -683,7 +702,9 @@ export async function graphQLAdminUserDevices(
           }
         }
       }`,
-    { accountId, from: options.from || 0, size: options.size || 100 }
+    { accountId, from: options.from || 0, size: options.size || 100 },
+    false,
+    { sub: '' }
   )
 }
 
@@ -709,7 +730,9 @@ export async function graphQLAdminEnterpriseCustomers(
           }
         }
       }`,
-    { from: options.from || 0, size: options.size || 50, search: search || undefined }
+    { from: options.from || 0, size: options.size || 50, search: search || undefined },
+    false,
+    { sub: '' }
   )
 }
 
@@ -726,7 +749,10 @@ export async function graphQLAdminAddonProducts() {
             enabled
           }
         }
-      }`
+      }`,
+    {},
+    false,
+    { sub: '' }
   )
 }
 
@@ -755,7 +781,9 @@ export async function graphQLAdminAddonCustomers(
           }
         }
       }`,
-    { product, from: options.from || 0, size: options.size || 50, search: search || undefined }
+    { product, from: options.from || 0, size: options.size || 50, search: search || undefined },
+    false,
+    { sub: '' }
   )
 }
 
@@ -825,7 +853,10 @@ export async function graphQLAdminPartners() {
             }
           }
         }
-      }`
+      }`,
+    {},
+    false,
+    { sub: '' }
   )
 }
 
@@ -896,7 +927,9 @@ export async function graphQLAdminPartner(id: string) {
           }
         }
       }`,
-    { id }
+    { id },
+    false,
+    { sub: '' }
   )
 }
 
@@ -913,7 +946,9 @@ export async function graphQLCreatePartner(name: string, parentId?: string) {
         updated
       }
     }`,
-    { name, parentId }
+    { name, parentId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -925,7 +960,9 @@ export async function graphQLUpdatePartner(id: string, name: string) {
         name
       }
     }`,
-    { id, name }
+    { id, name },
+    false,
+    { sub: '' }
   )
 }
 
@@ -934,7 +971,9 @@ export async function graphQLDeletePartner(id: string) {
     `mutation DeletePartner($id: String!) {
       deletePartner(id: $id)
     }`,
-    { id }
+    { id },
+    false,
+    { sub: '' }
   )
 }
 
@@ -943,7 +982,9 @@ export async function graphQLAddPartnerChild(parentId: string, childId: string) 
     `mutation AddPartnerChild($parentId: String!, $childId: String!) {
       addPartnerChild(parentId: $parentId, childId: $childId)
     }`,
-    { parentId, childId }
+    { parentId, childId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -952,7 +993,9 @@ export async function graphQLRemovePartnerChild(childId: string) {
     `mutation RemovePartnerChild($childId: String!) {
       removePartnerChild(childId: $childId)
     }`,
-    { childId }
+    { childId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -961,7 +1004,9 @@ export async function graphQLAddPartnerAdmin(entityId: string, email: string) {
     `mutation AddPartnerAdmin($entityId: String!, $email: String!) {
       addPartnerAdmin(entityId: $entityId, email: $email)
     }`,
-    { entityId, email }
+    { entityId, email },
+    false,
+    { sub: '' }
   )
 }
 
@@ -970,7 +1015,9 @@ export async function graphQLRemovePartnerAdmin(entityId: string, userId: string
     `mutation RemovePartnerAdmin($entityId: String!, $userId: String!) {
       removePartnerAdmin(entityId: $entityId, userId: $userId)
     }`,
-    { entityId, userId }
+    { entityId, userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -979,7 +1026,9 @@ export async function graphQLAddPartnerRegistrant(entityId: string, email: strin
     `mutation AddPartnerRegistrant($entityId: String!, $email: String!) {
       addPartnerRegistrant(entityId: $entityId, email: $email)
     }`,
-    { entityId, email }
+    { entityId, email },
+    false,
+    { sub: '' }
   )
 }
 
@@ -988,7 +1037,9 @@ export async function graphQLRemovePartnerRegistrant(entityId: string, userId: s
     `mutation RemovePartnerRegistrant($entityId: String!, $userId: String!) {
       removePartnerRegistrant(entityId: $entityId, userId: $userId)
     }`,
-    { entityId, userId }
+    { entityId, userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -997,11 +1048,13 @@ export async function graphQLExportPartnerDevices(entityId: string) {
     `query ExportPartnerDevices($entityId: String!) {
       exportPartnerDevices(entityId: $entityId)
     }`,
-    { entityId }
+    { entityId },
+    false,
+    { sub: '' }
   )
 }
 
-export async function graphQLPartnerEntities(accountId?: string) {
+export async function graphQLPartnerEntities(accountId?: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     `query PartnerEntities($accountId: String) {
       login {
@@ -1078,7 +1131,9 @@ export async function graphQLPartnerEntities(accountId?: string) {
         }
       }
     }`,
-    { accountId }
+    { accountId },
+    false,
+    requestFor
   )
 }
 
@@ -1100,7 +1155,10 @@ export async function graphQLAllNotices() {
           until
           modified
         }
-      }`
+      }`,
+    {},
+    false,
+    { sub: '' }
   )
 }
 
@@ -1147,7 +1205,9 @@ export async function graphQLAdminDevices(
       accountId: filters?.accountId,
       hardwareId: filters?.hardwareId,
       sort,
-    }
+    },
+    false,
+    { sub: '' }
   )
 }
 
@@ -1208,6 +1268,8 @@ export async function graphQLAdminDevice(deviceId: string) {
           }
         }
       }`,
-    { deviceId }
+    { deviceId },
+    false,
+    { sub: '' }
   )
 }

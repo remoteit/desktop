@@ -147,6 +147,372 @@ describe('with the shell signing in', () => {
   })
 })
 
+describe('with a shell that keeps several credentials in use', () => {
+  const SEVERAL = {
+    several: true,
+    accounts: [
+      { sub: 'sub-person', email: 'person@example.com', active: true, signedIn: true },
+      { sub: 'sub-work', email: 'work@example.com', active: false, signedIn: true },
+      { sub: 'sub-old', email: 'old@example.com', active: false, signedIn: false },
+    ],
+  }
+  const tick = () => new Promise(r => setTimeout(r))
+
+  it('takes every credential in use as a sign-in, the active one as the page’s person', async () => {
+    const { oidc } = await boot(SEVERAL)
+    expect(oidc.oidcClaims()?.sub).toBe('sub-person')
+    expect(oidc.oidcSignIns().map(signIn => [signIn.sub, signIn.primary])).toEqual([
+      ['sub-person', true],
+      ['sub-work', false],
+    ])
+    expect(oidc.oidcAccounts().map(account => [account.sub, account.signedIn])).toEqual([
+      ['sub-person', true],
+      ['sub-old', false],
+      ['sub-work', true],
+    ])
+  })
+
+  it('asks for each sign-in’s token and proof by name, and caches them apart', async () => {
+    const { oidc, bridge } = await boot({ ...SEVERAL, tokenType: 'DPoP' })
+    expect(await oidc.oidcAccessToken(API, 'sub-work')).toBe('token-for:sub-work:' + API)
+    expect(await oidc.oidcAccessToken(API)).toBe('token-for:sub-person:' + API)
+    expect(await oidc.oidcAccessToken(API, 'sub-work')).toBe('token-for:sub-work:' + API)
+    expect(bridge!.calls.filter(c => c.method === 'auth.accessToken').map(c => c.args.sub)).toEqual([
+      'sub-work',
+      'sub-person',
+    ])
+    const send = async (headers: Record<string, string>) => headers
+    expect(await oidc.oidcAuthorized('POST', API + '/graphql', API, send, () => undefined, 'sub-work')).toEqual({
+      authorization: 'DPoP token-for:sub-work:' + API,
+      DPoP: 'proof:POST:' + API + '/graphql:sub-work',
+    })
+  })
+
+  it('gives no token for a credential that is not in use', async () => {
+    const { oidc, bridge } = await boot(SEVERAL)
+    expect(await oidc.oidcAccessToken(API, 'sub-old')).toBe('')
+    expect(bridge!.calls.some(c => c.method === 'auth.accessToken')).toBe(false)
+  })
+
+  it('adds an account beside the page’s person: nothing reloads, and it is a sign-in at once', async () => {
+    const { oidc, bridge, reload } = await boot(SEVERAL)
+    const heard = vi.fn()
+    oidc.oidcSubscribe(heard)
+    expect(await oidc.oidcStart({ prompt: 'select_account' })).toBe(true)
+    await tick()
+    expect(bridge!.calls.find(c => c.method === 'auth.signIn')!.args).toEqual({ addAccount: true })
+    expect(reload).not.toHaveBeenCalled()
+    expect(heard).toHaveBeenCalled()
+    expect(oidc.oidcClaims()?.sub).toBe('sub-person')
+    expect(oidc.oidcSignIns().map(signIn => signIn.sub)).toEqual(['sub-person', 'sub-new', 'sub-work'])
+    // The shell made the new account active: the page's own person is still asked for by name.
+    expect(await oidc.oidcAccessToken(API)).toBe('token-for:sub-person:' + API)
+  })
+
+  it('signs a remembered credential in beside the page’s person, with no reload', async () => {
+    const { oidc, reload } = await boot(SEVERAL)
+    expect(await oidc.oidcSelectKnownAccount('sub-old')).toBe(true)
+    await tick()
+    expect(reload).not.toHaveBeenCalled()
+    expect(oidc.oidcClaims()?.sub).toBe('sub-person')
+    expect(oidc.oidcSignIns().map(signIn => signIn.sub)).toEqual(['sub-person', 'sub-old', 'sub-work'])
+  })
+
+  it('signs one account out through the shell and keeps the rest, with no reload', async () => {
+    const { oidc, bridge, reload } = await boot(SEVERAL)
+    expect(await oidc.oidcSignOutAccount('sub-work')).toBe(true)
+    await tick()
+    expect(bridge!.calls.find(c => c.method === 'auth.signOut')!.args).toEqual({ sub: 'sub-work' })
+    expect(reload).not.toHaveBeenCalled()
+    expect(oidc.oidcSignIns().map(signIn => signIn.sub)).toEqual(['sub-person'])
+    expect(await oidc.oidcAccessToken(API, 'sub-work')).toBe('')
+  })
+
+  it('does not reload when the menu signs another account out, or makes active one the page holds', async () => {
+    const { oidc, bridge, reload } = await boot(SEVERAL)
+    const heard = vi.fn()
+    oidc.oidcSubscribe(heard)
+    await bridge!.transport.call('auth.switch', { sub: 'sub-work' })
+    await tick()
+    expect(reload).not.toHaveBeenCalled()
+    expect(oidc.oidcClaims()?.sub).toBe('sub-person')
+    await bridge!.transport.call('auth.signOut', { sub: 'sub-work' })
+    await tick()
+    expect(reload).not.toHaveBeenCalled()
+    expect(heard).toHaveBeenCalled()
+    expect(oidc.oidcSignIns().map(signIn => signIn.sub)).toEqual(['sub-person'])
+  })
+
+  it('reloads when the menu makes active someone the page holds nothing for', async () => {
+    const { bridge, reload } = await boot(SEVERAL)
+    await bridge!.transport.call('auth.signIn', { addAccount: true })
+    await tick()
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('reloads when the menu signs the page’s person out', async () => {
+    const { bridge, reload } = await boot(SEVERAL)
+    await bridge!.transport.call('auth.signOut', { sub: 'sub-person' })
+    await tick()
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('signs the page’s person out without a reload of the shell’s making, and lists who is left', async () => {
+    const { oidc, bridge, reload } = await boot(SEVERAL)
+    expect(await oidc.oidcEndSession()).toBe(204)
+    expect(bridge!.calls.find(c => c.method === 'auth.signOut')!.args).toEqual({ sub: 'sub-person' })
+    oidc.oidcClearLocal()
+    await tick()
+    expect(reload).not.toHaveBeenCalled()
+    expect(oidc.oidcSignedIn()).toBe(false)
+    expect(oidc.oidcSignIns().map(signIn => signIn.sub)).toEqual(['sub-work'])
+  })
+})
+
+describe('with a shell that has the setting Use several at once (auth.mode)', () => {
+  // As the shell lists them with one in use: only the active account is signedIn, the others are remembered.
+  const ONE = {
+    several: false,
+    accounts: [
+      { sub: 'sub-person', email: 'person@example.com', active: true, signedIn: true },
+      { sub: 'sub-work', email: 'work@example.com', active: false, signedIn: false },
+    ],
+  }
+  const SEVERAL = {
+    several: true,
+    accounts: [
+      { sub: 'sub-person', email: 'person@example.com', active: true, signedIn: true },
+      { sub: 'sub-work', email: 'work@example.com', active: false, signedIn: true },
+      { sub: 'sub-old', email: 'old@example.com', active: false, signedIn: false },
+    ],
+  }
+  const tick = () => new Promise(r => setTimeout(r))
+  const inUse = (oidc: typeof import('./oidc')) => oidc.oidcSignIns().map(signIn => signIn.sub)
+  const called = (bridge: ReturnType<typeof createMockBridge>, method: string) =>
+    bridge.calls.filter(c => c.method === method).map(c => c.args)
+
+  it('follows the shell’s mode, and stores none of its own', async () => {
+    const { oidc, bridge } = await boot(ONE)
+    expect(called(bridge!, 'auth.mode')).toEqual([{}])
+    expect(oidc.oidcSeveralOffered()).toBe(true)
+    expect(oidc.oidcSeveral()).toBe(false)
+    expect((await boot(SEVERAL)).oidc.oidcSeveral()).toBe(true)
+    expect(stored()).toEqual([])
+  })
+
+  it('ignores the browser’s own setting', async () => {
+    localStorage.setItem('oidc.several', '1')
+    const { oidc } = await boot(ONE)
+    expect(oidc.oidcSeveral()).toBe(false)
+  })
+
+  it('with one in use, has one sign-in — the active account — and asks for no other by name', async () => {
+    const { oidc, bridge } = await boot(ONE)
+    expect(inUse(oidc)).toEqual(['sub-person'])
+    expect(oidc.oidcAccounts().map(account => [account.sub, account.signedIn, account.saved])).toEqual([
+      ['sub-person', true, false],
+      ['sub-work', false, false],
+    ])
+    expect(await oidc.oidcAccessToken(API, 'sub-work')).toBe('')
+    expect(await oidc.oidcAccessToken(API)).toBe('token-for:sub-person:' + API)
+    expect(called(bridge!, 'auth.accessToken')).toEqual([{ resource: API }])
+    expect(await oidc.oidcUseAccount('sub-work', true)).toBe(false)
+    expect(await oidc.oidcSignOutAccount('sub-work')).toBe(false)
+  })
+
+  it('with one in use, choosing another account switches through the shell and reloads as them', async () => {
+    const { oidc, bridge, reload } = await boot(ONE)
+    expect(await oidc.oidcSelectKnownAccount('sub-work')).toBe(true)
+    await tick()
+    expect(called(bridge!, 'auth.switch')).toEqual([{ sub: 'sub-work' }])
+    expect(reload).toHaveBeenCalled()
+    // The account left is remembered.
+    expect(bridge!.accounts.map(a => [a.sub, a.signedIn])).toEqual([
+      ['sub-person', false],
+      ['sub-work', true],
+    ])
+  })
+
+  it('with one in use, Sign in on this device makes the new account the page’s person, with a reload', async () => {
+    const { oidc, bridge, reload } = await boot(ONE)
+    expect(await oidc.oidcStart({ prompt: 'select_account' })).toBe(true)
+    await tick()
+    expect(called(bridge!, 'auth.signIn')).toEqual([{ addAccount: true }])
+    expect(reload).toHaveBeenCalled()
+  })
+
+  it('with one in use, reloads when the menu switches accounts', async () => {
+    const { bridge, reload } = await boot(ONE)
+    await bridge!.transport.call('auth.switch', { sub: 'sub-work' })
+    await tick()
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('turns the setting on through the shell: nothing reloads, the page’s person alone is in use until another is checked', async () => {
+    const { oidc, bridge, reload } = await boot(ONE)
+    const heard = vi.fn()
+    oidc.oidcSubscribe(heard)
+    expect(await oidc.oidcSetSeveral(true)).toBe(true)
+    await tick()
+    expect(called(bridge!, 'auth.setMode')).toEqual([{ several: true }])
+    expect(oidc.oidcSeveral()).toBe(true)
+    expect(heard).toHaveBeenCalled()
+    expect(reload).not.toHaveBeenCalled()
+    expect(inUse(oidc)).toEqual(['sub-person'])
+
+    expect(await oidc.oidcUseAccount('sub-work', true)).toBe(true)
+    await tick()
+    expect(reload).not.toHaveBeenCalled()
+    expect(oidc.oidcClaims()?.sub).toBe('sub-person')
+    expect(inUse(oidc)).toEqual(['sub-person', 'sub-work'])
+    expect(await oidc.oidcAccessToken(API, 'sub-work')).toBe('token-for:sub-work:' + API)
+  })
+
+  it('unchecks an account through the shell’s sign-out of it, which keeps it remembered', async () => {
+    const { oidc, bridge, reload } = await boot(SEVERAL)
+    expect(await oidc.oidcUseAccount('sub-work', false)).toBe(true)
+    await tick()
+    expect(called(bridge!, 'auth.signOut')).toEqual([{ sub: 'sub-work' }])
+    expect(reload).not.toHaveBeenCalled()
+    expect(inUse(oidc)).toEqual(['sub-person'])
+    expect(oidc.oidcAccounts().map(account => account.sub)).toContain('sub-work')
+  })
+
+  it('turns the setting off through the shell: the page’s person stays, the others go out of use, nothing reloads', async () => {
+    const { oidc, bridge, reload } = await boot(SEVERAL)
+    expect(await oidc.oidcAccessToken(API, 'sub-work')).toBe('token-for:sub-work:' + API)
+    const heard = vi.fn()
+    oidc.oidcSubscribe(heard)
+    expect(await oidc.oidcSetSeveral(false)).toBe(true)
+    await tick()
+    expect(called(bridge!, 'auth.setMode')).toEqual([{ several: false }])
+    expect(called(bridge!, 'auth.switch')).toEqual([])
+    expect(oidc.oidcSeveral()).toBe(false)
+    expect(heard).toHaveBeenCalled()
+    expect(reload).not.toHaveBeenCalled()
+    expect(oidc.oidcClaims()?.sub).toBe('sub-person')
+    expect(inUse(oidc)).toEqual(['sub-person'])
+    expect(await oidc.oidcAccessToken(API, 'sub-work')).toBe('')
+    expect(oidc.oidcAccounts().map(account => [account.sub, account.signedIn])).toEqual([
+      ['sub-person', true],
+      ['sub-old', false],
+      ['sub-work', false],
+    ])
+  })
+
+  it('turning it off keeps the PAGE’s person where the shell has made another active: that is switched back first', async () => {
+    const { oidc, bridge, reload } = await boot(SEVERAL)
+    await bridge!.transport.call('auth.switch', { sub: 'sub-work' })
+    await tick()
+    expect(oidc.oidcClaims()?.sub).toBe('sub-person')
+    expect(await oidc.oidcSetSeveral(false)).toBe(true)
+    await tick()
+    expect(bridge!.calls.filter(c => c.method === 'auth.switch' || c.method === 'auth.setMode').map(c => c.args)).toEqual([
+      { sub: 'sub-work' },
+      { sub: 'sub-person' },
+      { several: false },
+    ])
+    expect(reload).not.toHaveBeenCalled()
+    expect(oidc.oidcClaims()?.sub).toBe('sub-person')
+    expect(inUse(oidc)).toEqual(['sub-person'])
+  })
+
+  it('follows the menu turning it off: the others’ rows go with no reload while the page’s person is the one kept', async () => {
+    const { oidc, bridge, reload } = await boot(SEVERAL)
+    const heard = vi.fn()
+    oidc.oidcSubscribe(heard)
+    await bridge!.transport.call('auth.setMode', { several: false })
+    await tick()
+    expect(oidc.oidcSeveral()).toBe(false)
+    expect(heard).toHaveBeenCalled()
+    expect(reload).not.toHaveBeenCalled()
+    expect(inUse(oidc)).toEqual(['sub-person'])
+  })
+
+  it('reloads when the menu turns it off and keeps someone else: the page’s person was signed out', async () => {
+    const { bridge, reload } = await boot(SEVERAL)
+    await bridge!.transport.call('auth.switch', { sub: 'sub-work' })
+    await tick()
+    expect(reload).not.toHaveBeenCalled()
+    await bridge!.transport.call('auth.setMode', { several: false })
+    await tick()
+    expect(reload).toHaveBeenCalledTimes(1)
+  })
+
+  it('follows the menu turning it on, with no reload', async () => {
+    const { oidc, bridge, reload } = await boot(ONE)
+    await bridge!.transport.call('auth.setMode', { several: true })
+    await tick()
+    expect(oidc.oidcSeveral()).toBe(true)
+    expect(reload).not.toHaveBeenCalled()
+    expect(inUse(oidc)).toEqual(['sub-person'])
+  })
+
+  it('keeps its mode when the shell refuses the change', async () => {
+    const { oidc, bridge } = await boot(SEVERAL)
+    const call = bridge!.transport.call
+    bridge!.transport.call = (async (method: any, args: any) => {
+      if (method === 'auth.setMode') throw new Error('refused')
+      return call(method, args)
+    }) as typeof call
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(await oidc.oidcSetSeveral(false)).toBe(false)
+    expect(oidc.oidcSeveral()).toBe(true)
+    expect(inUse(oidc)).toEqual(['sub-person', 'sub-work'])
+    vi.restoreAllMocks()
+  })
+})
+
+describe('with a shell from before auth.mode', () => {
+  const tick = () => new Promise(r => setTimeout(r))
+
+  it('is one at a time and offers no setting, even where the shell says several are signed in', async () => {
+    const { oidc, bridge } = await boot({
+      accounts: [
+        { sub: 'sub-person', email: 'person@example.com', active: true, signedIn: true },
+        { sub: 'sub-work', email: 'work@example.com', active: false, signedIn: true },
+      ],
+    })
+    expect(oidc.oidcSeveralOffered()).toBe(false)
+    expect(oidc.oidcSeveral()).toBe(false)
+    expect(await oidc.oidcSetSeveral(true)).toBe(false)
+    expect(bridge!.calls.some(c => c.method === 'auth.setMode')).toBe(false)
+    expect(oidc.oidcSignIns().map(signIn => signIn.sub)).toEqual(['sub-person'])
+    expect(await oidc.oidcAccessToken(API, 'sub-work')).toBe('')
+    expect(await oidc.oidcAccessToken(API)).toBe('token-for:sub-person:' + API)
+  })
+
+  it('switches accounts with a reload, as it always did', async () => {
+    const { oidc, bridge, reload } = await boot({
+      accounts: [
+        { sub: 'sub-person', email: 'person@example.com', active: true },
+        { sub: 'sub-work', email: 'work@example.com', active: false },
+      ],
+    })
+    expect(oidc.oidcSeveralOffered()).toBe(false)
+    expect(await oidc.oidcSelectKnownAccount('sub-work')).toBe(true)
+    await tick()
+    expect(bridge!.calls.find(c => c.method === 'auth.switch')!.args).toEqual({ sub: 'sub-work' })
+    expect(reload).toHaveBeenCalled()
+  })
+})
+
+describe('with a shell that keeps one credential in use', () => {
+  it('has one sign-in, the active account, and asks for no other by name', async () => {
+    const { oidc, bridge } = await boot({
+      accounts: [
+        { sub: 'sub-person', email: 'person@example.com', active: true },
+        { sub: 'sub-other', email: 'other@example.com', active: false },
+      ],
+    })
+    expect(oidc.oidcSignIns().map(signIn => signIn.sub)).toEqual(['sub-person'])
+    expect(await oidc.oidcAccessToken(API, 'sub-other')).toBe('')
+    expect(await oidc.oidcSignOutAccount('sub-other')).toBe(false)
+    expect(await oidc.oidcAccessToken(API)).toBe('token-for:sub-person:' + API)
+    expect(bridge!.calls.filter(c => c.method === 'auth.accessToken').map(c => c.args)).toEqual([{ resource: API }])
+  })
+})
+
 describe('with the shell not able to say yet (its device has not said its stage)', () => {
   it('is not signed in meanwhile, and reloads as the person when the shell can say', async () => {
     const { oidc, bridge, reload, used } = await boot({ authUnavailable: true })
