@@ -154,7 +154,7 @@ describe('the phone section list', () => {
   it("lists the section's pages under its name, with their icons", () => {
     render(<Section />)
     expect(title()).toBe('Network')
-    expect(rows()).toEqual(['All networks', 'Exits', 'Public addresses', 'Proxy servers'])
+    expect(rows()).toEqual(['All', 'Exits', 'Public addresses', 'Proxy servers'])
     expect(row('Exits').getAttribute('data-icon')).toBe('door-open')
     expect(row('Exits').getAttribute('data-selected')).toBe('true')
     expect(container.querySelector('nav')?.getAttribute('aria-label')).toBe('Network')
@@ -165,25 +165,25 @@ describe('the phone section list', () => {
       exits: { own: [{ offered: true }, { offered: true }, { offered: false }], shared: [] },
       proxies: [{}],
     })
-    expect(state('All networks')).toBe('6 networks')
+    expect(state('All')).toBe('6 networks')
     expect(state('Exits')).toBe('2 on')
     expect(state('Public addresses')).toBeUndefined()
     expect(state('Proxy servers')).toBe('1 server')
 
     render(<Section />, { exits: { own: [{ offered: false }], shared: [] }, networksInitialized: false })
     expect(state('Exits')).toBe('Off')
-    expect(state('All networks')).toBeUndefined()
+    expect(state('All')).toBeUndefined()
     expect(state('Proxy servers')).toBeUndefined()
   })
 
   it('counts devices online only when the whole list is loaded', () => {
     render(<Section />, { pathname: '/devices', visible: [{ state: 'active' }, { state: 'inactive' }], devices: { ...defaults.devices, total: 2 } })
-    expect(rows()).toEqual(['All devices', 'Connections'])
-    expect(state('All devices')).toBe('2 devices, 1 online')
+    expect(rows()).toEqual(['All', 'Connections'])
+    expect(state('All')).toBe('2 devices, 1 online')
     expect(state('Connections')).toBe('None open')
 
     render(<Section />, { pathname: '/devices', visible: [{ state: 'active' }], active: 3 })
-    expect(state('All devices')).toBe('30 devices')
+    expect(state('All')).toBe('30 devices')
     expect(state('Connections')).toBe('3 open')
   })
 

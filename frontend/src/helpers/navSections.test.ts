@@ -24,9 +24,22 @@ const none: NavGates = {
 
 const shapes: Record<string, NavGates> = {
   'an empty account in a browser': { ...none, connectAi: true },
-  'a fleet operator': { ...none, connectAi: true, services: true, deviceSessions: true, publicAddresses: true, agent: true },
+  'a fleet operator': {
+    ...none,
+    connectAi: true,
+    services: true,
+    deviceSessions: true,
+    publicAddresses: true,
+    agent: true,
+  },
   'a partner': { ...none, connectAi: true, partner: true },
-  'an app with This device': { ...none, connectAi: true, thisDevice: true, deviceSessions: true, publicAddresses: true },
+  'an app with This device': {
+    ...none,
+    connectAi: true,
+    thisDevice: true,
+    deviceSessions: true,
+    publicAddresses: true,
+  },
   'another brand, nothing extra': none,
 }
 
@@ -75,6 +88,15 @@ describe('navSections', () => {
     expect([...all].sort()).toEqual((Object.keys(NAV_PAGES) as NavPageId[]).sort())
   })
 
+  it('gives every page row its own icon, none repeating its section or another page', () => {
+    const shown = NAV_SECTIONS.filter(section => section.pages.length > 1)
+    const icons = [
+      ...shown.map(section => section.icon),
+      ...shown.flatMap(section => section.pages.map(id => NAV_PAGES[id].icon)),
+    ]
+    expect(new Set(icons).size).toBe(icons.length)
+  })
+
   it('keeps the sidebar to six sections', () => {
     const everything = Object.fromEntries(Object.keys(none).map(key => [key, true])) as NavGates
     expect(navSections(everything).map(section => section.id)).toEqual([
@@ -100,14 +122,26 @@ describe('navSections', () => {
           expect(navPageAt(sections, link), link).toBe(page)
           const section = navSectionAt(sections, link)!
           expect(section.pages, link).toContain(page)
-          expect(sectionMatch(section).some(match => link.startsWith(match)), link).toBe(true)
+          expect(
+            sectionMatch(section).some(match => link.startsWith(match)),
+            link
+          ).toBe(true)
         }
     })
   }
 
   it('hides each gated page where its gate is off, and a section with nothing left', () => {
     const pages = pagesOf(none)
-    for (const page of ['thisDevice', 'services', 'exits', 'proxies', 'publicAddresses', 'partnerStats', 'connectAi', 'agent'])
+    for (const page of [
+      'thisDevice',
+      'services',
+      'exits',
+      'proxies',
+      'publicAddresses',
+      'partnerStats',
+      'connectAi',
+      'agent',
+    ])
       expect(pages).not.toContain(page)
     expect(navSections(none).map(section => section.id)).toEqual(['devices', 'network', 'fleet', 'team'])
     expect(navSectionAt(navSections(none), '/exits')).toBeUndefined()
