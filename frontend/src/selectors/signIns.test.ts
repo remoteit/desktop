@@ -17,7 +17,7 @@ import {
   selectSignInSub,
 } from './signIns'
 import { selectMemberships, selectActiveUser, selectShowOrganizations } from './accounts'
-import { selectOrganizationOptions } from './organizations'
+import { selectOrganizationOptions, selectServingAccount, selectSwitcherRows } from './organizations'
 
 /* Personal is the page's own person: a member of Acme and of Shared. Work is signed in beside them: its own account,
    a member of Labs and of Shared too. Each account holds a device with one service. */
@@ -120,6 +120,48 @@ describe('the switcher’s rows', () => {
       ['shared', 'Shared', true, undefined, true],
       ['work', 'work@x.test', false, 'work@x.test', false],
     ])
+  })
+
+  /* An organization two accounts belong to is a row under each: the page's own person's organizations, then each
+     further sign-in's own account and its organizations. Picking a row is choosing who to act as there. */
+  describe('one for each account an organization is reached through', () => {
+    const rows = (s: any) =>
+      selectSwitcherRows(s).map(r => [r.key, r.account, r.roleName, r.shared, r.serving] as const)
+
+    it('the shared organization under both accounts, each in that account’s role, the page’s own person’s serving', () => {
+      expect(rows(state())).toEqual([
+        [':acme', 'personal@x.test', 'Member', false, true],
+        [':shared', 'personal@x.test', 'Admin', true, true],
+        ['sub-work:work', 'work@x.test', 'Owner', false, true],
+        ['sub-work:labs', 'work@x.test', 'Member', false, true],
+        ['sub-work:shared', 'work@x.test', 'Guest', true, false],
+      ])
+      const keys = selectSwitcherRows(state()).map(r => r.key)
+      expect(new Set(keys).size).toBe(keys.length)
+      expect(selectServingAccount(state(), 'shared')).toBe('personal@x.test')
+      expect(selectServingAccount(state(), 'acme')).toBeUndefined()
+    })
+
+    it('the other account’s row picked: served as that account, and only that row is the serving one — kept as stored', () => {
+      // What picking the row stores (accounts.via), as it is read back after a reload.
+      const picked = JSON.parse(JSON.stringify(state({ via: { shared: 'sub-work' } })))
+      const shared = selectSwitcherRows(picked).filter(r => r.id === 'shared')
+      expect(shared.map(r => [r.sub, r.serving])).toEqual([
+        ['', false],
+        ['sub-work', true],
+      ])
+      expect(selectSignInSub(picked, 'shared')).toBe('sub-work')
+      expect(selectServingAccount(picked, 'shared')).toBe('work@x.test')
+    })
+
+    it('that account unchecked or signed out: its rows are gone, and the organization is the other’s to serve', () => {
+      const left = state({ via: { shared: 'sub-work' }, signIns: {} })
+      expect(rows(left)).toEqual([
+        [':acme', 'personal@x.test', 'Member', false, true],
+        [':shared', 'personal@x.test', 'Admin', false, true],
+      ])
+      expect(selectSignInSub(left, 'shared')).toBeUndefined()
+    })
   })
 
   it('show the rail for a person with no organizations once another account is signed in', () => {

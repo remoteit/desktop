@@ -525,7 +525,9 @@ export async function graphQLAdminUsers(
       accountId: filters?.accountId,
       admin: filters?.admin,
       sort,
-    }
+    },
+    false,
+    { sub: '' }
   )
 }
 
@@ -556,7 +558,9 @@ export async function graphQLAdminUser(accountId: string) {
           }
         }
       }`,
-    { accountId }
+    { accountId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -689,7 +693,9 @@ export async function graphQLAdminUserDevices(
           }
         }
       }`,
-    { accountId, from: options.from || 0, size: options.size || 100 }
+    { accountId, from: options.from || 0, size: options.size || 100 },
+    false,
+    { sub: '' }
   )
 }
 
@@ -715,7 +721,9 @@ export async function graphQLAdminEnterpriseCustomers(
           }
         }
       }`,
-    { from: options.from || 0, size: options.size || 50, search: search || undefined }
+    { from: options.from || 0, size: options.size || 50, search: search || undefined },
+    false,
+    { sub: '' }
   )
 }
 
@@ -732,7 +740,10 @@ export async function graphQLAdminAddonProducts() {
             enabled
           }
         }
-      }`
+      }`,
+    {},
+    false,
+    { sub: '' }
   )
 }
 
@@ -761,7 +772,9 @@ export async function graphQLAdminAddonCustomers(
           }
         }
       }`,
-    { product, from: options.from || 0, size: options.size || 50, search: search || undefined }
+    { product, from: options.from || 0, size: options.size || 50, search: search || undefined },
+    false,
+    { sub: '' }
   )
 }
 
@@ -831,7 +844,10 @@ export async function graphQLAdminPartners() {
             }
           }
         }
-      }`
+      }`,
+    {},
+    false,
+    { sub: '' }
   )
 }
 
@@ -902,7 +918,9 @@ export async function graphQLAdminPartner(id: string) {
           }
         }
       }`,
-    { id }
+    { id },
+    false,
+    { sub: '' }
   )
 }
 
@@ -919,7 +937,9 @@ export async function graphQLCreatePartner(name: string, parentId?: string) {
         updated
       }
     }`,
-    { name, parentId }
+    { name, parentId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -931,7 +951,9 @@ export async function graphQLUpdatePartner(id: string, name: string) {
         name
       }
     }`,
-    { id, name }
+    { id, name },
+    false,
+    { sub: '' }
   )
 }
 
@@ -940,7 +962,9 @@ export async function graphQLDeletePartner(id: string) {
     `mutation DeletePartner($id: String!) {
       deletePartner(id: $id)
     }`,
-    { id }
+    { id },
+    false,
+    { sub: '' }
   )
 }
 
@@ -949,7 +973,9 @@ export async function graphQLAddPartnerChild(parentId: string, childId: string) 
     `mutation AddPartnerChild($parentId: String!, $childId: String!) {
       addPartnerChild(parentId: $parentId, childId: $childId)
     }`,
-    { parentId, childId }
+    { parentId, childId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -958,7 +984,9 @@ export async function graphQLRemovePartnerChild(childId: string) {
     `mutation RemovePartnerChild($childId: String!) {
       removePartnerChild(childId: $childId)
     }`,
-    { childId }
+    { childId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -967,7 +995,9 @@ export async function graphQLAddPartnerAdmin(entityId: string, email: string) {
     `mutation AddPartnerAdmin($entityId: String!, $email: String!) {
       addPartnerAdmin(entityId: $entityId, email: $email)
     }`,
-    { entityId, email }
+    { entityId, email },
+    false,
+    { sub: '' }
   )
 }
 
@@ -976,7 +1006,9 @@ export async function graphQLRemovePartnerAdmin(entityId: string, userId: string
     `mutation RemovePartnerAdmin($entityId: String!, $userId: String!) {
       removePartnerAdmin(entityId: $entityId, userId: $userId)
     }`,
-    { entityId, userId }
+    { entityId, userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -985,7 +1017,9 @@ export async function graphQLAddPartnerRegistrant(entityId: string, email: strin
     `mutation AddPartnerRegistrant($entityId: String!, $email: String!) {
       addPartnerRegistrant(entityId: $entityId, email: $email)
     }`,
-    { entityId, email }
+    { entityId, email },
+    false,
+    { sub: '' }
   )
 }
 
@@ -994,7 +1028,9 @@ export async function graphQLRemovePartnerRegistrant(entityId: string, userId: s
     `mutation RemovePartnerRegistrant($entityId: String!, $userId: String!) {
       removePartnerRegistrant(entityId: $entityId, userId: $userId)
     }`,
-    { entityId, userId }
+    { entityId, userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -1003,7 +1039,9 @@ export async function graphQLExportPartnerDevices(entityId: string) {
     `query ExportPartnerDevices($entityId: String!) {
       exportPartnerDevices(entityId: $entityId)
     }`,
-    { entityId }
+    { entityId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -1106,7 +1144,10 @@ export async function graphQLAllNotices() {
           until
           modified
         }
-      }`
+      }`,
+    {},
+    false,
+    { sub: '' }
   )
 }
 
@@ -1153,7 +1194,9 @@ export async function graphQLAdminDevices(
       accountId: filters?.accountId,
       hardwareId: filters?.hardwareId,
       sort,
-    }
+    },
+    false,
+    { sub: '' }
   )
 }
 
@@ -1214,6 +1257,8 @@ export async function graphQLAdminDevice(deviceId: string) {
           }
         }
       }`,
-    { deviceId }
+    { deviceId },
+    false,
+    { sub: '' }
   )
 }

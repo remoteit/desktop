@@ -9,7 +9,7 @@ import { graphQLCreateOrganization, graphQLLeaveMembership } from '../services/g
 import { graphQLBasicRequest, refusalOf } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { mergeDevice } from './devices'
-import { forgetAccountCaches } from '../services/accountCaches'
+import { forgetAccountCaches, rowChanged } from '../services/accountCaches'
 import { RootModel } from '.'
 
 export type IAccountsState = {
@@ -215,11 +215,19 @@ export default createModel<RootModel>()({
       forgetAccountCaches(accountIds)
     },
     /** Serve an organization more than one sign-in reaches through `sub` ('' the page's own person) from now on:
-     *  what was stored for it was read as the other sign-in, so it is read again. */
+     *  what was stored for it was read as the other sign-in, so it is read again. Nothing for a sign-in that does not
+     *  reach it. */
     async setVia({ accountId, sub }: { accountId: string; sub: string }, state) {
       if ((selectSignInSub(state, accountId) || '') === sub) return
+      if (!selectAccountRoutes(state)[accountId]?.reach.some(who => who.sub === sub)) return
       await dispatch.accounts.set({ via: { ...state.accounts.via, [accountId]: sub } })
       await dispatch.accounts.readAgain([accountId])
+    },
+    /** A row of the switcher picked: the organization selected AS the account the row is under — served by that
+     *  account's sign-in from now on (setVia: what was stored for it as another is read again), and selected. */
+    async selectAs({ accountId, sub }: { accountId: string; sub: string }) {
+      await dispatch.accounts.setVia({ accountId, sub })
+      await dispatch.accounts.select(accountId)
     },
     async fetchOrganizationClosures() {
       const result = await graphQLBasicRequest(
@@ -262,6 +270,10 @@ export default createModel<RootModel>()({
       if (accountId !== selectActiveAccountId(state))
         await dispatch.ui.set({ selected: [], selectionAnchor: undefined })
       await dispatch.accounts.set({ activeId: accountId })
+      // Another account's row, looked at through another sign-in: what a page reads for itself by a device's or a
+      // service's id, which may be in both rows, is read again as this one (hooks/useReadAgain).
+      if ((selectSignInSub(state, selectActiveAccountId(state)) || '') !== (selectSignInSub(state, accountId) || ''))
+        rowChanged()
       dispatch.networks.fetchIfEmpty()
       dispatch.devices.fetchIfEmpty()
       dispatch.files.fetchIfEmpty()

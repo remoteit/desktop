@@ -2734,7 +2734,6 @@
     "lockConfirm": "アプリをロックすると、アクティブな接続とホストされているサービスはすべて実行されたままになり、他のユーザーはサインインできなくなります。",
     "logs": "ログ",
     "networks": "ネットワーク",
-    "openAs": "{{account}} として {{name}} を開く",
     "organization": "組織",
     "partnerStats": "パートナー統計",
     "products": "プロダクト",

@@ -779,7 +779,9 @@ export async function graphQLRequestAdminPromotion(userId: string) {
     ` mutation RequestAdminPromotion($userId: String!) {
         requestAdminPromotion(userId: $userId)
       }`,
-    { userId }
+    { userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -788,7 +790,9 @@ export async function graphQLConfirmAdminPromotion(token?: string, code?: string
     ` mutation ConfirmAdminPromotion($token: String, $code: String) {
         confirmAdminPromotion(token: $token, code: $code)
       }`,
-    { token, code }
+    { token, code },
+    false,
+    { sub: '' }
   )
 }
 
@@ -797,7 +801,9 @@ export async function graphQLRemoveAdmin(userId: string) {
     ` mutation RemoveAdmin($userId: String!) {
         removeAdmin(userId: $userId)
       }`,
-    { userId }
+    { userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -814,7 +820,9 @@ export async function graphQLAddEnterpriseCustomer(email: string) {
           created
         }
       }`,
-    { email }
+    { email },
+    false,
+    { sub: '' }
   )
 }
 
@@ -823,7 +831,9 @@ export async function graphQLRemoveEnterpriseCustomer(userId: string) {
     ` mutation RemoveEnterpriseCustomer($userId: String!) {
         removeEnterpriseCustomer(userId: $userId)
       }`,
-    { userId }
+    { userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -845,7 +855,9 @@ export async function graphQLAddAddonCustomer(product: string, email: string, ex
           expiration
         }
       }`,
-    { product, email, expiration }
+    { product, email, expiration },
+    false,
+    { sub: '' }
   )
 }
 
@@ -854,7 +866,9 @@ export async function graphQLRemoveAddonCustomer(product: string, userId: string
     ` mutation RemoveAddonCustomer($product: String!, $userId: String!) {
         removeAddonCustomer(product: $product, userId: $userId)
       }`,
-    { product, userId }
+    { product, userId },
+    false,
+    { sub: '' }
   )
 }
 
@@ -863,7 +877,9 @@ export async function graphQLAdminUpdateEmail(from: string, to: string) {
     ` mutation UpdateEmail($from: String!, $to: String!) {
         updateEmail(from: $from, to: $to)
       }`,
-    { from, to }
+    { from, to },
+    false,
+    { sub: '' }
   )
 }
 
@@ -872,7 +888,9 @@ export async function graphQLAdminDeleteUser(id: string, force: boolean = false)
     ` mutation AdminDeleteUser($id: String!, $force: Boolean) {
         adminDeleteUser(id: $id, force: $force)
       }`,
-    { id, force }
+    { id, force },
+    false,
+    { sub: '' }
   )
 }
 
@@ -883,7 +901,9 @@ export async function graphQLCreateNotice(notice: INoticeInput) {
     ` mutation CreateNotice($notice: NoticeInput!) {
         createNotice(notice: $notice) {${NOTICE_FIELDS}}
       }`,
-    { notice }
+    { notice },
+    false,
+    { sub: '' }
   )
 }
 
@@ -892,7 +912,9 @@ export async function graphQLUpdateNotice(id: string, notice: INoticeInput) {
     ` mutation UpdateNotice($id: String!, $notice: NoticeInput!) {
         updateNotice(id: $id, notice: $notice) {${NOTICE_FIELDS}}
       }`,
-    { id, notice }
+    { id, notice },
+    false,
+    { sub: '' }
   )
 }
 
@@ -901,6 +923,8 @@ export async function graphQLDeleteNotice(id: string) {
     ` mutation DeleteNotice($id: String!) {
         deleteNotice(id: $id)
       }`,
-    { id }
+    { id },
+    false,
+    { sub: '' }
   )
 }

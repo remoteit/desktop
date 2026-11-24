@@ -2786,7 +2786,6 @@
     "lockConfirm": "Locking the app will leave all active connections and hosted services running and prevent others from signing in.",
     "logs": "Logs",
     "networks": "Networks",
-    "openAs": "Open {{name}} as {{account}}",
     "organization": "Organization",
     "partnerStats": "Partner Stats",
     "products": "Products",

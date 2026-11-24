@@ -35,7 +35,7 @@ const fieldNames = (type: any) => new Set<string>((type?.fields || []).map((f: {
 
 export function fleetSchema() {
   if (!served)
-    served = post({ query: PROBE }).then(response => {
+    served = post({ query: PROBE }, '', false, false, { sub: '' }).then(response => {
       if (response === 'ERROR' || response.data?.errors) {
         served = undefined
         return 'ERROR' as const
@@ -76,7 +76,7 @@ export function resetFleetSchema() {
 }
 
 async function read<T>(query: string, variables: ILookup<any>, field: string): Promise<Result<T>> {
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', false, false, { sub: '' })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (errors) return 'ERROR'

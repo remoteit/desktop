@@ -21,7 +21,6 @@ import {
   oidcSeveralOffered,
   oidcSubscribe,
 } from '../services/oidc'
-import { selectOrganizationOptions } from '../selectors/organizations'
 import { emit } from '../services/Controller'
 import browser from '../services/browser'
 import { DESKTOP_HELP_LINK } from '../constants'
@@ -60,10 +59,6 @@ export const AvatarMenu: React.FC = () => {
   }
   const licenseIndicator = useSelector(selectLicenseIndicator)
   const activeUser = useSelector(selectActiveUser)
-  // The selected organization, where more than one sign-in reaches it: the others it can be opened as.
-  const shared = useSelector((state: State) =>
-    selectOrganizationOptions(state).find(option => option.id === activeUser.id && option.reach)
-  )
 
   // An account joining or leaving (here, in another tab, in the app's menu) changes the rows while the menu is up.
   useEffect(() => oidcSubscribe(setAccounts), [])
@@ -208,25 +203,6 @@ export const AvatarMenu: React.FC = () => {
             }}
           />
         </DesktopUI>
-        {/* An organization more than one sign-in reaches is one row, served by one of them: the others are offered
-            here, for the row that is selected. */}
-        {shared?.reach
-          ?.filter(sign => sign.sub !== (shared.via?.sub || ''))
-          .map(sign => (
-            <ListItemSetting
-              key={sign.sub}
-              label={t('nav.openAs', {
-                name: shared.name,
-                account: sign.email,
-                defaultValue: 'Open {{name}} as {{account}}',
-              })}
-              icon="arrow-right-arrow-left"
-              onClick={async () => {
-                handleClose()
-                await dispatch.accounts.setVia({ accountId: shared.id, sub: sign.sub })
-              }}
-            />
-          ))}
         {/* The accounts (services/oidc.ts registry; in an app, its shell's), the page's own person first. Emails render
             as-is (identities are not translated); the AS chooser behind "Sign in on this device" below is the way to
             ADD one.

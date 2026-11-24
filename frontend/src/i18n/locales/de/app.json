@@ -2786,7 +2786,6 @@
     "lockConfirm": "Wenn Sie die App sperren, bleiben alle aktiven Verbindungen und gehosteten Dienste weiterhin aktiv, und andere Benutzer können sich nicht anmelden.",
     "logs": "Protokolle",
     "networks": "Netzwerke",
-    "openAs": "{{name}} als {{account}} öffnen",
     "organization": "Organisation",
     "partnerStats": "Partnerstatistiken",
     "products": "Produkte",

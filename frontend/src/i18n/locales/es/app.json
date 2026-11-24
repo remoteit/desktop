@@ -2838,7 +2838,6 @@
     "lockConfirm": "Al bloquear la aplicación, todas las conexiones activas y los servicios alojados seguirán en ejecución, y no se permitirá que otros usuarios inicien sesión.",
     "logs": "Registros",
     "networks": "Redes",
-    "openAs": "Abrir {{name}} como {{account}}",
     "organization": "Organización",
     "partnerStats": "Estadísticas de socios",
     "products": "Productos",

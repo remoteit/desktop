@@ -16,6 +16,7 @@ import {
 import { selectActiveAccountId, isUserAccount, selectActiveUser } from './accounts'
 import { defaultState, canMemberView, DEFAULT_ROLE } from '../models/organization'
 import { selectMembership, selectMemberships } from './accounts'
+import { getSignIns, selectAccountRoutes } from './signIns'
 
 export const selectOrganization = createSelector(
   [selectActiveAccountId, getOrganizations, selectMembership, getUser],
@@ -51,6 +52,78 @@ export const selectOrganizationOptions = createSelector(
       })
       .sort(byName)
 )
+
+/* THE SWITCHER'S ROWS: one for each account an organization is reached through. With several sign-ins in use, an
+   organization two of them belong to is a row under each — the page's own person's organizations, then each further
+   sign-in's own account and its organizations — and picking a row is how the person says who they act as there
+   (models/accounts selectAs). `sub` is the row's sign-in ('' the page's own person) and `account` its email; `role`s
+   are that account's own; `shared` where another account here has a row for the same organization, which is when a
+   row says whose it is; `serving` on the row whose account the organization is served by now — the one row of an
+   organization that can be the selected one. */
+export type SwitcherRow = {
+  key: string
+  id: string
+  sub: string
+  account: string
+  email: string
+  name?: string
+  roleId: string
+  roleName: string
+  disabled: boolean
+  signIn?: boolean
+  shared: boolean
+  serving: boolean
+}
+
+export const selectSwitcherRows = createSelector(
+  [getMemberships, getSignIns, selectAccountRoutes, getOrganizations, (state: State) => state.user?.email || ''],
+  (memberships, signIns, routes, organizations, userEmail): SwitcherRow[] => {
+    const row = (sub: string, account: string, m: IMembership, signIn?: boolean): SwitcherRow => {
+      const id = m.account.id
+      const org = organizations[id] || defaultState
+      return {
+        key: `${sub}:${id}`,
+        id,
+        sub,
+        account,
+        email: m.account.email,
+        name: org.name || m.name || (signIn ? m.account.email : undefined),
+        roleId: m.roleId,
+        roleName: m.roleName,
+        disabled: !org.id && !signIn,
+        ...(signIn && { signIn }),
+        shared: (routes[id]?.reach.length || 0) > 1,
+        serving: (routes[id]?.sub || '') === sub,
+      }
+    }
+    const of = (sub: string, account: string, list: IMembership[]) => list.map(m => row(sub, account, m)).sort(byName)
+    return [
+      ...of('', userEmail, memberships),
+      ...Object.values(signIns).flatMap(signIn => [
+        row(
+          signIn.sub,
+          signIn.email,
+          {
+            roleId: 'OWNER',
+            roleName: 'Owner',
+            license: 'UNKNOWN',
+            created: new Date(0),
+            account: { id: signIn.id, email: signIn.email },
+          },
+          true
+        ),
+        ...of(signIn.sub, signIn.email, signIn.membership),
+      ]),
+    ]
+  }
+)
+
+/** Whose an account's row is where more than one account here has one for it: the email of the account serving it
+ *  now. Undefined where one account alone reaches it — nothing to say. */
+export const selectServingAccount = (state: State, accountId?: string): string | undefined => {
+  const route = accountId ? selectAccountRoutes(state)[accountId] : undefined
+  return route && route.reach.length > 1 ? route.email || state.user?.email || '' : undefined
+}
 
 /** The organizations the page's own person belongs to, in their own role there: what a page about that one person
  *  lists (their notifications, the device they register). Their memberships, not the switcher's rows: another

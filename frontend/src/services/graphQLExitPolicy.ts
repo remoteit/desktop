@@ -34,7 +34,7 @@ const POLICY_FIELDS =
 
 export async function graphQLExitPolicy() {
   const query = `query ExitPolicy { exitPolicy { ${POLICY_FIELDS} } }`
-  const response = await post({ query, variables: {} })
+  const response = await post({ query, variables: {} }, '', false, false, { sub: '' })
   if (response === 'ERROR') return 'ERROR' as const
   const errors = graphQLGetErrors(response, true, { query, variables: {} })
   if (withoutDeviceSessions(errors, 'exitPolicy')) return UNSUPPORTED
@@ -47,7 +47,7 @@ export async function graphQLExitPolicy() {
 
 async function graphQLAccessLogDays(): Promise<number | undefined> {
   const query = `query AccessLogDays { exitPolicy { accessLogDays } }`
-  const response = await post({ query, variables: {} })
+  const response = await post({ query, variables: {} }, '', false, false, { sub: '' })
   if (response === 'ERROR') return undefined
   return response.data?.data?.exitPolicy?.accessLogDays ?? undefined
 }
@@ -63,7 +63,9 @@ export const graphQLSetExitPolicy = (change: ExitPolicyChange) =>
       : ` mutation SetAccessLogDays($accessLogDays: Int) {
         setExitPolicy(accessLogDays: $accessLogDays) { accessLogDays }
       }`,
-    change
+    change,
+    false,
+    { sub: '' }
   )
 
 // Stops an account using remote.it's exits, with a reason; no reason lets it again.
@@ -72,5 +74,7 @@ export const graphQLSetExitSuspended = (accountId: string, reason: string | null
     ` mutation SetExitSuspended($accountId: String!, $reason: String) {
         setExitSuspended(accountId: $accountId, reason: $reason)
       }`,
-    { accountId, reason }
+    { accountId, reason },
+    false,
+    { sub: '' }
   )

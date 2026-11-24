@@ -15,7 +15,7 @@ vi.mock('../selectors/accounts', () => ({
 }))
 
 import accounts from './accounts'
-import { accountCache } from '../services/accountCaches'
+import { accountCache, followAccountsDropped } from '../services/accountCaches'
 
 const CLEARED = { selected: [], selectionAnchor: undefined }
 const state = { accounts: { activeId: 'ORG-A', membership: [] }, auth: { user: { id: 'USER' } }, user: { id: 'USER' } }
@@ -82,15 +82,26 @@ describe('the sign-ins beside the page’s own person', () => {
       },
     },
   })
-  function effectsWith(state: object) {
+  // The state as the effects leave it: what accounts.set is given goes into it, as the store's reducer would.
+  function effectsWith(state: any) {
+    let current = state
     const dispatch: any = {
-      accounts: { set: vi.fn(), select: vi.fn(), forgetData: vi.fn() },
+      accounts: {
+        set: vi.fn((params: object) => void (current = { ...current, accounts: { ...current.accounts, ...params } })),
+        select: vi.fn(),
+        forgetData: vi.fn(),
+      },
       organization: { fetch: vi.fn() },
     }
     const effects = (accounts as any).effects(dispatch)
-    dispatch.accounts.setSignIns = vi.fn((signIns: object) => effects.setSignIns(signIns, state))
-    dispatch.accounts.readAgain = vi.fn((ids: string[]) => effects.readAgain(ids, state))
-    return { dispatch, effects, run: (effect: string, payload?: unknown) => effects[effect](payload, state) }
+    dispatch.accounts.setSignIns = vi.fn((signIns: object) => effects.setSignIns(signIns, current))
+    dispatch.accounts.readAgain = vi.fn((ids: string[]) => effects.readAgain(ids, current))
+    dispatch.accounts.setVia = vi.fn((payload: object) => effects.setVia(payload, current))
+    return {
+      dispatch,
+      effects,
+      run: (effect: string, payload?: unknown) => effects[effect](payload, current),
+    }
   }
   const inUse = (...subs: string[]) =>
     oidcSignIns.mockReturnValue([
@@ -380,6 +391,50 @@ describe('the sign-ins beside the page’s own person', () => {
     expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['acme'])
     expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
     expect(dispatch.accounts.select).toHaveBeenCalledWith('acme')
+  })
+
+  it('select an organization as the account whose row is picked: served by it from now on, and selected', async () => {
+    const both = { ...work, membership: [member('labs'), member('acme')] }
+    const { dispatch, run } = effectsWith(signedIn({ 'sub-work': both }))
+    await run('selectAs', { accountId: 'acme', sub: 'sub-work' })
+    expect(dispatch.accounts.set).toHaveBeenCalledWith({ via: { acme: 'sub-work' } })
+    expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['acme'])
+    expect(dispatch.accounts.select).toHaveBeenLastCalledWith('acme')
+    // The row of the account already serving it: selected, nothing read again.
+    dispatch.accounts.set.mockClear()
+    await run('selectAs', { accountId: 'labs', sub: 'sub-work' })
+    expect(dispatch.accounts.set).not.toHaveBeenCalled()
+    expect(dispatch.accounts.select).toHaveBeenLastCalledWith('labs')
+  })
+
+  it('tell what a page reads for itself to read again when the row selected is another sign-in’s', async () => {
+    const told = vi.fn()
+    const stop = followAccountsDropped(told)
+    const dispatch: any = {
+      logs: { reset: vi.fn() },
+      ui: { set: vi.fn() },
+      accounts: { set: vi.fn() },
+      ...Object.fromEntries(
+        ['networks', 'devices', 'files', 'tags', 'products', 'partnerStats'].map(model => [
+          model,
+          { fetchIfEmpty: vi.fn() },
+        ])
+      ),
+    }
+    const state = signedIn({ 'sub-work': work }, { activeId: 'acme' })
+    // From the page's own person's organization to another of theirs: the same sign-in, nothing to read again.
+    await (accounts as any).effects(dispatch).select('personal', state)
+    expect(told).not.toHaveBeenCalled()
+    // To a row of Work's: another sign-in's.
+    await (accounts as any).effects(dispatch).select('labs', state)
+    expect(told).toHaveBeenCalledTimes(1)
+    stop()
+  })
+
+  it('serve nothing through a sign-in that does not reach the organization', async () => {
+    const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
+    await run('setVia', { accountId: 'acme', sub: 'sub-work' })
+    expect(dispatch.accounts.set).not.toHaveBeenCalled()
   })
 
   it('change nothing when the organization is already served by that sign-in', async () => {

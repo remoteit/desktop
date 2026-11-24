@@ -36,7 +36,7 @@ vi.mock('../services/oidc', () => ({
 vi.mock('react-redux', () => ({
   useSelector: (select: (state: any) => unknown) =>
     select({ auth: { user: { email: 'a@x.test' }, backendAuthenticated: false }, ui: {} }),
-  useDispatch: () => ({ auth, accounts: { setVia: vi.fn() }, feedback: { set: vi.fn() }, ui: { setPersistent: vi.fn() } }),
+  useDispatch: () => ({ auth, feedback: { set: vi.fn() }, ui: { setPersistent: vi.fn() } }),
 }))
 vi.mock('react-router-dom', () => ({ useHistory: () => ({ push: vi.fn(), replace: vi.fn() }) }))
 vi.mock('react-i18next', () => ({
@@ -52,7 +52,6 @@ vi.mock('../store', () => ({}))
 vi.mock('../hooks/useChatEnabled', () => ({ useHideSidebar: () => false }))
 vi.mock('../models/plans', () => ({ selectLicenseIndicator: () => 0 }))
 vi.mock('../selectors/accounts', () => ({ selectActiveUser: () => ({ id: 'personal', email: 'a@x.test' }) }))
-vi.mock('../selectors/organizations', () => ({ selectOrganizationOptions: () => [] }))
 vi.mock('../helpers/uiHelper', () => ({ isRemoteUI: () => false }))
 vi.mock('../services/Controller', () => ({ emit: vi.fn() }))
 vi.mock('../services/browser', () => ({ default: browser }))
