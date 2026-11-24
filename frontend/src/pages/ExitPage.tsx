@@ -341,7 +341,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                   disabled={busy}
                   onClick={event => {
                     event.stopPropagation()
-                    change(() => graphQLSetNetworkExit(network.id, exit.id, false), failed)
+                    change(() => graphQLSetNetworkExit(network.id, exit.id, false, 'exit'), failed)
                   }}
                 />
               </ListItemLocation>

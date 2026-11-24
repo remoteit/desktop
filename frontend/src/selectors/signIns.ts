@@ -223,7 +223,8 @@ export const requestSignInNow = (requestFor?: RequestFor, variables?: ILookup<an
   stateNow ? requestSignIn(stateNow(), requestFor, variables) : undefined
 
 /* The sign-in a request is made as. With one sign-in in use there is nothing to decide. Otherwise, in order: what
-   the caller said; the account the variables name (`accountId`); the account whose stored lists hold an id the
+   the caller said; the account the variables name (`accountId`, unless the caller says what the request is about:
+   then it is data, and what it is about says first); the account whose stored lists hold an id the
    variables name — the selected account first, then any the primary serves, then the rest — so a change to a device
    reached only through another sign-in is made as that sign-in; the account an id no list holds was made or read
    under (noteAccountOf), in that same order where there are several; else the primary. A request about the person
@@ -233,13 +234,20 @@ export function requestSignIn(state: State, requestFor?: RequestFor, variables?:
   if (requestFor?.sub !== undefined) return requestFor.sub || undefined
   if (!state.accounts?.signIns || !Object.keys(state.accounts.signIns).length) return undefined
   if (requestFor?.account) return selectSignInSub(state, requestFor.account)
-  if (typeof variables?.accountId === 'string' && variables.accountId)
-    return selectSignInSub(state, variables.accountId)
-  const named = requestFor?.about ?? namedIds(variables)
-  if (!named.length) return undefined
+  // An `accountId` among the variables is whose request it is — unless the caller says what the request is `about`:
+  // then the variable is data (the account whose devices a network takes by tag, whose tags are set on it), and says
+  // only where nothing known says whose what it is about is.
+  const named: string | undefined =
+    typeof variables?.accountId === 'string' && variables.accountId ? variables.accountId : undefined
+  const about = requestFor?.about
+  if (named && !about) return selectSignInSub(state, named)
+  const unknown = () =>
+    named ? selectSignInSub(state, named) : requestFor?.orAccount ? routes[requestFor.orAccount]?.sub : undefined
   const routes = selectAccountRoutes(state)
+  const ids = about ?? namedIds(variables)
+  if (!ids.length) return unknown()
   const held = selectHeldIds(state)
-  const holds = (accountId: string) => named.some(id => held[accountId]?.has(id))
+  const holds = (accountId: string) => ids.some(id => held[accountId]?.has(id))
   const selected = getActiveId(state) || getUserId(state)
   if (selected && routes[selected] && holds(selected)) return routes[selected].sub
   const accountIds = Object.keys(routes)
@@ -247,8 +255,8 @@ export function requestSignIn(state: State, requestFor?: RequestFor, variables?:
   const other = accountIds.find(id => routes[id].sub && holds(id))
   if (other) return routes[other].sub
   // Noted under more than one account here (an exit of one, shared with another): in the same order of preference.
-  const of = named.flatMap(id => [...(noted.get(id) || [])]).filter(accountId => routes[accountId])
-  if (!of.length) return requestFor?.orAccount ? routes[requestFor.orAccount]?.sub : undefined
+  const of = ids.flatMap(id => [...(noted.get(id) || [])]).filter(accountId => routes[accountId])
+  if (!of.length) return unknown()
   if (selected && of.includes(selected)) return routes[selected].sub
   return of.some(accountId => !routes[accountId].sub) ? undefined : routes[of[0]].sub
 }

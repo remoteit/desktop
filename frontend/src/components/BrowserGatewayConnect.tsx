@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Typography } from '@mui/material'
 import { IconButton } from '../buttons/IconButton'
@@ -8,6 +8,7 @@ import { OTHER_SIGN_IN, GatewayOpened, gatewayURL, openThroughGateway } from '..
 import browser from '../services/browser'
 import { openTerminal } from '../helpers/terminalHelper'
 import { Icon } from './Icon'
+import { useReadAgain } from '../hooks/useReadAgain'
 
 /* A web service with no agent here to reach it (services/browserGateway): it opens in its own tab, carried by this
    browser's remote.it client — nothing to install, and no connection to start. An SSH service opens a terminal in
@@ -28,6 +29,9 @@ export const BrowserGatewayConnect: React.FC<Props> = ({ name, service, terminal
   const [opening, setOpening] = useState(false)
   // What the last try to open it came to: nothing is said of one that opened, or of none yet.
   const [opened, setOpened] = useState<GatewayOpened>(true)
+  // Said of the sign-in serving the service then: not left up when another comes to serve it.
+  const dropped = useReadAgain()
+  useEffect(() => setOpened(true), [dropped])
   const external = !terminal && browser.isIOSDeviceApp
   const address = gatewayURL(name)
     .replace(/^https:\/\//, '')

@@ -9,6 +9,7 @@ import { useAppSwitch } from './AppRootConsent'
 import { useSubnetName } from '../hooks/useLocalSubnetName'
 import { opensTerminal } from '../helpers/sshHelper'
 import { openTerminal, terminalReaches } from '../helpers/terminalHelper'
+import { useReadAgain } from '../hooks/useReadAgain'
 import { IconButton } from '../buttons/IconButton'
 import { Link } from './Link'
 import { Icon } from './Icon'
@@ -40,6 +41,8 @@ export const AppTerminalAction: React.FC<{ device: IDevice; app: DeviceApp; serv
   service,
 }) => {
   const { t } = useTranslation()
+  // Whether the terminal reaches the service is whose sign-in serves it: looked at again when that changes.
+  useReadAgain()
   const terminal = opensTerminal(app, service)
   const name = useSubnetName(terminal ? device.id : undefined)
   const port = servicePort(device, service.serviceId)
@@ -58,6 +61,7 @@ export const AppTerminalAction: React.FC<{ device: IDevice; app: DeviceApp; serv
 export const AppTerminalButton: React.FC<{ device: IDevice; service: IService }> = ({ device, service }) => {
   const { t } = useTranslation()
   const { app, appService } = useServiceApp(device, service)
+  useReadAgain()
   const terminal = opensTerminal(app, appService)
   const name = useSubnetName(terminal ? device.id : undefined)
   const port = service.port
@@ -89,6 +93,7 @@ export const AppTerminalOption: React.FC<{ device?: IDevice; service?: IService;
   serving: { app, appService, switching, turn, setRelease },
 }) => {
   const { t } = useTranslation()
+  useReadAgain()
   const terminal = opensTerminal(app, appService)
   const name = useSubnetName(terminal ? device?.id : undefined)
   const { flip, consent } = useAppSwitch({ turn, setRelease }, undefined, undefined, device?.accountId)

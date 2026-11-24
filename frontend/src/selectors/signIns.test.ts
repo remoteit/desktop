@@ -199,6 +199,21 @@ describe('the sign-in a request is made as', () => {
     resetNotedAccounts()
   })
 
+  it('takes an accountId among the variables as data where the caller says what the request is about', () => {
+    resetNotedAccounts()
+    // Work administers a network (read with Labs') and takes Shared's devices into it by tag. Shared is the page's own
+    // person's to serve, who may not: the rule is the network's manager's to make.
+    noteAccountOf('labs', ['net-y'])
+    const rule = { networkId: 'net-y', tags: ['lab'], accountId: 'shared' }
+    expect(requestSignIn(state(), undefined, rule)).toBeUndefined()
+    expect(requestSignIn(state(), { about: ['net-y'] }, rule)).toBe('sub-work')
+    // Where nothing known says whose the network is, the account named still says.
+    expect(requestSignIn(state(), { about: ['net-unknown'] }, { ...rule, accountId: 'labs' })).toBe('sub-work')
+    // A stored list's word comes first, as ever.
+    expect(requestSignIn(state(), { about: ['net-labs'] }, { accountId: 'acme' })).toBe('sub-work')
+    resetNotedAccounts()
+  })
+
   it('prefers the selected account, then any the primary serves, for something read under more than one', () => {
     resetNotedAccounts()
     // An exit of Acme's, shared with Labs: listed for Labs first, then for Acme.

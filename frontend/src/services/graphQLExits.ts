@@ -242,12 +242,20 @@ export const graphQLLeaveExitShare = (exit: string) =>
   graphQLRequestWithReason(` mutation LeaveExitShare($exit: String!) { leaveExitShare(exit: $exit) }`, { exit })
 
 // One of your exits made available on a network you manage — or no longer, from the network's side or the exit's.
-export const graphQLSetNetworkExit = (networkId: string, exit: string, available: boolean) =>
+// `side`: whose page asks — the network's, or the exit's. graphql takes an exit made available from one who manages
+// both, and one withdrawn from either side: asked as the sign-in of the side that asks.
+export const graphQLSetNetworkExit = (
+  networkId: string,
+  exit: string,
+  available: boolean,
+  side: 'network' | 'exit' = 'network'
+) =>
   graphQLRequestWithReason(
     ` mutation SetNetworkExit($networkId: String!, $exit: String!, $available: Boolean!) {
       setNetworkExit(networkId: $networkId, exit: $exit, available: $available)
     }`,
-    { networkId, exit, available }
+    { networkId, exit, available },
+    { about: [side === 'exit' ? exit : networkId] }
   )
 
 // Each of the account's networks' exits, by network. Asked apart from the networks, so an API without them still shows

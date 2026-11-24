@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -18,7 +18,7 @@ import { Gutters } from '../components/Gutters'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
 import { IconButton } from '../buttons/IconButton'
-import { useReadEffect } from '../hooks/useReadAgain'
+import { useReadAgain, useReadEffect } from '../hooks/useReadAgain'
 
 export function ServicesPage() {
   const accountId = useSelector(selectActiveAccountId)
@@ -102,6 +102,9 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   const { t } = useTranslation()
   const [opening, setOpening] = useState(false)
   const [failed, setFailed] = useState(false)
+  // Said of the sign-in serving the service then: not left up when another comes to serve it.
+  const dropped = useReadAgain()
+  useEffect(() => setFailed(false), [dropped])
   const to = `/devices/${service.device.id}/${service.id}/connect`
   const online = service.enabled && service.state === 'active'
   const type = useSelector((state: State) => state.applicationTypes.all.find(type => type.id === service.application))

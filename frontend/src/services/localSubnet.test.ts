@@ -223,4 +223,24 @@ describe('with several sign-ins in use', () => {
     expect(made).toHaveLength(2)
     Object.keys(state).forEach(key => delete state[key])
   })
+
+  it('whoever shows an answer is told to ask again when another sign-in comes to serve an account, and asks as them', async () => {
+    const { localSubnetName, onLocalForgotten } = await load()
+    const { forgetAccountCaches } = await import('./accountCaches')
+    const told = vi.fn()
+    const off = onLocalForgotten(told)
+    await localSubnetName('s-work', 'pi')
+    expect(read).toEqual([['s-work', 'sub-work']])
+    // The service's account is the page's own person's to serve from now on: the same name, another's answer.
+    state.devices = { me: { all: [...state.devices.me.all, ...state.devices.work.all] } }
+    forgetAccountCaches(['work'])
+    expect(told).toHaveBeenCalledTimes(1)
+    await localSubnetName('s-work', 'pi')
+    expect(read).toEqual([
+      ['s-work', 'sub-work'],
+      ['s-work', undefined],
+    ])
+    off()
+    Object.keys(state).forEach(key => delete state[key])
+  })
 })
