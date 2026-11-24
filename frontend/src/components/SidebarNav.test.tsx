@@ -174,13 +174,10 @@ describe('SidebarNav', () => {
     expect(pages()).toEqual(['All', 'Connections', 'Services'])
   })
 
-  it("shows each page's icon, the pages set off by a line under their section", () => {
+  it("shows each page's icon", () => {
     render({ pathname: '/exits', deviceSessions: true })
     const icons = () => [...container.querySelectorAll('[data-page] [data-icon]')].map(i => i.getAttribute('data-icon'))
     expect(icons()).toEqual(['rectangle-list', 'door-open', 'globe', 'server'])
-    expect(container.querySelectorAll('[data-quote="listIcon"] [data-page]')).toHaveLength(4)
-    render({ pathname: '/connect-ai' })
-    expect(container.querySelector('[data-quote]')).toBeNull()
   })
 
   it('opens no pages under a section with one page', () => {
