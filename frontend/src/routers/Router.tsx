@@ -70,6 +70,7 @@ import { ProxyPage } from '../pages/ProxyPage'
 import { ProxyAddPage } from '../pages/ProxyAddPage'
 import { ChooseOne } from '../components/ChooseOne'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
+import { useServingChange } from '../hooks/useServingChange'
 import { PublisherPage } from '../pages/PublisherPage'
 import { ConnectAIPage } from '../pages/ConnectAIPage'
 import { AccessKeyPage } from '../pages/AccessKeyPage'
@@ -105,6 +106,7 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   const os = useSelector((state: State) => state.backend.environment.os) || getOs()
   // Connected Apps depends on an API that ships with the MCP production release
   const virtualDevices = useVirtualDevices()
+  const served = useServingChange()
   const deviceSessions = useDeviceSessions()
 
   // A push tap's route (services/pushNotifications), kept across the webview reload of a mobile sign-in
@@ -128,7 +130,8 @@ export const Router: React.FC<{ layout: ILayout }> = ({ layout }) => {
   }, [history.location, ui, redirect])
 
   return (
-    <Switch>
+    // Keyed by the sign-in serving the selected account: a change of it mounts the pages again (useServingChange).
+    <Switch key={served}>
       {/* Deep links */}
       <Redirect
         from="/connect/:serviceID"

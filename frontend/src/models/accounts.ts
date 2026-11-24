@@ -9,6 +9,7 @@ import { graphQLCreateOrganization, graphQLLeaveMembership } from '../services/g
 import { graphQLBasicRequest, refusalOf } from '../services/graphQL'
 import { AxiosResponse } from 'axios'
 import { mergeDevice } from './devices'
+import { forgetAccountCaches } from '../services/accountCaches'
 import { RootModel } from '.'
 
 export type IAccountsState = {
@@ -40,8 +41,8 @@ function membershipFrom(data): IMembership {
   }
 }
 
-/* What a change to the sign-ins or the memberships does to the rows: those `gone`, and those `moved` — still rows, but
-   served by another sign-in than the one their stored data was read as. */
+/* What a change to the sign-ins or the memberships does to the rows: those `gone`, those `moved` — still rows, but
+   served by another sign-in than the one their stored data was read as — and those `added`. */
 function rowsAfter(state: State, change: Partial<IAccountsState>) {
   const before = selectAccountRoutes(state)
   const after = selectAccountRoutes({ ...state, accounts: { ...state.accounts, ...change } } as State)
@@ -49,6 +50,7 @@ function rowsAfter(state: State, change: Partial<IAccountsState>) {
   return {
     gone: ids.filter(id => !after[id]),
     moved: ids.filter(id => after[id] && after[id].sub !== before[id].sub),
+    added: Object.keys(after).filter(id => !before[id]),
   }
 }
 
@@ -87,7 +89,9 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch() {
       void dispatch.accounts.fetchOrganizationClosures()
-      void dispatch.accounts.fetchSignIns()
+      // Beside the primary's own, and done with it: what is read next by account (organization.fetch, in the cloud
+      // sync) then asks about every sign-in's rows as they are now.
+      const signIns = dispatch.accounts.fetchSignIns()
       const result = await graphQLBasicRequest(
         ` query Accounts {
               login {
@@ -110,8 +114,8 @@ export default createModel<RootModel>()({
               }
             }`
       )
-      if (result === 'ERROR') return
-      await dispatch.accounts.parse(result)
+      if (result !== 'ERROR') await dispatch.accounts.parse(result)
+      await signIns
     },
     async parse(gqlResponse: AxiosResponse<any>, state) {
       const gqlData = gqlResponse.data?.data?.login
@@ -162,8 +166,7 @@ export default createModel<RootModel>()({
       await dispatch.accounts.setSignIns(signIns)
     },
     async setSignIns(signIns: ILookup<ISignIn>, state) {
-      const { gone, moved } = rowsAfter(state, { signIns })
-      const added = Object.keys(signIns).some(sub => !getSignIns(state)[sub])
+      const { gone, moved, added } = rowsAfter(state, { signIns })
       await dispatch.accounts.set({ signIns })
       if (gone.length) {
         if (state.accounts.activeId && gone.includes(state.accounts.activeId)) {
@@ -173,17 +176,22 @@ export default createModel<RootModel>()({
       }
       // A row two sign-ins reach, whose serving one left or was put behind another: the other's from now on.
       if (moved.length) await dispatch.accounts.readAgain(moved)
-      // The new rows' organizations (names, licenses, limits) are read as the sign-in that serves them.
-      else if (added) void dispatch.organization.fetch()
+      // The new rows' organizations (names, licenses, limits) are read as the sign-in that serves them: a sign-in's
+      // that joins, and one an account already here has joined since.
+      else if (added.length) void dispatch.organization.fetch()
     },
     /** Rows now served by another sign-in: what was stored for them was read as the one before — maybe in another
      *  role, or seeing other devices — so it is dropped and read again as the one that serves them now. */
     async readAgain(accountIds: string[], state) {
+      const active = selectActiveAccountId(state)
+      const runs = accountIds.includes(active) && !!state.jobs?.all?.[active]
       dispatch.accounts.forgetData(accountIds)
       void dispatch.organization.fetch()
-      // Selected: its lists are read again, now that nothing is stored for it.
-      const active = selectActiveAccountId(state)
-      if (accountIds.includes(active)) await dispatch.accounts.select(active)
+      if (!accountIds.includes(active)) return
+      // Selected: its lists are read again, now that nothing is stored for it — its runs too where they were read,
+      // which a change of account does not read (the runs page does, and it is not opened again by this).
+      await dispatch.accounts.select(active)
+      if (runs) dispatch.jobs.fetch({ accountId: active })
     },
     /** What is stored for accounts that are no longer rows: dropped from every list kept by account id. */
     forgetData(accountIds: string[]) {
@@ -197,6 +205,7 @@ export default createModel<RootModel>()({
       dispatch.tags.forget(accountIds)
       dispatch.organization.forget(accountIds)
       dispatch.applicationTypes.forget(accountIds)
+      forgetAccountCaches(accountIds)
     },
     /** Serve an organization more than one sign-in reaches through `sub` ('' the page's own person) from now on:
      *  what was stored for it was read as the other sign-in, so it is read again. */

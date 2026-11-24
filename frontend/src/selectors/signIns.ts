@@ -123,7 +123,8 @@ const selectHeldIds = createSelector(
    new service), and what is only ever read into a page (an exit, a proxy). Said where they are made or read with their
    account (noteAccountOf), so a later request that names one alone is still made as the sign-in that serves that
    account, not as the primary. An id may be read under more than one account (an exit shared with one, read again
-   under its owner's): the first of them that is a row here is used. For the page's life: none of it is state. */
+   under its owner's): the selected one is used, then one the primary serves, then the first of the rest. For the
+   page's life: none of it is state. */
 const noted = new Map<string, Set<string>>()
 
 export function noteAccountOf(accountId: string | undefined, ids: (string | undefined | null)[]) {
@@ -160,7 +161,7 @@ export const selectPersonFor = (state: State, about: (string | undefined)[]): st
    the caller said; the account the variables name (`accountId`); the account whose stored lists hold an id the
    variables name — the selected account first, then any the primary serves, then the rest — so a change to a device
    reached only through another sign-in is made as that sign-in; the account an id no list holds was made or read
-   under (noteAccountOf); else the primary. A request about the person
+   under (noteAccountOf), in that same order where there are several; else the primary. A request about the person
    themselves (profile, billing, keys, contacts, plans, chat) names none of these and is always the primary's, so
    those pages never show one account's data under another's name. */
 export function requestSignIn(state: State, requestFor?: RequestFor, variables?: ILookup<any>): string | undefined {
@@ -180,6 +181,9 @@ export function requestSignIn(state: State, requestFor?: RequestFor, variables?:
   if (accountIds.some(id => !routes[id].sub && holds(id))) return undefined
   const other = accountIds.find(id => routes[id].sub && holds(id))
   if (other) return routes[other].sub
-  const of = named.flatMap(id => [...(noted.get(id) || [])]).find(accountId => routes[accountId])
-  return of ? routes[of].sub : undefined
+  // Noted under more than one account here (an exit of one, shared with another): in the same order of preference.
+  const of = named.flatMap(id => [...(noted.get(id) || [])]).filter(accountId => routes[accountId])
+  if (!of.length) return undefined
+  if (selected && of.includes(selected)) return routes[selected].sub
+  return of.some(accountId => !routes[accountId].sub) ? undefined : routes[of[0]].sub
 }

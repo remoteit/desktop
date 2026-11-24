@@ -183,6 +183,20 @@ describe('the sign-in a request is made as', () => {
     resetNotedAccounts()
   })
 
+  it('prefers the selected account, then any the primary serves, for something read under more than one', () => {
+    resetNotedAccounts()
+    // An exit of Acme's, shared with Labs: listed for Labs first, then for Acme.
+    noteAccountOf('labs', ['exit-shared'])
+    noteAccountOf('acme', ['exit-shared'])
+    expect(requestSignIn(state({ activeId: 'labs' }), undefined, { id: 'exit-shared' })).toBe('sub-work')
+    expect(requestSignIn(state({ activeId: 'acme' }), undefined, { id: 'exit-shared' })).toBeUndefined()
+    expect(requestSignIn(state({ activeId: 'personal' }), undefined, { id: 'exit-shared' })).toBeUndefined()
+    noteAccountOf('work', ['exit-theirs'])
+    noteAccountOf('labs', ['exit-theirs'])
+    expect(requestSignIn(state({ activeId: 'acme' }), undefined, { id: 'exit-theirs' })).toBe('sub-work')
+    resetNotedAccounts()
+  })
+
   it('prefers the selected account, then any the primary serves, for something more than one account holds', () => {
     expect(requestSignIn(state(), undefined, { deviceId: 'd-acme' })).toBeUndefined()
     expect(requestSignIn(state({ activeId: 'labs' }), undefined, { deviceId: 'd-acme' })).toBe('sub-work')

@@ -15,6 +15,7 @@ vi.mock('../selectors/accounts', () => ({
 }))
 
 import accounts from './accounts'
+import { accountCache } from '../services/accountCaches'
 
 const CLEARED = { selected: [], selectionAnchor: undefined }
 const state = { accounts: { activeId: 'ORG-A', membership: [] }, auth: { user: { id: 'USER' } }, user: { id: 'USER' } }
@@ -261,6 +262,57 @@ describe('the sign-ins beside the page’s own person', () => {
     })
   })
 
+  it('have the organization one of them has joined since read, as the sign-in that serves it', async () => {
+    inUse('sub-work')
+    graphQLBasicRequest.mockReset().mockResolvedValue(answer('work', ['labs', 'newly']))
+    const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
+    await run('fetchSignIns')
+    expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
+    expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
+  })
+
+  it('read nothing more when their rows are as they were', async () => {
+    inUse('sub-work')
+    graphQLBasicRequest.mockReset().mockResolvedValue(answer('work', ['labs']))
+    const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
+    await run('fetchSignIns')
+    expect(dispatch.organization.fetch).not.toHaveBeenCalled()
+  })
+
+  it('are asked before the account fetch is done, so what is read next by account knows their rows', async () => {
+    let asked!: () => void
+    const dispatch: any = {
+      accounts: {
+        fetchOrganizationClosures: vi.fn(),
+        fetchSignIns: vi.fn(() => new Promise<void>(resolve => (asked = resolve))),
+        parse: vi.fn(),
+      },
+    }
+    graphQLBasicRequest.mockReset().mockResolvedValue('ERROR')
+    let done = false
+    const fetching = (accounts as any)
+      .effects(dispatch)
+      .fetch()
+      .then(() => (done = true))
+    await new Promise(resolve => setTimeout(resolve))
+    expect(done).toBe(false)
+    asked()
+    await fetching
+    expect(done).toBe(true)
+  })
+
+  it('have the selected row’s runs read again with its lists, where they had been read', async () => {
+    const both = { ...work, membership: [member('labs'), member('acme')] }
+    const state = { ...signedIn({ 'sub-work': both }, { activeId: 'acme' }), jobs: { all: { acme: [], labs: [] } } }
+    const { dispatch, run } = effectsWith(state)
+    dispatch.jobs = { fetch: vi.fn() }
+    await run('readAgain', ['labs'])
+    expect(dispatch.jobs.fetch).not.toHaveBeenCalled()
+    await run('readAgain', ['acme'])
+    expect(dispatch.accounts.select).toHaveBeenCalledWith('acme')
+    expect(dispatch.jobs.fetch.mock.calls).toEqual([[{ accountId: 'acme' }]])
+  })
+
   it('do not put back one that signed out while it was being asked', async () => {
     inUse('sub-work')
     graphQLBasicRequest.mockReset().mockImplementation(async () => {
@@ -285,8 +337,12 @@ describe('the sign-ins beside the page’s own person', () => {
       'applicationTypes',
     ]
     const dispatch: any = Object.fromEntries(models.map(model => [model, { forget: vi.fn() }]))
+    const outside = vi.fn()
+    accountCache(outside)
     ;(accounts as any).effects(dispatch).forgetData(['work', 'labs'])
     models.forEach(model => expect(dispatch[model].forget).toHaveBeenCalledWith(['work', 'labs']))
+    // And what hooks and services keep of them outside the store (services/accountCaches).
+    expect(outside).toHaveBeenCalledWith(['work', 'labs'])
   })
 
   it('serve an organization both reach through the one the person picks, reading it again as that sign-in', async () => {

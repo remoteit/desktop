@@ -2,6 +2,7 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLRequestWithReason } from './graphQL'
 import { SchemaField, TypeRef, buildCall, named } from './graphQLSchema'
 import { deviceDisableFields, disabledAdaptor } from './deviceDisable'
+import { accountCache } from './accountCaches'
 
 /* A device's identity (graphql-api docs/PROXY-GROUPS.md §11, "Wave 3: device identity"): the join keys that bring a
    device that starts fresh at every boot back as itself, a device added ahead of its first boot, and duplicates — two
@@ -408,6 +409,12 @@ const reading = new Map<string, Promise<void>>()
 const listeners = new Set<Listener>()
 
 export const duplicateCopies = (accountId: string): DuplicateCopy[] | undefined => copies.get(accountId)
+
+// Those the reader may manage: another sign-in serving the account reads its own (services/accountCaches).
+accountCache(accountIds => {
+  if (!accountIds.some(id => copies.delete(id))) return
+  notify()
+})
 
 // Each original's copies as read by it (Device.copies), a new map each time one is read.
 let byOriginal = new Map<string, DuplicateCopy[]>()
