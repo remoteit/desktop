@@ -19,6 +19,7 @@ import { browserFilterServed } from './browserClients'
 import { deviceDisableFields, disabledAdaptor } from './deviceDisable'
 import { deviceIdentityFields, identityAdaptor } from './deviceIdentity'
 import { protectAdaptor, protectListFields } from './deviceProtect'
+import type { RequestFor } from '../selectors/signIns'
 
 // What a device query adds where the API serves it: whether it is disabled, whose duplicate it is, and Protect on.
 const probedDeviceFields = async () =>
@@ -292,7 +293,8 @@ export async function graphQLPreloadDevices(params: {
   return response === 'ERROR' ? response : withSampleDevices(response, samples, 'account')
 }
 
-export async function graphQLFetchConnections(params: { ids: string[] }) {
+// `requestFor`: the sign-in asked, where the connections are read once per sign-in (models/connections fetch).
+export async function graphQLFetchConnections(params: { ids: string[] }, requestFor?: RequestFor) {
   const virtual = await virtualDevicesMode()
   const ports = await multiPortServicesServed()
   const probed = await probedDeviceFields()
@@ -312,7 +314,9 @@ export async function graphQLFetchConnections(params: { ids: string[] }) {
           }
         }
       }`,
-    { ids }
+    { ids },
+    false,
+    requestFor
   )
   return response === 'ERROR' ? response : withSampleDevices(response, samples, 'login')
 }

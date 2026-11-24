@@ -55,6 +55,20 @@ export async function wsAuthorization(sub?: string): Promise<string> {
 export const wsAuthorizationFor = (requestFor: RequestFor): Promise<string> =>
   wsAuthorization(requestSignIn(store.getState(), requestFor))
 
+/* Every account's list that holds a device, each with its own copy: a device shared with two people signed in here
+   is in both their lists, and an event about it comes once (it is passed over on the other's socket), so what it
+   says of the device goes into every copy. The accounts' lists alone: not those kept beside them by other names. */
+function copiesOf(state: any, deviceId?: string): [accountId: string, device: IDevice][] {
+  if (!deviceId) return []
+  const held = Object.entries<{ all?: IDevice[] }>(state.devices || {}).flatMap(([accountId, list]) => {
+    const device = list?.all?.find(d => d.id === deviceId)
+    return device ? [[accountId, device] as [string, IDevice]] : []
+  })
+  if (!held.length) return held
+  const rows = getAccountIds(state)
+  return held.filter(([accountId]) => rows.includes(accountId))
+}
+
 // How long an event delivered to one sign-in's socket is remembered, so its copy on another's is passed over.
 const SEEN_FOR_MS = 60_000
 
@@ -521,18 +535,27 @@ ${await productFullEventFields()}
         event.target.forEach(target => {
           if (stateTimes.outdated(event.timestamp, target.id)) return
 
-          // if device exists and is the target
-          if (target.device && target.device.id === target.id) {
-            target.device.state = onlineState
-            target.device[onlineState === 'active' ? 'onlineSince' : 'offlineSince'] = event.timestamp
-          } else {
-            // if service exists and is the target
-            target.device?.services.forEach(service => {
-              if (service.id === target.service?.id) {
-                service.state = onlineState
-              }
-            })
-          }
+          // Every account's copy of the device (copiesOf); where no list holds it, the one the event found.
+          const held = copiesOf(store.getState(), target.device?.id)
+          const copies: [string, IDevice][] = held.length
+            ? held.map(([accountId, copy]) => [accountId, structuredClone(copy)])
+            : target.device
+            ? [[target.accountId, target.device]]
+            : []
+          copies.forEach(([, device]) => {
+            // if device exists and is the target
+            if (device.id === target.id) {
+              device.state = onlineState
+              device[onlineState === 'active' ? 'onlineSince' : 'offlineSince'] = event.timestamp
+            } else {
+              // if service exists and is the target
+              device.services.forEach(service => {
+                if (service.id === target.service?.id) {
+                  service.state = onlineState
+                }
+              })
+            }
+          })
 
           // Update connection state
           // Only on change: on desktop this store copy can be older than the backend's and would overwrite it
@@ -542,22 +565,20 @@ ${await productFullEventFields()}
           }
 
           // if device exists
-          if (target.device?.id) {
-            dispatch.accounts.setDevice({ id: target.device.id, device: target.device, accountId: target.accountId })
-            dispatch.devices.sortByState(target.accountId)
-          }
+          copies.forEach(([accountId, device]) => {
+            dispatch.accounts.setDevice({ id: device.id, device, accountId })
+            dispatch.devices.sortByState(accountId)
+          })
 
           // A service not here yet, of a device that is: added since the device was read — or its add not yet in the
           // store, the device taking it up first. Read the device, whose service then has the state this event gave.
           if (!target.service && target.deviceId && target.id !== target.deviceId) {
+            const lists = copiesOf(store.getState(), target.deviceId).map(([accountId]) => accountId)
             const [, loaded] = selectById(store.getState(), undefined, target.deviceId)
-            if (loaded)
-              dispatch.devices.fetchSingleFull({
-                id: target.deviceId,
-                hidden: true,
-                silent: true,
-                accountId: target.accountId,
-              })
+            const accounts = lists.length ? lists : loaded ? [target.accountId] : []
+            accounts.forEach(accountId =>
+              dispatch.devices.fetchSingleFull({ id: target.deviceId, hidden: true, silent: true, accountId })
+            )
           }
 
           // New unknown device discovered
@@ -693,24 +714,27 @@ ${await productFullEventFields()}
         break
 
       case 'DEVICE_REFRESH':
-        let accountId = ''
-        const refreshIds = event.target.reduce((result: string[], target) => {
+        // Each device, in every account's list that holds it (copiesOf): read again for each, as its sign-in.
+        const refresh: ILookup<string[]> = {}
+        event.target.forEach(target => {
           // Check that it's the bulk service and that the device is loaded in the ui
-          if (target.typeID === DEVICE_TYPE && target.device) result.push(target.deviceId)
-          accountId = target.accountId
-          return result
-        }, [])
-        // avoid double loading device if on the device page
-        for (const id of refreshIds) {
-          if (window.location.href.includes(id)) {
-            dispatch.devices.fetchSingleFull({ id, hidden: true, silent: true, accountId })
-            refreshIds.splice(refreshIds.indexOf(id), 1)
+          if (target.typeID !== DEVICE_TYPE || !target.device) return
+          const lists = copiesOf(store.getState(), target.deviceId).map(([accountId]) => accountId)
+          ;(lists.length ? lists : [target.accountId]).forEach(accountId =>
+            (refresh[accountId] ??= []).push(target.deviceId)
+          )
+        })
+        Object.entries(refresh).forEach(([accountId, refreshIds]) => {
+          // avoid double loading device if on the device page
+          for (const id of [...refreshIds]) {
+            if (window.location.href.includes(id)) {
+              dispatch.devices.fetchSingleFull({ id, hidden: true, silent: true, accountId })
+              refreshIds.splice(refreshIds.indexOf(id), 1)
+            }
           }
-        }
-        // fetch the rest
-        if (refreshIds.length) {
-          dispatch.devices.fetchDevices({ ids: refreshIds, accountId })
-        }
+          // fetch the rest
+          if (refreshIds.length) dispatch.devices.fetchDevices({ ids: refreshIds, accountId })
+        })
         break
 
       case 'DEVICE_DELETE':

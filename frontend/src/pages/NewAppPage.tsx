@@ -319,6 +319,7 @@ const NewAppFlow: React.FC<{ account?: string }> = ({ account }) => {
               <NewAppPublish
                 built={built}
                 publisher={publisher.id}
+                account={account}
                 keys={standing}
                 onBusy={setPublishing}
                 onPublished={result => {

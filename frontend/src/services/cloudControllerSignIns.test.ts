@@ -5,7 +5,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const { sockets, signIns, listeners, state, notify, setSession, getToken, devices, held, dispatched } = vi.hoisted(
   () => ({
-    devices: { fetchSingleFull: vi.fn(), cleanup: vi.fn(), cleanupFor: vi.fn() },
+    devices: {
+      fetchSingleFull: vi.fn(),
+      fetchDevices: vi.fn(),
+      sortByState: vi.fn(),
+      cleanup: vi.fn(),
+      cleanupFor: vi.fn(),
+    },
     held: { device: undefined as { id: string } | undefined },
     dispatched: { removeDevice: vi.fn(), setDevice: vi.fn(), set: vi.fn() },
     sockets: [] as any[],
@@ -302,5 +308,72 @@ describe('an event between two people signed in here', () => {
     expect(devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'dev-1', newDevice: true, accountId: 'personal' })
     both(0, share('remove', 'someone', 'work'))
     expect(devices.cleanupFor).toHaveBeenCalledWith({ ids: ['dev-1'], accountIds: ['work'] })
+  })
+})
+
+/* Someone who is not here shared a device with Personal and with Work: it is in both their lists, each its own copy.
+   What happens to it is told once (the other socket's copy is passed over), so it goes into both. */
+describe('an event about a device two accounts here both hold', () => {
+  const copy = (accountId: string) => ({
+    id: 'dev-1',
+    accountId,
+    state: 'inactive',
+    services: [{ id: 'svc-1', state: 'inactive' }],
+  })
+  const stateOf = (id: string) =>
+    JSON.stringify({
+      data: {
+        event: {
+          type: 'DEVICE_STATE',
+          state: 'active',
+          timestamp: new Date().toISOString(),
+          target: [
+            {
+              id,
+              name: 'pi',
+              application: id === 'dev-1' ? 35 : 28,
+              owner: { id: 'someone' },
+              device: { id: 'dev-1' },
+            },
+          ],
+        },
+      },
+    })
+  beforeEach(() => {
+    held.device = copy('personal') as any
+    state.devices = {
+      personal: { all: [copy('personal')] },
+      work: { all: [copy('work')] },
+      connections: { all: [copy('connections')] },
+    }
+  })
+
+  it('a change of state goes into each account’s copy, not the first found alone', () => {
+    inUse('sub-work')
+    cloudController.init()
+    const data = stateOf('dev-1')
+    sockets[0].handlers.message({ data })
+    sockets[1].handlers.message({ data })
+    expect(
+      dispatched.setDevice.mock.calls.map(([set]) => [set.accountId, set.device.accountId, set.device.state])
+    ).toEqual([
+      ['personal', 'personal', 'active'],
+      ['work', 'work', 'active'],
+    ])
+    expect(devices.sortByState.mock.calls).toEqual([['personal'], ['work']])
+    // The copies in the store are not written to in place.
+    expect(state.devices.work.all[0].state).toBe('inactive')
+  })
+
+  it('a refresh reads it again for each account that holds it', () => {
+    inUse('sub-work')
+    cloudController.init()
+    const refresh = JSON.parse(stateOf('dev-1'))
+    refresh.data.event.type = 'DEVICE_REFRESH'
+    sockets[1].handlers.message({ data: JSON.stringify(refresh) })
+    expect(devices.fetchDevices.mock.calls).toEqual([
+      [{ ids: ['dev-1'], accountId: 'personal' }],
+      [{ ids: ['dev-1'], accountId: 'work' }],
+    ])
   })
 })

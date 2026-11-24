@@ -35,6 +35,7 @@ import { selectApplication } from '../selectors/applications'
 import { accountFromDevice } from './accounts'
 import { selectConnection } from '../selectors/connections'
 import { selectById } from '../selectors/devices'
+import { RequestFor, requestSignIn } from '../selectors/signIns'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import heartbeat from '../services/Heartbeat'
@@ -62,6 +63,12 @@ const defaultState: IConnectionsState = {
   updating: false,
 }
 
+/* Whose a request about a connection is. Its service is asked as the sign-in whose stored lists hold it; where none
+   does (the connection's device is kept with the connections alone, or is not on the page of its account's list that
+   is loaded) the connection's own account says, not the page's own person by default. */
+const forConnection = (connection: IConnection): RequestFor | undefined =>
+  connection.accountId ? { orAccount: connection.accountId } : undefined
+
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
@@ -86,17 +93,44 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = state.auth.user?.id || state.user.id
       const serviceIds = getFetchConnectionIds(state)
-      const gqlResponse = await graphQLFetchConnections({ ids: serviceIds })
-      if (gqlResponse === 'ERROR') {
+      // One request per sign-in, each about the connections of the accounts it serves: a service another sign-in
+      // alone reaches is not the page's own person's to read. With one sign-in in use, the one request as ever.
+      const accountOf: ILookup<string | undefined> = {}
+      state.connections.all.forEach(c => (accountOf[c.id] = c.accountId))
+      const groups: ILookup<{ ids: string[]; accounts: string[] }> = {}
+      serviceIds.forEach(id => {
+        const sub = requestSignIn(state, { about: [id], orAccount: accountOf[id] }) || ''
+        const group = (groups[sub] ??= { ids: [], accounts: [] })
+        group.ids.push(id)
+        if (accountOf[id] && !group.accounts.includes(accountOf[id]!)) group.accounts.push(accountOf[id]!)
+      })
+      const several = Object.keys(groups).some(sub => sub)
+      const answered: string[] = []
+      const answers = await Promise.all(
+        Object.entries(groups).map(async ([sub, { ids, accounts }]) => {
+          const response = await graphQLFetchConnections({ ids }, several ? { sub, about: accounts } : undefined)
+          if (response === 'ERROR') return undefined
+          answered.push(...ids)
+          return (response?.data?.data?.login?.device || []) as any[]
+        })
+      )
+      if (answers.every(answer => !answer)) {
         await dispatch.connections.set({ initialized: true })
         return
       }
 
-      const gqlDevices = gqlResponse?.data?.data?.login?.device || []
+      const gqlDevices = answers.flatMap(answer => answer || [])
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })
-      await dispatch.accounts.truncateMergeDevices({ devices, accountId: 'connections' })
+      // A sign-in that could not be asked this time keeps the devices known for its connections: its failed read
+      // says nothing of them, least of all that they are gone.
+      const kept = (state.devices.connections?.all || []).filter(
+        (device: IDevice) =>
+          !devices.some(read => read.id === device.id) &&
+          device.services.some(service => serviceIds.includes(service.id) && !answered.includes(service.id))
+      )
+      await dispatch.accounts.truncateMergeDevices({ devices: [...devices, ...kept], accountId: 'connections' })
 
-      cleanOrphanConnections(serviceIds)
+      cleanOrphanConnections(answered)
       await dispatch.connections.set({ initialized: true })
     },
 
@@ -332,7 +366,7 @@ export default createModel<RootModel>()({
       }
 
       setConnection(proxyConnection)
-      const result = await graphQLConnect(connection.id, connection.publicRestriction)
+      const result = await graphQLConnect(connection.id, connection.publicRestriction, forConnection(connection))
 
       if (result === 'ERROR') {
         connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
@@ -375,7 +409,7 @@ export default createModel<RootModel>()({
         return
       }
 
-      const result = await graphQLDisconnect(connection.id, connection.sessionId)
+      const result = await graphQLDisconnect(connection.id, connection.sessionId, forConnection(connection))
 
       if (result === 'ERROR') {
         setConnection(connection)
@@ -391,13 +425,16 @@ export default createModel<RootModel>()({
       console.log('SET CONNECT LINK', connection)
 
       dispatch.connections.updateConnection(creating)
-      const result = await graphQLSetLink({
-        serviceId: connection.id,
-        enabled: connection.enabled,
-        password: REGEX_HIDDEN_PASSWORD.test(connection.password || '')
-          ? undefined
-          : connection.password?.trim() || null,
-      })
+      const result = await graphQLSetLink(
+        {
+          serviceId: connection.id,
+          enabled: connection.enabled,
+          password: REGEX_HIDDEN_PASSWORD.test(connection.password || '')
+            ? undefined
+            : connection.password?.trim() || null,
+        },
+        forConnection(connection)
+      )
 
       if (result === 'ERROR' || 'reason' in result || !result?.data?.data?.setConnectLink?.url) {
         const reason = result !== 'ERROR' && 'reason' in result ? result.reason : ''
@@ -443,7 +480,7 @@ export default createModel<RootModel>()({
 
       dispatch.connections.setConnectLink({ ...connection, enabled: false })
       dispatch.devices.updateService({ id: connection.id, set: { link: undefined } })
-      const result = await graphQLRemoveLink(connection.id)
+      const result = await graphQLRemoveLink(connection.id, forConnection(connection))
 
       if (result === 'ERROR') {
         dispatch.connections.patchConnection({
@@ -534,7 +571,7 @@ export default createModel<RootModel>()({
 
     async survey({ rating, connection }: { rating: number; connection: IConnection }) {
       if (!connection.sessionId) return
-      const result = await graphQLSurvey(connection.id, connection.sessionId, rating)
+      const result = await graphQLSurvey(connection.id, connection.sessionId, rating, forConnection(connection))
       if (result === 'ERROR' || !result?.data?.data?.rateConnection) {
         dispatch.ui.set({
           errorMessage: i18n.t('notices:connection.surveyFailed', {

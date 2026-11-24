@@ -111,13 +111,15 @@ export default createModel<RootModel>()({
       })
     },
 
-    async disconnect({ id, sessionId }: { id: string; sessionId?: string }) {
+    async disconnect({ id, sessionId }: { id: string; sessionId?: string }, state) {
       if (!sessionId) {
         console.warn('No sessionId for disconnect')
         return
       }
 
-      const result = await graphQLDisconnect(id, sessionId)
+      // As the sign-in that serves the session's account, where no stored list holds its service to say.
+      const accountId = state.sessions.all.find(session => session.id === sessionId)?.target.accountId
+      const result = await graphQLDisconnect(id, sessionId, accountId ? { orAccount: accountId } : undefined)
 
       if (result === 'ERROR') {
         return false

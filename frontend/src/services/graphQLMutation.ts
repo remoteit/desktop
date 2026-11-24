@@ -39,7 +39,9 @@ export async function graphQLSetDeviceNotification(deviceID: string, settings: I
 // before; none leaves it to the API stage's default.
 const proxyFleet = () => store?.getState().ui.proxyFleet
 
-export async function graphQLConnect(serviceId: string, hostIP?: string) {
+// `requestFor`, for the requests about a connection (connect, disconnect, rate, its link): the account the connection
+// is of, where the service is in no account's stored list to say whose it is (models/connections forConnection).
+export async function graphQLConnect(serviceId: string, hostIP?: string, requestFor?: RequestFor) {
   const fleet = proxyFleet()
   return await graphQLBasicRequest(
     ` mutation Connect($serviceId: String!, $hostIP: String${fleet ? ', $proxyFleet: ProxyFleet' : ''}) {
@@ -52,30 +54,39 @@ export async function graphQLConnect(serviceId: string, hostIP?: string) {
           timeout
         }
       }`,
-    { serviceId, hostIP, ...(fleet ? { proxyFleet: fleet } : {}) }
+    { serviceId, hostIP, ...(fleet ? { proxyFleet: fleet } : {}) },
+    false,
+    requestFor
   )
 }
 
-export async function graphQLDisconnect(serviceId: string, connectionId: string) {
+export async function graphQLDisconnect(serviceId: string, connectionId: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` mutation Disconnect($serviceId: String!, $connectionId: String!) {
         disconnect(serviceId: $serviceId, connectionId: $connectionId)
       }`,
-    { serviceId, connectionId }
+    { serviceId, connectionId },
+    false,
+    requestFor
   )
 }
 
-export async function graphQLSurvey(serviceId: string, sessionId: string, quality: number) {
+export async function graphQLSurvey(serviceId: string, sessionId: string, quality: number, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` mutation Survey($serviceId: String!, $sessionId: String!, $quality: Int!) {
         rateConnection(serviceId: $serviceId, sessionId: $sessionId, quality: $quality)
       }`,
-    { serviceId, sessionId, quality }
+    { serviceId, sessionId, quality },
+    false,
+    requestFor
   )
 }
 
 // A refusal comes back with graphql's reason — a password on a link that is not a web one, say — for the owner to read.
-export async function graphQLSetLink(params: { serviceId: string; password?: string | null; enabled?: boolean }) {
+export async function graphQLSetLink(
+  params: { serviceId: string; password?: string | null; enabled?: boolean },
+  requestFor?: RequestFor
+) {
   const fleet = proxyFleet()
   return await graphQLRequestWithReason(
     ` mutation SetLink($serviceId: String!, $password: String, $enabled: Boolean${
@@ -90,16 +101,19 @@ export async function graphQLSetLink(params: { serviceId: string; password?: str
           created
         }
       }`,
-    { ...params, ...(fleet ? { proxyFleet: fleet } : {}) }
+    { ...params, ...(fleet ? { proxyFleet: fleet } : {}) },
+    requestFor
   )
 }
 
-export async function graphQLRemoveLink(serviceId: string) {
+export async function graphQLRemoveLink(serviceId: string, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` mutation RemoveLink($serviceId: String!) {
         removeConnectLink(serviceId: $serviceId)
       }`,
-    { serviceId }
+    { serviceId },
+    false,
+    requestFor
   )
 }
 

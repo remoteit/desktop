@@ -209,6 +209,13 @@ export const servingChanged = (state: State, serving: Serving): boolean => {
   return serving.some(([accountId, sub]) => routes[accountId]?.sub !== sub)
 }
 
+/* The same, of the state as it is now, for a service that has no hook to read it by and must not bring the store in
+   with it (the store says where its state is read, once it is made). The page's own person until then. */
+let stateNow: (() => State) | undefined
+export const readStateWith = (read: () => State) => void (stateNow = read)
+export const requestSignInNow = (requestFor?: RequestFor, variables?: ILookup<any>): string | undefined =>
+  stateNow ? requestSignIn(stateNow(), requestFor, variables) : undefined
+
 /* The sign-in a request is made as. With one sign-in in use there is nothing to decide. Otherwise, in order: what
    the caller said; the account the variables name (`accountId`); the account whose stored lists hold an id the
    variables name — the selected account first, then any the primary serves, then the rest — so a change to a device
