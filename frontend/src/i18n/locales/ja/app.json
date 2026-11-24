@@ -302,6 +302,7 @@
     "deleteConversation": "削除",
     "deny": "拒否",
     "guideAgentBody": "デバイス、接続、サービスについて質問したり、変更を指示したりできます。ここからいつでも開いたり閉じたりできます。",
+    "guideAgentFree": "この特別プレビュー期間中は無料でご利用いただけます。",
     "guideAgentTitle": "Remote.It Agentのご紹介",
     "guideComposeBody": "質問を入力するか、変更したい内容を伝えてください。アカウントを変更する操作は、実行前に必ずあなたの承認を待ちます。",
     "guideComposeTitle": "気軽に質問",

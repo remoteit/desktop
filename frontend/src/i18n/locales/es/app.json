@@ -308,6 +308,7 @@
     "deleteConversation": "Eliminar",
     "deny": "Rechazar",
     "guideAgentBody": "Pregunta sobre tus dispositivos, conexiones y servicios, o pídele que haga cambios. Ábrelo y ciérralo aquí cuando quieras.",
+    "guideAgentFree": "Incluido gratis en esta vista previa especial.",
     "guideAgentTitle": "Conoce Remote.It Agent",
     "guideComposeBody": "Escribe una pregunta o di qué quieres cambiar. Todo lo que modifique tu cuenta espera primero tu aprobación.",
     "guideComposeTitle": "Solo pregunta",
