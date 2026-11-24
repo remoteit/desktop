@@ -45,6 +45,40 @@ const listSx = (theme: Theme) => ({
 
 const INSET = spacing.md - spacing.xs
 const LIST_ROW_GAP = 2
+const CARET = 7
+const SCREENS = {
+  b2: { light: 'rgba(0, 16, 26, 0.045)', dark: 'rgba(0, 0, 0, 0.18)' },
+  b3: { light: 'rgba(255, 255, 255, 0.6)', dark: 'rgba(255, 255, 255, 0.045)' },
+}
+
+const RuleCaret: React.FC = () => (
+  <Box
+    component="li"
+    aria-hidden
+    sx={theme => ({
+      position: 'absolute',
+      top: -CARET,
+      left: 0,
+      right: 0,
+      height: CARET,
+      display: 'flex',
+      alignItems: 'flex-end',
+      color: theme.palette.grayLight.main,
+      '& > span': { flex: 1, borderBottom: '1px solid currentColor' },
+      '& > span:first-of-type': { flex: 'none', width: ICON_CENTER - spacing.md - CARET },
+    })}
+  >
+    <span />
+    <svg width={CARET * 2} height={CARET} viewBox={`0 0 ${CARET * 2} ${CARET}`} style={{ display: 'block' }}>
+      <path
+        d={`M0 ${CARET - 0.5} H0.5 L${CARET} 1 L${CARET * 2 - 0.5} ${CARET - 0.5} H${CARET * 2}`}
+        fill="none"
+        stroke="currentColor"
+      />
+    </svg>
+    <span />
+  </Box>
+)
 const ROW_IN_BOX = {
   marginLeft: `${spacing.xs}px`,
   marginRight: `${spacing.xs}px`,
@@ -115,6 +149,39 @@ const pagesSx =
           boxShadow: dark ? undefined : `-1px -1px 0 0 ${theme.palette.grayLight.main}`,
         },
       }
+    if (style === 'b2' || style === 'b3') {
+      const screen = SCREENS[style][dark ? 'dark' : 'light']
+      return {
+        ...base,
+        marginX: `${INSET}px`,
+        marginTop: `${CARET + 1}px`,
+        marginBottom: `${spacing.xs}px`,
+        paddingY: `${spacing.xxs}px`,
+        borderRadius: `${radius.lg - 4}px`,
+        backgroundColor: screen,
+        '& .MuiListItemButton-root': ROW_IN_BOX,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: -CARET,
+          left: ICON_CENTER - INSET - CARET,
+          width: CARET * 2,
+          height: CARET,
+          clipPath: 'polygon(50% 0, 100% 100%, 0 100%)',
+          backgroundColor: screen,
+        },
+      }
+    }
+    if (style === 'c2')
+      return {
+        ...base,
+        marginX: `${spacing.md}px`,
+        marginTop: `${spacing.xxs + CARET}px`,
+        marginBottom: `${spacing.md}px`,
+        paddingY: `${spacing.xxs}px`,
+        borderBottom: `1px solid ${theme.palette.grayLight.main}`,
+        '& .MuiListItemButton-root': { marginLeft: 0, marginRight: 0, width: '100%' },
+      }
     if (style === 'c')
       return {
         ...base,
@@ -174,6 +241,7 @@ export const SidebarNav: React.FC = () => {
 
   const pages = (section: VisibleSection) => (
     <Box component="ul" aria-label={section.label(t)} sx={pagesSx(NAV_STYLE, dark)}>
+      {NAV_STYLE === 'c2' && <RuleCaret />}
       {section.pages.map(id => (
         <li key={id}>
           <PageLink

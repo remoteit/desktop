@@ -1,7 +1,7 @@
-export type NavStyle = 'a' | 'b' | 'c' | 'd' | 'e'
+export type NavStyle = 'a' | 'b' | 'b2' | 'b3' | 'c' | 'c2' | 'd' | 'e'
 
 const KEY = 'navstyle'
-const STYLES: NavStyle[] = ['a', 'b', 'c', 'd', 'e']
+const STYLES: NavStyle[] = ['a', 'b', 'b2', 'b3', 'c', 'c2', 'd', 'e']
 
 function read(): NavStyle {
   const query = window.location.search + '&' + (window.location.hash.split('?')[1] || '')
