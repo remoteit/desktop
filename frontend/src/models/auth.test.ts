@@ -1155,8 +1155,16 @@ describe('auth model — booting as another person over stored state', () => {
     const { models, forgotten } = adopt()
     expect(forgotten).toEqual(['USER-C', 'org-c', 'stray'])
     expect(models.auth.resetPersonData).toHaveBeenCalledTimes(1)
+    // The rows are laid out again as stored: the new person's memberships theirs, the former person beside them.
     expect(models.accounts.set).toHaveBeenCalledWith(
-      expect.objectContaining({ membership: [], signIns: {}, activeId: undefined, primarySub: undefined })
+      expect.objectContaining({
+        membership: [{ account: { id: 'org-b' } }],
+        signIns: {
+          'sub-a': expect.objectContaining({ sub: 'sub-a', id: 'USER-A', membership: [{ account: { id: 'org-a' } }] }),
+        },
+        activeId: undefined,
+        primarySub: undefined,
+      })
     )
     // Nothing kept by account id is reset wholesale.
     expect(models.devices).toBeUndefined()
@@ -1166,6 +1174,50 @@ describe('auth model — booting as another person over stored state', () => {
     stored()
     oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }])
     expect(adopt().forgotten).toEqual(['USER-A', 'USER-C', 'org-a', 'org-c', 'stray'])
+  })
+
+  /* A and B both belong to org-s, which A — the page's person — served: what is stored for it was read as A. */
+  const shared = (via: object = {}) => {
+    stored()
+    const member = (id: string) => ({ account: { id } })
+    storeState.accounts.membership.push(member('org-s'))
+    storeState.accounts.signIns['sub-b'].membership.push(member('org-s'))
+    storeState.accounts.via = via
+    storeState.organization.accounts['org-s'] = {}
+  }
+
+  it('drops what is stored for an organization another sign-in reaches too, once the one that served it has signed out', () => {
+    shared()
+    oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }])
+    const { models, forgotten } = adopt()
+    expect(forgotten).toEqual(['USER-A', 'USER-C', 'org-a', 'org-c', 'org-s', 'stray'])
+    // Still B's row, to be read as B.
+    const [set] = models.accounts.set.mock.calls[0]
+    expect(set.membership.map((m: IMembership) => m.account.id)).toEqual(['org-b', 'org-s'])
+    expect(set.signIns).toEqual({})
+  })
+
+  it('drops it too when the one that served it stays signed in but the new person serves it from now on', () => {
+    shared()
+    oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }, { sub: 'sub-a', primary: false }])
+    expect(adopt().forgotten).toEqual(['USER-C', 'org-c', 'org-s', 'stray'])
+  })
+
+  it('keeps it where the same sign-in serves it still: the one picked for it, said again for the new person', () => {
+    shared({ 'org-s': 'sub-b', 'org-a': '' })
+    oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }, { sub: 'sub-a', primary: false }])
+    const { models, forgotten } = adopt()
+    expect(forgotten).toEqual(['USER-C', 'org-c', 'stray'])
+    expect(models.accounts.set.mock.calls[0][0].via).toEqual({ 'org-s': '', 'org-a': 'sub-a' })
+  })
+
+  it('keeps nothing when one is used at a time: the account switched to served none of it', () => {
+    stored()
+    storeState.accounts.signIns = {}
+    oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }])
+    const { models, forgotten } = adopt()
+    expect(forgotten).toEqual(['USER-A', 'USER-B', 'USER-C', 'org-a', 'org-b', 'org-c', 'stray'])
+    expect(models.accounts.set).toHaveBeenCalledWith(expect.objectContaining({ membership: [], signIns: {}, via: {} }))
   })
 
   it('keeps nothing of state with no record of whose it was', () => {

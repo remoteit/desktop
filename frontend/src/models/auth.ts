@@ -15,6 +15,7 @@ import {
 } from '../constants'
 import { chooseStage, reloadIfStageChanged } from '../helpers/stageHelper'
 import { persistor, persistsState, store } from '../store'
+import type { State } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { changePassword as changeAccountPassword } from '../services/accountSecurity'
@@ -55,7 +56,7 @@ import {
   OidcErrorCode,
 } from '../services/oidc'
 import { createModel } from '@rematch/core'
-import { getSignIns } from '../selectors/signIns'
+import { ISignIn, getSignIns, selectAccountRoutes } from '../selectors/signIns'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
 import i18n from '../i18n'
@@ -725,39 +726,59 @@ export default createModel<RootModel>()({
       dispatch.contacts.reset()
     },
     /** The page boots as `userId` over state stored for another person. What is about one person goes. What is
-     *  kept by account id stays only for the accounts a sign-in STILL IN USE served when it was stored — the page's
-     *  former person, if they are still signed in, and each sign-in that was beside them — so signing one account
-     *  out, or making another the page's person, costs the others nothing, and nothing a signed-out account served
-     *  is left to show. With no record of whose the state was, none of it is kept. */
+     *  kept by account id stays only for the accounts that the SAME sign-in serves now as when it was stored — so
+     *  signing one account out, or making another the page's person, costs the others nothing, and nothing is left
+     *  to show that was read as someone else: a signed-out account's, or an organization two of them reach that
+     *  another of them serves from now on, maybe in another role. With no record of whose the state was, none of
+     *  it is kept. The rows are laid out again as stored for the people still signed in — the new person's own
+     *  memberships theirs, the former person a sign-in beside them — so that when they are read again
+     *  (accounts.fetch, fetchSignIns) a row whose sign-in changes then is still seen to (models/accounts rowsAfter). */
     adoptAccountData(userId: string) {
-      const { accounts, user } = store.getState()
-      const inUse = new Set(oidcSignIns().map(signIn => signIn.sub))
-      const kept = new Set<string>()
-      if (accounts.primarySub && inUse.has(accounts.primarySub) && user.id) {
-        kept.add(user.id)
-        accounts.membership.forEach(m => kept.add(m.account.id))
-      }
-      Object.values(getSignIns(store.getState())).forEach(signIn => {
-        if (!inUse.has(signIn.sub)) return
-        kept.add(signIn.id)
-        signIn.membership.forEach(m => kept.add(m.account.id))
+      const state = store.getState()
+      const { accounts, user } = state
+      const people = oidcSignIns()
+      const inUse = new Set(people.map(signIn => signIn.sub))
+      const primarySub = people.find(signIn => signIn.primary)?.sub
+      const formerSub = accounts.primarySub
+      const before = getSignIns(state)
+      // Every sign-in still in use as it was stored, by sub: those beside the former person, and the former person.
+      const known: ILookup<ISignIn> = { ...before }
+      if (formerSub && user.id)
+        known[formerSub] = { sub: formerSub, id: user.id, email: user.email || '', membership: accounts.membership }
+      const signIns: ILookup<ISignIn> = {}
+      people.forEach(({ sub, primary }) => !primary && known[sub] && (signIns[sub] = known[sub]))
+      const membership = (primarySub && before[primarySub]?.membership) || []
+      // A sign-in picked for an organization is said by sub, '' the page's person: said again for the new one.
+      const via: ILookup<string> = {}
+      Object.entries(accounts.via || {}).forEach(([id, sub]) => {
+        const picked = sub || formerSub
+        if (picked && inUse.has(picked)) via[id] = picked === primarySub ? '' : picked
       })
+      // Whose token each account's stored data was read with, and whose serves it now.
+      const served = (person: string, own: string | undefined, rows: Partial<typeof accounts>) => {
+        const routes = selectAccountRoutes({ auth: { user: { id: person } }, user, accounts: rows } as State)
+        return (id: string) => (routes[id] ? routes[id].sub || own : undefined)
+      }
+      const was = served(user.id, formerSub, accounts)
+      const now = served(userId, primarySub, { membership, signIns, via })
+      const kept = (id: string) => !!formerSub && !!now(id) && now(id) === was(id)
       const stored = new Set<string>()
-      const { devices, products, networks, files, jobs, tags, organization, applicationTypes } = store.getState()
+      const { devices, products, networks, files, jobs, tags, organization, applicationTypes } = state
       ;[devices, products, networks.all, files.all, jobs.all, tags.all, organization.accounts, applicationTypes.account]
         .flatMap(byAccount => Object.keys(byAccount || {}))
         .forEach(id => id !== 'default' && stored.add(id))
-      dispatch.accounts.forgetData([...stored].filter(id => !kept.has(id)))
+      dispatch.accounts.forgetData([...stored].filter(id => !kept(id)))
       dispatch.auth.resetPersonData()
-      // The rows are read again as the new person (accounts.fetch, fetchSignIns), who starts on their own account.
+      // The new person starts on their own account.
       dispatch.accounts.set({
-        membership: [],
-        signIns: {},
+        membership,
+        signIns,
+        via,
         activeId: undefined,
         primarySub: undefined,
         pendingOrganizationClosures: undefined,
       })
-      console.log('AUTH: stored state was another person’s — kept the accounts still signed in', userId, [...kept])
+      console.log('AUTH: stored state was another person’s — kept the accounts the same sign-ins still serve', userId)
     },
     /** Test Settings' stage switch. This signs out of the old login server; the reload at the end of
      *  signedOut boots every endpoint on the new stage, where init drops the old stage's accounts. */
