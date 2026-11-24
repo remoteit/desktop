@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { selectRow } from '../selectors/accounts'
-import { getSignIns } from '../selectors/signIns'
+import { getSignIns, selectReachPairs } from '../selectors/signIns'
 import { DeviceNetwork } from '../services/graphQLDeviceNetworks'
 import { findDeviceNetworkElsewhere, findStoredNetworkElsewhere } from '../services/networkElsewhere'
 import { primeDeviceNetworks } from './useDeviceNetworks'
@@ -26,7 +26,10 @@ export function useElsewhere(
   const mounted = useRef(true)
   // How many searches are out: the wait is over when none is.
   const [looking, setLooking] = useState(0)
-  const key = `${row} ${networkId}`
+  // Looked for once for each row, and again when who can be asked changes: a sign-in brought into use since, or one
+  // that joined an account, has not been asked.
+  const reach = useSelector(selectReachPairs)
+  const key = `${row} ${networkId} ${reach}`
   const wanted = !!networkId && missing && several && !looked.current.has(key)
 
   useEffect(() => {

@@ -1,6 +1,14 @@
 import { store } from '../store'
 import { RowKey, rowKey, rowSub } from '../helpers/rowKey'
-import { RequestFor, getSignIns, idsKnown, rowsKnowing, noteAccountOf, selectAccountRoutes } from '../selectors/signIns'
+import {
+  RequestFor,
+  getSignIns,
+  idsKnown,
+  rowsKnowing,
+  noteAccountOf,
+  selectAccountRoutes,
+  selectReachPairs,
+} from '../selectors/signIns'
 
 /* A PAGE OPENED AT THE ADDRESS OF SOMETHING NO ROW HERE IS KNOWN TO HOLD. A read by id is made as the row looked at;
    where that finds nothing, and nothing known says whose the id is — no row's list holds it, it was read or made
@@ -65,10 +73,7 @@ export async function findElsewhere<T>({
   }
   // Remembered as nowhere for exactly who was asked — each account as each sign-in that reaches it: a sign-in brought
   // into use since, or an account one has joined, has not been asked, and may hold it.
-  const pairs = Object.keys(routes)
-    .flatMap(id => routes[id].reach.map(who => `${id}:${who.sub || ''}`))
-    .sort()
-  const key = [ids.join(' '), ...pairs].join('|')
+  const key = `${ids.join(' ')}|${selectReachPairs(state)}`
   if (nowhere.has(key)) return
   let failed = false
   for (const sub of ['', ...signIns.map(signIn => signIn.sub)]) {

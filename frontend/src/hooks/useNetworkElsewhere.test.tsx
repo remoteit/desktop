@@ -2,10 +2,13 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi } from 'vitest'
 
-const { state } = vi.hoisted(() => ({ state: { several: true } }))
+const { state } = vi.hoisted(() => ({ state: { several: true, reach: 'acme:|acme:sub-work' } }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select({}) }))
 vi.mock('../selectors/accounts', () => ({ selectRow: () => 'acme' }))
-vi.mock('../selectors/signIns', () => ({ getSignIns: () => (state.several ? { 'sub-work': {} } : {}) }))
+vi.mock('../selectors/signIns', () => ({
+  getSignIns: () => (state.several ? { 'sub-work': {} } : {}),
+  selectReachPairs: () => state.reach,
+}))
 vi.mock('../services/networkElsewhere', () => ({}))
 vi.mock('./useDeviceNetworks', () => ({}))
 
@@ -35,6 +38,19 @@ describe('a network looked for in the other rows here', () => {
     await render()
     expect(find).toHaveBeenCalledTimes(1)
     expect(container.textContent).toBe('No such network')
+  })
+
+  it('looks again when who can be asked changes: a sign-in brought into use since was not asked', async () => {
+    const find = vi.fn(async () => undefined)
+    const { container, render } = page(find)
+    await render()
+    await render()
+    expect(find).toHaveBeenCalledTimes(1)
+    expect(container.textContent).toBe('No such network')
+    state.reach = 'acme:|acme:sub-work|labs:sub-other'
+    await render()
+    expect(find).toHaveBeenCalledTimes(2)
+    state.reach = 'acme:|acme:sub-work'
   })
 
   it('stops waiting when the search fails', async () => {

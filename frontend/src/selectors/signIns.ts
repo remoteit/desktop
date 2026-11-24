@@ -254,10 +254,19 @@ export const selectRowNow = (accountId: string): RowKey =>
  *  a row that is one STILL. What was noted under a sign-in that has left, or an account no one here reaches now, says
  *  nothing: it must not stand in the way of finding the thing through someone else. */
 export const idsKnown = (state: State, ids: string[]): boolean =>
-  ids.some(id => notedRows(state, id).length > 0) ||
-  selectHeldRows(state).some(row => ids.some(id => row.ids.has(id)))
+  ids.some(id => notedRows(state, id).length > 0) || selectHeldRows(state).some(row => ids.some(id => row.ids.has(id)))
 
 /** Whether an id was read or made under a row that is one still (the same rule), of the state as it is now. */
+/** Who can be asked, as one string: each account under each sign-in that reaches it. It changes when a sign-in comes
+ *  into or goes out of use, or one joins or leaves an account — when a search of the others would ask someone new. */
+export const selectReachPairs = (state: State): string => {
+  const routes = selectAccountRoutes(state)
+  return Object.keys(routes)
+    .flatMap(id => routes[id].reach.map(who => `${id}:${who.sub || ''}`))
+    .sort()
+    .join('|')
+}
+
 export const isNoted = (id: string) => (stateNow ? notedRows(stateNow(), id).length > 0 : noted.has(id))
 
 /** The rows known to hold one of these ids — in a stored list, or noted — as account and sign-in: where an item
