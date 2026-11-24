@@ -1,7 +1,7 @@
 import { graphQLBasicRequest } from './graphQL'
 import { BROWSER_PLATFORM } from './browserClients'
 import browser, { openInSystem } from './browser'
-import { requestSignInNow } from '../selectors/signIns'
+import { primaryReachesNow } from '../selectors/signIns'
 
 /* A device's web service opened in its own tab with nothing installed here (presence-server
    docs/browser-client-plan.md §5): the browser's one shared client — connectd built for the browser — carries the
@@ -54,7 +54,7 @@ export const OTHER_SIGN_IN = 'OTHER_SIGN_IN'
 export type GatewayOpened = boolean | typeof OTHER_SIGN_IN
 
 /** Whether a service is one the browser's client can reach: one the page's own person's sign-in serves. */
-export const throughGateway = (serviceId?: string): boolean => !serviceId || !requestSignInNow({ about: [serviceId] })
+export const throughGateway = (serviceId?: string): boolean => primaryReachesNow(serviceId)
 
 // A web tab needs to be reserved on the click to pass the popup blocker. The iOS shell can hand the complete URL
 // to the system browser once the code arrives. `serviceId`: the service, where it is known — whose sign-in is looked at.

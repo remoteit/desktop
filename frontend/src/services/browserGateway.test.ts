@@ -102,4 +102,40 @@ describe('with several sign-ins in use', () => {
     expect(request.mock.calls[0].slice(1)).toEqual([{}, false, { sub: '' }])
     readStateWith(() => ({} as any))
   })
+
+  // The page's own person's service, shared with the other sign-in, whose account is selected: a request about it
+  // would be made as that other — and the browser's client, which is the page's own person's, still reaches it.
+  it('opens a service of the page’s own person though another sign-in’s account, selected, holds it too', async () => {
+    const { readStateWith } = await import('../selectors/signIns')
+    const shared = { id: 'd-me', services: [{ id: 's-me' }] }
+    readStateWith(
+      () =>
+        ({
+          auth: { user: { id: 'me' } },
+          accounts: {
+            activeId: 'work',
+            membership: [],
+            signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+          },
+          devices: { me: { all: [shared] }, work: { all: [shared] } },
+        } as any)
+    )
+    const { throughGateway } = await import('./browserGateway')
+    expect(throughGateway('s-me')).toBe(true)
+    // One nothing is known of is taken to be theirs; one only the other's list holds is not.
+    expect(throughGateway('s-unknown')).toBe(true)
+    readStateWith(
+      () =>
+        ({
+          auth: { user: { id: 'me' } },
+          accounts: {
+            membership: [],
+            signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+          },
+          devices: { work: { all: [shared] } },
+        } as any)
+    )
+    expect(throughGateway('s-me')).toBe(false)
+    readStateWith(() => ({} as any))
+  })
 })

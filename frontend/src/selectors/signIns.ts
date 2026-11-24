@@ -222,6 +222,20 @@ export const readStateWith = (read: () => State) => void (stateNow = read)
 export const requestSignInNow = (requestFor?: RequestFor, variables?: ILookup<any>): string | undefined =>
   stateNow ? requestSignIn(stateNow(), requestFor, variables) : undefined
 
+/** Whether the page's own person reaches something, as far as is known: their sign-in serves, or reaches, an account
+ *  whose stored list holds it or that it was read under — or nothing is known of it, and it is taken to be theirs.
+ *  What this browser's one client, which is theirs, can open (services/browserGateway). Not who a request about it
+ *  would be made as: a service of theirs shared with another sign-in whose account is selected is still theirs. */
+export function primaryReachesNow(id?: string): boolean {
+  if (!id || !stateNow) return true
+  const state = stateNow()
+  if (!state.accounts?.signIns || !Object.keys(state.accounts.signIns).length) return true
+  const routes = selectAccountRoutes(state)
+  const held = selectHeldIds(state)
+  const accounts = Object.keys(routes).filter(accountId => held[accountId]?.has(id) || noted.get(id)?.has(accountId))
+  return !accounts.length || accounts.some(accountId => routes[accountId].reach.some(who => !who.sub))
+}
+
 /* The sign-in a request is made as. With one sign-in in use there is nothing to decide. Otherwise, in order: what
    the caller said; the account the variables name (`accountId`, unless the caller says what the request is about:
    then it is data, and what it is about says first); the account whose stored lists hold an id the

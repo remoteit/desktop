@@ -93,6 +93,9 @@ describe('a service another sign-in serves', () => {
     expect(terminalReaches('s-work')).toBe(false)
     expect(openTerminal({ name: 'mac-me.on.remote.it', port: 22, service: 's-me' })).toBe(true)
     expect(opened).toHaveBeenCalledTimes(1)
+    // The page's own person's service, held in the other's list too with that account selected: still theirs.
+    expect(terminalReaches('s-me')).toBe(true)
+    expect(terminalReaches('s-unknown')).toBe(true)
     env.isNative = true
     expect(terminalReaches('s-work')).toBe(true)
     env.isNative = false

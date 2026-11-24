@@ -44,8 +44,14 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect, on
   const lastDropped = useRef(dropped)
 
   useEffect(() => {
-    const again = lastDropped.current !== dropped
-    lastDropped.current = dropped
+    // Another sign-in serves the account: the code the one before was given goes at once — before anything can
+    // return early below (a refresh under way), after which this run would no longer be seen as that change.
+    if (lastDropped.current !== dropped) {
+      lastDropped.current = dropped
+      sessionCodeRef.current = undefined
+      setRegistrationCode(undefined)
+      setRegistrationCommand(undefined)
+    }
     console.log('AUTO REGISTRATION EFFECT', {
       platform,
       tags,
@@ -58,12 +64,7 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect, on
     const platformId = platform?.id
     const previousContext = sessionContextRef.current
 
-    // Another account or platform — or another sign-in serving the account, who is given a code of their own, or none
-    // where they may not register devices here: never the code the one before was given.
-    if (
-      again ||
-      (previousContext && (previousContext.accountId !== accountId || previousContext.platformId !== platformId))
-    ) {
+    if (previousContext && (previousContext.accountId !== accountId || previousContext.platformId !== platformId)) {
       sessionCodeRef.current = undefined
       setRegistrationCode(undefined)
       setRegistrationCommand(undefined)

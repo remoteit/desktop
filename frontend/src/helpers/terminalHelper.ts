@@ -1,6 +1,6 @@
 import browser, { windowOpen } from '../services/browser'
 import { PORTAL_URL, TERMINAL_PATH } from '../constants'
-import { requestSignInNow } from '../selectors/signIns'
+import { primaryReachesNow } from '../selectors/signIns'
 
 /* Our web SSH (pages/TerminalPage): a terminal on a device's SSH service, its session through the browser's remote.it
    client (services/browserClient), in its own tab — #/terminal?name=<subnet name>&port=…&title=…&service=<id>.
@@ -35,8 +35,7 @@ export function terminalURL({ name, port, title, service }: TerminalTarget): str
  *  one client, which is the page's own person's (services/browserGateway, "ONE CLIENT, ONE PERSON"): a service only
  *  another sign-in reaches is not opened in it. From the desktop and mobile apps it opens in the web portal, whose
  *  own sign-ins say. */
-export const terminalReaches = (service?: string): boolean =>
-  browser.isNative || !service || !requestSignInNow({ about: [service] })
+export const terminalReaches = (service?: string): boolean => browser.isNative || primaryReachesNow(service)
 
 /** Opens the terminal in its own tab — on the desktop and mobile apps, in the system browser. Not for a service the
  *  browser's client cannot reach, which is said (OTHER_SIGN_IN). */
