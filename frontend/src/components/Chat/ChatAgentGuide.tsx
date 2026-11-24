@@ -20,7 +20,6 @@ export const ChatAgentGuide: React.FC<Props> = ({ placement, children }) => {
       added={CHAT_GUIDE_DATE}
       placement={placement}
       enterDelay={1200}
-      deferred
       // In the bottom bar this sits inside BottomNavigationAction's <button>, which only allows phrasing content
       component="span"
       instructions={

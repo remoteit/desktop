@@ -41,20 +41,22 @@ describe('GuideBubble', () => {
     vi.useRealTimers()
   })
 
+  const shown = () => Array.from(document.querySelectorAll('[role="tooltip"]')).map(tip => tip.textContent)
+
+  const render = (bubbles: React.ReactNode) =>
+    act(async () => root.render(<ThemeProvider theme={theme}>{bubbles}</ThemeProvider>))
+  const runTimers = () => act(async () => vi.runAllTimers())
+
   it("keeps its own button presses from reaching the element it's anchored inside", async () => {
     const parentClick = vi.fn()
-    act(() =>
-      root.render(
-        <ThemeProvider theme={theme}>
-          <button onClick={parentClick}>
-            <GuideBubble guide="tour" added={new Date()} instructions="Meet the tour">
-              <span>anchor</span>
-            </GuideBubble>
-          </button>
-        </ThemeProvider>
-      )
+    await render(
+      <button onClick={parentClick}>
+        <GuideBubble guide="tour" added={new Date()} instructions="Meet the tour">
+          <span>anchor</span>
+        </GuideBubble>
+      </button>
     )
-    await act(async () => vi.runAllTimers())
+    await runTimers()
 
     const ok = Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Ok')
     act(() => ok!.click())
@@ -63,19 +65,13 @@ describe('GuideBubble', () => {
     expect(parentClick).not.toHaveBeenCalled()
   })
 
-  const shown = () => Array.from(document.querySelectorAll('[role="tooltip"]')).map(tip => tip.textContent)
-
-  const render = (bubbles: React.ReactNode) =>
-    act(async () => root.render(<ThemeProvider theme={theme}>{bubbles}</ThemeProvider>))
-  const runTimers = () => act(async () => vi.runAllTimers())
-
-  it('opens one bubble at a time, and a deferred tour waits for the others', async () => {
+  it('opens one bubble at a time, oldest tour first', async () => {
     const page = () => (
       <>
-        <GuideBubble guide="chat" deferred added={new Date()} instructions="Chat tour">
+        <GuideBubble guide="chat" added={new Date('2026-08-27')} instructions="Chat tour">
           <span>chat</span>
         </GuideBubble>
-        <GuideBubble guide="welcome" added={new Date()} instructions="Welcome tour">
+        <GuideBubble guide="welcome" added={new Date('2022-09-20')} instructions="Welcome tour">
           <span>welcome</span>
         </GuideBubble>
       </>

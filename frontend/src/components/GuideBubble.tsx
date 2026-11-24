@@ -81,12 +81,13 @@ const dismissedAt = (value: number | boolean): number | undefined =>
    part of it: an enter delay resolves on its own, so "Next" is still honest.
 
    Separate tours (the welcome guide, the chat tour) each have a head with no
-   queueAfter, so several bubbles could be ready at once; only `active` opens. */
-type Registration = { guide: string; queueAfter?: string; eligible: boolean; ready: boolean; deferred?: boolean }
+   queueAfter, so several bubbles could be ready at once; only `active` opens. It
+   keeps the last pick while nothing is ready, so a dismissed bubble's successor
+   still wins once its enter delay ends. */
+type Registration = { guide: string; queueAfter?: string; added: number; eligible: boolean; ready: boolean }
 const mountedBubbles = new Set<Registration>()
 const bubbleListeners = new Set<() => void>()
 let active: Registration | undefined
-let lastActiveGuide: string | undefined
 // Bumped on every change so getSnapshot stays O(1); the successor scan then runs
 // once per bubble per change instead of on every render.
 let bubbleVersion = 0
@@ -94,11 +95,9 @@ let bubbleVersion = 0
 const pickActive = (): Registration | undefined => {
   if (active && mountedBubbles.has(active) && active.ready) return active
   const ready = Array.from(mountedBubbles).filter(bubble => bubble.ready)
-  return (
-    ready.find(bubble => !!lastActiveGuide && bubble.queueAfter === lastActiveGuide) ||
-    ready.find(bubble => !bubble.deferred) ||
-    ready[0]
-  )
+  // Oldest tour first, so a feature tour waits for the welcome guide
+  const successor = active && ready.find(bubble => bubble.queueAfter === active?.guide)
+  return successor || ready.sort((a, b) => a.added - b.added)[0]
 }
 
 // Picked once per commit: choosing per effect let whichever bubble's effect ran first win, so a
@@ -109,8 +108,7 @@ const notifyBubbles = () => {
   pickScheduled = true
   queueMicrotask(() => {
     pickScheduled = false
-    active = pickActive()
-    if (active) lastActiveGuide = active.guide
+    active = pickActive() || active
     bubbleVersion++
     bubbleListeners.forEach(listener => listener())
   })
@@ -137,8 +135,6 @@ type Props = {
   hide?: boolean
   enterDelay?: number
   queueAfter?: string
-  /** Waits until no other bubble is ready, so a feature tour never interrupts the welcome guide */
-  deferred?: boolean
   sidebar?: boolean
   sx?: BoxProps['sx']
   children?: React.ReactNode
@@ -156,7 +152,6 @@ export const GuideBubble: React.FC<Props> = ({
   hide,
   enterDelay,
   queueAfter,
-  deferred,
   sidebar,
   sx,
   children,
@@ -189,7 +184,8 @@ export const GuideBubble: React.FC<Props> = ({
 
   // Registered from an effect rather than during render: the Set is module state
   // shared with every other bubble, and a render can be discarded.
-  const registration = React.useRef<Registration>({ guide, queueAfter, eligible, ready, deferred }).current
+  const addedAt = added.getTime()
+  const registration = React.useRef<Registration>({ guide, queueAfter, added: addedAt, eligible, ready }).current
 
   React.useEffect(() => {
     mountedBubbles.add(registration)
@@ -202,17 +198,17 @@ export const GuideBubble: React.FC<Props> = ({
   React.useEffect(() => {
     registration.guide = guide
     registration.queueAfter = queueAfter
+    registration.added = addedAt
     registration.eligible = eligible
     registration.ready = ready
-    registration.deferred = deferred
     notifyBubbles()
-  }, [guide, queueAfter, eligible, ready, deferred])
+  }, [guide, queueAfter, addedAt, eligible, ready])
 
   const version = React.useSyncExternalStore(subscribeBubbles, getBubbleVersion)
   const open = ready && active === registration
   const hasNext = React.useMemo(
-    () => Array.from(mountedBubbles).some(bubble => bubble.queueAfter === guide && bubble.eligible),
-    [version, guide]
+    () => open && Array.from(mountedBubbles).some(bubble => bubble.queueAfter === guide && bubble.eligible),
+    [version, guide, open]
   )
 
   React.useEffect(() => {
