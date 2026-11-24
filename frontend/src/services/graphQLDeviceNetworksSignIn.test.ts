@@ -58,7 +58,7 @@ describe('a change to a network', () => {
     expect(as()).toBe('sub-work')
   })
 
-  it('a device, a service, a share and an account’s tags on it: each as the network’s manager', async () => {
+  it('a device, a service and a share on it: each as the network’s manager', async () => {
     const made: string[] = []
     await graphQLAddNetworkDevice('net-y', 'd-x', { role: 'TARGET' as any })
     made.push(as())
@@ -68,9 +68,16 @@ describe('a change to a network', () => {
     made.push(as())
     await graphQLSetNetworkShareRole('net-y', 'someone@x.test', 'manage' as any)
     made.push(as())
+    expect(made).toEqual(Array(4).fill('sub-work'))
+  })
+
+  // graphql takes an account's tags on a network from an administrator of that account (NetworkTag.mayTag), whoever
+  // manages the network: the owner's from the owner's sign-in, an organization's from the one serving that organization.
+  it('an account’s tags on it: as that account’s sign-in, not the network’s', async () => {
     await graphQLNetworkTag('net-y', 'org-x', 'lab', true)
-    made.push(as())
-    expect(made).toEqual(Array(5).fill('sub-work'))
+    expect(as()).toBe('primary')
+    await graphQLNetworkTag('net-y', 'work', 'lab', false)
+    expect(as()).toBe('sub-work')
   })
 
   it('an exit on it: as the side whose page asks', async () => {

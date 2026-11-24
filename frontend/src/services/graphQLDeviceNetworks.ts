@@ -320,7 +320,8 @@ export async function graphQLTaggedInto(accountId: string): Promise<TaggedInto[]
 }
 
 // An account's tags on a network — the owner's, or an organization's it is shared with — which decide which of its
-// members reach it by role.
+// members reach it by role. Asked as that account's sign-in, not the network's: graphql takes them from an administrator
+// of the account whose tags they are (NetworkTag.mayTag), who need not manage the network.
 export const graphQLNetworkTag = (networkId: string, accountId: string, name: string, on: boolean) =>
   graphQLBasicRequest(
     on
@@ -332,5 +333,5 @@ export const graphQLNetworkTag = (networkId: string, accountId: string, name: st
         }`,
     { networkId, name: [name], accountId },
     false,
-    forNetwork(networkId)
+    { account: accountId }
   )
