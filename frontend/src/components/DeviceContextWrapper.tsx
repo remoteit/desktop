@@ -10,9 +10,9 @@ import { State, Dispatch } from '../store'
 import { selectSharedNetwork } from '../models/networks'
 import { selectConnection } from '../selectors/connections'
 import { selectAccountRoutes, selectActiveRowKey } from '../selectors/signIns'
-import { pickRecord } from '../helpers/connectionRecords'
+import { pickRecord, rowHolds } from '../helpers/connectionRecords'
 import { rowAccount, rowSub } from '../helpers/rowKey'
-import { selectDeviceModelAttributes } from '../selectors/devices'
+import { getDeviceModelFn, selectDeviceModelAttributes } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
 import { useReadEffect } from '../hooks/useReadAgain'
 
@@ -31,8 +31,12 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   const routes = useSelector(selectAccountRoutes)
   const active = useSelector(selectActiveRowKey)
   const all = useSelector((state: State) => state.connections.all)
+  // The row has this device: its services are connected to as the row, never through another sign-in's connection.
+  const held = useSelector((state: State) =>
+    rowHolds(getDeviceModelFn(state.devices, selectActiveRowKey(state)).all, deviceID)
+  )
   const connections = all.filter(
-    c => c.deviceID === deviceID && pickRecord(routes, all, c.id, rowAccount(active), rowSub(active)) === c
+    c => c.deviceID === deviceID && pickRecord(routes, all, c.id, rowAccount(active), rowSub(active), held) === c
   )
   const remoteUI = useSelector(isRemoteUI)
   const thisId = useSelector((state: State) => state.backend.thisId)

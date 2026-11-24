@@ -424,7 +424,11 @@ accountCache((accountIds, rows) => {
   reading.clear()
   readingOf.clear()
   const dropped = [...copies.keys()].filter(row => forgotten(row, accountIds, rows) && copies.delete(row))
-  if (dropped.length) notify()
+  // By the device they copy, whoever read them: let go with any change of who reads, as what is kept by a device's id
+  // is (services/accountCaches rowChanged) — the copies and what may be done with them are the reader's.
+  const had = byOriginal.size
+  byOriginal = new Map()
+  if (dropped.length || had) notify()
 })
 
 // Each original's copies as read by it (Device.copies), a new map each time one is read.

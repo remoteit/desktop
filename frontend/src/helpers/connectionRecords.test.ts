@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest'
 const browser = vi.hoisted(() => ({ hasBackend: false }))
 vi.mock('../services/browser', () => ({ default: browser }))
 
-import { pickRecord, recordSub, sameRecord } from './connectionRecords'
+import { pickRecord, rowHolds, recordSub, sameRecord } from './connectionRecords'
 
 // Acme is reached by the page's own person and by Work; Labs by Work alone.
 const routes: any = {
@@ -24,6 +24,18 @@ describe('a connection record: the service, as one sign-in', () => {
     expect(pickRecord(routes, [mine], 'svc', 'acme', 'sub-work')).toBeUndefined()
     // A service of another account here: seen as that account's connection.
     expect(pickRecord(routes, [labs], 'svc-labs', 'acme', '')).toBe(labs)
+  })
+
+  // A device one account here shares with another: the row that holds it connects as itself, with its own record —
+  // not through the connection the sharing account made, as that account.
+  it('is not another account’s where the row itself holds the service', () => {
+    const labs = { id: 'svc-labs', accountId: 'labs', sub: 'sub-work' } as IConnection
+    expect(pickRecord(routes, [labs], 'svc-labs', 'acme', '', true)).toBeUndefined()
+    expect(pickRecord(routes, [labs], 'svc-labs', 'acme', '', false)).toBe(labs)
+    expect(rowHolds([{ id: 'dev', services: [{ id: 'svc-labs' }] } as IDevice], 'svc-labs')).toBe(true)
+    expect(rowHolds([{ id: 'dev', services: [{ id: 'svc-labs' }] } as IDevice], 'dev')).toBe(true)
+    expect(rowHolds([{ id: 'dev', services: [] } as unknown as IDevice], 'svc-labs')).toBe(false)
+    expect(rowHolds(undefined, 'svc-labs')).toBe(false)
   })
 
   it('that says no sign-in is the page’s own person’s where they belong to its account, else its serving sign-in’s', () => {

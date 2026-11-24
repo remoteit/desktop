@@ -165,7 +165,7 @@ export default createModel<RootModel>()({
       const lookup: ConnectionLookup = {}
       devices.forEach(d =>
         d.services.forEach(s => {
-          const own = sub === undefined ? undefined : pickRecord(routes, state.connections.all, s.id, accountId, sub)
+          const own = sub === undefined ? undefined : pickRecord(routes, state.connections.all, s.id, accountId, sub, true)
           const record = sub === undefined ? looked[s.id] : own
           if (record) lookup[s.id] = record
         })

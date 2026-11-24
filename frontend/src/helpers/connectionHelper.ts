@@ -6,9 +6,9 @@ import { State, store } from '../store'
 import { selectEnabledConnections } from '../selectors/connections'
 import { selectActiveUser, selectRow } from '../selectors/accounts'
 import { rowAccount, rowSub } from './rowKey'
-import { pickRecord, recordSub } from './connectionRecords'
+import { pickRecord, recordSub, rowHolds } from './connectionRecords'
 import { RequestFor, selectAccountRoutes, selectActiveRowKey, subOf } from '../selectors/signIns'
-import { getAllDevices } from '../selectors/devices'
+import { getAllDevices, getDeviceModelFn } from '../selectors/devices'
 import { selectById } from '../selectors/devices'
 import browser from '../services/browser'
 
@@ -86,7 +86,8 @@ export function connectionAs(connection: IConnection): RequestFor | undefined {
 /** A service's connection as the row looked at has it (helpers/connectionRecords pickRecord). */
 export function lookedRecord(state: State, id?: string): IConnection | undefined {
   const active = selectActiveRowKey(state)
-  return pickRecord(selectAccountRoutes(state), state.connections.all, id, rowAccount(active), rowSub(active))
+  const holds = rowHolds(getDeviceModelFn(state.devices, active).all, id)
+  return pickRecord(selectAccountRoutes(state), state.connections.all, id, rowAccount(active), rowSub(active), holds)
 }
 
 export function newConnection(service?: IService | null): IConnection {

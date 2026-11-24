@@ -22,20 +22,26 @@ export const sameRecord = (
   b: Pick<IConnection, 'id' | 'accountId' | 'sub'>
 ) => a.id === b.id && recordSub(routes, a) === recordSub(routes, b)
 
-/** The record of a service that a row sees: its own sign-in's (`sub`); with none of its own, one of an account that
- *  is not the row's (`accountId`) — a service of another account here, connected as that account is looked at —
- *  never the other row's of the same account. */
+/** The record of a service that a row sees: its own sign-in's (`sub`). With none of its own, and only where the row
+ *  does not itself hold the service (`holds`), one of an account that is not the row's (`accountId`) — a service of
+ *  another account here, connected as that account is looked at. Never the other row's of the same account; and a
+ *  service the row holds is connected to as the row, with a record of its own, not through another sign-in's. */
 export function pickRecord(
   routes: ILookup<AccountRoute>,
   connections: IConnection[],
   id: string | undefined,
   accountId: string,
-  sub: string
+  sub: string,
+  holds = false
 ): IConnection | undefined {
   if (!id) return undefined
   const records = connections.filter(c => c.id === id)
   if (browser.hasBackend) return records[0]
-  return (
-    records.find(c => recordSub(routes, c) === sub) || records.find(c => !!c.accountId && c.accountId !== accountId)
-  )
+  const own = records.find(c => recordSub(routes, c) === sub)
+  if (own || holds) return own
+  return records.find(c => !!c.accountId && c.accountId !== accountId)
 }
+
+/** Whether a row's device list has the service, or the device, of this id. */
+export const rowHolds = (devices: IDevice[] | undefined, id?: string): boolean =>
+  !!id && !!devices?.some(device => device.id === id || device.services?.some(service => service.id === id))

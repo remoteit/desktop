@@ -4,8 +4,10 @@ import { newConnection } from '../helpers/connectionHelper'
 import { selectRow, selectActiveUser } from './accounts'
 import { AccountRoute, selectAccountRoutes, selectActiveRowKey, subOf } from './signIns'
 import { RowKey, rowAccount, rowKey, rowSub } from '../helpers/rowKey'
-import { pickRecord } from '../helpers/connectionRecords'
+import { pickRecord, rowHolds } from '../helpers/connectionRecords'
 import { getUser, getConnections, getSessions, optionalService } from './state'
+import { getDeviceModelFn } from './devices'
+import type { State } from '../store'
 
 /* A connection and a session belong to a ROW (helpers/rowKey): the account, and the sign-in it was made or read as.
    What is listed is the selected row's — the two rows of an organization two people here belong to each show their
@@ -104,9 +106,16 @@ export const selectConnectionSessions = createSelector(
 
 // A service's connection as the row looked at has it (helpers/connectionRecords): its own, never the other row's.
 export const selectConnection = createSelector(
-  [getConnections, optionalService, selectAccountRoutes, selectActiveRowKey],
-  (connections, service: IService | undefined, routes, active) => {
-    let connection = pickRecord(routes, connections, service?.id, rowAccount(active), rowSub(active))
+  [
+    getConnections,
+    optionalService,
+    selectAccountRoutes,
+    selectActiveRowKey,
+    (state: State) => getDeviceModelFn(state.devices, selectActiveRowKey(state)).all,
+  ],
+  (connections, service: IService | undefined, routes, active, devices) => {
+    const holds = rowHolds(devices, service?.id)
+    let connection = pickRecord(routes, connections, service?.id, rowAccount(active), rowSub(active), holds)
     if (!connection?.typeID && service) return { ...newConnection(service), ...connection }
     if (!connection) return newConnection(service)
     return connection
