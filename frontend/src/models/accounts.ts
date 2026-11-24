@@ -1,9 +1,17 @@
 import i18n from '../i18n'
 import { State } from '../store'
 import { oidcSignIns } from '../services/oidc'
-import { ISignIn, getSignIns, selectAccountRoutes, selectSignInSub } from '../selectors/signIns'
+import {
+  ISignIn,
+  getSignIns,
+  rowGone,
+  selectAccountRoutes,
+  selectActiveSub,
+  selectSignInSub,
+} from '../selectors/signIns'
 import { createModel } from '@rematch/core'
-import { getDevices } from '../selectors/devices'
+import { BESIDE_ROWS, deviceRows, getDeviceModelFn, getDevices } from '../selectors/devices'
+import { RowKey, rowAccount, rowKey, rowSub } from '../helpers/rowKey'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { graphQLCreateOrganization, graphQLLeaveMembership } from '../services/graphQLMutation'
 import { graphQLBasicRequest, refusalOf } from '../services/graphQL'
@@ -15,6 +23,10 @@ import { RootModel } from '.'
 export type IAccountsState = {
   membership: IMembership[]
   activeId?: string // user.id
+  // With activeId, the selected ROW: the sign-in ('' the page's own person) whose row of the account was picked.
+  activeSub?: string
+  // What is stored is kept by row where it is (helpers/rowKey): unset on state stored before that (keepByRow).
+  byRow?: boolean
   // The sign-ins in use beside the page's own person, by sub (selectors/signIns): each one's account and organizations.
   signIns?: ILookup<ISignIn>
   // The sign-in the person picked for an organization more than one reaches, by account id.
@@ -54,11 +66,18 @@ function rowsAfter(state: State, change: Partial<IAccountsState>) {
   }
 }
 
+/* The rows of devices kept under a sign-in that no longer reaches their account: it left, or left the organization.
+   (An account that is no row at all any more is forgotten whole — forgetData.) */
+function unreachedDeviceRows(state: State): RowKey[] {
+  return deviceRows(state.devices).filter(row => !BESIDE_ROWS.includes(row) && rowGone(state, row))
+}
+
 const accountsState: IAccountsState = {
   membership: [],
   activeId: undefined,
   signIns: {},
   via: {},
+  byRow: true,
 }
 
 const SIGN_IN_QUERY = ` query SignIn {
@@ -175,6 +194,8 @@ export default createModel<RootModel>()({
     async setSignIns(signIns: ILookup<ISignIn>, state) {
       const { gone, moved, added } = rowsAfter(state, { signIns })
       await dispatch.accounts.set({ signIns })
+      // A sign-in that left, or left an organization: its rows of devices go, every other row's stay.
+      dispatch.devices.forgetRows(unreachedDeviceRows({ ...state, accounts: { ...state.accounts, signIns } } as State))
       if (gone.length) {
         if (state.accounts.activeId && gone.includes(state.accounts.activeId)) {
           await dispatch.accounts.select(state.auth.user?.id || state.user.id)
@@ -187,12 +208,15 @@ export default createModel<RootModel>()({
       // that joins, and one an account already here has joined since.
       else if (added.length) void dispatch.organization.fetch()
     },
-    /** Rows now served by another sign-in: what was stored for them was read as the one before — maybe in another
-     *  role, or seeing other devices — so it is dropped and read again as the one that serves them now. */
+    /** Rows now served by another sign-in: what is stored for them by account id alone was read as the one before —
+     *  maybe in another role — so it is dropped and read again as the one that serves them now. Their devices are
+     *  kept by row: each sign-in's stay as read, for as long as it reaches the account, and are there when its row
+     *  is looked at again. */
     async readAgain(accountIds: string[], state) {
       const active = selectActiveAccountId(state)
       const runs = accountIds.includes(active) && !!state.jobs?.all?.[active]
-      dispatch.accounts.forgetData(accountIds)
+      dispatch.devices.forgetRows(unreachedDeviceRows(state))
+      dispatch.accounts.forgetByAccount(accountIds)
       void dispatch.organization.fetch()
       if (!accountIds.includes(active)) return
       // Selected: its lists are read again, now that nothing is stored for it — its runs too where they were read,
@@ -200,10 +224,16 @@ export default createModel<RootModel>()({
       await dispatch.accounts.select(active)
       if (runs) dispatch.jobs.fetch({ accountId: active })
     },
-    /** What is stored for accounts that are no longer rows: dropped from every list kept by account id. */
+    /** What is stored for accounts that are no longer rows: dropped from every list kept by account id, and every
+     *  row of their devices. */
     forgetData(accountIds: string[]) {
       if (!accountIds.length) return
       dispatch.devices.forget(accountIds)
+      dispatch.accounts.forgetByAccount(accountIds)
+    },
+    /** Out of every list kept by account id alone — all but the devices', which are kept by row. */
+    forgetByAccount(accountIds: string[]) {
+      if (!accountIds.length) return
       dispatch.products.forget(accountIds)
       dispatch.partnerStats.forget(accountIds)
       dispatch.networks.forget(accountIds)
@@ -215,19 +245,36 @@ export default createModel<RootModel>()({
       forgetAccountCaches(accountIds)
     },
     /** Serve an organization more than one sign-in reaches through `sub` ('' the page's own person) from now on:
-     *  what was stored for it was read as the other sign-in, so it is read again. Nothing for a sign-in that does not
-     *  reach it. */
-    async setVia({ accountId, sub }: { accountId: string; sub: string }, state) {
-      if ((selectSignInSub(state, accountId) || '') === sub) return
-      if (!selectAccountRoutes(state)[accountId]?.reach.some(who => who.sub === sub)) return
-      await dispatch.accounts.set({ via: { ...state.accounts.via, [accountId]: sub } })
+     *  what was stored for it by account id alone was read as the other sign-in, so it is read again (its devices
+     *  are each row's own, and stay). Nothing for a sign-in that does not reach it. The selected account's selected
+     *  row goes with it: `via` and the selected row say the same sign-in. */
+    async setVia({ accountId, sub }: { accountId: string; sub: string }, state): Promise<boolean> {
+      if ((selectSignInSub(state, accountId) || '') === sub) return false
+      if (!selectAccountRoutes(state)[accountId]?.reach.some(who => who.sub === sub)) return false
+      const selected = accountId === selectActiveAccountId(state)
+      await dispatch.accounts.set({
+        via: { ...state.accounts.via, [accountId]: sub },
+        ...(selected ? { activeSub: sub } : {}),
+      })
       await dispatch.accounts.readAgain([accountId])
+      // Selected, it has been selected again as this row (readAgain).
+      return selected
     },
-    /** A row of the switcher picked: the organization selected AS the account the row is under — served by that
-     *  account's sign-in from now on (setVia: what was stored for it as another is read again), and selected. */
+    /** A row of the switcher picked: the organization selected AS the account the row is under — that row is the
+     *  selected one, and the account is served by its sign-in from now on (setVia). */
     async selectAs({ accountId, sub }: { accountId: string; sub: string }) {
-      await dispatch.accounts.setVia({ accountId, sub })
-      await dispatch.accounts.select(accountId)
+      if (!(await dispatch.accounts.setVia({ accountId, sub }))) await dispatch.accounts.select(accountId)
+    },
+    /** State stored before devices were kept by row had every account's under its plain id — which is now the page's
+     *  own person's row of it. What was read as another sign-in (its own account, an organization it serves) is
+     *  dropped, once, and read again into that sign-in's row when the row is looked at. */
+    keepByRow(_: void, state) {
+      if (state.accounts.byRow) return
+      const routes = selectAccountRoutes(state)
+      dispatch.devices.forgetRows(
+        deviceRows(state.devices).filter(row => !rowSub(row) && !!routes[rowAccount(row)]?.sub)
+      )
+      dispatch.accounts.set({ byRow: true })
     },
     async fetchOrganizationClosures() {
       const result = await graphQLBasicRequest(
@@ -269,11 +316,12 @@ export default createModel<RootModel>()({
       await dispatch.logs.reset()
       if (accountId !== selectActiveAccountId(state))
         await dispatch.ui.set({ selected: [], selectionAnchor: undefined })
-      await dispatch.accounts.set({ activeId: accountId })
+      // The row selected: the account, under the sign-in it is looked at through.
+      const sub = selectSignInSub(state, accountId) || ''
+      await dispatch.accounts.set({ activeId: accountId, activeSub: sub })
       // Another account's row, looked at through another sign-in: what a page reads for itself by a device's or a
       // service's id, which may be in both rows, is read again as this one (hooks/useReadAgain).
-      if ((selectSignInSub(state, selectActiveAccountId(state)) || '') !== (selectSignInSub(state, accountId) || ''))
-        rowChanged()
+      if (selectActiveSub(state) !== sub) rowChanged()
       dispatch.networks.fetchIfEmpty()
       dispatch.devices.fetchIfEmpty()
       dispatch.files.fetchIfEmpty()
@@ -292,7 +340,9 @@ export default createModel<RootModel>()({
         const { moved } = rowsAfter(state, { membership: remaining })
         dispatch.accounts.set({ membership: remaining })
         if (moved.length) {
-          dispatch.accounts.forgetData(moved)
+          // Theirs no longer: the rows of its devices read as them go, the other sign-in's stay.
+          dispatch.devices.forgetRows(moved.map(id => rowKey(id)))
+          dispatch.accounts.forgetByAccount(moved)
           void dispatch.organization.fetch()
         }
         await dispatch.accounts.select(state.user.id)
@@ -303,32 +353,38 @@ export default createModel<RootModel>()({
         })
       }
     },
-    async setDevices({ devices, accountId }: { devices: IDevice[]; accountId?: string }) {
-      await dispatch.devices.set({ all: devices, accountId })
+    /* A row's device list. Each of these takes the account, and where the caller acts for one row of it — an answer
+       to what was asked as that row, a list gone through row by row — the `row` (helpers/rowKey); with none it is
+       the row the account is looked at through (selectRowOf). */
+    async setDevices({ devices, accountId, row }: { devices: IDevice[]; accountId?: string; row?: RowKey }) {
+      await dispatch.devices.set({ all: devices, accountId, row })
     },
     /*
        Takes new list of devices and merges the existing into them
        -- forgets any existing devices that are not in the new devices
        -- used when new device list query is made
     */
-    async truncateMergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
+    async truncateMergeDevices(
+      { devices, accountId, row }: { devices?: IDevice[]; accountId: string; row?: RowKey },
+      state
+    ) {
       if (!devices) return
-      const all = getDevices(state, accountId)
+      const all = rowDevices(state, accountId, row)
       const mergedDevices = devices.map(device => {
         const overwrite = all.find(o => o.id === device.id)
         if (!overwrite) return device
         return mergeDevice(overwrite, device)
       })
 
-      await dispatch.accounts.setDevices({ devices: mergedDevices, accountId })
+      await dispatch.accounts.setDevices({ devices: mergedDevices, accountId, row })
     },
     /*     
       Keeps the existing devices and device list order and merges in newly loaded device data
       -- For adding hidden device data or fully loaded device data
     */
-    async mergeDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
+    async mergeDevices({ devices, accountId, row }: { devices?: IDevice[]; accountId: string; row?: RowKey }, state) {
       if (!devices || !devices.length) return
-      const all = getDevices(state, accountId)
+      const all = rowDevices(state, accountId, row)
       const devicesMap = new Map(devices.map(device => [device.id, device]))
 
       let mergedDevices: IDevice[] = all.map(overwrite => {
@@ -343,39 +399,51 @@ export default createModel<RootModel>()({
       const append: IDevice[] = devices.filter(k => !all.find(ow => ow.id === k.id))
       if (append.length) console.log('APPENDING DEVICES IN MERGE', { mergeDevice, append })
 
-      await dispatch.accounts.setDevices({ devices: [...mergedDevices, ...append], accountId })
+      await dispatch.accounts.setDevices({ devices: [...mergedDevices, ...append], accountId, row })
     },
     /* 
       Used when loading more devices from device list 
     */
-    async appendUniqueDevices({ devices, accountId }: { devices?: IDevice[]; accountId: string }, state) {
+    async appendUniqueDevices(
+      { devices, accountId, row }: { devices?: IDevice[]; accountId: string; row?: RowKey },
+      state
+    ) {
       if (!devices?.length) return
 
       accountId = accountId || devices[0]?.accountId
       if (!accountId) return console.error('APPEND DEVICES WITH MISSING ACCOUNT ID', { accountId, devices })
 
       const devicesMap = new Map(devices.map(device => [device.id, device]))
-      const existingDevices = getDevices(state, accountId).filter(ed => !devicesMap.has(ed.id))
+      const existingDevices = rowDevices(state, accountId, row).filter(ed => !devicesMap.has(ed.id))
 
       await dispatch.accounts.setDevices({
         devices: [...existingDevices, ...devices],
         accountId,
+        row,
       })
     },
     async setDevice(
       {
         id,
         accountId,
+        row,
         device,
         prepend,
         suppressAdd,
-      }: { id: string; accountId?: string; device?: IDevice; prepend?: boolean; suppressAdd?: boolean },
+      }: {
+        id: string
+        accountId?: string
+        row?: RowKey
+        device?: IDevice
+        prepend?: boolean
+        suppressAdd?: boolean
+      },
       state
     ) {
       accountId = accountId || device?.accountId
       if (!accountId) return console.error('SET DEVICE WITH MISSING ACCOUNT ID', { id, accountId, device })
 
-      const previousDevices = getDevices(state, accountId)
+      const previousDevices = rowDevices(state, accountId, row)
       let updated = false
 
       const devices = previousDevices
@@ -390,7 +458,7 @@ export default createModel<RootModel>()({
 
       // Add if new (unless suppressed because it doesn't match the active filter)
       if (!updated && device && !suppressAdd) prepend ? devices.unshift(device) : devices.push(device)
-      await dispatch.accounts.setDevices({ devices, accountId })
+      await dispatch.accounts.setDevices({ devices, accountId, row })
     },
     /* 
       Remove all references to a device for cleanup after device is deleted
@@ -398,23 +466,28 @@ export default createModel<RootModel>()({
     async removeDevice(id: string) {
       await dispatch.accounts.removeDeviceFrom({ id })
     },
-    /** Out of the lists of `accountIds` alone, where given: a device those accounts lost that others here may still
-     *  have. True when another account's list holds it still (the lists kept beside the accounts' do not count). */
-    async removeDeviceFrom({ id, accountIds }: { id: string; accountIds?: string[] }, state): Promise<boolean> {
-      const rows = getAccountIds(state)
+    /** Out of the lists of `accountIds` alone — every row of each — or of `rows` alone, where given: a device those
+     *  lost that others here may still have. True when another row's list holds it still (the lists kept beside the
+     *  rows' do not count). */
+    async removeDeviceFrom(
+      { id, accountIds, rows }: { id: string; accountIds?: string[]; rows?: RowKey[] },
+      state
+    ): Promise<boolean> {
+      const accounts = getAccountIds(state)
       let kept = false
-      for (const accountId in state.devices) {
-        const all = state.devices[accountId].all
-        if (accountIds && !accountIds.includes(accountId)) {
-          kept ||= rows.includes(accountId) && all.some(d => d.id === id)
+      for (const row of deviceRows(state.devices)) {
+        const accountId = rowAccount(row)
+        const all = state.devices[row].all
+        if ((accountIds && !accountIds.includes(accountId)) || (rows && !rows.includes(row))) {
+          kept ||= accounts.includes(accountId) && all.some(d => d.id === id)
           continue
         }
         const filtered = all.filter(d => d.id !== id)
         if (filtered.length !== all.length) {
-          await dispatch.accounts.setDevices({ devices: filtered, accountId })
+          await dispatch.accounts.setDevices({ devices: filtered, accountId, row })
           // A disabled device was never in the total (graphql leaves it out of the list).
           if (!all.find(d => d.id === id)?.disabled)
-            await dispatch.devices.set({ total: state.devices[accountId].total - 1, accountId })
+            await dispatch.devices.set({ total: state.devices[row].total - 1, accountId, row })
         }
       }
       return kept
@@ -440,6 +513,10 @@ export default createModel<RootModel>()({
     },
   },
 })
+
+// A row's devices: the row said, else the one the account is looked at through.
+const rowDevices = (state: State, accountId: string, row?: RowKey): IDevice[] =>
+  row === undefined ? getDevices(state, accountId) : getDeviceModelFn(state.devices, row).all || []
 
 export function accountFromDevice(state: State, ownerId: string, access: string[]) {
   const userId = state.auth.user?.id || state.user.id

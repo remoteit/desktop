@@ -23,7 +23,8 @@ import { version } from '../helpers/versionHelper'
 import { store } from '../store'
 import { notify } from './Notifications'
 import { productFullEventFields } from './productMaxDevices'
-import { selectById } from '../selectors/devices'
+import { deviceRows, selectById } from '../selectors/devices'
+import { RowKey, rowAccount, rowSub } from '../helpers/rowKey'
 import { combinedName } from '@common/nameHelper'
 import {
   setConnection,
@@ -55,19 +56,23 @@ export async function wsAuthorization(sub?: string): Promise<string> {
 export const wsAuthorizationFor = (requestFor: RequestFor): Promise<string> =>
   wsAuthorization(requestSignIn(store.getState(), requestFor))
 
-/* Every account's list that holds a device, each with its own copy: a device shared with two people signed in here
-   is in both their lists, and an event about it comes once (it is passed over on the other's socket), so what it
-   says of the device goes into every copy. The accounts' lists alone: not those kept beside them by other names. */
-function copiesOf(state: any, deviceId?: string): [accountId: string, device: IDevice][] {
+/* Every row's list that holds a device (helpers/rowKey), each with its own copy: a device shared with two people
+   signed in here is in both their lists, and one of an organization two of them reach is in its row under each; an
+   event about it comes once (it is passed over on the other's socket), so what it says of the device goes into every
+   copy. The rows' lists alone: not those kept beside them by other names. */
+function copiesOf(state: any, deviceId?: string): [row: RowKey, device: IDevice][] {
   if (!deviceId) return []
-  const held = Object.entries<{ all?: IDevice[] }>(state.devices || {}).flatMap(([accountId, list]) => {
-    const device = list?.all?.find(d => d.id === deviceId)
-    return device ? [[accountId, device] as [string, IDevice]] : []
+  const held = deviceRows(state.devices || {}).flatMap(row => {
+    const device = state.devices[row]?.all?.find((d: IDevice) => d.id === deviceId)
+    return device ? [[row, device] as [RowKey, IDevice]] : []
   })
   if (!held.length) return held
-  const rows = getAccountIds(state)
-  return held.filter(([accountId]) => rows.includes(accountId))
+  const accounts = getAccountIds(state)
+  return held.filter(([row]) => accounts.includes(rowAccount(row)))
 }
+
+// A row as the devices model is told it: the account, and the sign-in whose row of it.
+const rowOf = (row: RowKey) => ({ accountId: rowAccount(row), sub: rowSub(row) })
 
 // How long an event delivered to one sign-in's socket is remembered, so its copy on another's is passed over.
 const SEEN_FOR_MS = 60_000
@@ -535,10 +540,10 @@ ${await productFullEventFields()}
         event.target.forEach(target => {
           if (stateTimes.outdated(event.timestamp, target.id)) return
 
-          // Every account's copy of the device (copiesOf); where no list holds it, the one the event found.
+          // Every row's copy of the device (copiesOf); where no list holds it, the one the event found.
           const held = copiesOf(store.getState(), target.device?.id)
-          const copies: [string, IDevice][] = held.length
-            ? held.map(([accountId, copy]) => [accountId, structuredClone(copy)])
+          const copies: [string, IDevice, RowKey?][] = held.length
+            ? held.map(([row, copy]) => [rowAccount(row), structuredClone(copy), row])
             : target.device
             ? [[target.accountId, target.device]]
             : []
@@ -565,19 +570,23 @@ ${await productFullEventFields()}
           }
 
           // if device exists
-          copies.forEach(([accountId, device]) => {
-            dispatch.accounts.setDevice({ id: device.id, device, accountId })
-            dispatch.devices.sortByState(accountId)
+          copies.forEach(([accountId, device, row]) => {
+            dispatch.accounts.setDevice({ id: device.id, device, accountId, row })
+            dispatch.devices.sortByState({ accountId, row })
           })
 
           // A service not here yet, of a device that is: added since the device was read — or its add not yet in the
           // store, the device taking it up first. Read the device, whose service then has the state this event gave.
           if (!target.service && target.deviceId && target.id !== target.deviceId) {
-            const lists = copiesOf(store.getState(), target.deviceId).map(([accountId]) => accountId)
+            const lists = copiesOf(store.getState(), target.deviceId).map(([row]) => rowOf(row))
             const [, loaded] = selectById(store.getState(), undefined, target.deviceId)
-            const accounts = lists.length ? lists : loaded ? [target.accountId] : []
-            accounts.forEach(accountId =>
-              dispatch.devices.fetchSingleFull({ id: target.deviceId, hidden: true, silent: true, accountId })
+            const rows: { accountId: string; sub?: string }[] = lists.length
+              ? lists
+              : loaded
+              ? [{ accountId: target.accountId }]
+              : []
+            rows.forEach(row =>
+              dispatch.devices.fetchSingleFull({ id: target.deviceId, hidden: true, silent: true, ...row })
             )
           }
 
@@ -714,26 +723,28 @@ ${await productFullEventFields()}
         break
 
       case 'DEVICE_REFRESH':
-        // Each device, in every account's list that holds it (copiesOf): read again for each, as its sign-in.
-        const refresh: ILookup<string[]> = {}
+        // Each device, in every row's list that holds it (copiesOf): read again for each, as the row's sign-in.
+        const refresh = new Map<string, { row: { accountId: string; sub?: string }; ids: string[] }>()
         event.target.forEach(target => {
           // Check that it's the bulk service and that the device is loaded in the ui
           if (target.typeID !== DEVICE_TYPE || !target.device) return
-          const lists = copiesOf(store.getState(), target.deviceId).map(([accountId]) => accountId)
-          ;(lists.length ? lists : [target.accountId]).forEach(accountId =>
-            (refresh[accountId] ??= []).push(target.deviceId)
-          )
+          const lists = copiesOf(store.getState(), target.deviceId).map(([row]) => rowOf(row))
+          ;(lists.length ? lists : [{ accountId: target.accountId, sub: undefined }]).forEach(row => {
+            const key = `${row.accountId} ${row.sub ?? '-'}`
+            if (!refresh.has(key)) refresh.set(key, { row, ids: [] })
+            refresh.get(key)!.ids.push(target.deviceId)
+          })
         })
-        Object.entries(refresh).forEach(([accountId, refreshIds]) => {
+        refresh.forEach(({ row, ids: refreshIds }) => {
           // avoid double loading device if on the device page
           for (const id of [...refreshIds]) {
             if (window.location.href.includes(id)) {
-              dispatch.devices.fetchSingleFull({ id, hidden: true, silent: true, accountId })
+              dispatch.devices.fetchSingleFull({ id, hidden: true, silent: true, ...row })
               refreshIds.splice(refreshIds.indexOf(id), 1)
             }
           }
           // fetch the rest
-          if (refreshIds.length) dispatch.devices.fetchDevices({ ids: refreshIds, accountId })
+          if (refreshIds.length) dispatch.devices.fetchDevices({ ids: refreshIds, ...row })
         })
         break
 

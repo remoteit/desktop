@@ -46,6 +46,8 @@ import { listTimeSeriesKey, timeSeriesLoading, timeSeriesWithStyle } from '../he
 import {
   getAllDevices,
   getDeviceModel,
+  getDeviceModelFn,
+  deviceRows,
   getDevices,
   selectDevice,
   selectById,
@@ -54,7 +56,15 @@ import {
   deviceMatchesFilters,
 } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { noteAccountOf, selectPersonEmailFor } from '../selectors/signIns'
+import {
+  RequestFor,
+  noteAccountOf,
+  rowGone,
+  selectActiveRowKey,
+  selectPersonEmailFor,
+  selectRowOf,
+} from '../selectors/signIns'
+import { RowKey, rowAccount, rowKey, rowSub } from '../helpers/rowKey'
 import { selectLimit } from '../selectors/organizations'
 import { Duration } from 'luxon'
 import { AxiosResponse } from 'axios'
@@ -116,9 +126,15 @@ export const defaultState: IDeviceState = {
   customAttributes: [],
 }
 
+// By ROW (helpers/rowKey): an account's devices as each sign-in that belongs to it sees them. The page's own
+// person's row of an account is keyed by the account's id, as it always was. Beside the rows, by their own names:
+// `default` (what a row starts from) and `connections` (the devices of the connections, of whichever account).
 type IDeviceAccountState = {
-  [accountId: string]: IDeviceState
+  [row: string]: IDeviceState
 }
+
+// A read made for a row: asked as the row's sign-in, its answer kept for that row (selectors/signIns RequestFor.row).
+const asRow = (row: RowKey): RequestFor => ({ sub: rowSub(row), row: true })
 
 const settingsWrites = inOrder(() => store.getState().auth.user?.id)
 
@@ -131,6 +147,9 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetchList(_: void, state) {
       const accountId = selectActiveAccountId(state)
+      // The row the list is read for: asked as its sign-in, and its answer kept under it — the row looked at when the
+      // read is sent, whichever is looked at by the time it answers (helpers/rowKey).
+      const row = selectRowOf(state, accountId)
       const deviceModel = selectDeviceModelAttributes(state, accountId)
       const columns = selectActiveColumns(state, accountId)
       const { set, graphQLListProcessor } = dispatch.devices
@@ -155,30 +174,30 @@ export default createModel<RootModel>()({
         owner: owner === 'all' ? undefined : owner === 'me',
       }
 
-      set({ fetching: true, accountId })
-      const result = await graphQLListProcessor(options)
+      set({ fetching: true, accountId, row })
+      const result = await graphQLListProcessor({ ...options, row })
 
       // A failed fetch must not mark the account initialized: DevicesPage reads an
       // initialized empty list as "no devices" and redirects to /add.
       if (!result) {
-        set({ fetching: false, append: false, accountId })
+        set({ fetching: false, append: false, accountId, row })
         return false
       }
 
       const { devices, total } = result
-      if (searched) set({ results: total, accountId })
-      else set({ total, accountId })
+      if (searched) set({ results: total, accountId, row })
+      else set({ total, accountId, row })
 
       if (append) {
-        await appendUniqueDevices({ devices, accountId })
+        await appendUniqueDevices({ devices, accountId, row })
       } else {
-        await truncateMergeDevices({ devices, accountId })
+        await truncateMergeDevices({ devices, accountId, row })
       }
 
       dispatch.search.updateSearch()
       // Record the name the current list was actually filtered by (the live `query` can
       // be ahead of the results until re-submitted) so new devices match the same view.
-      set({ fetching: false, append: false, initialized: true, appliedName: query, accountId })
+      set({ fetching: false, append: false, initialized: true, appliedName: query, accountId, row })
       return true
     },
 
@@ -197,22 +216,31 @@ export default createModel<RootModel>()({
       }
     },
 
-    async fetchDevices({ ids, hidden, accountId }: { ids: string[]; hidden?: boolean; accountId?: string }, state) {
+    // `sub`: the sign-in whose row of the account they are read for, where it is not the row looked at (an event
+    // about a device another row holds too).
+    async fetchDevices(
+      { ids, hidden, accountId, sub }: { ids: string[]; hidden?: boolean; accountId?: string; sub?: string },
+      state
+    ) {
       accountId = accountId || selectActiveAccountId(state)
+      const row = sub === undefined ? selectRowOf(state, accountId) : rowKey(accountId, sub)
       const timeSeries = selectTimeSeries(state)
-      const gqlResponse = await graphQLPreloadDevices({
-        ids,
-        accountId,
-        columns: selectActiveColumns(state, accountId),
-        ...timeSeries,
-      })
+      const gqlResponse = await graphQLPreloadDevices(
+        {
+          ids,
+          accountId,
+          columns: selectActiveColumns(state, accountId),
+          ...timeSeries,
+        },
+        asRow(row)
+      )
 
       if (gqlResponse === 'ERROR') return []
 
       const result = gqlResponse?.data?.data?.login?.account?.device
       const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden, ...timeSeries })
       if (devices.length) {
-        await dispatch.accounts.mergeDevices({ devices, accountId })
+        await dispatch.accounts.mergeDevices({ devices, accountId, row })
         await dispatch.connections.updateConnectionState({ devices, accountId })
       }
     },
@@ -226,6 +254,7 @@ export default createModel<RootModel>()({
         newDevice,
         isService,
         accountId,
+        sub,
         silent,
       }: {
         id: string // service or device id
@@ -235,6 +264,7 @@ export default createModel<RootModel>()({
         newDevice?: boolean
         isService?: boolean
         accountId?: string
+        sub?: string // the sign-in whose row of the account it is read for, where not the row looked at
         silent?: boolean
       },
       state
@@ -242,12 +272,13 @@ export default createModel<RootModel>()({
       if (!id) return
 
       accountId = accountId || selectActiveAccountId(state)
+      const row = sub === undefined ? selectRowOf(state, accountId) : rowKey(accountId, sub)
       let result: IDevice | undefined
 
-      if (!silent) dispatch.devices.set({ fetching: true, accountId })
+      if (!silent) dispatch.devices.set({ fetching: true, accountId, row })
       const { serviceTimeSeries, deviceTimeSeries } = selectTimeSeries(state)
 
-      const gqlResponse = await graphQLFetchFullDevice(id, accountId, serviceTimeSeries, deviceTimeSeries)
+      const gqlResponse = await graphQLFetchFullDevice(id, accountId, serviceTimeSeries, deviceTimeSeries, asRow(row))
       if (gqlResponse !== 'ERROR') {
         const gqlData = gqlResponse?.data?.data?.login || {}
         result = graphQLDeviceAdaptor({
@@ -267,11 +298,11 @@ export default createModel<RootModel>()({
         // the active list filter — otherwise it shouldn't appear in the filtered view.
         let matchesFilter = true
         if (newDevice) {
-          const model = selectDeviceModelAttributes(state, accountId)
+          const model = getDeviceModelFn(state.devices, row)
           matchesFilter = deviceMatchesFilters(result, model, accountId)
           if (matchesFilter) {
             result.newDevice = true
-            dispatch.devices.incrementTotal(accountId)
+            dispatch.devices.incrementTotal({ accountId, row })
           }
         }
 
@@ -281,6 +312,7 @@ export default createModel<RootModel>()({
           id: result.id,
           device: result,
           accountId,
+          row,
           prepend: newDevice && matchesFilter,
           suppressAdd: newDevice && !matchesFilter,
         })
@@ -300,11 +332,12 @@ export default createModel<RootModel>()({
         if (redirect) dispatch.ui.set({ redirect })
         if (gqlResponse !== 'ERROR') {
           if (isService) dispatch.connections.forget(id)
-          else dispatch.devices.cleanup([id])
+          // Not this row's any more: another row here may hold it still.
+          else if (!(await dispatch.accounts.removeDeviceFrom({ id, rows: [row] }))) dispatch.devices.cleanup([id])
         }
       }
 
-      if (!silent) dispatch.devices.set({ fetching: false, accountId })
+      if (!silent) dispatch.devices.set({ fetching: false, accountId, row })
     },
 
     async fetchCount(params: Partial<IOrganizationRole>, state) {
@@ -325,9 +358,11 @@ export default createModel<RootModel>()({
       return count
     },
 
-    async sortByState(accountId: string | void, state) {
-      accountId = accountId || selectActiveAccountId(state)
-      const deviceModel = getDeviceModel(state, accountId)
+    // `row`: the one row to sort, where it is not the row the account is looked at through.
+    async sortByState(sort: { accountId?: string; row?: RowKey } | void, state) {
+      const accountId = sort?.accountId || selectActiveAccountId(state)
+      const row = sort?.row ?? selectRowOf(state, accountId)
+      const deviceModel = getDeviceModelFn(state.devices, row)
       const all = [...deviceModel.all]
 
       const sortKeys = deviceModel.sort.split(',').map(k => {
@@ -359,18 +394,18 @@ export default createModel<RootModel>()({
       })
 
       console.log('SORT DEVICES', { accountId, sortKeys })
-      await dispatch.devices.set({ all: result, accountId })
+      await dispatch.devices.set({ all: result, accountId, row })
     },
 
     async expire(_: void, state) {
-      const activeAccountId = selectActiveAccountId(state)
+      const selected: string = selectActiveRowKey(state)
       const rootState = structuredClone(state.devices)
       const expired: string[] = []
 
-      for (const accountId in rootState) {
-        if (['default', 'connections', activeAccountId].includes(accountId)) continue
-        rootState[accountId].initialized = false
-        expired.push(accountId)
+      for (const row in rootState) {
+        if (['default', 'connections', selected].includes(row)) continue
+        rootState[row].initialized = false
+        expired.push(row)
       }
 
       console.log('EXPIRE DEVICES CACHE', expired)
@@ -416,8 +451,8 @@ export default createModel<RootModel>()({
       await dispatch.devices.set({ all, accountId })
     },
 
-    async graphQLListProcessor(options: gqlOptions) {
-      const gqlResponse = await graphQLFetchDeviceList(options)
+    async graphQLListProcessor({ row, ...options }: gqlOptions & { row?: RowKey }) {
+      const gqlResponse = await graphQLFetchDeviceList(options, row === undefined ? undefined : asRow(row))
       if (!gqlResponse || gqlResponse === 'ERROR') return
 
       const [gqlDevices, total] = graphQLMetadata(gqlResponse)
@@ -799,8 +834,8 @@ export default createModel<RootModel>()({
 
       // The virtual devices these gateways host, as far as the store knows them: disabled with them, or read again.
       const hosted = new Set<string>()
-      for (const accountId in state.devices)
-        for (const device of state.devices[accountId].all) {
+      for (const row in state.devices)
+        for (const device of state.devices[row].all) {
           if (deviceIds.includes(device.id)) device.hostedDevices?.forEach(h => hosted.add(h.id))
           else if (device.hostedBy?.id && deviceIds.includes(device.hostedBy.id)) hosted.add(device.id)
         }
@@ -816,19 +851,21 @@ export default createModel<RootModel>()({
           await dispatch.connections.clearByDevice(id)
           await dispatch.networks.clearById(id)
         }
-        for (const accountId in state.devices) {
+        for (const row of deviceRows(state.devices)) {
+          const accountId = rowAccount(row)
           let listed = 0
-          for (const device of state.devices[accountId].all) {
+          for (const device of state.devices[row].all) {
             if (!disabling.includes(device.id) || device.disabled) continue
             await dispatch.accounts.setDevice({
               id: device.id,
               accountId,
+              row,
               device: { ...device, disabled: true, disabledAt, disabledReason: 'person', disabledBy: by },
             })
             if (!device.hidden) listed++
           }
           if (listed)
-            await dispatch.devices.set({ total: Math.max(0, state.devices[accountId].total - listed), accountId })
+            await dispatch.devices.set({ total: Math.max(0, state.devices[row].total - listed), accountId, row })
         }
         // Kept, a hosted device is unhosted now: it is read again.
         if (keepHosted !== false && hosted.size) await dispatch.devices.fetchDevices({ ids: [...hosted] })
@@ -860,12 +897,13 @@ export default createModel<RootModel>()({
       const result = await graphQLRestoreDevices(deviceIds, ...(accountId ? [accountId] : []))
       if (result !== 'ERROR') {
         for (const id of deviceIds)
-          for (const accountId in state.devices) {
-            const device = state.devices[accountId].all.find(d => d.id === id)
+          for (const row of deviceRows(state.devices)) {
+            const device = state.devices[row].all.find(d => d.id === id)
             if (device?.disabled)
               await dispatch.accounts.setDevice({
                 id,
-                accountId,
+                accountId: rowAccount(row),
+                row,
                 device: {
                   ...device,
                   disabled: false,
@@ -1166,22 +1204,28 @@ export default createModel<RootModel>()({
       await dispatch.networks.clearById(serviceId)
     },
 
-    async incrementTotal(accountId: string, state) {
-      accountId = accountId || selectActiveAccountId(state)
-      const total = selectDeviceModelAttributes(state, accountId).total + 1
-      console.log('INCREMENT TOTAL', { total, accountId })
-      await dispatch.devices.set({ total, accountId })
+    async incrementTotal({ accountId, row }: { accountId: string; row?: RowKey }, state) {
+      row ??= selectRowOf(state, accountId || selectActiveAccountId(state))
+      const total = getDeviceModelFn(state.devices, row).total + 1
+      console.log('INCREMENT TOTAL', { total, accountId, row })
+      await dispatch.devices.set({ total, accountId, row })
     },
 
-    async set(params: Partial<IDeviceState>, state) {
-      const accountId = params.accountId || selectActiveAccountId(state)
-      const deviceState = { ...getDeviceModel(state, accountId) }
+    /* THE ONE WRITE. What is kept of an account's devices is kept by row (helpers/rowKey), and this is where the key is
+       made: `row` where the caller has one — a read's answer, kept for the row it was sent for — else the row the
+       account (`accountId`, or the selected one) is looked at through now. Callers say accounts; only this and the
+       selectors (selectors/devices) index the store. */
+    async set({ row: said, ...params }: Partial<IDeviceState> & { row?: RowKey }, state) {
+      const row = said ?? selectRowOf(state, params.accountId || selectActiveAccountId(state))
+      // An answer for a row whose sign-in has left since it was asked: the row is gone, and is not put back.
+      if (said && rowGone(state, said)) return
+      const deviceState = { ...getDeviceModelFn(state.devices, row) }
 
       Object.keys(params).forEach(key => {
         deviceState[key] = params[key]
       })
 
-      await dispatch.devices.rootSet({ [accountId]: deviceState })
+      await dispatch.devices.rootSet({ [row]: deviceState })
     },
   }),
 
@@ -1192,8 +1236,21 @@ export default createModel<RootModel>()({
     },
     /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
     forget(state: IDeviceAccountState, accountIds: string[]) {
-      accountIds.forEach(id => delete state[id])
+      // Every row of the account: the page's own person's, and each further sign-in's.
+      Object.keys(state).forEach(row => accountIds.includes(rowAccount(row)) && delete state[row])
       return state
+    },
+    /** Rows that are no more: a sign-in that left takes its rows with it, each account's other rows staying. */
+    forgetRows(state: IDeviceAccountState, rows: string[]) {
+      rows.forEach(row => delete state[row])
+      return state
+    },
+    /** The rows said again, each by its new key (the page's person changed, and with it whose row a plain key is):
+     *  a row not said is dropped, and so are the lists kept beside the rows', which were the former person's. */
+    rekey(state: IDeviceAccountState, rows: ILookup<RowKey>) {
+      const next: IDeviceAccountState = { default: state.default }
+      Object.keys(rows).forEach(row => state[row] && (next[rows[row]] = state[row]))
+      return next
     },
     rootSet(state: IDeviceAccountState, params: IDeviceAccountState) {
       Object.keys(params).forEach(key => (state[key] = params[key]))

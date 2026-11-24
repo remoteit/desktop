@@ -5,7 +5,8 @@ import network from '../services/Network'
 import pushNotifications from '../services/pushNotifications'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
-import { selectDeviceModelAttributes } from '../selectors/devices'
+import { BESIDE_ROWS, deviceRows, selectDeviceModelAttributes } from '../selectors/devices'
+import { RowKey, rowAccount, rowKey, rowSub } from '../helpers/rowKey'
 import {
   AGENT_RELEASE_TIMEOUT,
   SIGN_OUT_BACKEND_TIMEOUT,
@@ -448,6 +449,7 @@ export default createModel<RootModel>()({
       // Switching accounts reloads without signing out, so a window's persisted state, and any chat popout still paired
       // with it, can be the last account's. With no owner recorded neither can be trusted.
       await rehydrated()
+      dispatch.accounts.keepByRow()
       const owner = store.getState().user.id
       if (persistsState && user?.id && owner !== user.id) {
         auth.adoptAccountData(user.id)
@@ -764,10 +766,25 @@ export default createModel<RootModel>()({
       const kept = (id: string) => !!formerSub && !!now(id) && now(id) === was(id)
       const stored = new Set<string>()
       const { devices, products, networks, files, jobs, tags, organization, applicationTypes } = state
-      ;[devices, products, networks.all, files.all, jobs.all, tags.all, organization.accounts, applicationTypes.account]
+      ;[products, networks.all, files.all, jobs.all, tags.all, organization.accounts, applicationTypes.account]
         .flatMap(byAccount => Object.keys(byAccount || {}))
         .forEach(id => id !== 'default' && stored.add(id))
-      dispatch.accounts.forgetData([...stored].filter(id => !kept(id)))
+      dispatch.accounts.forgetByAccount([...stored].filter(id => !kept(id)))
+      // Devices are kept by row — the account and the sign-in — so every row of a sign-in still in use stays, said
+      // again for the new person: theirs become the plain rows, the former person's the rows under their sub.
+      const reached = selectAccountRoutes({
+        auth: { user: { id: userId } },
+        user,
+        accounts: { membership, signIns, via },
+      } as State)
+      const rows: ILookup<RowKey> = {}
+      deviceRows(devices).forEach(row => {
+        const sub = rowSub(row) || formerSub
+        if (BESIDE_ROWS.includes(row) || !sub || !inUse.has(sub)) return
+        const as = sub === primarySub ? '' : sub
+        if (reached[rowAccount(row)]?.reach.some(who => who.sub === as)) rows[row] = rowKey(rowAccount(row), as)
+      })
+      dispatch.devices.rekey(rows)
       dispatch.auth.resetPersonData()
       // The new person starts on their own account.
       dispatch.accounts.set({
@@ -775,6 +792,7 @@ export default createModel<RootModel>()({
         signIns,
         via,
         activeId: undefined,
+        activeSub: undefined,
         primarySub: undefined,
         pendingOrganizationClosures: undefined,
       })

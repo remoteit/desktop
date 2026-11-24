@@ -1,5 +1,6 @@
 import { createSelector } from 'reselect'
 import type { State } from '../store'
+import { RowKey, rowAccount, rowKey, rowSub } from '../helpers/rowKey'
 
 /* SEVERAL SIGN-INS ARE IN USE AT ONCE (docs/ACCOUNT-LINKS.md, "Existing org switcher"). The page's own person is the
    PRIMARY sign-in: auth.user, and accounts.membership, are theirs. Every further sign-in is kept in accounts.signIns
@@ -15,7 +16,15 @@ export type ISignIn = { sub: string; id: string; email: string; membership: IMem
  *  a request whose variables also name something of another account (this machine's device, for a local port).
  *  `orAccount`: the account to ask as when nothing known says whose the ids are — the selected one, for a page opened
  *  at the address of something no list holds (an exit, a proxy), before any list that would say has been read. */
-export type RequestFor = { account?: string; sub?: string; about?: string[]; orAccount?: string }
+export type RequestFor = {
+  account?: string
+  sub?: string
+  about?: string[]
+  orAccount?: string
+  /** Its answer is kept by row (helpers/rowKey): asked as `sub`, it goes to that sign-in's row of the account
+   *  whichever row is looked at by the time it answers — so it is never stale, and never dropped for being so. */
+  row?: boolean
+}
 
 const NONE: ILookup<ISignIn> = {}
 const NO_CHOICE: ILookup<string> = {}
@@ -76,6 +85,36 @@ export const selectAccountRoutes = createSelector(
 export const selectSignInSub = (state: State, accountId?: string): string | undefined =>
   accountId ? selectAccountRoutes(state)[accountId]?.sub : undefined
 
+/* THE SELECTED ROW: an account (accounts.activeId, else the page's own) and the sign-in whose row of it was picked
+   (accounts.activeSub, '' the page's own person) — kept while that sign-in still reaches the account, else the one
+   that serves it (selectAccountRoutes). */
+export const selectActiveSub = (state: State): string => {
+  const route = selectAccountRoutes(state)[getActiveId(state) || getUserId(state)]
+  const picked = state.accounts?.activeSub
+  if (picked !== undefined && route?.reach.some(who => who.sub === picked)) return picked
+  return route?.sub || ''
+}
+
+export const selectActiveRowKey = (state: State): RowKey =>
+  rowKey(getActiveId(state) || getUserId(state), selectActiveSub(state))
+
+/* THE ROW AN ACCOUNT IS LOOKED AT THROUGH (helpers/rowKey). Callers say an account by its id; where the store keeps
+   something by row, the row is this one: for the selected account, the selected row; for any other account, the row
+   under the sign-in last picked for it, else the page's own person's where they belong to it, else the first
+   sign-in's that does (what selectAccountRoutes answers). An account no one here reaches — and the lists the store
+   keeps beside the accounts' — is its own key. */
+export const selectRowOf = (state: State, accountId: string): RowKey =>
+  accountId === (getActiveId(state) || getUserId(state))
+    ? selectActiveRowKey(state)
+    : rowKey(accountId, selectAccountRoutes(state)[accountId]?.sub)
+
+/** A row whose sign-in has left, or left the account, since: nothing is kept for it. (A key of no account here — a
+ *  list the store keeps beside the rows' — is not a row, and is never gone.) */
+export const rowGone = (state: State, row: RowKey): boolean => {
+  const route = selectAccountRoutes(state)[rowAccount(row)]
+  return route ? !route.reach.some(who => who.sub === rowSub(row)) : !!rowSub(row)
+}
+
 /** Everyone signed in here, by their own account id: the page's own person, then each sign-in beside them. */
 export const selectPersonIds = createSelector([getUserId, getSignIns], (userId, signIns): string[] =>
   [userId, ...Object.values(signIns).map(signIn => signIn.id)].filter(Boolean)
@@ -99,7 +138,12 @@ const idsOf = (lists: Held[], more: (string | undefined)[] = []): Set<string> =>
   return ids
 }
 
-const selectHeldIds = createSelector(
+/* By ROW (helpers/rowKey): a device is held by the row whose list it is in — an organization's under each sign-in that
+   has read it — and what is not kept by row yet (networks, jobs, files, products) by the row its account is looked at
+   through. A row is the account and the sign-in: the sign-in is whose request about what it holds is. */
+type HeldRow = { accountId: string; sub: string; ids: Set<string> }
+
+const selectHeldRows = createSelector(
   [
     (state: State) => state.devices,
     (state: State) => state.networks?.all,
@@ -108,18 +152,36 @@ const selectHeldIds = createSelector(
     (state: State) => state.products,
     selectAccountRoutes,
   ],
-  (devices, networks, jobs, files, products, routes): ILookup<Set<string>> => {
-    const held: ILookup<Set<string>> = {}
+  (devices, networks, jobs, files, products, routes): HeldRow[] => {
+    const rows = new Map<string, HeldRow>()
+    const row = (accountId: string, sub: string) => {
+      const key = rowKey(accountId, sub)
+      if (!rows.has(key)) rows.set(key, { accountId, sub, ids: new Set() })
+      return rows.get(key)!
+    }
     Object.keys(routes).forEach(id => {
-      const all: IDevice[] = devices?.[id]?.all || []
-      held[id] = idsOf(
-        [all, ...all.map(device => device.services), networks?.[id], jobs?.[id], files?.[id], products?.[id]?.all],
-        [id]
-      )
+      const held = row(id, routes[id].sub || '')
+      idsOf([networks?.[id], jobs?.[id], files?.[id], products?.[id]?.all], [id]).forEach(each => held.ids.add(each))
     })
-    return held
+    Object.keys(devices || {}).forEach(key => {
+      const accountId = rowAccount(key)
+      if (!routes[accountId]) return
+      const all: IDevice[] = devices[key]?.all || []
+      const held = row(accountId, rowSub(key))
+      idsOf([all, ...all.map(device => device.services)]).forEach(each => held.ids.add(each))
+    })
+    return [...rows.values()]
   }
 )
+
+// The accounts with a row that holds one of these ids.
+const holdingAccounts = (state: State, ids: string[]): string[] => [
+  ...new Set(
+    selectHeldRows(state)
+      .filter(row => ids.some(id => row.ids.has(id)))
+      .map(row => row.accountId)
+  ),
+]
 
 /* The ids no stored list holds, by the account they are of: what was just made and is not read into the store yet (a
    new service), and what is only ever read into a page (an exit, a proxy). Said where they are made or read with their
@@ -185,6 +247,8 @@ const NO_ACCOUNTS: Serving = []
 
 export function requestServing(state: State, requestFor?: RequestFor, variables?: ILookup<any>): Serving {
   if (!state.accounts?.signIns || !Object.keys(state.accounts.signIns).length) return NO_ACCOUNTS
+  // Kept by row: its answer goes to the row it was asked for, whatever is looked at by then.
+  if (requestFor?.row) return NO_ACCOUNTS
   const routes = selectAccountRoutes(state)
   const named = [
     requestFor?.account,
@@ -193,11 +257,10 @@ export function requestServing(state: State, requestFor?: RequestFor, variables?
     ...(requestFor?.about ?? namedIds(variables)),
   ].filter((id): id is string => typeof id === 'string' && !!id)
   if (!named.length) return NO_ACCOUNTS
-  const held = selectHeldIds(state)
   const accounts = new Set<string>()
   named.forEach(id => {
     if (routes[id]) return accounts.add(id)
-    Object.keys(routes).forEach(accountId => held[accountId]?.has(id) && accounts.add(accountId))
+    holdingAccounts(state, [id]).forEach(accountId => accounts.add(accountId))
   })
   return [...accounts].map(accountId => [accountId, routes[accountId].sub])
 }
@@ -231,8 +294,8 @@ export function primaryReachesNow(id?: string): boolean {
   const state = stateNow()
   if (!state.accounts?.signIns || !Object.keys(state.accounts.signIns).length) return true
   const routes = selectAccountRoutes(state)
-  const held = selectHeldIds(state)
-  const accounts = Object.keys(routes).filter(accountId => held[accountId]?.has(id) || noted.get(id)?.has(accountId))
+  const holding = holdingAccounts(state, [id])
+  const accounts = Object.keys(routes).filter(accountId => holding.includes(accountId) || noted.get(id)?.has(accountId))
   return !accounts.length || accounts.some(accountId => routes[accountId].reach.some(who => !who.sub))
 }
 
@@ -260,14 +323,13 @@ export function requestSignIn(state: State, requestFor?: RequestFor, variables?:
   const routes = selectAccountRoutes(state)
   const ids = about ?? namedIds(variables)
   if (!ids.length) return unknown()
-  const held = selectHeldIds(state)
-  const holds = (accountId: string) => ids.some(id => held[accountId]?.has(id))
+  // The row that holds one of them says: the selected row first, then one of the page's own person's, then the first.
+  const holding = selectHeldRows(state).filter(row => ids.some(id => row.ids.has(id)))
   const selected = getActiveId(state) || getUserId(state)
-  if (selected && routes[selected] && holds(selected)) return routes[selected].sub
-  const accountIds = Object.keys(routes)
-  if (accountIds.some(id => !routes[id].sub && holds(id))) return undefined
-  const other = accountIds.find(id => routes[id].sub && holds(id))
-  if (other) return routes[other].sub
+  const selectedSub = selectActiveSub(state)
+  if (holding.some(row => row.accountId === selected && row.sub === selectedSub)) return selectedSub || undefined
+  if (holding.some(row => !row.sub)) return undefined
+  if (holding.length) return holding[0].sub
   // Noted under more than one account here (an exit of one, shared with another): in the same order of preference.
   const of = ids.flatMap(id => [...(noted.get(id) || [])]).filter(accountId => routes[accountId])
   if (!of.length) return unknown()

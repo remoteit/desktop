@@ -32,6 +32,7 @@ vi.mock('../services/localPorts', async importOriginal => ({
 }))
 
 import { LocalPortState, useLocalPort } from './useLocalPort'
+import { rowKey } from '../helpers/rowKey'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
@@ -123,7 +124,7 @@ describe('useLocalPort', () => {
         membership: [],
         signIns: { 'sub-work': { sub: 'sub-work', id: 'WORK', email: 'work@x.test', membership: [] } },
       }
-      api.devices = { WORK: { all: [{ id: PI, services: [{ id: SERVICE }] }] } }
+      api.devices = { [rowKey('WORK', 'sub-work')]: { all: [{ id: PI, services: [{ id: SERVICE }] }] } }
       api.open.mockResolvedValue({ port: 33000, open: true, state: 'pending' })
     })
 

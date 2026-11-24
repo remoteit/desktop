@@ -47,6 +47,8 @@ vi.mock('../selectors/devices', () => ({
   selectDeviceModelAttributes: (state: any) => state.devices.acct,
   selectActiveColumns: () => [],
   selectDevice: (state: any, _: any, id: string) => state.devices.acct.all.find((d: any) => d.id === id),
+  getDeviceModelFn: (devices: any, row: string) => devices[row] || devices.default,
+  deviceRows: (devices: object) => Object.keys(devices),
 }))
 vi.mock('../selectors/ui', () => ({ selectTimeSeries: () => ({}) }))
 vi.mock('../selectors/organizations', () => ({}))
@@ -55,7 +57,11 @@ vi.mock('../store', () => ({ store: {} }))
 import devices, { defaultState } from './devices'
 import { requestSignIn, resetNotedAccounts } from '../selectors/signIns'
 
-const stateWith = (over: Partial<typeof defaultState> = {}) => ({ devices: { acct: { ...defaultState, ...over } } })
+// One sign-in: the selected account's row is kept by the account's own id.
+const stateWith = (over: Partial<typeof defaultState> = {}) => ({
+  accounts: { activeId: 'acct', membership: [] as IMembership[] },
+  devices: { acct: { ...defaultState, ...over } },
+})
 
 let dispatch: any
 const effects = () => {
@@ -84,8 +90,8 @@ describe('a failed device list fetch keeps the held list', () => {
       graphQLFetchDeviceList.mockResolvedValue(response)
       expect(await effects().fetchList(undefined, stateWith(over))).toBe(false)
       expect(dispatch.devices.set.mock.calls).toEqual([
-        [{ fetching: true, accountId: 'acct' }],
-        [{ fetching: false, append: false, accountId: 'acct' }],
+        [{ fetching: true, accountId: 'acct', row: 'acct' }],
+        [{ fetching: false, append: false, accountId: 'acct', row: 'acct' }],
       ])
       expect(dispatch.accounts.truncateMergeDevices).not.toHaveBeenCalled()
       expect(dispatch.accounts.appendUniqueDevices).not.toHaveBeenCalled()
@@ -98,11 +104,15 @@ describe('a failed device list fetch keeps the held list', () => {
     graphQLFetchDeviceList.mockResolvedValue({ data: { data: { login: { account: { devices: { total: 1 } } } } } })
     graphQLDeviceAdaptor.mockReturnValue([fetched])
     expect(await effects().fetchList(undefined, stateWith({ query: 'new' }))).toBe(true)
-    expect(dispatch.accounts.truncateMergeDevices).toHaveBeenCalledWith({ devices: [fetched], accountId: 'acct' })
+    expect(dispatch.accounts.truncateMergeDevices).toHaveBeenCalledWith({
+      devices: [fetched],
+      accountId: 'acct',
+      row: 'acct',
+    })
     expect(dispatch.devices.set.mock.calls).toEqual([
-      [{ fetching: true, accountId: 'acct' }],
-      [{ total: 1, accountId: 'acct' }],
-      [{ fetching: false, append: false, initialized: true, appliedName: 'new', accountId: 'acct' }],
+      [{ fetching: true, accountId: 'acct', row: 'acct' }],
+      [{ total: 1, accountId: 'acct', row: 'acct' }],
+      [{ fetching: false, append: false, initialized: true, appliedName: 'new', accountId: 'acct', row: 'acct' }],
     ])
   })
 
@@ -153,7 +163,7 @@ describe('disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md)', 
       ['d1', true, 'person', 'me@x'],
       ['d2', true, 'person', 'me@x'],
     ])
-    expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 4, accountId: 'acct' })
+    expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 4, accountId: 'acct', row: 'acct' })
     expect(dispatch.devices.cleanup).not.toHaveBeenCalled()
   })
 
@@ -168,7 +178,7 @@ describe('disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md)', 
     expect(await effects().disable({ ids: ['g1'], keepHosted: false }, stateWith({ all, total: 4 }))).toBe(true)
     expect(graphQLDisableDevices).toHaveBeenCalledWith(['g1'], false)
     expect(dispatch.accounts.setDevice.mock.calls.map(([a]: any) => a.id)).toEqual(['g1', 'v1', 'v2'])
-    expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 1, accountId: 'acct' })
+    expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 1, accountId: 'acct', row: 'acct' })
     expect(dispatch.devices.fetchDevices).not.toHaveBeenCalled()
 
     dispatch.accounts.setDevice.mockReset()

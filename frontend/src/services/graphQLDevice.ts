@@ -210,7 +210,8 @@ const timeSeriesVariables = (device?: ITimeSeriesOptions, service?: ITimeSeriesO
   }
 }
 
-export async function graphQLFetchDeviceList(params: gqlOptions) {
+// `requestFor`, here and for the reads below: the row the answer is kept for, asked as its sign-in (models/devices).
+export async function graphQLFetchDeviceList(params: gqlOptions, requestFor?: RequestFor) {
   const virtual = await virtualDevicesMode()
   const ports = await multiPortServicesServed()
   const probed = await probedDeviceFields()
@@ -250,7 +251,9 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
       ...(browser ? { browser: params.browser } : {}),
       name: params.name?.trim() || undefined,
       ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries, true),
-    }
+    },
+    false,
+    requestFor
   )
   const filtered = params.state || params.tag || params.platform?.length || params.applicationTypes?.length
   return virtual === 'sample' && response !== 'ERROR' && !filtered
@@ -258,13 +261,16 @@ export async function graphQLFetchDeviceList(params: gqlOptions) {
     : response
 }
 
-export async function graphQLPreloadDevices(params: {
-  accountId: string
-  ids: string[]
-  columns: string[]
-  serviceTimeSeries?: ITimeSeriesOptions
-  deviceTimeSeries?: ITimeSeriesOptions
-}) {
+export async function graphQLPreloadDevices(
+  params: {
+    accountId: string
+    ids: string[]
+    columns: string[]
+    serviceTimeSeries?: ITimeSeriesOptions
+    deviceTimeSeries?: ITimeSeriesOptions
+  },
+  requestFor?: RequestFor
+) {
   const virtual = await virtualDevicesMode()
   const ports = await multiPortServicesServed()
   const probed = await probedDeviceFields()
@@ -288,7 +294,9 @@ export async function graphQLPreloadDevices(params: {
       ...params,
       ids,
       ...timeSeriesVariables(params.deviceTimeSeries, params.serviceTimeSeries, true),
-    }
+    },
+    false,
+    requestFor
   )
   return response === 'ERROR' ? response : withSampleDevices(response, samples, 'account')
 }
@@ -328,7 +336,8 @@ export async function graphQLFetchFullDevice(
   id: string,
   accountId: string,
   serviceTimeSeries?: ITimeSeriesOptions,
-  deviceTimeSeries?: ITimeSeriesOptions
+  deviceTimeSeries?: ITimeSeriesOptions,
+  requestFor?: RequestFor
 ) {
   const virtual = await virtualDevicesMode()
   const ports = await multiPortServicesServed()
@@ -350,7 +359,9 @@ export async function graphQLFetchFullDevice(
       id,
       accountId,
       ...timeSeriesVariables(deviceTimeSeries, serviceTimeSeries),
-    }
+    },
+    false,
+    requestFor
   )
 }
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { rowKey } from '../helpers/rowKey'
 
 const { request, state } = vi.hoisted(() => ({ request: vi.fn(), state: { ui: {} } as Record<string, any> }))
 vi.mock('../store', () => ({
@@ -277,7 +278,10 @@ describe('with several sign-ins in use', () => {
         membership: [],
         signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
       },
-      devices: { me: { all: [{ id: 'A', services: [] }] }, work: { all: [{ id: 'B', services: [] }] } },
+      devices: {
+        me: { all: [{ id: 'A', services: [] }] },
+        [rowKey('work', 'sub-work')]: { all: [{ id: 'B', services: [] }] },
+      },
     })
     request.mockImplementation(async ({ data }: { data: { query: string } }) => ({
       data: {

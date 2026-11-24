@@ -30,6 +30,7 @@ import { post } from './post'
 import { get } from './get'
 import { graphQLBasicRequest, graphQLPartialRequest, graphQLRequestWithReason } from './graphQL'
 import { userPicture } from './userPictures'
+import { rowKey } from '../helpers/rowKey'
 
 const requests = [
   () => post({}),
@@ -257,7 +258,7 @@ describe('a request is made as the sign-in that serves the account it asks about
         'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [{ account: { id: 'labs' } }] },
       },
     }
-    state.devices = { labs: { all: [{ id: 'd-labs', services: [] }] } }
+    state.devices = { [rowKey('labs', 'sub-work')]: { all: [{ id: 'd-labs', services: [] }] } }
     request.mockResolvedValue({ data: { data: {} }, headers: {} })
   })
 

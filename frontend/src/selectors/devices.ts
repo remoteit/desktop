@@ -9,10 +9,24 @@ import { selectLimitsLookup } from './organizations'
 import { Attribute } from '../components/Attribute'
 import { selectVirtualDevices } from '../hooks/useVirtualDevices'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
+import { selectRowOf } from './signIns'
+import { RowKey, rowKey } from '../helpers/rowKey'
 
-export function getDeviceModelFn(devices: State['devices'], activeAccountId: string, accountId?: string) {
-  return devices[accountId || activeAccountId] || devices.default
+// `row`: the key the store keeps a row's devices by (helpers/rowKey) — never an account's id from anywhere else.
+export function getDeviceModelFn(devices: State['devices'], row: RowKey) {
+  return devices[row] || devices.default
 }
+
+// The lists the store keeps beside the rows': the model's defaults, and the devices of connections no list holds.
+export const BESIDE_ROWS: string[] = ['default', 'connections']
+
+/** Every key the store keeps devices by: each row's, and the lists kept beside them. */
+export const deviceRows = (devices: State['devices']) => Object.keys(devices) as RowKey[]
+
+/** The row an account's devices are looked at through (selectors/signIns selectRowOf): the selected account's where
+ *  none is named — the selected row. */
+export const selectDeviceRow = (state: State, accountId?: string): RowKey =>
+  selectRowOf(state, selectActiveAccountId(state, accountId))
 
 export function findById(devices: IDevice[], id?: string) {
   let service: IService | undefined
@@ -40,13 +54,13 @@ export function selectAllByIds(state: State, ids?: string[]) {
   )
 }
 
-export const getDeviceModel = createSelector([getDevicesState, selectActiveAccountId], (devices, activeAccountId) =>
-  getDeviceModelFn(devices, activeAccountId)
+export const getDeviceModel = createSelector([getDevicesState, selectDeviceRow], (devices, row) =>
+  getDeviceModelFn(devices, row)
 )
 
 export const getDevices = createSelector(
-  [getDevicesState, selectActiveAccountId],
-  (devices, activeAccountId): IDevice[] => getDeviceModelFn(devices, activeAccountId).all || []
+  [getDevicesState, selectDeviceRow],
+  (devices, row): IDevice[] => getDeviceModelFn(devices, row).all || []
 )
 
 // A disabled device is left out as graphql leaves it out of the list: one read by id (its page, an event's refresh)
@@ -57,7 +71,8 @@ export const selectVisibleDevices = createSelector([getDevices], devices =>
 
 export const selectOwnDevices = createSelector(
   [getDevicesState, getUserId],
-  (devices, userId) => getDeviceModelFn(devices, userId).all || []
+  // The page's own person's own account: their own row of it.
+  (devices, userId) => getDeviceModelFn(devices, rowKey(userId)).all || []
 )
 
 export const getAllDevices = createSelector(

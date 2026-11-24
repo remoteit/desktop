@@ -18,9 +18,11 @@ import {
 } from './signIns'
 import { selectMemberships, selectActiveUser, selectShowOrganizations } from './accounts'
 import { selectOrganizationOptions, selectServingAccount, selectSwitcherRows } from './organizations'
+import { rowKey } from '../helpers/rowKey'
 
 /* Personal is the page's own person: a member of Acme and of Shared. Work is signed in beside them: its own account,
-   a member of Labs and of Shared too. Each account holds a device with one service. */
+   a member of Labs and of Shared too. Each account holds a device with one service, in its row: the account under
+   the sign-in that read it (helpers/rowKey). */
 const member = (id: string, name: string, roleName = 'Member') => ({
   account: { id, email: '' },
   name,
@@ -52,8 +54,8 @@ const state = (accounts: object = {}): any => ({
     personal: { all: [device('d-personal')] },
     acme: { all: [device('d-acme')] },
     shared: { all: [device('d-shared')] },
-    work: { all: [device('d-work')] },
-    labs: { all: [device('d-labs'), device('d-acme')] },
+    [rowKey('work', 'sub-work')]: { all: [device('d-work')] },
+    [rowKey('labs', 'sub-work')]: { all: [device('d-labs'), device('d-acme')] },
   },
   networks: { all: { labs: [{ id: 'net-labs' }] } },
   jobs: { all: { work: [{ id: 'job-work' }] } },

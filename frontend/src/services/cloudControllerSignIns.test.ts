@@ -1,4 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { rowKey } from '../helpers/rowKey'
+
+// Work's own account, in its row: under the sign-in that read it.
+const WORK = rowKey('work', 'sub-work')
 
 // One events socket per sign-in (services/cloudController, "ONE SOCKET PER SIGN-IN"): each subscribed with its own
 // token, opened and closed as sign-ins join and leave, and an event two of them see handled once.
@@ -78,7 +82,10 @@ vi.mock('../store', () => ({
 }))
 vi.mock('./Notifications', () => ({ notify }))
 vi.mock('./productMaxDevices', () => ({ productFullEventFields: async () => '' }))
-vi.mock('../selectors/devices', () => ({ selectById: () => [undefined, held.device] }))
+vi.mock('../selectors/devices', () => ({
+  selectById: () => [undefined, held.device],
+  deviceRows: (devices: object) => Object.keys(devices),
+}))
 vi.mock('../helpers/connectionHelper', () => ({
   setConnection: vi.fn(),
   findLocalConnection: () => undefined,
@@ -341,9 +348,10 @@ describe('an event about a device two accounts here both hold', () => {
     })
   beforeEach(() => {
     held.device = copy('personal') as any
+    // By row (helpers/rowKey): Work's own account under its sign-in; Acme, which both belong to, once under each.
     state.devices = {
       personal: { all: [copy('personal')] },
-      work: { all: [copy('work')] },
+      [WORK]: { all: [copy('work')] },
       connections: { all: [copy('connections')] },
     }
   })
@@ -360,9 +368,38 @@ describe('an event about a device two accounts here both hold', () => {
       ['personal', 'personal', 'active'],
       ['work', 'work', 'active'],
     ])
-    expect(devices.sortByState.mock.calls).toEqual([['personal'], ['work']])
+    expect(dispatched.setDevice.mock.calls.map(([set]) => set.row)).toEqual(['personal', WORK])
+    expect(devices.sortByState.mock.calls).toEqual([
+      [{ accountId: 'personal', row: 'personal' }],
+      [{ accountId: 'work', row: WORK }],
+    ])
     // The copies in the store are not written to in place.
-    expect(state.devices.work.all[0].state).toBe('inactive')
+    expect(state.devices[WORK].all[0].state).toBe('inactive')
+  })
+
+  it('a device of an organization both belong to: the copy in its row under each sign-in is written', () => {
+    state.devices = { acme: { all: [copy('acme')] }, [rowKey('acme', 'sub-work')]: { all: [copy('acme')] } }
+    inUse('sub-work')
+    cloudController.init()
+    // Later than any other test's event about the device: an older one is passed over.
+    const later = (data: string, by: number) => {
+      const message = JSON.parse(data)
+      message.data.event.timestamp = new Date(Date.now() + by).toISOString()
+      return message
+    }
+    sockets[0].handlers.message({ data: JSON.stringify(later(stateOf('dev-1'), 60_000)) })
+    expect(dispatched.setDevice.mock.calls.map(([set]) => [set.accountId, set.row, set.device.state])).toEqual([
+      ['acme', 'acme', 'active'],
+      ['acme', rowKey('acme', 'sub-work'), 'active'],
+    ])
+    // And read again for each, as the row's own sign-in.
+    const refresh = later(stateOf('dev-1'), 120_000)
+    refresh.data.event.type = 'DEVICE_REFRESH'
+    sockets[0].handlers.message({ data: JSON.stringify(refresh) })
+    expect(devices.fetchDevices.mock.calls).toEqual([
+      [{ ids: ['dev-1'], accountId: 'acme', sub: '' }],
+      [{ ids: ['dev-1'], accountId: 'acme', sub: 'sub-work' }],
+    ])
   })
 
   it('a refresh reads it again for each account that holds it', () => {
@@ -372,8 +409,8 @@ describe('an event about a device two accounts here both hold', () => {
     refresh.data.event.type = 'DEVICE_REFRESH'
     sockets[1].handlers.message({ data: JSON.stringify(refresh) })
     expect(devices.fetchDevices.mock.calls).toEqual([
-      [{ ids: ['dev-1'], accountId: 'personal' }],
-      [{ ids: ['dev-1'], accountId: 'work' }],
+      [{ ids: ['dev-1'], accountId: 'personal', sub: '' }],
+      [{ ids: ['dev-1'], accountId: 'work', sub: 'sub-work' }],
     ])
   })
 })

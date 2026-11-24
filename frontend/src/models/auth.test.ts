@@ -133,7 +133,11 @@ vi.mock('../services/zendesk', () => ({ default: { endChat: vi.fn() } }))
 vi.mock('../services/pushNotifications', () => ({ default: { register: vi.fn(), unregister: pushUnregister } }))
 vi.mock('../services/graphQLRequest', () => ({ graphQLLogin: vi.fn() }))
 vi.mock('../services/remoteit', () => ({ getToken: vi.fn(), apiAuthorized: vi.fn() }))
-vi.mock('../selectors/devices', () => ({ selectDeviceModelAttributes: vi.fn() }))
+vi.mock('../selectors/devices', () => ({
+  selectDeviceModelAttributes: vi.fn(),
+  BESIDE_ROWS: ['default', 'connections'],
+  deviceRows: (devices: object) => Object.keys(devices),
+}))
 const persist = vi.hoisted(() => ({
   bootstrapped: true,
   persistsState: true,
@@ -212,6 +216,7 @@ import { agentOwnedMessage } from '@common/agentOwner'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { PERSISTED_MODELS } from './persistedModels'
+import { rowKey } from '../helpers/rowKey'
 
 const effectsFor = (dispatch: any) => (authModel as any).effects(dispatch)
 
@@ -1118,7 +1123,8 @@ describe('auth model — booting as another person over stored state', () => {
   })
 
   /* A was the page's person with org-a; B was signed in beside them with org-b; C had been too, with org-c, and has
-     since signed out. Something is stored for each, and for an account no one recorded ('stray'). */
+     since signed out. Something is stored for each, and for an account no one recorded ('stray'). Devices are kept by
+     row (helpers/rowKey): A's under the accounts' own ids, B's and C's under theirs with their sub. */
   const stored = () => {
     const byAccount = (ids: string[]) => Object.fromEntries(ids.map(id => [id, {}]))
     const ids = ['USER-A', 'org-a', 'USER-B', 'org-b', 'USER-C', 'org-c', 'stray']
@@ -1133,7 +1139,13 @@ describe('auth model — booting as another person over stored state', () => {
           'sub-c': { sub: 'sub-c', id: 'USER-C', email: 'c@x.test', membership: [member('org-c')] },
         },
       },
-      devices: { default: {}, ...byAccount(ids) },
+      devices: {
+        default: {},
+        connections: {},
+        ...byAccount(['USER-A', 'org-a', 'stray']),
+        ...byAccount([rowKey('USER-B', 'sub-b'), rowKey('org-b', 'sub-b'), rowKey('USER-C', 'sub-c')]),
+        [rowKey('org-c', 'sub-c')]: {},
+      },
       products: { default: {} },
       networks: { all: byAccount(ids) },
       files: { all: {} },
@@ -1146,14 +1158,27 @@ describe('auth model — booting as another person over stored state', () => {
   const adopt = () => {
     const { models, dispatch } = spyDispatch()
     effectsFor(dispatch).adoptAccountData('USER-B')
-    return { models, forgotten: (models.accounts.forgetData.mock.calls[0][0] as string[]).sort() }
+    return {
+      models,
+      forgotten: (models.accounts.forgetByAccount.mock.calls[0][0] as string[]).sort(),
+      // The rows of devices kept, each by the key it is kept under from now on.
+      rows: models.devices.rekey.mock.calls[0][0] as Record<string, string>,
+    }
   }
 
   it('keeps what is stored for the accounts of sign-ins still in use, the former person’s included', () => {
     stored()
     oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }, { sub: 'sub-a', primary: false }])
-    const { models, forgotten } = adopt()
+    const { models, forgotten, rows } = adopt()
     expect(forgotten).toEqual(['USER-C', 'org-c', 'stray'])
+    // B's rows are the plain ones now, A's are under A's sub; C's go, the list kept for A's connections, and the
+    // row of an account none of them reaches.
+    expect(rows).toEqual({
+      'USER-A': rowKey('USER-A', 'sub-a'),
+      'org-a': rowKey('org-a', 'sub-a'),
+      [rowKey('USER-B', 'sub-b')]: 'USER-B',
+      [rowKey('org-b', 'sub-b')]: 'org-b',
+    })
     expect(models.auth.resetPersonData).toHaveBeenCalledTimes(1)
     // The rows are laid out again as stored: the new person's memberships theirs, the former person beside them.
     expect(models.accounts.set).toHaveBeenCalledWith(
@@ -1167,13 +1192,16 @@ describe('auth model — booting as another person over stored state', () => {
       })
     )
     // Nothing kept by account id is reset wholesale.
-    expect(models.devices).toBeUndefined()
+    expect(Object.keys(models.devices)).toEqual(['rekey'])
+    expect(models.networks).toBeUndefined()
   })
 
   it('drops what only the former person’s sign-in served once they have signed out', () => {
     stored()
     oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }])
-    expect(adopt().forgotten).toEqual(['USER-A', 'USER-C', 'org-a', 'org-c', 'stray'])
+    const { forgotten, rows } = adopt()
+    expect(forgotten).toEqual(['USER-A', 'USER-C', 'org-a', 'org-c', 'stray'])
+    expect(rows).toEqual({ [rowKey('USER-B', 'sub-b')]: 'USER-B', [rowKey('org-b', 'sub-b')]: 'org-b' })
   })
 
   /* A and B both belong to org-s, which A — the page's person — served: what is stored for it was read as A. */
@@ -1200,7 +1228,12 @@ describe('auth model — booting as another person over stored state', () => {
   it('drops it too when the one that served it stays signed in but the new person serves it from now on', () => {
     shared()
     oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }, { sub: 'sub-a', primary: false }])
-    expect(adopt().forgotten).toEqual(['USER-C', 'org-c', 'org-s', 'stray'])
+    // Each sign-in's row of its devices stays, under whoever is the page's person: both of them had read it.
+    storeState.devices['org-s'] = {}
+    storeState.devices[rowKey('org-s', 'sub-b')] = {}
+    const { forgotten, rows } = adopt()
+    expect(forgotten).toEqual(['USER-C', 'org-c', 'org-s', 'stray'])
+    expect(rows).toMatchObject({ 'org-s': rowKey('org-s', 'sub-a'), [rowKey('org-s', 'sub-b')]: 'org-s' })
   })
 
   it('keeps it where the same sign-in serves it still: the one picked for it, said again for the new person', () => {
@@ -1215,8 +1248,10 @@ describe('auth model — booting as another person over stored state', () => {
     stored()
     storeState.accounts.signIns = {}
     oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }])
-    const { models, forgotten } = adopt()
+    const { models, forgotten, rows } = adopt()
     expect(forgotten).toEqual(['USER-A', 'USER-B', 'USER-C', 'org-a', 'org-b', 'org-c', 'stray'])
+    // Their own account's row alone: nothing stored says what else they reach.
+    expect(rows).toEqual({ [rowKey('USER-B', 'sub-b')]: 'USER-B' })
     expect(models.accounts.set).toHaveBeenCalledWith(expect.objectContaining({ membership: [], signIns: {}, via: {} }))
   })
 
@@ -1224,7 +1259,10 @@ describe('auth model — booting as another person over stored state', () => {
     stored()
     storeState.accounts = { membership: [{ account: { id: 'org-a' } }], signIns: {} }
     oidcSignIns.mockReturnValue([{ sub: 'sub-b', primary: true }, { sub: 'sub-a', primary: false }])
-    expect(adopt().forgotten).toEqual(['USER-A', 'USER-B', 'USER-C', 'org-a', 'org-b', 'org-c', 'stray'])
+    const { forgotten, rows } = adopt()
+    expect(forgotten).toEqual(['USER-A', 'USER-B', 'USER-C', 'org-a', 'org-b', 'org-c', 'stray'])
+    // A row says its own sign-in: B's own stays B's. The plain rows were someone's no one recorded, and go.
+    expect(rows).toEqual({ [rowKey('USER-B', 'sub-b')]: 'USER-B' })
   })
 })
 

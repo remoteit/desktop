@@ -3,6 +3,7 @@ import structuredClone from '@ungap/structured-clone'
 import { State } from '../store'
 import { createModel } from '@rematch/core'
 import { selectConnection } from '../selectors/connections'
+import { selectRowOf } from '../selectors/signIns'
 import { selectActiveAccountId, selectActiveUser } from '../selectors/accounts'
 import { selectNetworks, selectNetworkByService } from '../selectors/networks'
 import { IOrganizationState, canMemberView, canViewByTags, canRoleView } from '../models/organization'
@@ -140,11 +141,13 @@ export default createModel<RootModel>()({
       if (!network || !network.cloud) return
 
       const accountId = selectActiveAccountId(state)
-      await dispatch.devices.set({ fetching: true, accountId })
+      // The row whose list says it is reading: the one looked at now, whichever is by the time this ends.
+      const row = selectRowOf(state, accountId)
+      await dispatch.devices.set({ fetching: true, accountId, row })
       const gqlResponse = await graphQLFetchNetworkSingle(network.id)
 
       if (gqlResponse === 'ERROR') {
-        dispatch.devices.set({ fetching: false, accountId })
+        dispatch.devices.set({ fetching: false, accountId, row })
         if (redirect) dispatch.ui.set({ redirect })
         return
       }
@@ -153,7 +156,7 @@ export default createModel<RootModel>()({
       await dispatch.networks.preloadNetworkDevices({ gqlNetworks, accountId, fetchAll: true })
       await dispatch.networks.setNetwork({ ...network, loaded: true })
 
-      dispatch.devices.set({ fetching: false, accountId })
+      dispatch.devices.set({ fetching: false, accountId, row })
     },
 
     async fetchIfEmpty(_: void, state) {

@@ -8,7 +8,11 @@ const { graphQLBasicRequest, graphQLLeaveMembership, oidcSignIns } = vi.hoisted(
 vi.mock('../services/graphQL', () => ({ graphQLBasicRequest }))
 vi.mock('../services/oidc', () => ({ oidcSignIns }))
 vi.mock('../services/graphQLMutation', () => ({ graphQLLeaveMembership }))
-vi.mock('../selectors/devices', () => ({}))
+vi.mock('../selectors/devices', () => ({
+  BESIDE_ROWS: ['default', 'connections'],
+  deviceRows: (devices: object) => Object.keys(devices),
+  getDeviceModelFn: (devices: any, row: string) => devices[row] || devices.default,
+}))
 vi.mock('./devices', () => ({}))
 vi.mock('../selectors/accounts', () => ({
   selectActiveAccountId: (state: any) => state.accounts.activeId || state.auth.user.id,
@@ -16,6 +20,7 @@ vi.mock('../selectors/accounts', () => ({
 
 import accounts from './accounts'
 import { accountCache, followAccountsDropped } from '../services/accountCaches'
+import { rowKey } from '../helpers/rowKey'
 
 const CLEARED = { selected: [], selectionAnchor: undefined }
 const state = { accounts: { activeId: 'ORG-A', membership: [] }, auth: { user: { id: 'USER' } }, user: { id: 'USER' } }
@@ -65,6 +70,7 @@ describe('the sign-ins beside the page’s own person', () => {
     auth: { user: { id: 'personal' } },
     user: { id: 'personal', email: 'personal@x.test' },
     accounts: { activeId: undefined, membership: [member('acme')], signIns, via: {}, ...more },
+    devices: {} as Record<string, object>,
   })
   const answer = (id: string, orgs: string[]) => ({
     data: {
@@ -89,8 +95,11 @@ describe('the sign-ins beside the page’s own person', () => {
       accounts: {
         set: vi.fn((params: object) => void (current = { ...current, accounts: { ...current.accounts, ...params } })),
         select: vi.fn(),
+        // Accounts that are rows no more, and those another sign-in serves from now on.
         forgetData: vi.fn(),
+        forgetByAccount: vi.fn(),
       },
+      devices: { forgetRows: vi.fn() },
       organization: { fetch: vi.fn() },
     }
     const effects = (accounts as any).effects(dispatch)
@@ -190,7 +199,8 @@ describe('the sign-ins beside the page’s own person', () => {
       graphQLBasicRequest.mockReset().mockResolvedValue(answer('third', ['labs']))
       const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work, 'sub-third': third }, { activeId: 'labs' }))
       await run('fetchSignIns')
-      expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['work']], [['labs']]])
+      expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['work']]])
+      expect(dispatch.accounts.forgetByAccount.mock.calls).toEqual([[['labs']]])
       expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
       // Selected, and still a row: it stays selected, its lists read again as the sign-in that serves it now.
       expect(dispatch.accounts.select.mock.calls).toEqual([['labs']])
@@ -201,7 +211,7 @@ describe('the sign-ins beside the page’s own person', () => {
       graphQLBasicRequest.mockReset().mockResolvedValue(answer('third', ['labs']))
       const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work, 'sub-third': third }))
       await run('fetchSignIns')
-      expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['labs'])
+      expect(dispatch.accounts.forgetByAccount).toHaveBeenCalledWith(['labs'])
       expect(dispatch.accounts.select).not.toHaveBeenCalled()
     })
 
@@ -212,14 +222,16 @@ describe('the sign-ins beside the page’s own person', () => {
         signedIn({ 'sub-work': both }, { activeId: 'acme', via: { acme: 'sub-work' } })
       )
       await run('fetchSignIns')
-      expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['work', 'labs']], [['acme']]])
+      expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['work', 'labs']]])
+      expect(dispatch.accounts.forgetByAccount.mock.calls).toEqual([[['acme']]])
       expect(dispatch.accounts.select.mock.calls).toEqual([['acme']])
     })
 
     it('hand it over when one joins that is put before the one serving it', async () => {
       const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
       await run('setSignIns', { 'sub-third': third, 'sub-work': work })
-      expect(dispatch.accounts.forgetData.mock.calls).toEqual([[['labs']]])
+      expect(dispatch.accounts.forgetByAccount.mock.calls).toEqual([[['labs']]])
+      expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
       expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
     })
 
@@ -242,7 +254,7 @@ describe('the sign-ins beside the page’s own person', () => {
       )
       expect(dispatch.accounts.set).toHaveBeenCalledWith({ membership: [] })
       expect(dispatch.accounts.readAgain).toHaveBeenCalledWith(['acme'])
-      expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['acme'])
+      expect(dispatch.accounts.forgetByAccount).toHaveBeenCalledWith(['acme'])
     })
 
     it('hand it over when the page’s person leaves it', async () => {
@@ -252,7 +264,9 @@ describe('the sign-ins beside the page’s own person', () => {
       dispatch.ui = { set: vi.fn() }
       await run('leaveMembership', 'acme')
       expect(dispatch.accounts.set).toHaveBeenCalledWith({ membership: [] })
-      expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['acme'])
+      expect(dispatch.accounts.forgetByAccount).toHaveBeenCalledWith(['acme'])
+      // Their row of its devices goes; the other sign-in's stays.
+      expect(dispatch.devices.forgetRows).toHaveBeenCalledWith(['acme'])
       expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
       expect(dispatch.accounts.select.mock.calls).toEqual([['personal']])
     })
@@ -270,6 +284,7 @@ describe('the sign-ins beside the page’s own person', () => {
       // The other is a member still: its row, and what was read for it as them, stay.
       expect(dispatch.accounts.setSignIns).not.toHaveBeenCalled()
       expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
+      expect(dispatch.accounts.forgetByAccount).not.toHaveBeenCalled()
     })
   })
 
@@ -375,9 +390,11 @@ describe('the sign-ins beside the page’s own person', () => {
       'applicationTypes',
     ]
     const dispatch: any = Object.fromEntries(models.map(model => [model, { forget: vi.fn() }]))
+    const effects = (accounts as any).effects(dispatch)
+    dispatch.accounts = { forgetByAccount: effects.forgetByAccount }
     const outside = vi.fn()
     accountCache(outside)
-    ;(accounts as any).effects(dispatch).forgetData(['work', 'labs'])
+    effects.forgetData(['work', 'labs'])
     models.forEach(model => expect(dispatch[model].forget).toHaveBeenCalledWith(['work', 'labs']))
     // And what hooks and services keep of them outside the store (services/accountCaches).
     expect(outside).toHaveBeenCalledWith(['work', 'labs'])
@@ -385,10 +402,16 @@ describe('the sign-ins beside the page’s own person', () => {
 
   it('serve an organization both reach through the one the person picks, reading it again as that sign-in', async () => {
     const both = { ...work, membership: [member('labs'), member('acme')] }
-    const { dispatch, run } = effectsWith(signedIn({ 'sub-work': both }, { activeId: 'acme' }))
+    const state = signedIn({ 'sub-work': both }, { activeId: 'acme' })
+    state.devices = { acme: {}, [rowKey('acme', 'sub-work')]: {} }
+    const { dispatch, run } = effectsWith(state)
     await run('setVia', { accountId: 'acme', sub: 'sub-work' })
-    expect(dispatch.accounts.set).toHaveBeenCalledWith({ via: { acme: 'sub-work' } })
-    expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['acme'])
+    // Selected: the selected row is the account under that sign-in from now on.
+    expect(dispatch.accounts.set).toHaveBeenCalledWith({ via: { acme: 'sub-work' }, activeSub: 'sub-work' })
+    // What is kept by account id alone is read again; each row's devices stay, both sign-ins reaching it still.
+    expect(dispatch.accounts.forgetByAccount).toHaveBeenCalledWith(['acme'])
+    expect(dispatch.accounts.forgetData).not.toHaveBeenCalled()
+    expect(dispatch.devices.forgetRows.mock.calls).toEqual([[[]]])
     expect(dispatch.organization.fetch).toHaveBeenCalledTimes(1)
     expect(dispatch.accounts.select).toHaveBeenCalledWith('acme')
   })
@@ -398,8 +421,8 @@ describe('the sign-ins beside the page’s own person', () => {
     const { dispatch, run } = effectsWith(signedIn({ 'sub-work': both }))
     await run('selectAs', { accountId: 'acme', sub: 'sub-work' })
     expect(dispatch.accounts.set).toHaveBeenCalledWith({ via: { acme: 'sub-work' } })
-    expect(dispatch.accounts.forgetData).toHaveBeenCalledWith(['acme'])
-    expect(dispatch.accounts.select).toHaveBeenLastCalledWith('acme')
+    expect(dispatch.accounts.forgetByAccount).toHaveBeenCalledWith(['acme'])
+    expect(dispatch.accounts.select.mock.calls).toEqual([['acme']])
     // The row of the account already serving it: selected, nothing read again.
     dispatch.accounts.set.mockClear()
     await run('selectAs', { accountId: 'labs', sub: 'sub-work' })
@@ -431,6 +454,40 @@ describe('the sign-ins beside the page’s own person', () => {
     stop()
   })
 
+  it('drop, once, what state stored before devices were kept by row holds of another sign-in under a plain id', () => {
+    const both = { ...work, membership: [member('labs'), member('acme')] }
+    // As it was stored: every account's devices under its own id — Work's, Labs' and (picked for it) Acme's read as
+    // Work. A plain id is the page's own person's row now.
+    const state = signedIn({ 'sub-work': both }, { via: { acme: 'sub-work' }, byRow: undefined })
+    state.devices = { default: {}, connections: {}, personal: {}, acme: {}, work: {}, labs: {} }
+    const { dispatch, run } = effectsWith(state)
+    run('keepByRow')
+    expect(dispatch.devices.forgetRows.mock.calls).toEqual([[['acme', 'work', 'labs']]])
+    expect(dispatch.accounts.set).toHaveBeenCalledWith({ byRow: true })
+    // Stored by row already: nothing is looked for.
+    run('keepByRow')
+    expect(dispatch.devices.forgetRows).toHaveBeenCalledTimes(1)
+  })
+
+  it('select a row: the account, and the sign-in it is looked at through', async () => {
+    const dispatch: any = {
+      logs: { reset: vi.fn() },
+      ui: { set: vi.fn() },
+      accounts: { set: vi.fn() },
+      ...Object.fromEntries(
+        ['networks', 'devices', 'files', 'tags', 'products', 'partnerStats'].map(model => [
+          model,
+          { fetchIfEmpty: vi.fn() },
+        ])
+      ),
+    }
+    const state = signedIn({ 'sub-work': work })
+    await (accounts as any).effects(dispatch).select('labs', state)
+    expect(dispatch.accounts.set).toHaveBeenLastCalledWith({ activeId: 'labs', activeSub: 'sub-work' })
+    await (accounts as any).effects(dispatch).select('acme', state)
+    expect(dispatch.accounts.set).toHaveBeenLastCalledWith({ activeId: 'acme', activeSub: '' })
+  })
+
   it('serve nothing through a sign-in that does not reach the organization', async () => {
     const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
     await run('setVia', { accountId: 'acme', sub: 'sub-work' })
@@ -456,6 +513,8 @@ describe('the sign-ins beside the page’s own person', () => {
 /* A device shared with Personal and Work, both signed in here, is in both their lists — and in the list kept for
    connections, which is no account's. */
 describe('a device taken out of some accounts’ lists', () => {
+  // Work's own account, in its row: under the sign-in that read it (helpers/rowKey).
+  const WORK = rowKey('work', 'sub-work')
   const device = (id: string, more: object = {}) => ({ id, ...more })
   const held = () => ({
     auth: { user: { id: 'personal' } },
@@ -467,7 +526,7 @@ describe('a device taken out of some accounts’ lists', () => {
     },
     devices: {
       personal: { all: [device('D1'), device('D2')], total: 2 },
-      work: { all: [device('D1')], total: 1 },
+      [WORK]: { all: [device('D1')], total: 1 },
       connections: { all: [device('D1'), device('D3')], total: 0 },
     },
   })
@@ -481,8 +540,8 @@ describe('a device taken out of some accounts’ lists', () => {
   it('leaves the other accounts’ lists as they are, says another holds it, and counts one fewer', async () => {
     const { dispatch, effects } = removing(held())
     expect(await effects.removeDeviceFrom({ id: 'D1', accountIds: ['work'] }, held())).toBe(true)
-    expect(dispatch.accounts.setDevices.mock.calls).toEqual([[{ devices: [], accountId: 'work' }]])
-    expect(dispatch.devices.set.mock.calls).toEqual([[{ total: 0, accountId: 'work' }]])
+    expect(dispatch.accounts.setDevices.mock.calls).toEqual([[{ devices: [], accountId: 'work', row: WORK }]])
+    expect(dispatch.devices.set.mock.calls).toEqual([[{ total: 0, accountId: 'work', row: WORK }]])
   })
 
   it('says no account holds it when only the list kept for connections does', async () => {
@@ -495,10 +554,20 @@ describe('a device taken out of some accounts’ lists', () => {
   it('comes out of every list when the device is gone', async () => {
     const { dispatch, effects } = removing(held())
     await effects.removeDevice('D1')
-    expect(dispatch.accounts.setDevices.mock.calls.map(([set]: any) => set.accountId)).toEqual([
-      'personal',
-      'work',
-      'connections',
+    expect(dispatch.accounts.setDevices.mock.calls.map(([set]: any) => [set.accountId, set.row])).toEqual([
+      ['personal', 'personal'],
+      ['work', WORK],
+      ['connections', 'connections'],
     ])
+  })
+
+  it('comes out of one row alone where that row’s sign-in no longer sees it, another row holding it still', async () => {
+    const state = held()
+    Object.assign(state.devices, { acme: { all: [device('D1')], total: 1 } })
+    Object.assign(state.devices, { [rowKey('acme', 'sub-work')]: { all: [device('D1')], total: 1 } })
+    state.accounts.membership = [{ account: { id: 'acme' } }] as never[]
+    const { dispatch, effects } = removing(state)
+    expect(await effects.removeDeviceFrom({ id: 'D1', rows: [rowKey('acme', 'sub-work')] }, state)).toBe(true)
+    expect(dispatch.accounts.setDevices.mock.calls.map(([set]: any) => set.row)).toEqual([rowKey('acme', 'sub-work')])
   })
 })

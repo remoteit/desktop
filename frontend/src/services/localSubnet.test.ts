@@ -1,4 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { rowKey } from '../helpers/rowKey'
+
+// Work's own account, in its row: under the sign-in that read it.
+const WORK = rowKey('work', 'sub-work')
 
 // The DNS beacon's sign-in answer (graphql-api docs/PROXY-GROUPS.md §15, "The portal and an installed daemon"): whether
 // the daemon here would serve this person once they sign in on it, and the app's sign-in link — read only from an API
@@ -186,7 +190,7 @@ describe('with several sign-ins in use', () => {
       },
       devices: {
         me: { all: [{ id: 'd-me', services: [{ id: 's-me' }] }] },
-        work: { all: [{ id: 'd-work', services: [{ id: 's-work' }] }] },
+        [WORK]: { all: [{ id: 'd-work', services: [{ id: 's-work' }] }] },
       },
     })
     request.mockImplementation(
@@ -232,7 +236,7 @@ describe('with several sign-ins in use', () => {
     await localSubnetName('s-work', 'pi')
     expect(read).toEqual([['s-work', 'sub-work']])
     // The service's account is the page's own person's to serve from now on: the same name, another's answer.
-    state.devices = { me: { all: [...state.devices.me.all, ...state.devices.work.all] } }
+    state.devices = { me: { all: [...state.devices.me.all, ...state.devices[WORK].all] } }
     forgetAccountCaches(['work'])
     expect(told).toHaveBeenCalledTimes(1)
     await localSubnetName('s-work', 'pi')
