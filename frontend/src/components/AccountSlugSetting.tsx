@@ -28,7 +28,8 @@ export const AccountSlugSetting: React.FC<{ accountId?: string }> = ({ accountId
     if (!enabled) return
     let current = true
     graphQLAccountSlug(accountId).then(result => {
-      if (current && result !== 'ERROR' && result !== UNSUPPORTED) setSlug(result)
+      // Not read: nothing shown, rather than what was read before (as another sign-in, or of another account).
+      if (current) setSlug(result !== 'ERROR' && result !== UNSUPPORTED ? result : undefined)
     })
     return () => {
       current = false

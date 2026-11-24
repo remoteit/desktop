@@ -18,20 +18,11 @@ import {
 } from '../services/graphQLDeviceApps'
 import { appServiceOf, isAppService, serviceApp } from '../helpers/appsHelper'
 import { useReadCallback, useReadEffect } from './useReadAgain'
-
-type Read = ReturnType<typeof graphQLDeviceApps>
+import { sharedRead } from '../services/accountCaches'
 
 // One read per device for every part of a page that asks in the same moment: its Apps section, and an app's service's
 // row in its services and connect panel.
-const reading = new Map<string, Read>()
-function read(deviceId: string): Read {
-  let answer = reading.get(deviceId)
-  if (!answer) {
-    answer = graphQLDeviceApps(deviceId).finally(() => reading.delete(deviceId))
-    reading.set(deviceId, answer)
-  }
-  return answer
-}
+const read = sharedRead(graphQLDeviceApps)
 
 // Every part of a page showing a device's apps, told what the device said after one was changed here.
 const watchers = new Set<(deviceId: string, apps: DeviceApp[] | null) => void>()

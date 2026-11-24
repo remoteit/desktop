@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios'
 import { getApiRestURL, getApiURL } from '../helpers/apiHelper'
 import { apiRequest } from './remoteit'
 import { store } from '../store'
-import { requestSignIn, requestServing, servingChanged, RequestFor } from '../selectors/signIns'
+import { requestSignIn, requestServing, servingChanged, servingGone, RequestFor, Serving } from '../selectors/signIns'
 import network from './Network'
 import sleep from '../helpers/sleep'
 
@@ -20,12 +20,20 @@ export async function post(
   path: string = '',
   silent = false,
   retry = false,
-  requestFor?: RequestFor
+  requestFor?: RequestFor,
+  asked = 0,
+  // A retry of a request dropped in flight: the sign-in it was asked as, and who served its accounts then.
+  retried?: { sub: string | undefined; serving: Serving | undefined }
 ): Promise<AxiosResponse | 'ERROR'> {
   if (store.getState().ui.offline) return 'ERROR'
-  const sub = requestSignIn(store.getState(), requestFor, data?.variables)
-  // A read: its answer is only good while the sign-ins that served its accounts still do (requestServing).
-  const serving = isRead(data?.query) ? requestServing(store.getState(), requestFor, data?.variables) : undefined
+  const sub = retried ? retried.sub : requestSignIn(store.getState(), requestFor, data?.variables)
+  // A read: its answer is only good while the sign-ins that served its accounts still do (requestServing) — those
+  // that did when it was FIRST asked, through a retry made as that same sign-in.
+  const serving = retried
+    ? retried.serving
+    : isRead(data?.query)
+    ? requestServing(store.getState(), requestFor, data?.variables)
+    : undefined
 
   // graphql at its URL; a REST route (a path) under the API's REST root (getApiRestURL: on the unified front, /api).
   const url = (path ? getApiRestURL() : getApiURL()) + path
@@ -41,21 +49,30 @@ export async function post(
       return 'ERROR'
     }
     if (serving && servingChanged(store.getState(), serving)) {
-      console.log('POST ANSWER DROPPED: ASKED AS THE SIGN-IN BEFORE', { data, path })
-      return 'ERROR'
+      /* The answer is the sign-in before's. Where the request itself says whose it is (the account it names, what it
+         is about) it is asked again, as the sign-in that serves the account now, and THAT is what is answered — so
+         whoever waits for this read gets what a read made now would give, never an error that could land over the
+         newer answer. One said to be a particular sign-in's (asked once per sign-in), or about an account no one
+         here serves any more, has nothing to be asked again as: it fails, and what is stored stays as it is. */
+      const again = requestFor?.sub === undefined && asked < STALE_ASKS && !servingGone(store.getState(), serving)
+      console.log(`POST ANSWER DROPPED: ASKED AS THE SIGN-IN BEFORE${again ? ' — ASKED AGAIN' : ''}`, { data, path })
+      return again ? await post(data, path, silent, retry, requestFor, asked + 1) : 'ERROR'
     }
     return response
   } catch (error) {
     if (retry && droppedInFlight(error)) {
       console.warn('POST DROPPED, RETRYING', { data, path })
       await sleep(1000)
-      return await post(data, path, silent, false, { ...requestFor, sub })
+      return await post(data, path, silent, false, requestFor, asked, { sub, serving })
     }
     console.error('POST ERROR', { data, path })
     await apiError(error, silent)
     return 'ERROR'
   }
 }
+
+// How many times a read is asked again because its account's sign-in changed while it was out.
+const STALE_ASKS = 2
 
 // A graphql query, as against a mutation or a REST call: what only reads.
 const isRead = (query: unknown) => typeof query === 'string' && /^\s*(query\b|\{)/.test(query)

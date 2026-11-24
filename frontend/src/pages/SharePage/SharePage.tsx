@@ -30,23 +30,26 @@ export const SharePage: React.FC = () => {
   const email = guest?.email || ''
   const history = useHistory()
 
-  useReadEffect(() => {
-    ;(async () => {
-      if (!service || !device) return
-      if (!guest && userID) await dispatch.organization.fetch()
-      await dispatch.shares.fetch({ email, serviceId: service.id, device })
-      await dispatch.contacts.fetch()
-    })()
+  useReadEffect(
+    again => {
+      ;(async () => {
+        if (!service || !device) return
+        if (!guest && userID) await dispatch.organization.fetch()
+        await dispatch.shares.fetch({ email, serviceId: service.id, device })
+        await dispatch.contacts.fetch()
+      })()
 
-    // set defaults
-    if (device?.loaded) {
-      const access = getAccess(device, email)
-      if (service && !access.services.length) access.services = [service]
-      console.log('ACCESS', access)
-      dispatch.shares.setSelectedServices(access.services.map(s => s.id))
-      dispatch.shares.setScript(access.scripting)
-    }
-  }, [device?.loaded, service, email, userID])
+      // set defaults — not over what the person has chosen since, when this only reads again as another sign-in
+      if (device?.loaded && !again) {
+        const access = getAccess(device, email)
+        if (service && !access.services.length) access.services = [service]
+        console.log('ACCESS', access)
+        dispatch.shares.setSelectedServices(access.services.map(s => s.id))
+        dispatch.shares.setScript(access.scripting)
+      }
+    },
+    [device?.loaded, service, email, userID]
+  )
 
   const handleUnshare = async () => {
     if (device) await dispatch.shares.delete({ deviceId: device.id, email })

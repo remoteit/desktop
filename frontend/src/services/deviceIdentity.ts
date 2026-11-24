@@ -412,6 +412,10 @@ export const duplicateCopies = (accountId: string): DuplicateCopy[] | undefined 
 
 // Those the reader may manage: another sign-in serving the account reads its own (services/accountCaches).
 accountCache(accountIds => {
+  // A read still out was asked as the sign-in before: whoever asks after is given one of their own, and what the
+  // old one brings is not kept.
+  reading.clear()
+  readingOf.clear()
   const dropped = accountIds.filter(id => copies.delete(id))
   if (dropped.length) notify()
 })
@@ -523,11 +527,12 @@ export async function graphQLFetchCopiesOf(ids: string[]): Promise<Map<string, D
 export function requestCopiesOf(ids: string[], again?: boolean): Promise<void> {
   const wanted = [...new Set(ids)].filter(id => again || (!byOriginal.has(id) && !readingOf.has(id)))
   if (!wanted.length) return Promise.all(ids.map(id => readingOf.get(id))).then(() => undefined)
-  const read = graphQLFetchCopiesOf(wanted).then(result => {
-    wanted.forEach(id => readingOf.delete(id))
-    if (result === 'ERROR') return
+  const read: Promise<void> = graphQLFetchCopiesOf(wanted).then(result => {
+    const current = wanted.filter(id => readingOf.get(id) === read)
+    current.forEach(id => readingOf.delete(id))
+    if (result === 'ERROR' || !current.length) return
     byOriginal = new Map(byOriginal)
-    for (const id of wanted) byOriginal.set(id, result.get(id) || [])
+    for (const id of current) byOriginal.set(id, result.get(id) || [])
     notify()
   })
   wanted.forEach(id => readingOf.set(id, read))
@@ -549,7 +554,8 @@ function requestAccountCopies(accountId: string, again?: boolean): Promise<void>
   if (!again && copies.has(accountId)) return Promise.resolve()
   const pending = reading.get(accountId)
   if (pending) return pending
-  const read = graphQLFetchDuplicateCopies(accountId).then(result => {
+  const read: Promise<void> = graphQLFetchDuplicateCopies(accountId).then(result => {
+    if (reading.get(accountId) !== read) return
     reading.delete(accountId)
     if (result === 'ERROR') return
     copies.set(accountId, result)

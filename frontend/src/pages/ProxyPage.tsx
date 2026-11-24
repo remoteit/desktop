@@ -376,6 +376,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
                 kind="proxy"
                 run={device}
                 name={proxy.name}
+                of={proxy.id}
                 activation={proxy.activation}
                 local={proxy.local}
                 to={`/devices/${device.id}/runs`}

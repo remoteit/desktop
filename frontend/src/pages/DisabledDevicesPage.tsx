@@ -48,7 +48,15 @@ export const DisabledDevicesPage: React.FC = () => {
       setLoading(true)
       const response = await graphQLFetchDisabledDevices(accountId, from, await deviceDisableFields())
       setLoading(false)
-      if (response === 'ERROR') return setFailed(true)
+      if (response === 'ERROR') {
+        // The list not read: none shown, rather than those read before (as another sign-in, or of another account).
+        if (!from) {
+          setRows([])
+          setTotal(0)
+          setSelected([])
+        }
+        return setFailed(true)
+      }
       setFailed(false)
       const devices = response?.data?.data?.login?.account?.devices
       const page: DisabledRow[] = (devices?.items || []).map((d: any) => ({
@@ -60,7 +68,8 @@ export const DisabledDevicesPage: React.FC = () => {
       }))
       setTotal(devices?.total || 0)
       setRows(previous => (from ? [...previous, ...page.filter(p => !previous.some(r => r.id === p.id))] : page))
-      if (!from) setSelected([])
+      // Read anew — after a restore, or as another sign-in: what is ticked stays ticked where it is still listed.
+      if (!from) setSelected(ticked => ticked.filter(id => page.some(row => row.id === id)))
     },
     [accountId]
   )

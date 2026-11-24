@@ -23,7 +23,9 @@ type Props = {
   device: { id: string; name: string }
   action: RunAction
   // The device as a whole — every proxy and exit it runs —, or one of them alone, by name.
-  scope: 'device' | { kind: 'proxy' | 'exit'; name: string }
+  // `id`: the proxy's or exit's, where its own page takes the action — whose sign-in is asked for a device no stored
+  // list holds (services/graphQLDeviceRuns).
+  scope: 'device' | { kind: 'proxy' | 'exit'; name: string; id?: string }
   onClose: () => void
   onDone: (runs: DeviceRuns) => void
 }
@@ -40,6 +42,7 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, 
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<string>()
   const kind = scope === 'device' ? undefined : scope.kind
+  const run = scope === 'device' ? undefined : scope.id
 
   useReadEffect(
     again => {
@@ -47,7 +50,7 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, 
       let live = true
       if (!again) setEffects(undefined)
       if (!again) setRefusal(undefined)
-      graphQLActionEffects(device.id, action, force).then(read => {
+      graphQLActionEffects(device.id, action, force, ...(run ? [run] : [])).then(read => {
         if (!live) return
         if (!Array.isArray(read)) return setEffects('ERROR')
         setEffects(kind ? read.filter(effect => effect.kind === kind) : read)
@@ -81,6 +84,7 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, 
     const result = await graphQLRunAction(kind ?? 'device', device.id, action, {
       maxWaitMinutes: action === 'DRAIN' ? wait : undefined,
       force,
+      ...(run && { run }),
     })
     setBusy(false)
     if ('reason' in result) return setRefusal(result.reason || t('runAction.failed', 'It was not done: try again.'))

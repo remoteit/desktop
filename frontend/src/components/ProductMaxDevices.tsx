@@ -127,7 +127,8 @@ export const ProductMaxDevices: React.FC<{ product: IDeviceProduct }> = ({ produ
       let current = true
       if (!again) setValue(undefined)
       graphQLProductMaxDevices(product.id, accountId).then(result => {
-        if (current && result && result !== 'ERROR') setValue(result)
+        // Not read: nothing shown, rather than what was read before (as another sign-in, or of something else).
+        if (current) setValue(result && result !== 'ERROR' ? result : undefined)
       })
       return () => {
         current = false

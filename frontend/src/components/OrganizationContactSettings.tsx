@@ -23,13 +23,15 @@ export function OrganizationContactSettings({ accountId }: { accountId: string }
         }`,
         { accountId }
       )
-      if (!current || result === 'ERROR') return
-      const data = result.data?.data?.login?.account
-      if (data)
-        setContacts({
+      if (!current) return
+      const data = result === 'ERROR' ? undefined : result.data?.data?.login?.account
+      // Not read: nothing shown, rather than what was read before (as another sign-in, or of another account).
+      setContacts(
+        data && {
           billingEmail: data.billingDetails?.email || '',
           notificationEmail: data.notificationSettings?.notificationEmail || '',
-        })
+        }
+      )
     }
     void load()
     return () => {

@@ -70,3 +70,36 @@ describe('openThroughGateway', () => {
     expect(popup).not.toHaveBeenCalled()
   })
 })
+
+/* The browser has one client, the page's own person's. A service only another sign-in reaches is not opened through
+   it: no tab, no code — the browser is not registered as that other person, nor a tab opened that cannot reach it. */
+describe('with several sign-ins in use', () => {
+  it('opens what the page’s own person reaches, asking its code as them, and nothing another sign-in alone reaches', async () => {
+    const { readStateWith } = await import('../selectors/signIns')
+    readStateWith(
+      () =>
+        ({
+          auth: { user: { id: 'me' } },
+          accounts: {
+            membership: [],
+            signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+          },
+          devices: {
+            me: { all: [{ id: 'd-me', services: [{ id: 's-me' }] }] },
+            work: { all: [{ id: 'd-work', services: [{ id: 's-work' }] }] },
+          },
+        } as any)
+    )
+    const { OTHER_SIGN_IN } = await import('./browserGateway')
+    const tab = { close: vi.fn(), location: { href: '' }, opener: {} }
+    vi.spyOn(window, 'open').mockReturnValue(tab as any)
+    request.mockReset().mockResolvedValue(answer)
+    expect(await openThroughGateway('web-work.on.local.remote.it', 's-work')).toBe(OTHER_SIGN_IN)
+    expect(window.open).not.toHaveBeenCalled()
+    expect(request).not.toHaveBeenCalled()
+
+    expect(await openThroughGateway('web-me.on.local.remote.it', 's-me')).toBe(true)
+    expect(request.mock.calls[0].slice(1)).toEqual([{}, false, { sub: '' }])
+    readStateWith(() => ({} as any))
+  })
+})

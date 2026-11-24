@@ -20,7 +20,8 @@ export const TaggedIntoList: React.FC<{ accountId?: string }> = ({ accountId }) 
 
   const load = async () => {
     const result = await graphQLTaggedInto(accountId || '')
-    if (result !== 'ERROR' && result !== UNSUPPORTED) setRules(result)
+    // Not read: nothing shown, rather than what was read before (as another sign-in, or of something else).
+    setRules(result !== 'ERROR' && result !== UNSUPPORTED ? result : undefined)
   }
 
   useReadEffect(() => {

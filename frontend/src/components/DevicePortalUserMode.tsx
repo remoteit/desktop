@@ -45,36 +45,43 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
   const pending = refreshDue || !!data?.portalUserMode.some(binding => binding.state === 'pending')
   const refresh = () => setRevision(value => value + 1)
 
-  useReadEffect(() => {
-    let current = true
-    let reading = false
-    const read = async () => {
-      if (reading) return
-      reading = true
-      const result = await readPortalUserMode(deviceId).catch(() => 'ERROR' as const)
-      reading = false
-      if (!current) return
-      setFailed(result === 'ERROR')
-      if (result !== 'ERROR') {
-        setData(result)
-        setRefreshDue(false)
-        setApproval(code =>
-          code &&
-          result?.portalUserMode.some(
-            binding => binding.id === code.id && binding.state === 'pending' && binding.requiresOsAdmin
+  useReadEffect(
+    again => {
+      let current = true
+      let reading = false
+      let first = true
+      const read = async () => {
+        if (reading) return
+        reading = true
+        const result = await readPortalUserMode(deviceId).catch(() => 'ERROR' as const)
+        reading = false
+        if (!current) return
+        // A poll that fails keeps what is shown; the first read as another sign-in, failing, must not.
+        if (result === 'ERROR' && again && first) setData(undefined)
+        first = false
+        setFailed(result === 'ERROR')
+        if (result !== 'ERROR') {
+          setData(result)
+          setRefreshDue(false)
+          setApproval(code =>
+            code &&
+            result?.portalUserMode.some(
+              binding => binding.id === code.id && binding.state === 'pending' && binding.requiresOsAdmin
+            )
+              ? code
+              : undefined
           )
-            ? code
-            : undefined
-        )
+        }
       }
-    }
-    void read()
-    const timer = pending ? setInterval(read, 3000) : undefined
-    return () => {
-      current = false
-      clearInterval(timer)
-    }
-  }, [deviceId, revision, pending])
+      void read()
+      const timer = pending ? setInterval(read, 3000) : undefined
+      return () => {
+        current = false
+        clearInterval(timer)
+      }
+    },
+    [deviceId, revision, pending]
+  )
 
   const readError = failed && (
     <Alert

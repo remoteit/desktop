@@ -120,7 +120,9 @@ export const AppAddDialog: React.FC = () => {
       if (target !== 'tag' || !tagged.length) return
       let current = true
       graphQLFetchDeviceCount({ tag: { operator, values: tagged }, accountId } as gqlOptions).then(response => {
-        if (current && response !== 'ERROR') setTagCount(response?.data?.data?.login?.account?.devices?.total)
+        // Not counted: no count shown, rather than one counted before (as another sign-in).
+        if (current)
+          setTagCount(response !== 'ERROR' ? response?.data?.data?.login?.account?.devices?.total : undefined)
       })
       return () => {
         current = false

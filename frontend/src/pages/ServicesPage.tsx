@@ -122,7 +122,8 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
     if (!destination || !port) return
     setOpening(true)
     try {
-      if (port === 443) setFailed(!(await openThroughGateway(destination)))
+      // Not opened — or not the browser's client's to open (another sign-in's service): Connect is offered either way.
+      if (port === 443) setFailed((await openThroughGateway(destination, service.id)) !== true)
       else await openServiceURL(subnetWebURL(destination, port))
     } catch {
       setFailed(true)

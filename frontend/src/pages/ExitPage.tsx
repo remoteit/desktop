@@ -272,6 +272,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                 kind="exit"
                 run={device}
                 name={exit.name}
+                of={exit.id}
                 activation={exit.activation}
                 to={`/devices/${device.id}/runs`}
                 manage

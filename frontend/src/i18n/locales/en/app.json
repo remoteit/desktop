@@ -544,6 +544,7 @@
   "browserGatewayConnect": {
     "failed": "Could not open it: try again",
     "launch": "Open in a new tab",
+    "otherSignIn": "Not in this browser: it is reached through another account signed in here. Use Connect instead.",
     "terminal": "Open a terminal",
     "title": "In this browser — nothing to install"
   },

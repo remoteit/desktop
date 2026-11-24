@@ -28,3 +28,22 @@ export function forgetAccountCaches(accountIds: string[]) {
   dropped++
   followers.forEach(follower => follower())
 }
+
+/* One read for everyone who asks in the same moment — one per device for every part of a page showing it, say. A read
+   still out when accounts' data is dropped was asked as the sign-in before: it is not handed to whoever asks after,
+   who are given a read of their own, made as the sign-in serving the account now. */
+export function sharedRead<T>(read: (key: string) => Promise<T>) {
+  const reading = new Map<string, Promise<T>>()
+  const forget = () => reading.clear()
+  accountCache(forget)
+  const shared = (key: string): Promise<T> => {
+    let answer = reading.get(key)
+    if (!answer) {
+      const made: Promise<T> = read(key).finally(() => reading.get(key) === made && reading.delete(key))
+      answer = made
+      reading.set(key, made)
+    }
+    return answer
+  }
+  return Object.assign(shared, { forget })
+}

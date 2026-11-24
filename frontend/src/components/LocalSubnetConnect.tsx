@@ -72,7 +72,7 @@ export const LocalSubnetConnect: React.FC<Props> = ({
       let current = true
       graphQLDetectedSchemes(service.deviceID).then(result => {
         const detected = typeof result === 'object' ? result[service.id] : null
-        if (current && detected && redirectLoops(detected, service, webPort)) setLoopPort(detected.port)
+        if (current) setLoopPort(detected && redirectLoops(detected, service, webPort) ? detected.port : undefined)
       })
       return () => {
         current = false

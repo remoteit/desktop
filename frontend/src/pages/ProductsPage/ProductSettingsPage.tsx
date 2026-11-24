@@ -35,15 +35,20 @@ export const ProductSettingsPage: React.FC = () => {
   const accountId = useSelector(selectActiveAccountId)
   const detailed = product?.joinKeys !== undefined
   const fetched = useRef<string>()
-  useReadEffect(() => {
-    if (!productId) return
-    if (fetched.current !== productId) {
-      fetched.current = productId
-      dispatch.products.fetchSingle(productId)
-    } else if (product && !detailed) {
-      dispatch.products.refreshCredentials({ productId, accountId })
-    }
-  }, [productId, product])
+  useReadEffect(
+    again => {
+      if (!productId) return
+      // Read as another sign-in now: the product is read whole again, as when the page was opened.
+      if (again) fetched.current = undefined
+      if (fetched.current !== productId) {
+        fetched.current = productId
+        dispatch.products.fetchSingle(productId)
+      } else if (product && !detailed) {
+        dispatch.products.refreshCredentials({ productId, accountId })
+      }
+    },
+    [productId, product]
+  )
 
   if (!product) {
     return (

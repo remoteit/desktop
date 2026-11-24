@@ -202,6 +202,12 @@ export function requestServing(state: State, requestFor?: RequestFor, variables?
   return [...accounts].map(accountId => [accountId, routes[accountId].sub])
 }
 
+/** Whether an account a request was about is no row here any more: no sign-in serves it. */
+export const servingGone = (state: State, serving: Serving): boolean => {
+  const routes = selectAccountRoutes(state)
+  return serving.some(([accountId]) => !routes[accountId])
+}
+
 /** Whether an account a request was about is served by another sign-in now, or by none. */
 export const servingChanged = (state: State, serving: Serving): boolean => {
   if (!serving.length) return false

@@ -16,7 +16,8 @@ vi.mock('../helpers/apiHelper', () => ({
   getApiRestURL: () => 'https://api.test',
 }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
-vi.mock('axios', () => ({ default: { request, isAxiosError: () => false } }))
+vi.mock('axios', () => ({ default: { request, isAxiosError: (error: any) => !!error?.isAxiosError } }))
+vi.mock('../helpers/sleep', () => ({ default: async () => {} }))
 
 import { post } from './post'
 
@@ -47,26 +48,25 @@ describe('a read answered after another sign-in serves its account', () => {
     expect(await reading).toEqual({ data: { data: {} } })
   })
 
-  it('is not kept once the person has picked another sign-in for the account', async () => {
+  it('is asked again as the sign-in the person has picked for the account, and that answer is the one given', async () => {
     const reading = post({ query: READ, variables: { accountId: 'shared' } })
     await vi.waitFor(() => expect(asked()).toEqual(['token-of:primary']))
+    const old = answer
     state.accounts = { ...state.accounts, via: { shared: 'sub-work' } }
-    answer({ data: { data: {} } })
-    expect(await reading).toBe('ERROR')
-    // Asked again, it is asked as the one that serves it now, and kept.
-    const again = post({ query: READ, variables: { accountId: 'shared' } })
+    old({ data: { data: { as: 'primary' } } })
     await vi.waitFor(() => expect(asked()).toEqual(['token-of:primary', 'token-of:sub-work']))
-    answer({ data: { data: {} } })
-    expect(await again).not.toBe('ERROR')
+    answer({ data: { data: { as: 'work' } } })
+    // Whoever waited for the first read has the newer answer: never the old one's, nor an error landing over it.
+    expect(await reading).toEqual({ data: { data: { as: 'work' } } })
   })
 
-  it('is not kept once the sign-in that served it has left — asked by the account, or once per sign-in', async () => {
+  it('fails once the sign-in that served it has left and no one serves the account — and one asked once per sign-in', async () => {
     const byAccount = post({ query: READ, variables: { accountId: 'labs' } })
     await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(1))
     const first = answer
     const perSignIn = post({ query: 'query Organizations { login { id } }' }, '', false, false, {
       sub: 'sub-work',
-      about: ['work', 'labs'],
+      about: ['work', 'shared'],
     })
     await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2))
     state.accounts = { ...state.accounts, signIns: {} }
@@ -74,6 +74,18 @@ describe('a read answered after another sign-in serves its account', () => {
     answer({ data: {} })
     expect(await byAccount).toBe('ERROR')
     expect(await perSignIn).toBe('ERROR')
+    expect(request).toHaveBeenCalledTimes(2)
+  })
+
+  it('is not asked again without end while the account keeps changing hands', async () => {
+    request.mockReset().mockImplementation(async () => {
+      // Each answer finds another sign-in serving the account.
+      const now = state.accounts.via.shared ? {} : { shared: 'sub-work' }
+      state.accounts = { ...state.accounts, via: now }
+      return { data: {} }
+    })
+    expect(await post({ query: READ, variables: { accountId: 'shared' } })).toBe('ERROR')
+    expect(request).toHaveBeenCalledTimes(3)
   })
 
   it('a change made meanwhile is still answered for: it happened', async () => {
@@ -91,5 +103,26 @@ describe('a read answered after another sign-in serves its account', () => {
     state.accounts = { ...state.accounts, signIns: { 'sub-work': work }, via: { shared: 'sub-work' } }
     answer({ data: {} })
     expect(await reading).toEqual({ data: {} })
+  })
+
+  // The connection dropped under a read (ERR_NETWORK), which is sent once more: the same read, as the same sign-in.
+  it('a read sent again after its connection dropped is good only while the sign-in it was first asked as still serves', async () => {
+    const dropped = Object.assign(new Error('Network Error'), { isAxiosError: true, code: 'ERR_NETWORK' })
+    let fail!: (error: unknown) => void
+    request.mockReset().mockImplementationOnce(() => new Promise((_resolve, reject) => (fail = reject)))
+    request.mockImplementation(() => new Promise(resolve => (answer = resolve)))
+    const reading = post({ query: READ, variables: { accountId: 'shared' } }, '', false, true)
+    await vi.waitFor(() => expect(asked()).toEqual(['token-of:primary']))
+    // The person picks the other sign-in for the account while it is out, and then the connection drops.
+    state.accounts = { ...state.accounts, via: { shared: 'sub-work' } }
+    fail(dropped)
+    await vi.waitFor(() => expect(asked()).toEqual(['token-of:primary', 'token-of:primary']))
+    // The retry's answer is the sign-in before's, judged by who served the account when the read was first asked:
+    // not kept, and the read asked again as the one serving it now.
+    answer({ data: { data: { as: 'primary' } } })
+    await vi.waitFor(() => expect(asked()).toHaveLength(3))
+    expect(asked()[2]).toBe('token-of:sub-work')
+    answer({ data: { data: { as: 'work' } } })
+    expect(await reading).toEqual({ data: { data: { as: 'work' } } })
   })
 })

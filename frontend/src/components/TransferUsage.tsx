@@ -177,7 +177,8 @@ export function useTransferUsageHint(
   useReadEffect(
     again => {
       const key = `${accountId ?? ''}:${kind}`
-      if (!shown || asked.current === key) return
+      // Asked once for each account and kind — and again as the sign-in now serving the account.
+      if (!shown || (asked.current === key && !again)) return
       asked.current = key
       if (!again) setUsage(null)
       let current = true
@@ -186,7 +187,7 @@ export function useTransferUsageHint(
         .catch(() => null)
         .then(result => {
           answered = true
-          if (current && Array.isArray(result)) setUsage(result.find(row => row.kind === kind) ?? null)
+          if (current) setUsage(Array.isArray(result) ? result.find(row => row.kind === kind) ?? null : null)
         })
       return () => {
         current = false

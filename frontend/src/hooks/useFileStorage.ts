@@ -3,19 +3,10 @@ import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { fetchFileStorage, FileStorage } from '../services/fileStorage'
 import { useReadEffect } from './useReadAgain'
-
-type Read = ReturnType<typeof fetchFileStorage>
+import { sharedRead } from '../services/accountCaches'
 
 // One read per account for every part of a page that asks in the same moment (the bar and the upload form).
-const reading = new Map<string, Read>()
-function read(accountId: string): Read {
-  let answer = reading.get(accountId)
-  if (!answer) {
-    answer = fetchFileStorage(accountId).finally(() => reading.delete(accountId))
-    reading.set(accountId, answer)
-  }
-  return answer
-}
+const read = sharedRead(fetchFileStorage)
 
 /* An account's file storage (services/fileStorage): undefined while read; null where there is none to show — an API
    without it, one the person may not script, or direct uploads off (its numbers are not kept then). Read again

@@ -4,6 +4,8 @@ import { State, Dispatch } from '../store'
 import { platforms, IPlatform } from '../platforms'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectOrganization } from '../selectors/organizations'
+import { selectActiveAccountId } from '../selectors/accounts'
+import { useReadAgain } from './useReadAgain'
 
 type Props = {
   serviceTypes: number[]
@@ -26,7 +28,9 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect, on
   const [redirected, setRedirected] = useState<boolean>(false)
   const dispatch = useDispatch<Dispatch>()
 
-  let accountId = organization.id || user.id
+  // The selected account: another sign-in's own, with no organization, is theirs — not the page's own person's.
+  const selected = useSelector(selectActiveAccountId)
+  let accountId = organization.id || selected || user.id
 
   function getRedirect(location?: string, code?: string) {
     if (!location || !code) return
@@ -35,7 +39,13 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect, on
     return url.toString()
   }
 
+  // Run again when another sign-in comes to serve the account (hooks/useReadAgain).
+  const dropped = useReadAgain()
+  const lastDropped = useRef(dropped)
+
   useEffect(() => {
+    const again = lastDropped.current !== dropped
+    lastDropped.current = dropped
     console.log('AUTO REGISTRATION EFFECT', {
       platform,
       tags,
@@ -48,9 +58,11 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect, on
     const platformId = platform?.id
     const previousContext = sessionContextRef.current
 
+    // Another account or platform — or another sign-in serving the account, who is given a code of their own, or none
+    // where they may not register devices here: never the code the one before was given.
     if (
-      previousContext &&
-      (previousContext.accountId !== accountId || previousContext.platformId !== platformId)
+      again ||
+      (previousContext && (previousContext.accountId !== accountId || previousContext.platformId !== platformId))
     ) {
       sessionCodeRef.current = undefined
       setRegistrationCode(undefined)
@@ -92,7 +104,7 @@ export function useAutoRegistration({ platform, tags, serviceTypes, redirect, on
         console.warn('Failed to redirect to:', error)
       }
     })()
-  }, [accountId, platform, tags?.length, serviceTypes.length, fetching, oneTimeUse])
+  }, [accountId, platform, tags?.length, serviceTypes.length, fetching, oneTimeUse, dropped])
 
   useEffect(() => {
     return () => {

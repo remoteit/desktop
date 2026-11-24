@@ -7,19 +7,10 @@ import {
   graphQLSetDeviceSetting,
 } from '../services/graphQLDeviceSettings'
 import { useDeviceSessions } from './useDeviceSessions'
-
-type Read = ReturnType<typeof graphQLDeviceSettings>
+import { sharedRead } from '../services/accountCaches'
 
 // One read per device for every row that asks in the same moment: a page shows several of its settings.
-const reading = new Map<string, Read>()
-function read(deviceId: string): Read {
-  let answer = reading.get(deviceId)
-  if (!answer) {
-    answer = graphQLDeviceSettings(deviceId).finally(() => reading.delete(deviceId))
-    reading.set(deviceId, answer)
-  }
-  return answer
-}
+const read = sharedRead(graphQLDeviceSettings)
 
 // Every part of a page showing a device's settings, told to read them again after graphql changed them by something
 // else: the device moved to another product, or detached from one.

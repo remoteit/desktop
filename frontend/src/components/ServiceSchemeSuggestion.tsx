@@ -41,7 +41,7 @@ export const ServiceSchemeSuggestion: React.FC<{ device?: IDevice; service?: ISe
       if (!deviceSessions || !editable || !device || !service) return
       let current = true
       graphQLDetectedSchemes(device.id).then(result => {
-        if (current && typeof result === 'object') setDetected(result[service.id] ?? null)
+        if (current) setDetected(typeof result === 'object' ? result[service.id] ?? null : null)
       })
       return () => {
         current = false

@@ -70,8 +70,11 @@ export const ProxyAccessList: React.FC<Props> = ({ scope, showEndpoint, devices 
     async (after?: string) => {
       setState('loading')
       const page = await graphQLProxyAccess(scope, outcomes, after)
-      if (page === UNSUPPORTED || page === 'ERROR' || !page)
+      if (page === UNSUPPORTED || page === 'ERROR' || !page) {
+        // The first page not read: none shown, rather than those read before (as another sign-in, or of another scope).
+        if (!after) setItems(undefined)
         return setState(page === UNSUPPORTED ? UNSUPPORTED : 'ERROR')
+      }
       setItems(current => (after ? [...(current ?? []), ...page.items] : page.items))
       setLast(page.last)
       setHasMore(page.hasMore)

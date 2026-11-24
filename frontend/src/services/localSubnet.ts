@@ -1,6 +1,7 @@
 import browser from './browser'
 import { graphQLBasicRequest } from './graphQL'
 import { requestSignInNow } from '../selectors/signIns'
+import { accountCache } from './accountCaches'
 
 /* Whether a name in device subnets works on this machine (presence-server docs/subnet-names-on-demand.md, "the
    portal"): Connect then hands out the name instead of starting a connection.
@@ -32,6 +33,8 @@ export const subnetWebURL = (name: string, port: number) =>
   port === 443 ? `https://${name}` : `https://${name}:${port}`
 
 const kept = new Map<string, { at: number; answer: Promise<LocalSubnetName | null> }>()
+// An answer is the sign-in's that served the service then: none is kept past a change of who serves an account.
+accountCache(() => kept.clear())
 // Until when no daemon here is the answer, by the sign-in whose probe went unseen ('' the page's own person, and the
 // app's name API).
 const absent = new Map<string, number>()

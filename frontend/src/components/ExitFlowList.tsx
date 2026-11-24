@@ -50,8 +50,15 @@ export const ExitFlowList: React.FC<Props> = ({ scope, carrier }) => {
       setReason(undefined)
       if (!after) now.current = new Date()
       const page = await fetchExitFlows(scope, { hours, now: now.current }, after)
-      if (page === UNSUPPORTED || page === 'ERROR') return setState(page)
+      // The first page not read: none shown, rather than those read before (as another sign-in, or of another scope).
+      const none = () => {
+        if (after) return
+        setFlows(undefined)
+        setNext(null)
+      }
+      if (page === UNSUPPORTED || page === 'ERROR') return none(), setState(page)
       if ('reason' in page) {
+        none()
         setReason(page.reason)
         return setState('ERROR')
       }

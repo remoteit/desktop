@@ -62,12 +62,14 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
     [load]
   )
 
-  useReadEffect(() => {
-    if (adding && !proxies.length)
-      graphQLProxies({ about: [service.id] }).then(list => {
-        if (Array.isArray(list)) setProxies(list)
-      })
-  }, [adding])
+  // Read once the form is opened; and again when another sign-in comes to serve the service, whose choices they are.
+  useReadEffect(
+    again => {
+      if (adding && (again || !proxies.length))
+        graphQLProxies({ about: [service.id] }).then(list => setProxies(Array.isArray(list) ? list : []))
+    },
+    [adding]
+  )
 
   if (endpoints === UNSUPPORTED || endpoints === undefined) return null
 

@@ -19,8 +19,9 @@ export function ShowInServicesSetting({ serviceId }: { serviceId: string }) {
     let current = true
     graphQLShowInServices(serviceId).then(result => {
       if (!current) return
-      if (result === 'ERROR') setFailed(true)
-      else setVisible(result)
+      // Not read: its box is left unticked and unusable, rather than as it was read before (as another sign-in).
+      setFailed(result === 'ERROR')
+      setVisible(result === 'ERROR' ? undefined : result)
     })
     return () => {
       current = false

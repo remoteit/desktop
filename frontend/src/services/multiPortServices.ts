@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import { post } from './post'
+import { accountCache } from './accountCaches'
 
 /* Multi-port services (graphql-api docs/MULTI-PORT-SERVICES.md): a service's ports are a list of ports and ranges,
    the first where its type's launch goes. Address mode (the device subnet) reaches every one; a connection here —
@@ -52,6 +53,9 @@ export function multiPortServicesOn(accountId?: string): Promise<boolean> {
   }
   return on
 }
+
+// Read as the sign-in that served the account then: asked again when another does (services/accountCaches).
+accountCache(accountIds => accountIds.forEach(id => accounts.delete(id)))
 
 // For tests, and for a change of API or sign-in.
 export function resetMultiPortServices() {

@@ -32,23 +32,28 @@ export function useJobDevices(accountId: string, job: IJob | undefined, jobDevic
     size.current = JOB_DEVICE_PAGE
   }, [jobId, accountId])
 
-  useReadEffect(() => {
-    if (!jobId) return
-    const load = async () => {
-      const mine = ++request.current
-      last.current = Date.now()
-      setFetching(true)
-      const result = await fetchJobDevices(accountId, jobId, 0, size.current)
-      if (mine !== request.current) return
-      setFetching(false)
-      if (result !== 'ERROR') setLoaded(result)
-    }
-    const wait = 1000 - (Date.now() - last.current)
-    if (timer.current) clearTimeout(timer.current)
-    if (wait <= 0) void load()
-    else timer.current = setTimeout(load, wait)
-    return () => timer.current && clearTimeout(timer.current)
-  }, [key, accountId])
+  useReadEffect(
+    again => {
+      if (!jobId) return
+      const load = async () => {
+        const mine = ++request.current
+        last.current = Date.now()
+        setFetching(true)
+        const result = await fetchJobDevices(accountId, jobId, 0, size.current)
+        if (mine !== request.current) return
+        setFetching(false)
+        if (result !== 'ERROR') setLoaded(result)
+        // A refresh that fails keeps what is shown; the read made as another sign-in, failing, must not.
+        else if (again) setLoaded(undefined)
+      }
+      const wait = 1000 - (Date.now() - last.current)
+      if (timer.current) clearTimeout(timer.current)
+      if (wait <= 0) void load()
+      else timer.current = setTimeout(load, wait)
+      return () => timer.current && clearTimeout(timer.current)
+    },
+    [key, accountId]
+  )
 
   // The next page, after those held. Whichever read is asked last wins (request); a re-read reads this page too.
   const loadMore = useReadCallback(async () => {
@@ -66,16 +71,22 @@ export function useJobDevices(accountId: string, job: IJob | undefined, jobDevic
   const runs = loaded || job?.jobDevices || []
   const shown = runs.find(jd => jd.id === jobDeviceId)
 
-  useReadEffect(() => {
-    if (!jobId || !jobDeviceId || !loaded || shown) return
-    let current = true
-    fetchJobDevice(accountId, jobId, jobDeviceId).then(result => {
-      if (current && result && result !== 'ERROR') setSelected(result)
-    })
-    return () => {
-      current = false
-    }
-  }, [jobDeviceId, key, !!loaded, !!shown])
+  useReadEffect(
+    again => {
+      if (!jobId || !jobDeviceId || !loaded || shown) return
+      let current = true
+      fetchJobDevice(accountId, jobId, jobDeviceId).then(result => {
+        if (!current) return
+        if (result && result !== 'ERROR') setSelected(result)
+        // As the list above: not kept through a failed read as another sign-in.
+        else if (again) setSelected(undefined)
+      })
+      return () => {
+        current = false
+      }
+    },
+    [jobDeviceId, key, !!loaded, !!shown]
+  )
 
   return {
     runs,
