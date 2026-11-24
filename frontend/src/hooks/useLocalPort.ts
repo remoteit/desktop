@@ -80,7 +80,9 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
         live = false
       }
     },
-    [machineId, serviceId]
+    // The person too: the port is their account's, so another person selected for the same service reads their own,
+    // and the one before's is not left shown as open.
+    [machineId, serviceId, userId]
   )
 
   useReadEffect(() => {
@@ -92,7 +94,7 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
       else setPolling(0)
     }, POLL_MS)
     return () => clearTimeout(timer)
-  }, [polling, local, machineId, serviceId])
+  }, [polling, local, machineId, serviceId, userId])
 
   const open = useCallback(
     async (port?: number, https?: boolean) => {
@@ -118,7 +120,7 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
     const answer = await closeLocalPort(machineId, serviceId)
     setBusy(false)
     if (answer) setLocal(answer)
-  }, [machineId, serviceId])
+  }, [machineId, serviceId, userId])
 
   return { offered, local, error, listed, others, busy, open, close }
 }

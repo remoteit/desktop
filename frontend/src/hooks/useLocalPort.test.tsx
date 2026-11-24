@@ -142,6 +142,19 @@ describe('useLocalPort', () => {
       expect(api.open).toHaveBeenCalledWith(api.machine.id, SERVICE, undefined, undefined, 'ACCOUNT')
     })
 
+    it('another person comes to serve the service while its panel is up: the port is read again as theirs, the one before not left shown', async () => {
+      api.read.mockResolvedValue({ port: 33000, open: true, state: 'listening', initiatorId: 'i1' })
+      await render()
+      expect(seen.local).toMatchObject({ port: 33000, open: true })
+      const reads = api.read.mock.calls.length
+      // The page's own person now holds the service's row: the port asked about is theirs, and they have none.
+      api.devices = { U1: { all: [{ id: PI, services: [{ id: SERVICE }] }] } }
+      api.read.mockResolvedValue(null)
+      await render()
+      expect(api.read.mock.calls.length).toBeGreaterThan(reads)
+      expect(seen.local).toBeUndefined()
+    })
+
     it("that person signed out of this machine since: the machine's", async () => {
       api.first = { ...api.machine, signIns: ['U1', 'work'] }
       await render()
