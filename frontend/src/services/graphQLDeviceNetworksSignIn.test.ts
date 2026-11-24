@@ -8,7 +8,8 @@ vi.mock('./graphQL', () => ({
   graphQLRequestWithReason: request,
   graphQLGetErrors: () => undefined,
 }))
-vi.mock('./post', () => ({ post: vi.fn() }))
+const { post } = vi.hoisted(() => ({ post: vi.fn() }))
+vi.mock('./post', () => ({ post }))
 vi.mock('./graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED', withoutDeviceSessions: () => false }))
 vi.mock('./productPolicy', () => ({ memberPolicyFields: async () => '' }))
 vi.mock('./deviceSignIns', () => ({ exitSignInFields: async () => '', exitErrorFields: async () => '' }))
@@ -18,6 +19,7 @@ vi.mock('../store', () => ({ store: { getState: () => ({}) } }))
 import {
   graphQLAddNetworkDevice,
   graphQLCreateNetworkDeviceRule,
+  graphQLDeviceNetworks,
   graphQLListNetworkService,
   graphQLNetworkTag,
   graphQLRemoveNetworkDevice,
@@ -85,5 +87,17 @@ describe('a change to a network', () => {
     expect(as()).toBe('sub-work')
     await graphQLSetNetworkExit('net-y', 'exit-x', false, 'exit')
     expect(as()).toBe('primary')
+  })
+})
+
+// X is looked at through the page's own person; a search of the other rows reads it as Work too.
+describe('networks read as a sign-in other than the one the account is looked at through', () => {
+  it('are noted under the sign-in that read them, so what is asked of one goes as that sign-in', async () => {
+    post.mockResolvedValue({
+      data: { data: { login: { account: { networks: [{ id: 'net-b', deviceRules: [{ id: 'rule-b' }] }] } } } },
+    })
+    expect(await graphQLDeviceNetworks('org-x', { sub: 'sub-work' })).toHaveLength(1)
+    expect(requestSignIn(state, { about: ['net-b'] }, {})).toBe('sub-work')
+    expect(requestSignIn(state, { about: ['rule-b'] }, {})).toBe('sub-work')
   })
 })

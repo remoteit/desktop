@@ -159,9 +159,12 @@ export async function graphQLDeviceNetworks(
   const networks: DeviceNetwork[] = response.data?.data?.login?.account?.networks ?? []
   // These networks are kept by a hook, in no stored list: what is asked of one, or of a rule of its, by id alone is
   // asked as the sign-in serving the account they were read for.
+  // Under the sign-in that read them, which is not always the one the account is looked at through: a search of the
+  // other rows reads as each (services/networkElsewhere).
   noteAccountOf(
     accountId,
-    networks.flatMap(network => [network.id, ...(network.deviceRules || []).map(rule => rule.id)])
+    networks.flatMap(network => [network.id, ...(network.deviceRules || []).map(rule => rule.id)]),
+    requestFor?.sub
   )
   return networks
 }
