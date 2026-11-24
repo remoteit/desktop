@@ -148,7 +148,10 @@ export default createModel<RootModel>()({
 
     // `sub`: the sign-in the devices were read as, where they were read for a row of it: a connection made here for
     // one of their links is that row's.
-    async updateConnectionState({ devices, sub }: { devices: IDevice[]; accountId: string; sub?: string }, state) {
+    async updateConnectionState(
+      { devices, accountId, sub }: { devices: IDevice[]; accountId: string; sub?: string },
+      state
+    ) {
       let lookup = getConnectionLookup(state)
       let result: IConnection[] = []
 
@@ -177,14 +180,21 @@ export default createModel<RootModel>()({
           }
 
           if (connection) {
-            // assign account id
-            connection.accountId = accountFromDevice(
-              state,
-              d.owner.id,
-              d.access.map(a => a.id)
-            )
-            // Its row's sign-in: as it was made; else as its device was read; else as its account is looked at.
-            if (!lookup[s.id]) connection.sub = sub ?? rowSub(selectRowOf(state, connection.accountId))
+            // Its row — the account, with the sign-in — as it was made. Made here: the row its device was read for
+            // (a device shared with two people here is in a row of each one's account, so the account is the row's,
+            // not the first of them the device belongs to); else its account, as that is looked at.
+            const made = lookup[s.id]
+            if (made?.sub === undefined || !made.accountId) {
+              const of = sub !== undefined && accountId ? accountId : undefined
+              connection.accountId =
+                of ??
+                accountFromDevice(
+                  state,
+                  d.owner.id,
+                  d.access.map(a => a.id)
+                )
+              if (!made) connection.sub = sub ?? rowSub(selectRowOf(state, connection.accountId))
+            }
 
             // disable connection if service is offline
             if (!online && !connection.connectLink && connection.enabled) {

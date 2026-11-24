@@ -5,7 +5,7 @@ import { EXIT_DEVICE_FIELDS, ExitDevice } from './graphQLDeviceRuns'
 import { PersonRef, exitErrorFields, exitSignInFields } from './deviceSignIns'
 import { ExitServing, exitServingFields } from './exitServing'
 import { RequestFor, isNoted, noteAccountOf, selectRowNow, selectedAccountId } from '../selectors/signIns'
-import { findElsewhere } from './elsewhere'
+import { FAILED, findElsewhere } from './elsewhere'
 import { store } from '../store'
 
 /* Exits (graphql-api docs/PROXY-GROUPS.md §13): what devices send their traffic out through, run by devices — remote.it
@@ -147,7 +147,8 @@ export const graphQLExit = async (id: string) => {
     asked,
     read: async (_own, requestFor) => {
       const answer = await exit(requestFor)
-      return answer && typeof answer === 'object' ? answer : undefined
+      // Not asked (a failure, or an API without it) is not the same as asked and none: it is looked for again.
+      return answer === null ? undefined : typeof answer === 'object' ? answer : FAILED
     },
     accountOf: answer => answer.owner?.id,
   })

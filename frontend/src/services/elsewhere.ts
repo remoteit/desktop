@@ -11,6 +11,9 @@ import { RequestFor, getSignIns, idsKnown, noteAccountOf, selectAccountRoutes } 
 
 type Found<T> = { answer: T; accountId: string; sub: string }
 
+/** A read that could not be made, as against one that answered and found nothing. */
+export const FAILED = 'ERROR' as const
+
 // What was looked for and found nowhere: not looked for again while the page lives (a page that polls, a retry).
 const nowhere = new Set<string>()
 
@@ -27,8 +30,9 @@ export async function findElsewhere<T>({
   /** What was asked for, and found nothing as `asked`. */
   ids: string[]
   asked: RowKey
-  /** The same read, made of `accountId` as `requestFor`'s sign-in: what it found, or nothing. */
-  read: (accountId: string, requestFor: RequestFor) => Promise<T | undefined | null>
+  /** The same read, made of `accountId` as `requestFor`'s sign-in: what it found; nothing, where it answered and has
+   *  none; or 'ERROR' where it could not be asked (FAILED) — which says nothing of whether it is there. */
+  read: (accountId: string, requestFor: RequestFor) => Promise<T | undefined | null | typeof FAILED>
   /** The read is of one account (a job, a file, a product of it): every account a sign-in reaches is asked. Else it is
    *  by id alone, and each sign-in is asked once. */
   byAccount?: boolean
@@ -44,12 +48,14 @@ export async function findElsewhere<T>({
   const routes = selectAccountRoutes(state)
   const reached = (sub: string) => Object.keys(routes).filter(id => routes[id].reach.some(who => who.sub === sub))
   const own = (sub: string) => (sub ? getSignIns(state)[sub]?.id : state.auth.user?.id) || ''
+  let failed = false
   for (const sub of ['', ...signIns.map(signIn => signIn.sub)]) {
     const accounts = byAccount ? [own(sub), ...reached(sub).filter(id => id !== own(sub))] : [own(sub)]
     for (const accountId of accounts) {
       if (!accountId || (byAccount ? rowKey(accountId, sub) === asked : sub === rowSub(asked))) continue
       const answer = await read(accountId, { sub })
-      if (answer === undefined || answer === null) continue
+      if (answer === FAILED) failed = true
+      if (answer === undefined || answer === null || answer === FAILED) continue
       const owner = byAccount ? accountId : accountOf?.(answer)
       const of = owner && reached(sub).includes(owner) ? owner : accountId
       noteAccountOf(of, ids, sub)
@@ -57,5 +63,7 @@ export async function findElsewhere<T>({
       return { answer, accountId: of, sub }
     }
   }
-  nowhere.add(key)
+  // Found nowhere — and remembered so only where everyone could be asked: one that failed may see it yet, and is
+  // asked again the next time the page is opened.
+  if (!failed) nowhere.add(key)
 }

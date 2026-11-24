@@ -3,7 +3,7 @@ import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from 
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
 import { RequestFor, isNoted, noteAccountOf, selectRowNow, selectedAccountId } from '../selectors/signIns'
-import { findElsewhere } from './elsewhere'
+import { FAILED, findElsewhere } from './elsewhere'
 import { store } from '../store'
 
 /* Proxies and their endpoints (graphql-api docs/PROXY-GROUPS.md §13 and §14, presence-server docs/proxy-plan.md): a
@@ -205,7 +205,8 @@ export const graphQLProxy = async (id: string) => {
     asked,
     read: async (_own, requestFor) => {
       const answer = await proxy(requestFor)
-      return answer && typeof answer === 'object' ? answer : undefined
+      // Not asked (a failure, or an API without it) is not the same as asked and none: it is looked for again.
+      return answer === null ? undefined : typeof answer === 'object' ? answer : FAILED
     },
     accountOf: answer => answer.owner?.id,
   })

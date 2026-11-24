@@ -646,12 +646,13 @@ ${await productFullEventFields()}
             setConnection(target.connection)
           }
 
-          // session state: in each row whose list holds the device (copiesOf), else the row its account is looked at
-          // through
+          // session state: in each row whose list holds the device (copiesOf) — the row's own account and sign-in, a
+          // device shared with two people here being in a row of each one's account — else the row the event's
+          // account is looked at through
           if (event.state === 'connected') {
             const state = store.getState()
-            const holding = copiesOf(state, target.deviceId).map(([row]) => rowSub(row))
-            const subs = holding.length ? holding : [rowSub(selectRowOf(state, target.accountId ?? ''))]
+            const holding = copiesOf(state, target.deviceId).map(([row]) => rowOf(row))
+            const rows = holding.length ? holding : [rowOf(selectRowOf(state, target.accountId ?? ''))]
             const session: ISession = {
               id: event.sessionId,
               manufacturer: event.manufacturerType,
@@ -670,7 +671,9 @@ ${await productFullEventFields()}
                 name: target.name,
               },
             }
-            new Set(subs).forEach(sub => dispatch.sessions.setSession({ ...session, sub }))
+            rows.forEach(({ accountId, sub }) =>
+              dispatch.sessions.setSession({ ...session, sub, target: { ...session.target, accountId } })
+            )
           } else {
             dispatch.sessions.removeSession(event.sessionId)
           }

@@ -74,7 +74,7 @@ import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { State, store } from '../store'
 import { inOrder } from '../helpers/inOrder'
-import { findElsewhere } from '../services/elsewhere'
+import { FAILED, findElsewhere } from '../services/elsewhere'
 
 export type IDeviceState = {
   all: IDevice[]
@@ -332,7 +332,7 @@ export default createModel<RootModel>()({
                 asked: row,
                 read: async (own, requestFor) => {
                   const answer = await graphQLFetchFullDevice(id, own, serviceTimeSeries, deviceTimeSeries, requestFor)
-                  return answer === 'ERROR' ? undefined : [answer?.data?.data?.login?.device].flat()[0]
+                  return answer === 'ERROR' ? FAILED : [answer?.data?.data?.login?.device].flat()[0]
                 },
                 accountOf: (found: any) => found?.owner?.id,
               })

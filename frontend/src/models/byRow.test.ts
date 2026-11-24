@@ -442,6 +442,25 @@ describe('a page opened at the address of something no row here is known to hold
     expect(reads()).toHaveLength(1)
   })
 
+  it('is looked for again where a sign-in could not be asked: a failed read is not a miss', async () => {
+    labs()
+    await look('')
+    asked.length = 0
+    // Work cannot be reached: nothing says the product is not theirs.
+    const answering = post.getMockImplementation()!
+    post.mockImplementation(async (data: any, path, silent, retry, requestFor) =>
+      requestFor?.sub === WORK && data.variables?.id === 'product-elsewhere'
+        ? 'ERROR'
+        : answering(data, path, silent, retry, requestFor)
+    )
+    expect(await dispatch.products.fetchSingle('product-elsewhere')).toBeNull()
+    expect(selectActiveRowKey(state())).toBe('acme')
+    // Reached again, the page opened again: asked again, and found.
+    post.mockImplementation(answering)
+    expect(await dispatch.products.fetchSingle('product-elsewhere')).toMatchObject({ id: 'product-elsewhere' })
+    expect(selectActiveRowKey(state())).toBe(rowKey('labs', WORK))
+  })
+
   it('is one request, as ever, with one sign-in in use — and a change is never looked for elsewhere', async () => {
     dispatch.accounts.set({ signIns: {} })
     await dispatch.accounts.select('acme')

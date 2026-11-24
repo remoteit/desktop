@@ -414,6 +414,22 @@ describe('an event about a device two accounts here both hold', () => {
     expect(state.devices[WORK].all[0].state).toBe('inactive')
   })
 
+  it('a connection to a device both hold is a session in each one’s row: its own account, with its own sign-in', () => {
+    inUse('sub-work')
+    cloudController.init()
+    const connected = JSON.parse(stateOf('dev-1'))
+    Object.assign(connected.data.event, { type: 'DEVICE_CONNECT', state: 'connected', sessionId: 'session-1' })
+    connected.data.event.timestamp = new Date(Date.now() + 300_000).toISOString()
+    setSession.mockClear()
+    sockets[0].handlers.message({ data: JSON.stringify(connected) })
+    sockets[1].handlers.message({ data: JSON.stringify(connected) })
+    // Handled once, and kept for both: never both under the one account the event was read as.
+    expect(setSession.mock.calls.map(([session]) => [session.target.accountId, session.sub])).toEqual([
+      ['personal', ''],
+      ['work', 'sub-work'],
+    ])
+  })
+
   it('a device of an organization both belong to: the copy in its row under each sign-in is written', () => {
     state.devices = { acme: { all: [copy('acme')] }, [rowKey('acme', 'sub-work')]: { all: [copy('acme')] } }
     inUse('sub-work')

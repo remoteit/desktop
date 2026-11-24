@@ -18,7 +18,7 @@ vi.mock('../services/graphQLRequest', () => ({ graphQLFiles: vi.fn() }))
 vi.mock('../services/graphQLMutation', () => ({ graphQLDeleteFile: vi.fn(), graphQLModifyFile: vi.fn() }))
 vi.mock('../services/get', () => ({ get: vi.fn() }))
 vi.mock('../services/fileStorage', () => ({ fetchFileSizes: vi.fn() }))
-vi.mock('../services/elsewhere', () => ({ findElsewhere: vi.fn() }))
+vi.mock('../services/elsewhere', () => ({ findElsewhere: vi.fn(), FAILED: 'ERROR' }))
 vi.mock('../selectors/accounts', () => ({
   selectActiveAccountId: () => 'acct',
   // One sign-in: a row is its account's own id.

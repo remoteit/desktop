@@ -5,7 +5,7 @@ import { getDevices } from '../selectors/devices'
 import { RowSaid, rowSaid, selectActiveAccountId } from '../selectors/accounts'
 import { asRow, rowGone, selectRowOf } from '../selectors/signIns'
 import { RowKey, rowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
-import { findElsewhere } from '../services/elsewhere'
+import { FAILED, findElsewhere } from '../services/elsewhere'
 import { graphQLSetJob, graphQLStartJob, graphQLCancelJob, graphQLDeleteJob } from '../services/graphQLMutation'
 import { jobRunOptionFields, JobRunOptions, parseJobRunOptions } from '../services/jobRunOptions'
 import { AxiosResponse } from 'axios'
@@ -96,7 +96,8 @@ export default createModel<RootModel>()({
           byAccount: true,
           read: async (id, requestFor) => {
             const answer = await graphQLJobs({ accountId: id, ids: [jobId], requestFor })
-            const theirs: IJob[] = answer === 'ERROR' ? [] : await dispatch.jobs.parse(answer)
+            if (answer === 'ERROR') return FAILED
+            const theirs: IJob[] = await dispatch.jobs.parse(answer)
             return theirs.length ? theirs : undefined
           },
         })
@@ -231,7 +232,8 @@ export default createModel<RootModel>()({
       if (result.kind === 'ok' && result.data.zipTooBig) {
         dispatch.ui.set({
           errorMessage: i18n.t('notices:job.zipTooBig', {
-            defaultValue: 'This run has too many devices for one download. Download each device’s log from its own page.',
+            defaultValue:
+              'This run has too many devices for one download. Download each device’s log from its own page.',
           }),
         })
         return false

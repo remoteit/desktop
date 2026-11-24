@@ -7,7 +7,7 @@ import { graphQLDeleteFile, graphQLModifyFile } from '../services/graphQLMutatio
 import { RowSaid, rowSaid, selectActiveAccountId } from '../selectors/accounts'
 import { asRow, rowGone, selectRowOf } from '../selectors/signIns'
 import { RowKey, rowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
-import { findElsewhere } from '../services/elsewhere'
+import { FAILED, findElsewhere } from '../services/elsewhere'
 import { RootModel } from '.'
 import { postFile } from '../services/post'
 import { get } from '../services/get'
@@ -85,7 +85,7 @@ export default createModel<RootModel>()({
           byAccount: true,
           read: async (id, requestFor) => {
             const answer = await graphQLFiles(id, [fileId], requestFor)
-            return answer === 'ERROR' ? undefined : (await dispatch.files.parse(answer))?.[0]
+            return answer === 'ERROR' ? FAILED : (await dispatch.files.parse(answer))?.[0]
           },
         })
         if (found)
@@ -248,7 +248,10 @@ export default createModel<RootModel>()({
     setSizes(state, { row, sizes }: { row: RowKey; sizes: ILookup<number> }) {
       const files = state.all[row]
       if (!files) return state
-      state.all = { ...state.all, [row]: files.map(file => (file.id in sizes ? { ...file, storedSize: sizes[file.id] } : file)) }
+      state.all = {
+        ...state.all,
+        [row]: files.map(file => (file.id in sizes ? { ...file, storedSize: sizes[file.id] } : file)),
+      }
       return state
     },
     setRow(state, { row, files }: { row: RowKey; files: IFile[] }) {

@@ -24,7 +24,7 @@ import { registrationCodesToRetire } from '../helpers/productCredentials'
 import { rowSaid, selectRow } from '../selectors/accounts'
 import { asRow, rowGone } from '../selectors/signIns'
 import { RowKey, rowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
-import { findElsewhere } from '../services/elsewhere'
+import { FAILED, findElsewhere } from '../services/elsewhere'
 import { State } from '../store'
 
 export interface IProductService {
@@ -192,7 +192,7 @@ export default createModel<RootModel>()({
           byAccount: true,
           read: async (of, requestFor) => {
             const answer = await graphQLDeviceProduct(id, of, requestFor)
-            return answer === 'ERROR' ? undefined : answer?.data?.data?.login?.account?.deviceProducts?.items?.[0]
+            return answer === 'ERROR' ? FAILED : answer?.data?.data?.login?.account?.deviceProducts?.items?.[0]
           },
         })
         if (found) {
