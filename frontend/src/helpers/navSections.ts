@@ -146,7 +146,7 @@ export const NAV_PAGES: Record<NavPageId, NavPage> = {
   },
   organization: {
     label: t => t('nav.organization', 'Organization'),
-    icon: 'users',
+    icon: 'sitemap',
     to: '/organization',
     segments: ['organization', 'organization-empty'],
     roots: ['/organization', '/organization-empty'],
