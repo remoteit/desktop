@@ -47,24 +47,7 @@ describe('GuideBubble', () => {
     act(async () => root.render(<ThemeProvider theme={theme}>{bubbles}</ThemeProvider>))
   const runTimers = () => act(async () => vi.runAllTimers())
 
-  it("keeps its own button presses from reaching the element it's anchored inside", async () => {
-    const parentClick = vi.fn()
-    await render(
-      <button onClick={parentClick}>
-        <GuideBubble guide="tour" added={new Date()} instructions="Meet the tour">
-          <span>anchor</span>
-        </GuideBubble>
-      </button>
-    )
-    await runTimers()
-
-    const ok = Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Ok')
-    act(() => ok!.click())
-
-    expect(pop).toHaveBeenCalledWith('tour')
-    expect(parentClick).not.toHaveBeenCalled()
-  })
-
+  // First, while no bubble has been picked yet: the pick must still go by age, not mount order
   it('opens one bubble at a time, oldest tour first', async () => {
     const page = () => (
       <>
@@ -83,6 +66,24 @@ describe('GuideBubble', () => {
     state.ui.poppedBubbles = ['welcome']
     await render(page())
     expect(shown()).toEqual([expect.stringContaining('Chat tour')])
+  })
+
+  it("keeps its own button presses from reaching the element it's anchored inside", async () => {
+    const parentClick = vi.fn()
+    await render(
+      <button onClick={parentClick}>
+        <GuideBubble guide="tour" added={new Date()} instructions="Meet the tour">
+          <span>anchor</span>
+        </GuideBubble>
+      </button>
+    )
+    await runTimers()
+
+    const ok = Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Ok')
+    act(() => ok!.click())
+
+    expect(pop).toHaveBeenCalledWith('tour')
+    expect(parentClick).not.toHaveBeenCalled()
   })
 
   it("continues the dismissed bubble's own tour before starting another", async () => {

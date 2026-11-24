@@ -100,8 +100,8 @@ const pickActive = (): Registration | undefined => {
   return successor || ready.sort((a, b) => a.added - b.added)[0]
 }
 
-// Picked once per commit: choosing per effect let whichever bubble's effect ran first win, so a
-// "Reset interactive guides" (every bubble ready at once) opened the chat tour over the welcome guide.
+// Picked once per commit: picking per effect lets whichever bubble's effect runs first win, so after
+// "Reset interactive guides" (every bubble ready at once) the chat tour opens over the welcome guide.
 let pickScheduled = false
 const notifyBubbles = () => {
   if (pickScheduled) return
@@ -182,9 +182,9 @@ export const GuideBubble: React.FC<Props> = ({
   const eligible = !hide && !poppedBubbles.includes(guide) && !expired && !hideForSidebar
   const ready = eligible && !waiting && !queued
 
+  const addedAt = added.getTime()
   // Registered from an effect rather than during render: the Set is module state
   // shared with every other bubble, and a render can be discarded.
-  const addedAt = added.getTime()
   const registration = React.useRef<Registration>({ guide, queueAfter, added: addedAt, eligible, ready }).current
 
   React.useEffect(() => {
