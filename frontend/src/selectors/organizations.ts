@@ -6,6 +6,7 @@ import {
   getUser,
   getUserId,
   getOrganizations,
+  getMemberships,
   getPlans,
   getLimitsOverride,
   getPlansTests,
@@ -51,9 +52,27 @@ export const selectOrganizationOptions = createSelector(
       .sort(byName)
 )
 
-/** The switcher's rows that the page's own person's sign-in serves: what a page about that one person lists. */
-export const selectPrimaryOrganizationOptions = createSelector([selectOrganizationOptions], options =>
-  options.filter(option => !option.via)
+/** The organizations the page's own person belongs to, in their own role there: what a page about that one person
+ *  lists (their notifications, the device they register). Their memberships, not the switcher's rows: another
+ *  sign-in picked to serve a row does not end their membership, nor make its role theirs. */
+export const selectPrimaryOrganizationOptions = createSelector(
+  [getMemberships, getOrganizations],
+  (memberships, organizations) =>
+    memberships
+      .map(m => {
+        const org = organizations[m.account.id] || defaultState
+        return {
+          id: m.account.id,
+          email: m.account.email,
+          name: org.name || m.name,
+          roleId: m.roleId,
+          roleName: m.roleName,
+          disabled: !org.id,
+          // Registration requires MANAGE (selectCanRegister), here by the person's own role.
+          canRegister: !!org.roles?.find(r => r.id === m.roleId)?.permissions?.includes('MANAGE'),
+        }
+      })
+      .sort(byName)
 )
 
 export const selectOrganizationName = createSelector(

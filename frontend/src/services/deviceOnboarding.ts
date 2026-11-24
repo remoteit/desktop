@@ -1,14 +1,24 @@
 import { graphQLRequestWithReason } from './graphQL'
+import type { RequestFor } from '../selectors/signIns'
 
 // Share the same permission check as command-line registration. Phones retain their
 // existing client-only setup and user-mode grant for the signed-in person.
-export async function createAppRegistration(accountId: string, name: string, platform: number, mobile: boolean) {
+// `requestFor`, here and for the permission check: whose registration it is, where that is not the sign-in serving
+// the account's row — this machine's, by the page's own person.
+export async function createAppRegistration(
+  accountId: string,
+  name: string,
+  platform: number,
+  mobile: boolean,
+  requestFor?: RequestFor
+) {
   const result = await graphQLRequestWithReason(
     'query AppRegistration($id: String!, $name: String!, $platform: Int, $mobile: Boolean!) {' +
       ' login { account(id: $id) {' +
       ' registrationCode(name: $name, platform: $platform, oneTimeUse: true, unique: true, clientOnly: $mobile, userMode: $mobile)' +
       ' } } }',
-    { id: accountId, name, platform, mobile }
+    { id: accountId, name, platform, mobile },
+    requestFor
   )
   if (result === 'ERROR') throw new Error('Remote.It could not be reached.')
   if ('reason' in result) throw new Error(result.reason)
@@ -41,10 +51,11 @@ export async function readDeviceSetupAccount(handle: string) {
   return typeof accountId === 'string' ? accountId : undefined
 }
 
-export async function verifyDeviceRegistrationAccount(accountId: string) {
+export async function verifyDeviceRegistrationAccount(accountId: string, requestFor?: RequestFor) {
   const result = await graphQLRequestWithReason(
     'query DeviceRegistrationPermission($id: String!) { login { account(id: $id) { canRegisterDevice } } }',
-    { id: accountId }
+    { id: accountId },
+    requestFor
   )
   if (result === 'ERROR') throw new Error('Remote.It could not be reached.')
   if ('reason' in result) throw new Error(result.reason)

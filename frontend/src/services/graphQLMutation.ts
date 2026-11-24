@@ -511,12 +511,16 @@ export async function graphQLNotificationSettings(params: INotificationSetting) 
   )
 }
 
+// The page's own person's setting for one of their organizations — as them outright: the organization's id alone
+// names whichever sign-in serves its row, and it is their settings that are read beside it.
 export async function graphQLSetOrganizationNotificationSettings(organizationId: string, pushNotifications: boolean | null) {
   return await graphQLBasicRequest(
     ` mutation SetOrganizationNotificationSettings($organizationId: ID!, $pushNotifications: Boolean) {
         setOrganizationNotificationSettings(organizationId: $organizationId, pushNotifications: $pushNotifications)
       }`,
-    { organizationId, pushNotifications }
+    { organizationId, pushNotifications },
+    false,
+    { sub: '' }
   )
 }
 

@@ -7,8 +7,7 @@ import { DeviceStatus, ThisDevice } from '../../services/thisDevice'
 const { create, read } = vi.hoisted(() => ({ create: vi.fn(), read: vi.fn() }))
 vi.mock('../../services/deviceOnboarding', () => ({ createAppRegistration: create, readDeviceSetupAccount: read }))
 vi.mock('../../selectors/organizations', () => ({
-  selectOrganizationOptions: () => [{ id: 'work', name: 'Acme', disabled: false }],
-  selectCanRegister: () => true,
+  selectPrimaryOrganizationOptions: () => [{ id: 'work', name: 'Acme', disabled: false, canRegister: true }],
 }))
 vi.mock('react-redux', async importOriginal => ({
   ...(await importOriginal<object>()),
@@ -45,7 +44,7 @@ it('carries the browser account into onboarding and only registers on confirmati
 
     await act(async () => button('Add this device').click())
     await act(async () => button('Add device').click())
-    expect(create).toHaveBeenCalledWith('work', 'Laptop', 1232, false)
+    expect(create).toHaveBeenCalledWith('work', 'Laptop', 1232, false, { sub: '' })
     expect(call).toHaveBeenCalledWith('device.register', {
       code: 'registration-code',
       name: 'Laptop',
@@ -78,7 +77,7 @@ it('requests a fresh code when resuming a phone’s saved setup', async () => {
     expect(create).not.toHaveBeenCalled()
     const add = [...document.querySelectorAll('button')].find(button => button.textContent === 'Add device')!
     await act(async () => add.click())
-    expect(create).toHaveBeenCalledWith('work', 'Phone', 1213, true)
+    expect(create).toHaveBeenCalledWith('work', 'Phone', 1213, true, { sub: '' })
     expect(call).toHaveBeenCalledWith('device.register', {
       code: 'new-registration-code',
       name: 'Phone',

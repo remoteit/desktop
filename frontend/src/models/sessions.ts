@@ -22,16 +22,20 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(_: void, state) {
       const ids: string[] = getAccountIds(state)
-      // One request per sign-in, each about the accounts it serves.
+      // One request per sign-in, each about the accounts it serves. A sign-in that could not be asked this time
+      // keeps the sessions known for its accounts: a failed read says nothing of them, least of all that they ended.
+      const unanswered: string[] = []
       const answers = await Promise.all(
         accountIdsBySignIn(state, ids).map(async ([sub, own]) => {
           const result = await graphQLFetchSessions(own, { sub })
-          return result === 'ERROR' ? undefined : dispatch.sessions.parse({ result, ids: own })
+          if (result !== 'ERROR') return dispatch.sessions.parse({ result, ids: own })
+          unanswered.push(...own)
         })
       )
       if (answers.every(answer => !answer)) return
 
-      const all = answers.flatMap(answer => answer || [])
+      const kept = state.sessions.all.filter(session => unanswered.includes(session.target.accountId))
+      const all = [...answers.flatMap(answer => answer || []), ...kept]
       console.log('SESSIONS', all)
       dispatch.sessions.updatePublicConnections(all)
       dispatch.sessions.set({ all })

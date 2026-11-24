@@ -412,8 +412,8 @@ export const duplicateCopies = (accountId: string): DuplicateCopy[] | undefined 
 
 // Those the reader may manage: another sign-in serving the account reads its own (services/accountCaches).
 accountCache(accountIds => {
-  if (!accountIds.some(id => copies.delete(id))) return
-  notify()
+  const dropped = accountIds.filter(id => copies.delete(id))
+  if (dropped.length) notify()
 })
 
 // Each original's copies as read by it (Device.copies), a new map each time one is read.

@@ -5,7 +5,7 @@ vi.mock('../services/browser', () => ({ default: {}, getLocalStorage: vi.fn() })
 vi.mock('../models/plans', () => ({ REMOTEIT_PRODUCT_ID: 'remoteit' }))
 vi.mock('../models/organization', () => ({ defaultState: { id: '', name: '' } }))
 
-import { selectOrganizationOptions, selectUserLimitsLookup } from './organizations'
+import { selectOrganizationOptions, selectPrimaryOrganizationOptions, selectUserLimitsLookup } from './organizations'
 
 const member = (id: string, name: string) => ({ account: { id, email: `${id}@example.com` }, name, roleName: 'Member' })
 
@@ -19,6 +19,54 @@ describe('selectOrganizationOptions', () => {
     expect(selectOrganizationOptions(state).map(o => [o.name, o.disabled])).toEqual([
       ['Beta', false],
       ['Cat Demo', true],
+    ])
+  })
+})
+
+/* The page's own person belongs to Acme as an Admin; so does Work, signed in beside them, as a Guest — and Work is the
+   one picked to serve Acme's row ("Open as"). */
+describe('selectPrimaryOrganizationOptions', () => {
+  const state: any = {
+    auth: { user: { id: 'me' } },
+    user: { id: 'me', email: 'me@example.com' },
+    accounts: {
+      membership: [{ ...member('acme', 'Acme'), roleId: 'ADMIN', roleName: 'Admin' }],
+      signIns: {
+        'sub-work': {
+          sub: 'sub-work',
+          id: 'work',
+          email: 'work@example.com',
+          membership: [
+            { ...member('acme', 'Acme'), roleId: 'GUEST', roleName: 'Guest' },
+            { ...member('labs', 'Labs'), roleId: 'ADMIN', roleName: 'Admin' },
+          ],
+        },
+      },
+      via: { acme: 'sub-work' },
+    },
+    organization: {
+      accounts: {
+        acme: {
+          id: 'acme',
+          name: 'Acme',
+          roles: [
+            { id: 'ADMIN', permissions: ['VIEW', 'MANAGE'] },
+            { id: 'GUEST', permissions: ['VIEW'] },
+          ],
+        },
+        labs: { id: 'labs', name: 'Labs', roles: [{ id: 'ADMIN', permissions: ['MANAGE'] }] },
+      },
+    },
+  }
+
+  it('lists the organizations the person belongs to, in their own role, whichever sign-in serves each row', () => {
+    // The row is the other sign-in's to serve, in its role.
+    expect(selectOrganizationOptions(state).find(o => o.id === 'acme')).toMatchObject({
+      roleName: 'Guest',
+      via: { sub: 'sub-work' },
+    })
+    expect(selectPrimaryOrganizationOptions(state)).toEqual([
+      expect.objectContaining({ id: 'acme', name: 'Acme', roleName: 'Admin', disabled: false, canRegister: true }),
     ])
   })
 })
