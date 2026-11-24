@@ -327,11 +327,14 @@ export default createModel<RootModel>()({
       const accountId = typeof row === 'string' ? row : row.accountId
       const before = selectActiveAccountId(state)
       await dispatch.logs.reset()
-      if (accountId !== before) await dispatch.ui.set({ selected: [], selectionAnchor: undefined })
       // The row selected: the account, under the sign-in said; with none said, the row it is looked at through — the
       // selected one where it is selected already, else the page's own person's where they belong to it, else the
       // first sign-in's that does (selectors/signIns selectAccountRoutes).
       const sub = typeof row === 'string' ? selectSignInSub(state, accountId) || '' : row.sub
+      // What was ticked is the row's left: another account's, or the same account's under another sign-in, whose list
+      // may not have those devices — a change made to the selection would be to devices no longer shown.
+      if (accountId !== before || sub !== selectActiveSub(state))
+        await dispatch.ui.set({ selected: [], selectionAnchor: undefined })
       // Its runs where the row left had them read and this one's never were: the runs page is not opened again by a
       // change of row alone.
       const runs = accountId === before && !!state.jobs?.all?.[selectRowOf(state, accountId)]

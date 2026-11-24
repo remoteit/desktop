@@ -53,5 +53,8 @@ export async function findStoredNetworkElsewhere(networkId: string): Promise<boo
       return networks.some(network => network.id === networkId) || undefined
     },
   })
+  // The row found is the one selected by now, and may have had its networks read before this one was there (made or
+  // shared since): selecting it reads only a row with none, so they are read again here, for the page to find it.
+  if (found) await store.dispatch.networks.fetch()
   return !!found
 }

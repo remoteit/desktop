@@ -54,6 +54,13 @@ describe('the device selection belongs to the account it was made in', () => {
     expect(dispatch.ui.set).not.toHaveBeenCalled()
   })
 
+  // The same account under another sign-in is another row: its list may not have what was ticked.
+  it('is cleared when select() is given the active account under another sign-in', async () => {
+    const { dispatch, order } = await run('select', { accountId: 'ORG-A', sub: 'sub-work' })
+    expect(dispatch.ui.set).toHaveBeenCalledWith(CLEARED)
+    expect(order).toEqual(['ui.set', 'accounts.set'])
+  })
+
   it('is cleared before parse() drops an organization the user has left', async () => {
     const { dispatch, order } = await run('parse', { data: { data: { login: { membership: [] } } } })
     expect(dispatch.ui.set).toHaveBeenCalledWith(CLEARED)

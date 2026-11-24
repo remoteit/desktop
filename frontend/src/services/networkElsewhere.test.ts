@@ -3,14 +3,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 /* A network's page opened at its address, the network not among those of the row looked at: each other row's list is
    read as that row's sign-in, and the first that has it is selected (services/networkElsewhere, services/elsewhere). */
 
-const { state, selectAs, deviceNetworks, preloadNetworks } = vi.hoisted(() => ({
+const { state, selectAs, fetchNetworks, deviceNetworks, preloadNetworks } = vi.hoisted(() => ({
   state: {} as Record<string, any>,
   selectAs: vi.fn(),
+  fetchNetworks: vi.fn(),
   deviceNetworks: vi.fn(),
   preloadNetworks: vi.fn(),
 }))
 // A new object each time, as the store's is after any change: what is worked out of it is not kept across tests.
-vi.mock('../store', () => ({ store: { getState: () => ({ ...state }), dispatch: { accounts: { selectAs } } } }))
+vi.mock('../store', () => ({
+  store: { getState: () => ({ ...state }), dispatch: { accounts: { selectAs }, networks: { fetch: fetchNetworks } } },
+}))
 vi.mock('./graphQLDeviceNetworks', () => ({ graphQLDeviceNetworks: deviceNetworks }))
 vi.mock('./graphQLRequest', () => ({ graphQLPreloadNetworks: preloadNetworks }))
 
@@ -122,6 +125,16 @@ describe('what is found', () => {
       row: rowKey('labs', WORK),
       networks: [{ id: 'net-labs' }],
     })
+  })
+
+  // The row found may have read its networks before this one was there: selecting it reads only a row with none.
+  it('has the found row’s networks read again into the store, for the classic pages to find it', async () => {
+    fetchNetworks.mockClear()
+    expect(await findStoredNetworkElsewhere('net-labs')).toBe(true)
+    expect(fetchNetworks).toHaveBeenCalledTimes(1)
+    fetchNetworks.mockClear()
+    expect(await findStoredNetworkElsewhere('net-nowhere')).toBe(false)
+    expect(fetchNetworks).not.toHaveBeenCalled()
   })
 
   it('is never one of the built-in groups of the classic pages', async () => {
