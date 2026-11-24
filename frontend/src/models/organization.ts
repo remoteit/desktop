@@ -164,13 +164,11 @@ export default createModel<RootModel>()({
         })
       )
       if (answers.every(answer => !answer)) return
+      // What was answered goes in beside what is stored, as it is THEN — not over the whole of it as it was when
+      // this was asked: another reading that overlaps this one (new rows, read at once) keeps what it found.
       const accounts: IOrganizationAccountState['accounts'] = Object.assign({}, ...answers)
-      ids.forEach(id => {
-        if (!accounts[id] && state.organization.accounts[id]) accounts[id] = state.organization.accounts[id]
-      })
       console.log('ORGANIZATION FETCH', accounts)
-      if (accounts) await dispatch.organization.set({ accounts, initialized: true })
-      else await dispatch.organization.clearActive()
+      await dispatch.organization.merge(accounts)
     },
 
     async fetchGuests(_: void, state) {
@@ -438,6 +436,12 @@ export default createModel<RootModel>()({
   reducers: {
     set(state: IOrganizationAccountState, params: Partial<IOrganizationAccountState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
+      return state
+    },
+    /** Accounts as just read, beside those stored: the rest stay as they are. */
+    merge(state: IOrganizationAccountState, accounts: IOrganizationAccountState['accounts']) {
+      state.accounts = { ...state.accounts, ...accounts }
+      state.initialized = true
       return state
     },
     reset(state: IOrganizationAccountState) {

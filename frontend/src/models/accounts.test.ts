@@ -313,6 +313,33 @@ describe('the sign-ins beside the page’s own person', () => {
     expect(dispatch.jobs.fetch.mock.calls).toEqual([[{ accountId: 'acme' }]])
   })
 
+  it('are written by the last reading asked for alone: an older one answered late does not take a new account away', async () => {
+    const third = { sub: 'sub-third', id: 'third', email: 'third@x.test', membership: [] }
+    const answers: Record<string, (value: unknown) => void> = {}
+    graphQLBasicRequest
+      .mockReset()
+      .mockImplementation(
+        (_query: string, _variables: object, _silent: boolean, { sub }: { sub: string }) =>
+          new Promise(resolve => (answers[sub] ??= resolve))
+      )
+    const { dispatch, run } = effectsWith(signedIn({ 'sub-work': work }))
+    inUse('sub-work')
+    const older = run('fetchSignIns')
+    const slow = answers['sub-work']
+    delete answers['sub-work']
+    // Another account is brought into use, and read with the first.
+    inUse('sub-work', 'sub-third')
+    const newer = run('fetchSignIns')
+    answers['sub-work'](answer('work', ['labs']))
+    answers['sub-third'](answer('third', []))
+    await newer
+    slow(answer('work', ['labs']))
+    await older
+    expect(dispatch.accounts.setSignIns).toHaveBeenCalledTimes(1)
+    expect(Object.keys(dispatch.accounts.setSignIns.mock.calls[0][0])).toEqual(['sub-work', 'sub-third'])
+    expect(third.sub).toBe('sub-third')
+  })
+
   it('do not put back one that signed out while it was being asked', async () => {
     inUse('sub-work')
     graphQLBasicRequest.mockReset().mockImplementation(async () => {

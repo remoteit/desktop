@@ -103,6 +103,7 @@ export type OfferedExit = Pick<Exit, 'id' | 'name' | 'remoteit' | 'location' | '
   serving?: ExitServing | null
 }
 
+// With no device, the query names nothing: asked as the selected account's sign-in, whose offer it lists.
 export const graphQLOfferedExits = async (deviceId?: string) =>
   read<OfferedExit[]>(
     `query OfferedExits($deviceId: String) {
@@ -110,7 +111,8 @@ export const graphQLOfferedExits = async (deviceId?: string) =>
     }`,
     { deviceId },
     'exits',
-    data => data?.exits ?? []
+    data => data?.exits ?? [],
+    deviceId ? undefined : { account: selectedAccountId(store.getState()) }
   )
 
 // One exit, with the networks it is offered on: one you manage, or one you see — shared with you, or reached by your

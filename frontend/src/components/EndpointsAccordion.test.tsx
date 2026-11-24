@@ -5,45 +5,49 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // Making an endpoint: the proxy choice defaults to remote.it's nearest the device, which shows its name like any other
 // choice and sends no proxy; a proxy chosen — remote.it's by its name and where, an own one by its name and host, and a
 // local network one marked so — is sent by its id.
-const { create, endpoints, usage } = vi.hoisted(() => ({
+const { create, endpoints, usage, choicesFor } = vi.hoisted(() => ({
+  choicesFor: vi.fn(),
   create: vi.fn(async () => ({} as any)),
   endpoints: vi.fn(async () => [] as any),
   usage: vi.fn(async (_accountId?: string) => [] as any),
 }))
 vi.mock('../services/graphQLProxy', () => ({
   graphQLServiceEndpoints: endpoints,
-  graphQLProxies: async () => [
-    {
-      id: 'P1',
-      name: 'remote.it pdx1a',
-      host: 'pdx1a-r3.solo.r3proxy.com',
-      remoteit: true,
-      local: false,
-      publicEndpoints: true,
-      location: 'pdx1',
-      provider: 'AWS us-west-2 (Boardman)',
-    },
-    {
-      id: 'P2',
-      name: 'Office gateway',
-      host: 'gw-acme.solo.r3proxy.com',
-      remoteit: false,
-      local: false,
-      publicEndpoints: true,
-      location: null,
-      provider: '',
-    },
-    {
-      id: 'P3',
-      name: 'Printers',
-      host: 'printers-acme.solo.r3proxy.com',
-      remoteit: false,
-      local: true,
-      publicEndpoints: true,
-      location: null,
-      provider: '',
-    },
-  ],
+  graphQLProxies: async (requestFor?: unknown) => (
+    choicesFor(requestFor),
+    [
+      {
+        id: 'P1',
+        name: 'remote.it pdx1a',
+        host: 'pdx1a-r3.solo.r3proxy.com',
+        remoteit: true,
+        local: false,
+        publicEndpoints: true,
+        location: 'pdx1',
+        provider: 'AWS us-west-2 (Boardman)',
+      },
+      {
+        id: 'P2',
+        name: 'Office gateway',
+        host: 'gw-acme.solo.r3proxy.com',
+        remoteit: false,
+        local: false,
+        publicEndpoints: true,
+        location: null,
+        provider: '',
+      },
+      {
+        id: 'P3',
+        name: 'Printers',
+        host: 'printers-acme.solo.r3proxy.com',
+        remoteit: false,
+        local: true,
+        publicEndpoints: true,
+        location: null,
+        provider: '',
+      },
+    ]
+  ),
   graphQLCreateEndpoint: create,
   graphQLRemoveEndpoint: vi.fn(),
   // As graphQLProxy's own: graphql's url, a tcp or udp one's without its scheme.
@@ -108,6 +112,12 @@ describe('the endpoint form’s proxy choice', () => {
     const field = proxyField(await openForm())
     expect(field.querySelector('.MuiSelect-select')?.textContent).toBe(NEAREST)
     expect(field.querySelector('label')?.getAttribute('data-shrink')).toBe('true')
+  })
+
+  it('is read as the service’s own sign-in: the proxies of whoever the endpoint is then made as', async () => {
+    choicesFor.mockClear()
+    await openForm()
+    expect(choicesFor).toHaveBeenCalledWith({ about: ['SERVICE'] })
   })
 
   it('sends no proxy for the nearest choice', async () => {

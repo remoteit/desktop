@@ -84,6 +84,9 @@ const SIGN_IN_QUERY = ` query SignIn {
     }
   }`
 
+// Each reading of the further sign-ins, counted: only the last one asked for writes what it found (fetchSignIns).
+let signInsRead = 0
+
 export default createModel<RootModel>()({
   state: { ...accountsState },
   effects: dispatch => ({
@@ -143,6 +146,7 @@ export default createModel<RootModel>()({
        switcher, and requests about them are made as it. A sign-in no longer in use loses its rows and what was
        stored for them; one that could not be asked this time keeps what was known. */
     async fetchSignIns(_: void, state) {
+      const read = ++signInsRead
       const others = oidcSignIns().filter(signIn => !signIn.primary)
       if (!others.length && !Object.keys(getSignIns(state)).length) return
       const known = getSignIns(state)
@@ -159,6 +163,9 @@ export default createModel<RootModel>()({
           }
         })
       )
+      // Asked again since (an account brought into use meanwhile): that reading has them all, and is the one kept —
+      // this one's answers, of fewer accounts, would take the new one's rows and what is stored for them away.
+      if (read !== signInsRead) return
       // Asked of the sign-ins as they are now: one that left while the answers came is not put back.
       const inUse = new Set(oidcSignIns().map(signIn => signIn.sub))
       const signIns: ILookup<ISignIn> = {}

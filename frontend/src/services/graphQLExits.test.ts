@@ -163,6 +163,26 @@ describe('an exit’s page opened at its address', () => {
   })
 })
 
+describe('the exits offered, asked with no device', () => {
+  it('are asked as the selected account’s sign-in — the query names nothing to say whose offer it is', async () => {
+    Object.assign(here, {
+      auth: { user: { id: 'ME' } },
+      accounts: {
+        activeId: 'WORK',
+        membership: [],
+        signIns: { 'sub-work': { sub: 'sub-work', id: 'WORK', email: '', membership: [] } },
+      },
+    })
+    request.mockResolvedValue(answer({ exits: [] }))
+    await graphQLOfferedExits()
+    expect(request.mock.calls.at(-1)![0].headers.authorization).toBe('token-of:sub-work')
+    here.accounts = { ...here.accounts, activeId: 'ME' }
+    await graphQLOfferedExits()
+    expect(request.mock.calls.at(-1)![0].headers.authorization).toBe('token')
+    Object.keys(here).forEach(key => delete here[key])
+  })
+})
+
 describe('an account’s exits', () => {
   it('are each remembered as that account’s: asked of by its id alone, an exit is asked as the sign-in serving it', async () => {
     const signedIn: any = {

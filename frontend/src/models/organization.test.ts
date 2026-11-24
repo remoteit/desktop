@@ -29,7 +29,7 @@ import organization from './organization'
 
 describe('organization.fetch', () => {
   it('applies the orgs that resolved and keeps what the failed ones had', async () => {
-    const dispatch: any = { organization: { set: vi.fn() } }
+    const dispatch: any = { organization: { merge: vi.fn() } }
     const effects = (organization as any).effects(dispatch)
     dispatch.organization.parse = (params: any) => effects.parse(params)
     graphQLFetchOrganizations.mockImplementation(async (ids: string[]) =>
@@ -64,10 +64,14 @@ describe('organization.fetch', () => {
     const loaded = { id: 'org-b', name: 'Press Demo' }
     await effects.fetch(undefined, { organization: { accounts: { 'org-b': loaded } } })
 
-    const { accounts } = dispatch.organization.set.mock.calls[0][0]
-    expect(Object.keys(accounts).sort()).toEqual(['org-a', 'org-b', 'org-w', 'work'])
+    // Only what was answered is written, beside what is stored: what failed keeps what it had (the reducer below).
+    const [accounts] = dispatch.organization.merge.mock.calls[0]
+    expect(Object.keys(accounts).sort()).toEqual(['org-a', 'org-w', 'work'])
     expect(accounts['org-a'].name).toBe('Cat Demo')
-    expect(accounts['org-b']).toBe(loaded)
+    const merged = (organization as any).reducers.merge({ initialized: false, accounts: { 'org-b': loaded } }, accounts)
+    expect(Object.keys(merged.accounts).sort()).toEqual(['org-a', 'org-b', 'org-w', 'work'])
+    expect(merged.accounts['org-b']).toBe(loaded)
+    expect(merged.initialized).toBe(true)
     // Each sign-in is asked about the accounts it serves, in a request of its own.
     const asked = graphQLFetchOrganizations.mock.calls.map(([ids, requestFor]) => [ids, requestFor])
     expect(asked).toEqual([
@@ -79,6 +83,36 @@ describe('organization.fetch', () => {
 
 /* Work is signed in beside the page's own person and has no organization: its row is selected. A request that names
    no account is the page's own person's, so what is made or changed here names the selected account. */
+describe('organization.fetch — two readings that overlap', () => {
+  it('each keep what they found: the one asked first, answered last, does not take the newer rows away', async () => {
+    const stored = { initialized: true, accounts: {} as Record<string, any> }
+    const dispatch: any = {
+      organization: {
+        merge: (accounts: object) => Object.assign(stored, (organization as any).reducers.merge(stored, accounts)),
+      },
+    }
+    const effects = (organization as any).effects(dispatch)
+    dispatch.organization.parse = (params: any) => effects.parse(params)
+    const org = (id: string) => ({ organization: { id, name: id, created: '2026-01-01', members: [], roles: [] } })
+    const answers: ((value: unknown) => void)[] = []
+    graphQLFetchOrganizations.mockReset().mockImplementation(() => new Promise(resolve => answers.push(resolve)))
+    const state = { organization: { accounts: {} } }
+    const older = effects.fetch(undefined, state)
+    const newer = effects.fetch(undefined, state)
+    await vi.waitFor(() => expect(answers).toHaveLength(4))
+    const answered = (login: object) => ({ data: { data: { login } } })
+    // The newer reading answers first, with an organization the other sign-in has joined since the older was asked.
+    answers[2](answered({ _0: null, _1: org('org-a'), _2: null }))
+    answers[3](answered({ _0: null, _1: org('org-w') }))
+    await newer
+    expect(Object.keys(stored.accounts).sort()).toEqual(['org-a', 'org-w'])
+    answers[0](answered({ _0: null, _1: org('org-a'), _2: null }))
+    answers[1](answered({ _0: null, _1: null }))
+    await older
+    expect(Object.keys(stored.accounts).sort()).toEqual(['org-a', 'org-w'])
+  })
+})
+
 describe('an account with no organization yet', () => {
   const state = {
     auth: { user: { id: 'me' } },

@@ -60,7 +60,7 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
 
   useEffect(() => {
     if (adding && !proxies.length)
-      graphQLProxies().then(list => {
+      graphQLProxies({ about: [service.id] }).then(list => {
         if (Array.isArray(list)) setProxies(list)
       })
   }, [adding])

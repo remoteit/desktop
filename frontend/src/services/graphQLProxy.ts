@@ -147,12 +147,15 @@ export type ProxyChoice = Pick<
 >
 
 // The proxies you may make endpoints on, each run in service: remote.it's, your own, and those your role reaches.
-export const graphQLProxies = () =>
+// `requestFor`: whose choice it is — the service's an endpoint is made for; left out, the selected account's. The
+// query names nothing, and unsaid it would be the page's own person's proxies, whoever the endpoint is then made as.
+export const graphQLProxies = (requestFor?: RequestFor) =>
   read<ProxyChoice[]>(
     `query Proxies { proxies { ${CHOICE_FIELDS} } }`,
     {},
     'proxies',
-    data => data?.proxies ?? []
+    data => data?.proxies ?? [],
+    requestFor ?? { account: selectedAccountId(store.getState()) }
   )
 
 // An account's own proxies you manage, those no device runs too.
