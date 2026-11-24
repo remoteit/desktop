@@ -159,7 +159,7 @@ export default createModel<RootModel>()({
       // accounts as they were stored.
       const answers = await Promise.all(
         accountIdsBySignIn(state, ids).map(async ([sub, own]) => {
-          const result = await graphQLFetchOrganizations(own, { sub })
+          const result = await graphQLFetchOrganizations(own, { sub, about: own })
           return result === 'ERROR' ? undefined : dispatch.organization.parse({ result, ids: own })
         })
       )

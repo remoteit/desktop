@@ -139,12 +139,14 @@ export async function graphQLDeleteDevices(deviceId: string[]) {
   )
 }
 
-export async function graphQLUnShareDevice(params: IShareProps) {
+export async function graphQLUnShareDevice(params: IShareProps, requestFor?: RequestFor) {
   return await graphQLBasicRequest(
     ` mutation UnShare($deviceId: String!, $email: [String!]!) {
         share(deviceId: $deviceId, email: $email, action: REMOVE)
       }`,
-    params
+    params,
+    false,
+    requestFor
   )
 }
 

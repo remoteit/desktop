@@ -71,8 +71,8 @@ describe('organization.fetch', () => {
     // Each sign-in is asked about the accounts it serves, in a request of its own.
     const asked = graphQLFetchOrganizations.mock.calls.map(([ids, requestFor]) => [ids, requestFor])
     expect(asked).toEqual([
-      [['me', 'org-a', 'org-b'], { sub: '' }],
-      [['work', 'org-w'], { sub: 'sub-work' }],
+      [['me', 'org-a', 'org-b'], { sub: '', about: ['me', 'org-a', 'org-b'] }],
+      [['work', 'org-w'], { sub: 'sub-work', about: ['work', 'org-w'] }],
     ])
   })
 })

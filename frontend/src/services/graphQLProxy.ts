@@ -2,7 +2,8 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
-import { RequestFor, noteAccountOf } from '../selectors/signIns'
+import { RequestFor, isNoted, noteAccountOf, selectedAccountId } from '../selectors/signIns'
+import { store } from '../store'
 
 /* Proxies and their endpoints (graphql-api docs/PROXY-GROUPS.md §13 and §14, presence-server docs/proxy-plan.md): a
    proxy is reached at its name — its tcp and udp endpoints there, each at a port, and each https endpoint at a name of
@@ -124,8 +125,14 @@ const FIELDS = `${CHOICE_FIELDS} label localNetwork activation manage owner { id
 const LIST_FIELDS = `${FIELDS} ownName { name state via }`
 const PAGE_FIELDS = `${FIELDS} ownName { ${OWN_NAME_FIELDS} } endpoints { ${ENDPOINT_FIELDS} }`
 
-async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
-  const response = await post({ query, variables })
+async function read<T>(
+  query: string,
+  variables: ILookup<any>,
+  marker: string,
+  pick: (data: any) => T,
+  requestFor?: RequestFor
+) {
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return 'ERROR' as const
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, marker)) return UNSUPPORTED
@@ -166,13 +173,22 @@ export const graphQLAccountProxies = (accountId: string) =>
   )
 
 // One proxy, with its endpoints: one you manage, or one you may make endpoints on. None for another.
-export const graphQLProxy = (id: string) =>
-  read<Proxy | null>(
+// Where nothing read so far says whose the proxy is (the page opened at its address, before any list), the selected
+// account's sign-in is asked, and the proxy then remembered under it for what is asked of it next.
+export const graphQLProxy = (id: string) => {
+  const accountId = selectedAccountId(store.getState())
+  const unknown = !isNoted(id)
+  return read<Proxy | null>(
     `query Proxy($id: String!) { proxy(id: $id) { ${PAGE_FIELDS} } }`,
     { id },
     'proxy',
-    data => data?.proxy ?? null
+    data => {
+      if (data?.proxy && unknown) noteAccountOf(accountId, [id])
+      return data?.proxy ?? null
+    },
+    { orAccount: accountId }
   )
+}
 
 // Made in your account, or one you manage, under <label>-<slug> of the stage's proxy domain (the label made from the
 // name when none is given), Internet or Local network for good: then devices are added to run it.

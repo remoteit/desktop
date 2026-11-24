@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // `ui.offline` makes post answer ERROR before any request: how a failed request reaches the callers.
-const { uiSet, request, ui } = vi.hoisted(() => ({ uiSet: vi.fn(), request: vi.fn(), ui: {} as { offline?: boolean } }))
-vi.mock('../store', () => ({
-  store: { getState: () => ({ ui }), dispatch: { ui: { set: uiSet, deprecated: vi.fn() } } },
+const { uiSet, request, ui, here } = vi.hoisted(() => ({
+  uiSet: vi.fn(),
+  request: vi.fn(),
+  ui: {} as { offline?: boolean },
+  here: {} as Record<string, any>, // who is signed in, where a test says
 }))
-vi.mock('./remoteit', () => ({ apiRequest: vi.fn((_method, _url, send) => send({ authorization: 'token' })) }))
+vi.mock('../store', () => ({
+  store: { getState: () => ({ ui, ...here }), dispatch: { ui: { set: uiSet, deprecated: vi.fn() } } },
+}))
+vi.mock('./remoteit', () => ({
+  apiRequest: vi.fn((_method, _url, send, sub) => send({ authorization: sub ? `token-of:${sub}` : 'token' })),
+}))
 vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql' }))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request } }))
@@ -133,6 +140,26 @@ describe('a network’s exits', () => {
     request.mockResolvedValue(answer({ login: { account: null } }))
     const exits = await graphQLNetworkExits('ACCOUNT')
     expect(exits instanceof Map && exits.size).toBe(0)
+  })
+})
+
+describe('an exit’s page opened at its address', () => {
+  it('asks as the selected account’s sign-in, nothing read yet saying whose the exit is, and remembers it as theirs', async () => {
+    Object.assign(here, {
+      auth: { user: { id: 'ME' } },
+      accounts: {
+        activeId: 'WORK',
+        membership: [],
+        signIns: { 'sub-work': { sub: 'sub-work', id: 'WORK', email: '', membership: [] } },
+      },
+    })
+    request.mockResolvedValue(answer({ exit: { ...mac, id: 'xurl', networks: [] } }))
+    expect(await graphQLExit('xurl')).toMatchObject({ id: 'xurl' })
+    expect(request.mock.calls.at(-1)![0].headers.authorization).toBe('token-of:sub-work')
+    // What is asked of it next by its id alone goes the same way, whichever account is selected by then.
+    const state: any = { ...here, accounts: { ...here.accounts, activeId: 'ME' } }
+    expect(requestSignIn(state, undefined, { exit: 'xurl', name: 'renamed' })).toBe('sub-work')
+    Object.keys(here).forEach(key => delete here[key])
   })
 })
 

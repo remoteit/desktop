@@ -107,7 +107,7 @@ async function read(ids: string[], sub: string) {
   )}) { id subnetName actsFor { email } agent { running package { version format } update { version state detail }${upkeep} } services { id subnetName${
     withServiceNames ? ` subnetOwnName subnetPort${withNamePorts ? ' subnetPorts subnetDefaultLabel' : ''}` : ''
   } } } } }`
-  const response = await post({ query }, '', false, false, { sub })
+  const response = await post({ query }, '', false, false, { sub, about: ids })
   if (response !== 'ERROR') {
     if (withUpkeep && withoutDeviceSessions(response.data?.errors, 'howToUpdate')) {
       withUpkeep = false

@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios'
 import { getApiRestURL, getApiURL } from '../helpers/apiHelper'
 import { apiRequest } from './remoteit'
 import { store } from '../store'
-import { requestSignIn, RequestFor } from '../selectors/signIns'
+import { requestSignIn, requestServing, servingChanged, RequestFor } from '../selectors/signIns'
 import network from './Network'
 import sleep from '../helpers/sleep'
 
@@ -24,6 +24,8 @@ export async function post(
 ): Promise<AxiosResponse | 'ERROR'> {
   if (store.getState().ui.offline) return 'ERROR'
   const sub = requestSignIn(store.getState(), requestFor, data?.variables)
+  // A read: its answer is only good while the sign-ins that served its accounts still do (requestServing).
+  const serving = isRead(data?.query) ? requestServing(store.getState(), requestFor, data?.variables) : undefined
 
   // graphql at its URL; a REST route (a path) under the API's REST root (getApiRestURL: on the unified front, /api).
   const url = (path ? getApiRestURL() : getApiURL()) + path
@@ -38,18 +40,25 @@ export async function post(
       console.warn('Unable to get token for API request.', data)
       return 'ERROR'
     }
+    if (serving && servingChanged(store.getState(), serving)) {
+      console.log('POST ANSWER DROPPED: ASKED AS THE SIGN-IN BEFORE', { data, path })
+      return 'ERROR'
+    }
     return response
   } catch (error) {
     if (retry && droppedInFlight(error)) {
       console.warn('POST DROPPED, RETRYING', { data, path })
       await sleep(1000)
-      return await post(data, path, silent, false, { sub })
+      return await post(data, path, silent, false, { ...requestFor, sub })
     }
     console.error('POST ERROR', { data, path })
     await apiError(error, silent)
     return 'ERROR'
   }
 }
+
+// A graphql query, as against a mutation or a REST call: what only reads.
+const isRead = (query: unknown) => typeof query === 'string' && /^\s*(query\b|\{)/.test(query)
 
 // Chromium drops in-flight requests with ERR_NETWORK_CHANGED when the OS network shifts (as on the
 // relaunch after an update); axios sees only a Network Error with no response.

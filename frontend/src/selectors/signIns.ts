@@ -12,8 +12,10 @@ export type ISignIn = { sub: string; id: string; email: string; membership: IMem
 
 /** Whose request it is, said by the caller: the sign-in outright, the account it asks about, or the ids of what it
  *  is `about` — read as the variables' ids are, and instead of them: for a REST path, which has no variables, and for
- *  a request whose variables also name something of another account (this machine's device, for a local port). */
-export type RequestFor = { account?: string; sub?: string; about?: string[] }
+ *  a request whose variables also name something of another account (this machine's device, for a local port).
+ *  `orAccount`: the account to ask as when nothing known says whose the ids are — the selected one, for a page opened
+ *  at the address of something no list holds (an exit, a proxy), before any list that would say has been read. */
+export type RequestFor = { account?: string; sub?: string; about?: string[]; orAccount?: string }
 
 const NONE: ILookup<ISignIn> = {}
 const NO_CHOICE: ILookup<string> = {}
@@ -136,6 +138,11 @@ export function noteAccountOf(accountId: string | undefined, ids: (string | unde
   })
 }
 
+export const isNoted = (id: string) => noted.has(id)
+
+/** The selected account, read where no hook is: by a request that asks as it when nothing says whose its id is. */
+export const selectedAccountId = (state: State): string => state.accounts?.activeId || state.auth?.user?.id || ''
+
 // For tests.
 export const resetNotedAccounts = () => noted.clear()
 
@@ -155,6 +162,51 @@ const namedIds = (variables: ILookup<any> | undefined, nested = true): string[] 
 export const selectPersonFor = (state: State, about: (string | undefined)[]): string => {
   const sub = requestSignIn(state, { about: about.filter((id): id is string => !!id) })
   return (sub && getSignIns(state)[sub]?.id) || getUserId(state)
+}
+
+/** The person a sign-in serving an account is — their email: who "you" are in a request made about it (the share a
+ *  person leaves is theirs, not the page's own person's). */
+export const selectPersonEmailFor = (state: State, accountId?: string): string => {
+  const sub = selectSignInSub(state, accountId)
+  return (sub && getSignIns(state)[sub]?.email) || state.auth?.user?.email || ''
+}
+
+/* WHAT A READ WAS ASKED AS. A read answers for the sign-in that served its accounts when it was asked. If another
+   serves one of them by the time it answers (the person picked another, the one serving it left), the answer is the
+   sign-in before's — its role, what it may see — and what was stored of the account has been dropped to be read
+   again: the late answer must not put it back. So the accounts a request is about are taken with their sign-ins when
+   it is sent (requestServing) and looked at again when it answers (servingChanged); services/post turns a read that
+   has gone stale so into a failed one, which every model already leaves its stored data alone for.
+   The accounts: the one the caller or the variables name, and those holding what they name; with the sign-in said
+   outright (a request made once per sign-in), the accounts it says it is `about`. */
+export type Serving = [accountId: string, sub: string | undefined][]
+
+const NO_ACCOUNTS: Serving = []
+
+export function requestServing(state: State, requestFor?: RequestFor, variables?: ILookup<any>): Serving {
+  if (!state.accounts?.signIns || !Object.keys(state.accounts.signIns).length) return NO_ACCOUNTS
+  const routes = selectAccountRoutes(state)
+  const named = [
+    requestFor?.account,
+    requestFor?.orAccount,
+    variables?.accountId,
+    ...(requestFor?.about ?? namedIds(variables)),
+  ].filter((id): id is string => typeof id === 'string' && !!id)
+  if (!named.length) return NO_ACCOUNTS
+  const held = selectHeldIds(state)
+  const accounts = new Set<string>()
+  named.forEach(id => {
+    if (routes[id]) return accounts.add(id)
+    Object.keys(routes).forEach(accountId => held[accountId]?.has(id) && accounts.add(accountId))
+  })
+  return [...accounts].map(accountId => [accountId, routes[accountId].sub])
+}
+
+/** Whether an account a request was about is served by another sign-in now, or by none. */
+export const servingChanged = (state: State, serving: Serving): boolean => {
+  if (!serving.length) return false
+  const routes = selectAccountRoutes(state)
+  return serving.some(([accountId, sub]) => routes[accountId]?.sub !== sub)
 }
 
 /* The sign-in a request is made as. With one sign-in in use there is nothing to decide. Otherwise, in order: what
@@ -183,7 +235,7 @@ export function requestSignIn(state: State, requestFor?: RequestFor, variables?:
   if (other) return routes[other].sub
   // Noted under more than one account here (an exit of one, shared with another): in the same order of preference.
   const of = named.flatMap(id => [...(noted.get(id) || [])]).filter(accountId => routes[accountId])
-  if (!of.length) return undefined
+  if (!of.length) return requestFor?.orAccount ? routes[requestFor.orAccount]?.sub : undefined
   if (selected && of.includes(selected)) return routes[selected].sub
   return of.some(accountId => !routes[accountId].sub) ? undefined : routes[of[0]].sub
 }

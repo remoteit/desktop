@@ -12,7 +12,9 @@ const {
   requestDuplicateCopies,
   graphQLAddService,
   graphQLSetAttributes,
+  graphQLUnShareDevice,
 } = vi.hoisted(() => ({
+  graphQLUnShareDevice: vi.fn(),
   graphQLAddService: vi.fn(),
   graphQLSetAttributes: vi.fn(),
   graphQLFetchDeviceList: vi.fn(),
@@ -37,7 +39,7 @@ vi.mock('../services/deviceIdentity', () => ({
   graphQLMakeOriginal,
   requestDuplicateCopies,
 }))
-vi.mock('../services/graphQLMutation', () => ({ graphQLAddService, graphQLSetAttributes }))
+vi.mock('../services/graphQLMutation', () => ({ graphQLAddService, graphQLSetAttributes, graphQLUnShareDevice }))
 vi.mock('../services/graphQLRequest', () => ({}))
 vi.mock('../services/graphQLVirtualDevices', () => ({}))
 vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'acct' }))
@@ -308,5 +310,32 @@ describe('a service added to a device', () => {
     }
     expect(requestSignIn(signedIn, undefined, { serviceId: 'S-NEW' })).toBe('sub-work')
     resetNotedAccounts()
+  })
+})
+
+/* A device shared with Work, who is signed in beside the page's own person: Work leaves it. */
+describe('leaving a device shared with another sign-in', () => {
+  it('is asked as that person, of their own share, and takes it from their account’s list alone', async () => {
+    dispatch.ui = { set: vi.fn() }
+    dispatch.devices.cleanupFor = vi.fn()
+    dispatch.devices.cleanup = vi.fn()
+    graphQLUnShareDevice.mockResolvedValue({})
+    const state = {
+      ...stateWith(),
+      auth: { user: { id: 'me', email: 'me@x.test' } },
+      user: { id: 'me', email: 'me@x.test' },
+      accounts: {
+        membership: [],
+        signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+      },
+    }
+    await effects().leave({ id: 'D1', name: 'pi', accountId: 'work' }, state)
+    expect(graphQLUnShareDevice).toHaveBeenCalledWith({ deviceId: 'D1', email: ['work@x.test'] }, { account: 'work' })
+    expect(dispatch.devices.cleanupFor).toHaveBeenCalledWith({ ids: ['D1'], accountIds: ['work'] })
+    expect(dispatch.devices.cleanup).not.toHaveBeenCalled()
+
+    // The page's own person's share is left as them, as ever.
+    await effects().leave({ id: 'D2', name: 'pi', accountId: 'me' }, state)
+    expect(graphQLUnShareDevice).toHaveBeenLastCalledWith({ deviceId: 'D2', email: ['me@x.test'] }, { account: 'me' })
   })
 })

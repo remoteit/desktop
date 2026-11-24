@@ -27,7 +27,7 @@ export default createModel<RootModel>()({
       const unanswered: string[] = []
       const answers = await Promise.all(
         accountIdsBySignIn(state, ids).map(async ([sub, own]) => {
-          const result = await graphQLFetchSessions(own, { sub })
+          const result = await graphQLFetchSessions(own, { sub, about: own })
           if (result !== 'ERROR') return dispatch.sessions.parse({ result, ids: own })
           unanswered.push(...own)
         })

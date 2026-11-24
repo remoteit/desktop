@@ -54,7 +54,7 @@ import {
   deviceMatchesFilters,
 } from '../selectors/devices'
 import { selectActiveAccountId } from '../selectors/accounts'
-import { noteAccountOf } from '../selectors/signIns'
+import { noteAccountOf, selectPersonEmailFor } from '../selectors/signIns'
 import { selectLimit } from '../selectors/organizations'
 import { Duration } from 'luxon'
 import { AxiosResponse } from 'axios'
@@ -1033,15 +1033,18 @@ export default createModel<RootModel>()({
       return result.id
     },
 
+    /** The person the device is shared with leaves it: the one whose sign-in serves the account it is listed in —
+     *  asked as them, of their own share — and it goes from that account's list; another account here that has it
+     *  (its owner's, signed in beside them) keeps it. */
     async leave(device: IDevice, state) {
-      const { auth } = state
+      const accountId = device.accountId || selectActiveAccountId(state)
       dispatch.ui.set({ destroying: true, silent: device.id })
-      const result = await graphQLUnShareDevice({
-        deviceId: device.id,
-        email: [auth.user?.email || ''],
-      })
+      const result = await graphQLUnShareDevice(
+        { deviceId: device.id, email: [selectPersonEmailFor(state, accountId)] },
+        { account: accountId }
+      )
       if (result !== 'ERROR') {
-        await dispatch.devices.cleanup([device.id])
+        await dispatch.devices.cleanupFor({ ids: [device.id], accountIds: [accountId] })
         dispatch.ui.set({
           successMessage: i18n.t('notices:device.removed', {
             name: device.name,

@@ -7,7 +7,10 @@ vi.mock('../models/organization', () => ({ defaultState: { id: '', name: '' } })
 
 import {
   noteAccountOf,
+  requestServing,
   requestSignIn,
+  selectPersonEmailFor,
+  servingChanged,
   resetNotedAccounts,
   selectAccountRoutes,
   selectPersonFor,
@@ -183,6 +186,19 @@ describe('the sign-in a request is made as', () => {
     resetNotedAccounts()
   })
 
+  it('is the selected account’s, where the caller says so, for something nothing known says whose it is', () => {
+    resetNotedAccounts()
+    // An exit's page opened at its address: no list read yet.
+    expect(requestSignIn(state({ activeId: 'labs' }), undefined, { id: 'exit-9' })).toBeUndefined()
+    expect(requestSignIn(state({ activeId: 'labs' }), { orAccount: 'labs' }, { id: 'exit-9' })).toBe('sub-work')
+    expect(requestSignIn(state(), { orAccount: 'acme' }, { id: 'exit-9' })).toBeUndefined()
+    // What is known says first.
+    noteAccountOf('acme', ['exit-9'])
+    expect(requestSignIn(state({ activeId: 'labs' }), { orAccount: 'labs' }, { id: 'exit-9' })).toBeUndefined()
+    expect(requestSignIn(state(), { orAccount: 'labs' }, { deviceId: 'd-personal' })).toBeUndefined()
+    resetNotedAccounts()
+  })
+
   it('prefers the selected account, then any the primary serves, for something read under more than one', () => {
     resetNotedAccounts()
     // An exit of Acme's, shared with Labs: listed for Labs first, then for Acme.
@@ -227,5 +243,43 @@ describe('the sign-in a request is made as', () => {
     expect(requestSignIn(s, undefined, undefined)).toBeUndefined()
     expect(requestSignIn(s, undefined, { email: 'someone@x.test', quantity: 3 })).toBeUndefined()
     expect(requestSignIn(s, undefined, { deviceId: 'not-stored-anywhere' })).toBeUndefined()
+  })
+})
+
+/* A read answers for the sign-ins that served its accounts when it was asked: one answered after another serves them
+   is the sign-in before's, and is not kept (services/post). */
+describe('the sign-ins a read was asked as', () => {
+  it('are those serving the accounts it names, and those holding what it names', () => {
+    expect(requestServing(state(), undefined, { accountId: 'labs', size: 10 })).toEqual([['labs', 'sub-work']])
+    expect(requestServing(state(), { account: 'acme' })).toEqual([['acme', undefined]])
+    expect(requestServing(state(), undefined, { deviceId: 'd-work' })).toEqual([['work', 'sub-work']])
+    expect(requestServing(state(), { sub: 'sub-work', about: ['work', 'labs'] })).toEqual([
+      ['work', 'sub-work'],
+      ['labs', 'sub-work'],
+    ])
+    expect(requestServing(state(), undefined, { email: 'someone@x.test' })).toEqual([])
+    expect(requestServing(single(), undefined, { accountId: 'labs' })).toEqual([])
+  })
+
+  it('have changed when another serves one of them, or none does — and not while each still does', () => {
+    const asked = requestServing(state(), undefined, { accountId: 'shared' })
+    expect(asked).toEqual([['shared', undefined]])
+    expect(servingChanged(state(), asked)).toBe(false)
+    expect(servingChanged(state({ activeId: 'labs' }), asked)).toBe(false)
+    // The person picks the other sign-in for it.
+    expect(servingChanged(state({ via: { shared: 'sub-work' } }), asked)).toBe(true)
+    // The sign-in that served it leaves.
+    const labs = requestServing(state(), undefined, { accountId: 'labs' })
+    expect(servingChanged(state({ signIns: {} }), labs)).toBe(true)
+    expect(servingChanged(state({ signIns: {} }), [])).toBe(false)
+  })
+
+  it('names the person a sign-in serving an account is', () => {
+    expect(
+      selectPersonEmailFor({ ...state(), auth: { user: { id: 'personal', email: 'personal@x.test' } } }, 'work')
+    ).toBe('work@x.test')
+    expect(
+      selectPersonEmailFor({ ...state(), auth: { user: { id: 'personal', email: 'personal@x.test' } } }, 'acme')
+    ).toBe('personal@x.test')
   })
 })

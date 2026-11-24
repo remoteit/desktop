@@ -4,7 +4,8 @@ import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { EXIT_DEVICE_FIELDS, ExitDevice } from './graphQLDeviceRuns'
 import { PersonRef, exitErrorFields, exitSignInFields } from './deviceSignIns'
 import { ExitServing, exitServingFields } from './exitServing'
-import { noteAccountOf } from '../selectors/signIns'
+import { RequestFor, isNoted, noteAccountOf, selectedAccountId } from '../selectors/signIns'
+import { store } from '../store'
 
 /* Exits (graphql-api docs/PROXY-GROUPS.md §13): what devices send their traffic out through, run by devices — remote.it
    picks the one a device's new connections go through. remote.it's are at a location and offered by plan; an own exit
@@ -58,8 +59,14 @@ const FIELDS = `id name remoteit location provider activation manage offered dor
 const parsed = (exit: Exit): Exit =>
   exit?.tags ? { ...exit, tags: exit.tags.map(tag => ({ ...tag, created: tag.created && new Date(tag.created) })) } : exit
 
-async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
-  const response = await post({ query, variables })
+async function read<T>(
+  query: string,
+  variables: ILookup<any>,
+  marker: string,
+  pick: (data: any) => T,
+  requestFor?: RequestFor
+) {
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return 'ERROR' as const
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, marker)) return UNSUPPORTED
@@ -108,13 +115,23 @@ export const graphQLOfferedExits = async (deviceId?: string) =>
 
 // One exit, with the networks it is offered on: one you manage, or one you see — shared with you, or reached by your
 // role. None for one you may not see.
-export const graphQLExit = (id: string) =>
-  read<Exit | null>(
+// Where nothing read so far says whose the exit is (the page opened at its address, before any list), the selected
+// account's sign-in is asked, and the exit then remembered under it for what is asked of it next.
+export const graphQLExit = (id: string) => {
+  const accountId = selectedAccountId(store.getState())
+  const unknown = !isNoted(id)
+  return read<Exit | null>(
     `query Exit($id: String!) { exit(id: $id) { ${FIELDS} networks { id name } } }`,
     { id },
     'exit',
-    data => (data?.exit ? parsed(data.exit) : null)
+    data => {
+      if (!data?.exit) return null
+      if (unknown) noteAccountOf(accountId, [id])
+      return parsed(data.exit)
+    },
+    { orAccount: accountId }
   )
+}
 
 // Made in your account, or one you manage: then devices are added to run it.
 export async function graphQLCreateExit(name: string, accountId?: string): Promise<Exit | { reason: string }> {
