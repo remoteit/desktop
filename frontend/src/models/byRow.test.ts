@@ -442,6 +442,22 @@ describe('a page opened at the address of something no row here is known to hold
     expect(reads()).toHaveLength(1)
   })
 
+  it('is looked for again once another account is in use: found nowhere is said of those who were asked', async () => {
+    // Work belongs to Acme alone, and has no such product there: asked, and found nowhere.
+    dispatch.accounts.set({
+      signIns: { [WORK]: { sub: WORK, id: 'work', email: 'work@x.test', membership: [member('acme', 'role-guest')] } },
+    })
+    await look('')
+    expect(await dispatch.products.fetchSingle('product-elsewhere')).toBeNull()
+    asked.length = 0
+    expect(await dispatch.products.fetchSingle('product-elsewhere')).toBeNull()
+    expect(reads().filter(([, sub]) => sub === WORK)).toEqual([])
+    // Work joins Labs, which has it: Labs was not asked before.
+    labs()
+    expect(await dispatch.products.fetchSingle('product-elsewhere')).toMatchObject({ id: 'product-elsewhere' })
+    expect(selectActiveRowKey(state())).toBe(rowKey('labs', WORK))
+  })
+
   it('is looked for again where a sign-in could not be asked: a failed read is not a miss', async () => {
     labs()
     await look('')

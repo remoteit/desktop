@@ -43,7 +43,9 @@ export async function findElsewhere<T>({
   const state = store.getState()
   const signIns = Object.values(getSignIns(state))
   if (!signIns.length || idsKnown(state, ids)) return
-  const key = ids.join(' ')
+  // Remembered as nowhere for the sign-ins and accounts that were asked: one brought into use since, or an account one
+  // of them has joined, has not been asked, and may hold it.
+  const key = [ids.join(' '), ...Object.keys(selectAccountRoutes(state)).sort(), ...signIns.map(signIn => signIn.sub).sort()].join('|')
   if (nowhere.has(key)) return
   const routes = selectAccountRoutes(state)
   const reached = (sub: string) => Object.keys(routes).filter(id => routes[id].reach.some(who => who.sub === sub))

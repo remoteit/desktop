@@ -152,9 +152,12 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
-    // One of a session for each sign-in that holds it (`sub`).
+    // One of a session for each row that holds it: its sign-in (`sub`) and the account it is under — one sign-in may
+    // hold the device under two accounts, each with its own.
     setSession(state, session: ISession) {
-      const index = state.all.findIndex(s => s.id === session.id && s.sub === session.sub)
+      const index = state.all.findIndex(
+        s => s.id === session.id && s.sub === session.sub && s.target.accountId === session.target.accountId
+      )
       if (index > -1) state.all[index] = session
       else state.all.push(session)
       return state

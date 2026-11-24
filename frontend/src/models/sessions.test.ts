@@ -105,6 +105,13 @@ describe('sessions — fetch with several sign-ins', () => {
     all = reducers.setSession(all, { id: 's1', sub: 'sub-work', target: { id: 'svc', accountId: 'acme' } })
     all = reducers.setSession(all, { id: 's1', sub: 'sub-work', target: { id: 'svc', accountId: 'acme' }, geo: {} })
     expect(all.all.map((s: ISession) => s.sub)).toEqual(['', 'sub-work'])
+    // One sign-in holding the device under two accounts: a session in each account's row.
+    all = reducers.setSession(all, { id: 's1', sub: 'sub-work', target: { id: 'svc', accountId: 'labs' } })
+    expect(all.all.map((s: ISession) => [s.sub, s.target.accountId])).toEqual([
+      ['', 'acme'],
+      ['sub-work', 'acme'],
+      ['sub-work', 'labs'],
+    ])
     expect(reducers.removeSession(all, 's1').all).toEqual([])
   })
 
