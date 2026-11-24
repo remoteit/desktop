@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Link } from '@mui/material'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import type { TFunction } from 'i18next'
@@ -21,6 +21,7 @@ import {
 } from '../services/graphQLDeviceAbout'
 import { Notice } from './Notice'
 import { Timestamp } from './Timestamp'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Row = [label: string, value: React.ReactNode]
 
@@ -45,14 +46,17 @@ export const DeviceAbout: React.FC<{ deviceId: string }> = ({ deviceId }) => {
   const listed = !!read && typeof read === 'object' && !!read.about?.accounts?.length
   const signIns = useDeviceSignIns(listed ? deviceId : undefined)
 
-  useEffect(() => {
-    let current = true
-    setRead(undefined)
-    graphQLDeviceAbout(deviceId).then(result => current && setRead(result))
-    return () => {
-      current = false
-    }
-  }, [deviceId])
+  useReadEffect(
+    again => {
+      let current = true
+      if (!again) setRead(undefined)
+      graphQLDeviceAbout(deviceId).then(result => current && setRead(result))
+      return () => {
+        current = false
+      }
+    },
+    [deviceId]
+  )
 
   if (!read || read === UNSUPPORTED || read === 'ERROR' || (!read.about && !read.history.length)) return null
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { List, ListSubheader } from '@mui/material'
 import {
@@ -11,6 +11,7 @@ import {
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { ListItemSetting } from './ListItemSetting'
 import { SelectSetting } from './SelectSetting'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* An account's device-agent updates: automatic unless turned off, and the channel its devices follow. On the
    account's own settings (Profile) and an organization's (Settings). Hidden without the device-sessions flag, and
@@ -21,7 +22,7 @@ export const DaemonSettingsList: React.FC<{ accountId?: string }> = ({ accountId
   const [settings, setSettings] = useState<DaemonSettings>()
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!enabled) return
     let current = true
     graphQLDaemonSettings(accountId).then(result => {

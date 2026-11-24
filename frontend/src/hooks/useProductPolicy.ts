@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { useDeviceSessions } from './useDeviceSessions'
@@ -11,6 +11,8 @@ import {
   graphQLProductPolicy,
   productPolicyServed,
 } from '../services/productPolicy'
+import { useReadCallback, useReadEffect } from './useReadAgain'
+import { accountCache } from '../services/accountCaches'
 
 /* Product policy's reads (services/productPolicy), behind the device-sessions gate as the rest of Control Link is: what
    the API serves of it, a product's policy, and a device's product. A product's and a device's are shared by every part
@@ -71,6 +73,17 @@ function shared<T>(load: (...args: string[]) => Promise<T | 'ERROR'>) {
     latest.clear()
   }
 
+  // Keys begin with the account they were read under: dropped with its stored data (services/accountCaches), a read
+  // still out then no longer the latest, and read again by whoever shows it (useReadEffect).
+  accountCache(accountIds => {
+    for (const key of [...latest.keys()]) {
+      if (!accountIds.some(id => key.startsWith(`${id}:`))) continue
+      latest.delete(key)
+      answers.delete(key)
+    }
+    listeners.forEach(listener => listener())
+  })
+
   return { answers, read, first, subscribe, clear }
 }
 
@@ -90,11 +103,11 @@ export function useProductPolicy(productId?: string) {
   const enabled = !!served?.product && !!productId
   const policy = useSyncExternalStore(products.subscribe, () => (enabled ? products.answers.get(key) : null))
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (enabled) products.first(key, productId!, accountId)
   }, [enabled, key])
 
-  const reload = useCallback(
+  const reload = useReadCallback(
     () => (enabled ? products.read(key, productId!, accountId) : Promise.resolve()),
     [enabled, key]
   )
@@ -112,11 +125,11 @@ export function useDeviceProduct(device?: IDevice) {
   const enabled = !!served?.device && !!deviceId
   const state = useSyncExternalStore(devices.subscribe, () => (enabled ? devices.answers.get(key) : null))
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (enabled) devices.first(key, deviceId!, accountId)
   }, [enabled, key])
 
-  const reload = useCallback(
+  const reload = useReadCallback(
     () => (enabled ? devices.read(key, deviceId!, accountId) : Promise.resolve()),
     [enabled, key]
   )

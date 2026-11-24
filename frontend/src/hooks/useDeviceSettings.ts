@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useReadCallback, useReadEffect } from './useReadAgain'
 import {
   DeviceSetting,
   DeviceSettingName,
@@ -39,20 +40,23 @@ export function useDeviceSettings(deviceId?: string): DeviceSettings {
   const enabled = useDeviceSessions()
   const [settings, setSettings] = useState<DeviceSetting[] | null>()
 
-  useEffect(() => {
-    if (!enabled || !deviceId) {
-      setSettings(null)
-      return
-    }
-    setSettings(undefined)
-    let current = true
-    read(deviceId).then(result => {
-      if (current) setSettings(Array.isArray(result) ? result : null)
-    })
-    return () => {
-      current = false
-    }
-  }, [enabled, deviceId])
+  useReadEffect(
+    again => {
+      if (!enabled || !deviceId) {
+        setSettings(null)
+        return
+      }
+      if (!again) setSettings(undefined)
+      let current = true
+      read(deviceId).then(result => {
+        if (current) setSettings(Array.isArray(result) ? result : null)
+      })
+      return () => {
+        current = false
+      }
+    },
+    [enabled, deviceId]
+  )
 
   const setting = useCallback((name: DeviceSettingName) => settings?.find(s => s.name === name), [settings])
 
@@ -67,7 +71,7 @@ export function useDeviceSettings(deviceId?: string): DeviceSettings {
     [deviceId]
   )
 
-  const reload = useCallback(async () => {
+  const reload = useReadCallback(async () => {
     if (!enabled || !deviceId) return
     const result = await read(deviceId)
     setSettings(Array.isArray(result) ? result : null)

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
 import { Button } from '@mui/material'
@@ -6,6 +6,7 @@ import { Dispatch } from '../store'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { DetectedScheme, graphQLDetectedSchemes, HTTP_TYPE, HTTPS_TYPE } from '../services/graphQLDetectedScheme'
 import { Notice } from './Notice'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 export { HTTP_TYPE, HTTPS_TYPE }
 
@@ -34,17 +35,20 @@ export const ServiceSchemeSuggestion: React.FC<{ device?: IDevice; service?: ISe
   const [busy, setBusy] = useState(false)
   const editable = !!device?.configurable && !!device?.permissions.includes('MANAGE')
 
-  useEffect(() => {
-    setDetected(null)
-    if (!deviceSessions || !editable || !device || !service) return
-    let current = true
-    graphQLDetectedSchemes(device.id).then(result => {
-      if (current && typeof result === 'object') setDetected(result[service.id] ?? null)
-    })
-    return () => {
-      current = false
-    }
-  }, [deviceSessions, editable, device?.id, service?.id, service?.typeID, service?.port])
+  useReadEffect(
+    again => {
+      if (!again) setDetected(null)
+      if (!deviceSessions || !editable || !device || !service) return
+      let current = true
+      graphQLDetectedSchemes(device.id).then(result => {
+        if (current && typeof result === 'object') setDetected(result[service.id] ?? null)
+      })
+      return () => {
+        current = false
+      }
+    },
+    [deviceSessions, editable, device?.id, service?.id, service?.typeID, service?.port]
+  )
 
   const suggestion = service && schemeSuggestion(detected, service)
   if (!device || !service || !suggestion) return null

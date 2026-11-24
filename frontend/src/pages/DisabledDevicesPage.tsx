@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { Box, Button, Checkbox, List, Stack, Typography } from '@mui/material'
@@ -18,6 +18,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Body } from '../components/Body'
 import { Icon } from '../components/Icon'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 type DisabledRow = Pick<IDevice, 'id' | 'name' | 'disabled' | 'disabledAt' | 'disabledReason' | 'disabledBy'> & {
   platform?: number
@@ -42,7 +43,7 @@ export const DisabledDevicesPage: React.FC = () => {
   const [selected, setSelected] = useState<string[]>([])
   const [decommission, setDecommission] = useState<DisabledRow[]>([])
 
-  const load = useCallback(
+  const load = useReadCallback(
     async (from = 0) => {
       setLoading(true)
       const response = await graphQLFetchDisabledDevices(accountId, from, await deviceDisableFields())
@@ -64,7 +65,7 @@ export const DisabledDevicesPage: React.FC = () => {
     [accountId]
   )
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (served && access) load()
   }, [served, access, load])
 

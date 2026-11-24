@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { fetchJobDevice, fetchJobDevices, JOB_DEVICE_PAGE } from '../services/jobDevices'
 import { jobRunCounts, jobRunTotal } from '../helpers/jobHelper'
+import { useReadCallback, useReadEffect } from './useReadAgain'
 
 // What says a job changed: its status, its time, and its runs counted (each run's own status is not held).
 export const jobChangeKey = (job?: IJob) =>
@@ -31,7 +32,7 @@ export function useJobDevices(accountId: string, job: IJob | undefined, jobDevic
     size.current = JOB_DEVICE_PAGE
   }, [jobId, accountId])
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!jobId) return
     const load = async () => {
       const mine = ++request.current
@@ -50,7 +51,7 @@ export function useJobDevices(accountId: string, job: IJob | undefined, jobDevic
   }, [key, accountId])
 
   // The next page, after those held. Whichever read is asked last wins (request); a re-read reads this page too.
-  const loadMore = useCallback(async () => {
+  const loadMore = useReadCallback(async () => {
     if (!jobId || !loaded) return
     const mine = ++request.current
     const from = loaded.length
@@ -65,7 +66,7 @@ export function useJobDevices(accountId: string, job: IJob | undefined, jobDevic
   const runs = loaded || job?.jobDevices || []
   const shown = runs.find(jd => jd.id === jobDeviceId)
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!jobId || !jobDeviceId || !loaded || shown) return
     let current = true
     fetchJobDevice(accountId, jobId, jobDeviceId).then(result => {

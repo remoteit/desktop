@@ -10,6 +10,7 @@ import {
   onLocalForgotten,
 } from '../services/localSubnet'
 import { requestServiceSessionInfo } from '../services/deviceSessionInfo'
+import { useReadEffect } from './useReadAgain'
 
 export type SubnetReach = {
   name?: string // the service's name in device subnets, when it has one
@@ -24,7 +25,7 @@ export const useSubnetName = (deviceId?: string, serviceId?: string): string | u
   const enabled = useDeviceSessions()
   const info = useDeviceSessionInfo(enabled ? deviceId : undefined)
   // A service added since the device was read is not in its answer: read it again for the service's name.
-  useEffect(() => {
+  useReadEffect(() => {
     if (enabled && deviceId && serviceId && info) requestServiceSessionInfo(deviceId, serviceId)
   }, [enabled, deviceId, serviceId, info])
   return enabled ? (serviceId ? info?.services?.[serviceId] : info?.subnetName) ?? undefined : undefined

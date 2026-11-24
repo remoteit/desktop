@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { selectDeviceService } from '../selectors/devices'
 import { DeviceContext } from '../services/Context'
 import { selectNetwork } from '../models/networks'
@@ -10,6 +10,7 @@ import { selectSharedNetwork } from '../models/networks'
 import { selectConnection } from '../selectors/connections'
 import { selectDeviceModelAttributes } from '../selectors/devices'
 import { isRemoteUI } from '../helpers/uiHelper'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   let { deviceID, serviceID, networkID } = useParams<{ deviceID?: string; serviceID?: string; networkID?: string }>()
@@ -33,7 +34,7 @@ export const DeviceContextWrapper: React.FC<{ children: React.ReactNode }> = ({ 
   const location = useLocation()
   const instance: IInstance | undefined = network || device
 
-  useEffect(() => {
+  useReadEffect(() => {
     if ((instance?.loaded && device?.loaded) || waiting) return
 
     if (deviceID && !(remoteUI && thisId)) {

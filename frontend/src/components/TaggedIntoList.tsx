@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { List, ListItem, ListItemText, ListSubheader } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { TaggedInto, graphQLRemoveNetworkDeviceRule, graphQLTaggedInto } from '../services/graphQLDeviceNetworks'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { IconButton } from '../buttons/IconButton'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* Where this account's tags reach: other accounts' networks taking its devices by its tags, each set by someone who
    administers both (presence-server docs/device-principals.md §2). Tagging a device here can put it on those networks,
@@ -22,7 +23,7 @@ export const TaggedIntoList: React.FC<{ accountId?: string }> = ({ accountId }) 
     if (result !== 'ERROR' && result !== UNSUPPORTED) setRules(result)
   }
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (enabled) load()
   }, [enabled, accountId])
 

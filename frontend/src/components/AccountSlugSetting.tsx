@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { List, ListSubheader, Typography } from '@mui/material'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
@@ -12,6 +12,7 @@ import {
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Gutters } from './Gutters'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* The account's slug: its part of every one of its devices' DNS names, <name>-<slug>.<domain>. Edited in place, its
    form checked as it is typed and then whether the account can have it (graphql accountSlugAvailable: not reserved,
@@ -23,7 +24,7 @@ export const AccountSlugSetting: React.FC<{ accountId?: string }> = ({ accountId
   const enabled = useDeviceSessions()
   const [slug, setSlug] = useState<string | null>()
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!enabled) return
     let current = true
     graphQLAccountSlug(accountId).then(result => {

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from '@mui/material'
 import { DeviceContext } from '../services/Context'
@@ -11,6 +11,7 @@ import {
 import { useDeviceSettings } from '../hooks/useDeviceSettings'
 import { DeviceSettingChoice } from './DeviceSettingRow'
 import { Confirm } from './Confirm'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 // The reflector's state as the device reports it; none where it has not, or the API cannot say.
 async function readWebsocket(deviceId: string): Promise<DeviceWebsocket | null> {
@@ -32,7 +33,7 @@ export const DeviceWebsocketSetting: React.FC = () => {
   const [confirming, setConfirming] = useState(false)
   const deviceId = websocket ? device?.id : undefined
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!deviceId) return
     let current = true
     readWebsocket(deviceId).then(answer => current && setState(answer))

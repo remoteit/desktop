@@ -10,6 +10,7 @@ import { initialForm } from '../models/files'
 import { jobRunsComplete } from '../helpers/jobHelper'
 import { ScriptRunForm } from '../components/ScriptRunForm'
 import { Container } from '../components/Container'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Props = {
   isNew?: boolean
@@ -79,12 +80,12 @@ export const ScriptRunPage: React.FC<Props> = ({ isNew }) => {
   }, [fileID])
 
   // Ensure files are loaded (needed for FileSelect arguments)
-  useEffect(() => {
+  useReadEffect(() => {
     dispatch.files.fetchIfEmpty()
   }, [])
 
   // Initialize run form from scriptFormFromState or prepared job (existing only)
-  useEffect(() => {
+  useReadEffect(() => {
     if (isNew || !script) return
 
     const tagValues = script?.job?.tag?.values || []

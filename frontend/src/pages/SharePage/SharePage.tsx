@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react'
+import React, { useContext } from 'react'
 import { DeviceContext } from '../../services/Context'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch, State } from '../../store'
@@ -15,6 +15,7 @@ import { Gutters } from '../../components/Gutters'
 import { Avatar } from '../../components/Avatar'
 import { Title } from '../../components/Title'
 import { Icon } from '../../components/Icon'
+import { useReadEffect } from '../../hooks/useReadAgain'
 
 export const SharePage: React.FC = () => {
   const dispatch = useDispatch<Dispatch>()
@@ -29,7 +30,7 @@ export const SharePage: React.FC = () => {
   const email = guest?.email || ''
   const history = useHistory()
 
-  useEffect(() => {
+  useReadEffect(() => {
     ;(async () => {
       if (!service || !device) return
       if (!guest && userID) await dispatch.organization.fetch()

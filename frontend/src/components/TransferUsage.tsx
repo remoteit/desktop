@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, LinearProgress, List, ListItem, ListItemIcon, Typography } from '@mui/material'
 import { fetchTransferUsage, TransferUsage as Usage, TransferUsageDevice } from '../services/transferUsage'
 import { getLocale } from '../helpers/dateHelper'
 import { timeOptions } from './Timestamp'
 import { spacing } from '../styling'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 // Transfer is metered in decimal units, as plans state their allowances.
 export const gigabyteNumber = (bytes: number) => {
@@ -28,7 +29,7 @@ export const TransferUsage: React.FC<{ accountId?: string; hideError?: boolean }
   const { t } = useTranslation()
   const [usage, setUsage] = useState<Usage[] | 'ERROR' | null>()
 
-  useEffect(() => {
+  useReadEffect(() => {
     let current = true
     fetchTransferUsage(accountId)
       .catch(() => 'ERROR' as const)
@@ -173,25 +174,28 @@ export function useTransferUsageHint(
   const [usage, setUsage] = useState<Usage | null>(null)
   const asked = useRef<string>()
 
-  useEffect(() => {
-    const key = `${accountId ?? ''}:${kind}`
-    if (!shown || asked.current === key) return
-    asked.current = key
-    setUsage(null)
-    let current = true
-    let answered = false
-    fetchTransferUsage(accountId)
-      .catch(() => null)
-      .then(result => {
-        answered = true
-        if (current && Array.isArray(result)) setUsage(result.find(row => row.kind === kind) ?? null)
-      })
-    return () => {
-      current = false
-      // Hidden or changed before the answer came: ask again when next wanted.
-      if (!answered && asked.current === key) asked.current = undefined
-    }
-  }, [accountId, kind, shown])
+  useReadEffect(
+    again => {
+      const key = `${accountId ?? ''}:${kind}`
+      if (!shown || asked.current === key) return
+      asked.current = key
+      if (!again) setUsage(null)
+      let current = true
+      let answered = false
+      fetchTransferUsage(accountId)
+        .catch(() => null)
+        .then(result => {
+          answered = true
+          if (current && Array.isArray(result)) setUsage(result.find(row => row.kind === kind) ?? null)
+        })
+      return () => {
+        current = false
+        // Hidden or changed before the answer came: ask again when next wanted.
+        if (!answered && asked.current === key) asked.current = undefined
+      }
+    },
+    [accountId, kind, shown]
+  )
 
   if (!shown || !usage || typeof usage.usedBytes !== 'number') return null
   if (usage.over)

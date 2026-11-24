@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Box, Button, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
@@ -17,6 +17,7 @@ import { formatBytes } from '../helpers/usageHelper'
 import { SelectSetting } from './SelectSetting'
 import { Timestamp } from './Timestamp'
 import { Icon } from './Icon'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 // carrier: the device whose page this is — a flow it carried as an exit says so, rather than the exit's name.
 type Props = { scope: ExitFlowsScope; carrier?: string }
@@ -43,7 +44,7 @@ export const ExitFlowList: React.FC<Props> = ({ scope, carrier }) => {
   const now = useRef(new Date())
   const key = JSON.stringify(scope)
 
-  const load = useCallback(
+  const load = useReadCallback(
     async (after?: string) => {
       setState('loading')
       setReason(undefined)
@@ -62,11 +63,14 @@ export const ExitFlowList: React.FC<Props> = ({ scope, carrier }) => {
     [key, hours]
   )
 
-  useEffect(() => {
-    setFlows(undefined)
-    setNext(null)
-    load()
-  }, [load])
+  useReadEffect(
+    again => {
+      if (!again) setFlows(undefined)
+      if (!again) setNext(null)
+      load()
+    },
+    [load]
+  )
 
   if (state === UNSUPPORTED) return null
 

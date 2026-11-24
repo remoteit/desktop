@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -18,6 +18,7 @@ import { Gutters } from '../components/Gutters'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
 import { IconButton } from '../buttons/IconButton'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 export function ServicesPage() {
   const accountId = useSelector(selectActiveAccountId)
@@ -34,22 +35,25 @@ function AccountServices({ accountId }: { accountId: string }) {
   const available = !!support && support !== 'ERROR' && support.available
   const namedAddress = available && support.namedAddress && deviceSessions
 
-  useEffect(() => {
-    if (!available) return
-    let current = true
-    setServices(undefined)
-    graphQLServiceShortcuts(accountId, namedAddress).then(result => {
-      if (!current) return
-      if (result === 'ERROR') setServices(result)
-      else
-        setServices(
-          [...result].sort((a, b) => a.name.localeCompare(b.name) || a.device.name.localeCompare(b.device.name))
-        )
-    })
-    return () => {
-      current = false
-    }
-  }, [accountId, available, namedAddress, revision])
+  useReadEffect(
+    again => {
+      if (!available) return
+      let current = true
+      if (!again) setServices(undefined)
+      graphQLServiceShortcuts(accountId, namedAddress).then(result => {
+        if (!current) return
+        if (result === 'ERROR') setServices(result)
+        else
+          setServices(
+            [...result].sort((a, b) => a.name.localeCompare(b.name) || a.device.name.localeCompare(b.device.name))
+          )
+      })
+      return () => {
+        current = false
+      }
+    },
+    [accountId, available, namedAddress, revision]
+  )
 
   return (
     <Container

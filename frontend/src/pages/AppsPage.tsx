@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -14,6 +14,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { platformsLine } from '../helpers/appsHelper'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* Apps (presence-server docs/device-apps-design.md, "The Apps pages", /apps): the account's catalogue — every app it may
    use (graphql's appCatalog: remote.it's, its own publisher's) —, one row an app: its name, its publisher with
@@ -29,14 +30,17 @@ export const AppsPage: React.FC = () => {
   const [apps, setApps] = useState<CatalogRead<CatalogApp[]>>()
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    let current = true
-    setApps(undefined)
-    graphQLAppCatalog(account).then(answer => current && setApps(answer))
-    return () => {
-      current = false
-    }
-  }, [account])
+  useReadEffect(
+    again => {
+      let current = true
+      if (!again) setApps(undefined)
+      graphQLAppCatalog(account).then(answer => current && setApps(answer))
+      return () => {
+        current = false
+      }
+    },
+    [account]
+  )
 
   const words = search.trim().toLowerCase()
   const shown = Array.isArray(apps)

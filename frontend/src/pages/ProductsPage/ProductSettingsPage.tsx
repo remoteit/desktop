@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -18,6 +18,7 @@ import { ProductRegistrationCodes, ProductRevokedCodes } from '../../components/
 import { getProductModel } from '../../selectors/products'
 import { selectActiveAccountId } from '../../selectors/accounts'
 import { dispatch } from '../../store'
+import { useReadEffect } from '../../hooks/useReadAgain'
 
 export const ProductSettingsPage: React.FC = () => {
   const { t } = useTranslation()
@@ -34,7 +35,7 @@ export const ProductSettingsPage: React.FC = () => {
   const accountId = useSelector(selectActiveAccountId)
   const detailed = product?.joinKeys !== undefined
   const fetched = useRef<string>()
-  useEffect(() => {
+  useReadEffect(() => {
     if (!productId) return
     if (fetched.current !== productId) {
       fetched.current = productId

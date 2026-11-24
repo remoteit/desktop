@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, FormControlLabel, MenuItem, Radio, RadioGroup, TextField, Typography } from '@mui/material'
 import { DeviceRuns, graphQLAddExitDevice, graphQLAddProxyDevice } from '../services/graphQLDeviceRuns'
@@ -9,6 +9,7 @@ import { ProxyKindChoice } from './ProxyKindChoice'
 import { LoadingMessage } from './LoadingMessage'
 import { Confirm } from './Confirm'
 import { Notice } from './Notice'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Props = {
   kind: 'proxy' | 'exit'
@@ -42,7 +43,7 @@ export const MakeRunDialog: React.FC<Props> = ({ kind, device, onClose, onDone }
   const [refusal, setRefusal] = useState<string>()
 
   // The account's own, which the device may be added to.
-  useEffect(() => {
+  useReadEffect(() => {
     const own = async (): Promise<Choice[]> => {
       if (kind === 'exit') {
         const exits = await graphQLAccountExits(device.ownerId)

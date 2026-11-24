@@ -14,6 +14,7 @@ import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { LoadingMessage } from './LoadingMessage'
 import { Confirm } from './Confirm'
 import { Notice } from './Notice'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 export const DEFAULT_MAX_WAIT = 60
 
@@ -40,20 +41,23 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, scope, 
   const [refusal, setRefusal] = useState<string>()
   const kind = scope === 'device' ? undefined : scope.kind
 
-  useEffect(() => {
-    if (!open) return
-    let live = true
-    setEffects(undefined)
-    setRefusal(undefined)
-    graphQLActionEffects(device.id, action, force).then(read => {
-      if (!live) return
-      if (!Array.isArray(read)) return setEffects('ERROR')
-      setEffects(kind ? read.filter(effect => effect.kind === kind) : read)
-    })
-    return () => {
-      live = false
-    }
-  }, [open, device.id, action, force, kind])
+  useReadEffect(
+    again => {
+      if (!open) return
+      let live = true
+      if (!again) setEffects(undefined)
+      if (!again) setRefusal(undefined)
+      graphQLActionEffects(device.id, action, force).then(read => {
+        if (!live) return
+        if (!Array.isArray(read)) return setEffects('ERROR')
+        setEffects(kind ? read.filter(effect => effect.kind === kind) : read)
+      })
+      return () => {
+        live = false
+      }
+    },
+    [open, device.id, action, force, kind]
+  )
 
   useEffect(() => {
     if (open) {
@@ -164,7 +168,7 @@ export const DeviceRunEffects: React.FC<{ deviceId: string; action: 'DELETE' | '
   const deviceSessions = useDeviceSessions()
   const [effects, setEffects] = useState<DeviceActionEffect[]>([])
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!deviceSessions) return
     let live = true
     graphQLActionEffects(deviceId, action).then(read => live && setEffects(Array.isArray(read) ? read : []))

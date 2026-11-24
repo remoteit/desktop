@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Button, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import type { TFunction } from 'i18next'
@@ -15,6 +15,7 @@ import { humanizeDuration } from '../helpers/dateHelper'
 import { SelectSetting } from './SelectSetting'
 import { Timestamp } from './Timestamp'
 import { Icon } from './Icon'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 // devices: each visit says the device that served it, by these names (its id where none).
 type Props = { scope: AccessScope; showEndpoint?: boolean; devices?: ILookup<string> }
@@ -65,7 +66,7 @@ export const ProxyAccessList: React.FC<Props> = ({ scope, showEndpoint, devices 
 
   const outcomes = filter === 'failures' ? [...FAILURES] : filter ? [filter] : undefined
 
-  const load = useCallback(
+  const load = useReadCallback(
     async (after?: string) => {
       setState('loading')
       const page = await graphQLProxyAccess(scope, outcomes, after)
@@ -80,10 +81,13 @@ export const ProxyAccessList: React.FC<Props> = ({ scope, showEndpoint, devices 
     [key, filter]
   )
 
-  useEffect(() => {
-    setItems(undefined)
-    load()
-  }, [load])
+  useReadEffect(
+    again => {
+      if (!again) setItems(undefined)
+      load()
+    },
+    [load]
+  )
 
   if (state === UNSUPPORTED) return null
 

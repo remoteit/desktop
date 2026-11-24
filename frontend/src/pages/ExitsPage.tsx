@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Box, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
@@ -16,6 +16,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Tags } from '../components/Tags'
 import { Icon } from '../components/Icon'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Remoteit = Awaited<ReturnType<typeof graphQLOfferedExits>>
 
@@ -33,7 +34,7 @@ export const ExitsPage: React.FC = () => {
   const [tagFilter, setTagFilter] = useState<ITag>()
 
   // remote.it's, offered by plan: the exits offered to you that are remote.it's.
-  useEffect(() => {
+  useReadEffect(() => {
     graphQLOfferedExits().then(offered => setRemoteit(Array.isArray(offered) ? offered.filter(exit => exit.remoteit) : []))
   }, [])
 

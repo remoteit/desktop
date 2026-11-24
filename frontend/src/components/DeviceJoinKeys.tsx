@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, List, ListItem, ListItemText, Stack, Typography } from '@mui/material'
 import {
@@ -17,6 +17,7 @@ import { IssueDeviceJoinKeyDialog } from './IssueDeviceJoinKeyDialog'
 import { ColorChip } from './ColorChip'
 import { Timestamp } from './Timestamp'
 import { Notice } from './Notice'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 // At most two keys in force per device (graphql refuses a third): "current" and "next", for a rollover.
 export const KEYS_IN_FORCE = 2
@@ -59,16 +60,19 @@ export const DeviceJoinKeys: React.FC<{ device: IDevice }> = ({ device }) => {
   const [busy, setBusy] = useState<string>()
   const [reason, setReason] = useState<string>()
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     const read = await graphQLDeviceJoinKeys(device.id)
     setKeys(read === 'ERROR' ? null : read)
   }, [device.id])
 
-  useEffect(() => {
-    setKeys(undefined)
-    setReason(undefined)
-    if (asked) load()
-  }, [asked, load])
+  useReadEffect(
+    again => {
+      if (!again) setKeys(undefined)
+      if (!again) setReason(undefined)
+      if (asked) load()
+    },
+    [asked, load]
+  )
 
   if (!asked || !keys || !joinKeysOffered(device, reports, keys)) return null
   if (ephemeral && !keys.length) return null

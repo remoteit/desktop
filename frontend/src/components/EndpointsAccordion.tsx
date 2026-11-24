@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Button, List, ListItem, ListItemIcon, ListItemText, TextField, Typography } from '@mui/material'
 import {
@@ -24,6 +24,7 @@ import { EndpointLocalAddresses } from './EndpointLocalAddresses'
 import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
 import { Timestamp } from './Timestamp'
 import { Icon } from './Icon'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 const KIND_ICON: Record<EndpointKind, string> = { https: 'globe', tcp: 'arrow-right-arrow-left', udp: 'wave-pulse' }
 
@@ -49,16 +50,19 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
     Array.isArray(endpoints) && endpoints.some(endpoint => endpoint.proxy.remoteit)
   )
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     setEndpoints(await graphQLServiceEndpoints(device.id, service.id))
   }, [device.id, service.id])
 
-  useEffect(() => {
-    setEndpoints(undefined)
-    load()
-  }, [load])
+  useReadEffect(
+    again => {
+      if (!again) setEndpoints(undefined)
+      load()
+    },
+    [load]
+  )
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (adding && !proxies.length)
       graphQLProxies({ about: [service.id] }).then(list => {
         if (Array.isArray(list)) setProxies(list)

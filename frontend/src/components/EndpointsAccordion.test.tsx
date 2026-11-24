@@ -79,6 +79,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 import { EndpointsAccordion } from './EndpointsAccordion'
+import { forgetAccountCaches } from '../services/accountCaches'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const NEAREST = "remote.it's, nearest the device"
@@ -136,6 +137,28 @@ describe('the endpoint form’s proxy choice', () => {
       o.textContent?.includes('gw-acme.solo.r3proxy.com')
     ) as HTMLElement
     await act(async () => option.click())
+    expect(field.querySelector('.MuiSelect-select')?.textContent).toBe('Office gateway · gw-acme.solo.r3proxy.com')
+    await makeIt(container)
+    expect((create.mock.calls[0] as any[])[1].proxy).toBe('P2')
+  })
+
+  // Another sign-in comes to serve the service's account while the form is half filled (models/accounts readAgain):
+  // the endpoints are read again — as that sign-in, by services/post — and the form is not taken down under the person.
+  it('is kept as the person left it when the endpoints are read again for another sign-in', async () => {
+    const container = await openForm()
+    const field = proxyField(container)
+    await act(async () => (field.closest('.MuiListItemButton-root') as HTMLElement).click())
+    const option = [...document.querySelectorAll('[role="option"]')].find(o =>
+      o.textContent?.includes('gw-acme.solo.r3proxy.com')
+    ) as HTMLElement
+    await act(async () => option.click())
+    const read = endpoints.mock.calls.length
+
+    await act(async () => forgetAccountCaches(['ACCOUNT']))
+    expect(endpoints.mock.calls.length).toBe(read + 1)
+    expect(endpoints).toHaveBeenLastCalledWith('DEVICE', 'SERVICE')
+    // The same form, with the choice made in it.
+    expect(proxyField(container)).toBe(field)
     expect(field.querySelector('.MuiSelect-select')?.textContent).toBe('Office gateway · gw-acme.solo.r3proxy.com')
     await makeIt(container)
     expect((create.mock.calls[0] as any[])[1].proxy).toBe('P2')

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import type { Dispatch } from '../store'
 import {
@@ -17,6 +17,7 @@ import {
   refused,
 } from '../services/graphQLDeviceApps'
 import { appServiceOf, isAppService, serviceApp } from '../helpers/appsHelper'
+import { useReadCallback, useReadEffect } from './useReadAgain'
 
 type Read = ReturnType<typeof graphQLDeviceApps>
 
@@ -73,37 +74,43 @@ export function useDeviceApps(
   const [available, setAvailable] = useState<AvailableApp[]>()
   const ids = apps?.map(app => app.id).join(',')
 
-  useEffect(() => {
-    setAvailable(undefined)
-    if (!offers || !deviceId || apps === undefined || apps === null) return
-    let current = true
-    graphQLAvailableApps(deviceId).then(result => current && setAvailable(result))
-    return () => {
-      current = false
-    }
-  }, [offers, deviceId, ids, apps === null])
+  useReadEffect(
+    again => {
+      if (!again) setAvailable(undefined)
+      if (!offers || !deviceId || apps === undefined || apps === null) return
+      let current = true
+      graphQLAvailableApps(deviceId).then(result => current && setAvailable(result))
+      return () => {
+        current = false
+      }
+    },
+    [offers, deviceId, ids, apps === null]
+  )
 
-  useEffect(() => {
-    setApps(undefined)
-    if (!deviceId) return
-    let current = true
-    read(deviceId).then(result => {
-      if (current) setApps(result)
-    })
-    const watcher = (changed: string, now: DeviceApp[] | null) => changed === deviceId && setApps(now)
-    watchers.add(watcher)
-    return () => {
-      current = false
-      watchers.delete(watcher)
-    }
-  }, [deviceId])
+  useReadEffect(
+    again => {
+      if (!again) setApps(undefined)
+      if (!deviceId) return
+      let current = true
+      read(deviceId).then(result => {
+        if (current) setApps(result)
+      })
+      const watcher = (changed: string, now: DeviceApp[] | null) => changed === deviceId && setApps(now)
+      watchers.add(watcher)
+      return () => {
+        current = false
+        watchers.delete(watcher)
+      }
+    },
+    [deviceId]
+  )
 
-  const readDevice = useCallback(async () => {
+  const readDevice = useReadCallback(async () => {
     if (deviceId) await dispatch.devices.fetchSingleFull({ id: deviceId, accountId, hidden: true, silent: true })
   }, [dispatch, deviceId, accountId])
 
   // A change, then what the device says of it, every part of the page told; then the device, its services as they are.
-  const change = useCallback(
+  const change = useReadCallback(
     async (app: DeviceApp, call: () => Promise<AppChange<unknown>>): Promise<AppChange<true>> => {
       if (!deviceId) return { reason: '' }
       setSwitching(app.id)
@@ -143,7 +150,7 @@ export function useDeviceApps(
     [change, deviceId]
   )
 
-  const setSetting = useCallback(
+  const setSetting = useReadCallback(
     async (app: DeviceApp, name: string, value: any) => {
       if (!deviceId) return false
       const setting = await graphQLSetDeviceAppSetting(deviceId, app.id, name, value)

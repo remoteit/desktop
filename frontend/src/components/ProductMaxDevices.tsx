@@ -15,6 +15,7 @@ import { selectActiveAccountId } from '../selectors/accounts'
 import { selectPermissions } from '../selectors/organizations'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { Notice } from './Notice'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type SettingProps = {
   value: MaxDevices
@@ -121,16 +122,19 @@ export const ProductMaxDevices: React.FC<{ product: IDeviceProduct }> = ({ produ
   const accountId = useSelector(selectActiveAccountId)
   const [value, setValue] = useState<MaxDevices>()
 
-  useEffect(() => {
-    let current = true
-    setValue(undefined)
-    graphQLProductMaxDevices(product.id, accountId).then(result => {
-      if (current && result && result !== 'ERROR') setValue(result)
-    })
-    return () => {
-      current = false
-    }
-  }, [product.id, accountId])
+  useReadEffect(
+    again => {
+      let current = true
+      if (!again) setValue(undefined)
+      graphQLProductMaxDevices(product.id, accountId).then(result => {
+        if (current && result && result !== 'ERROR') setValue(result)
+      })
+      return () => {
+        current = false
+      }
+    },
+    [product.id, accountId]
+  )
 
   if (!value) return null
   return (

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useHistory, useParams } from 'react-router-dom'
@@ -39,6 +39,7 @@ import { Gutters } from '../components/Gutters'
 import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 // An own proxy's host is <label>-<slug>.<proxy domain>: its label, letters and digits, before the account's slug.
 export const labelOf = (host: string) => host.split('.')[0].split('-')[0]
@@ -84,7 +85,7 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
   const ownerId = proxy && typeof proxy === 'object' && !proxy.remoteit ? proxy.owner?.id : undefined
 
   // Only the last read asked for is shown: one answered late never overwrites a newer one. What was read is answered.
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     const read = ++reads.current
     const answer = await graphQLProxy(proxyID)
     if (read === reads.current) setProxy(answer)
@@ -97,12 +98,12 @@ const OneProxy: React.FC<{ proxyID: string }> = ({ proxyID }) => {
     return answer && typeof answer === 'object' ? answer : undefined
   }
 
-  useEffect(() => {
+  useReadEffect(() => {
     load()
   }, [load])
 
   // The account's slug as it is now: a new label's host is made under it.
-  useEffect(() => {
+  useReadEffect(() => {
     if (!ownerId) return
     graphQLAccountSlug(ownerId)
       .then(answer => setSlug(typeof answer === 'string' && answer !== 'ERROR' && answer !== UNSUPPORTED ? answer : null))
@@ -623,7 +624,7 @@ const MoveProxyEndpoints: React.FC<{ proxy: Proxy; onClose: () => void; onMoved:
   // The proxy chosen last: what an earlier choice's answer says is not shown for it.
   const chosen = useRef('')
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!proxy.owner) return
     graphQLAccountProxies(proxy.owner.id).then(read =>
       setTargets(Array.isArray(read) ? read.filter(each => each.id !== proxy.id) : 'ERROR')

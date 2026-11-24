@@ -18,6 +18,7 @@ import {
   thisMachine,
   thisMachineNow,
 } from '../services/localPorts'
+import { useReadEffect } from './useReadAgain'
 
 export type LocalPortState = {
   offered: boolean // this machine runs our daemon, and local ports are offered on it
@@ -68,18 +69,21 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
   const listed = ports && local?.open ? listedFor(ports, local) ?? null : undefined
   const others = ports && serviceId ? listedOthers(ports, serviceId, local) : NONE
 
-  useEffect(() => {
-    setLocal(undefined)
-    setError(undefined)
-    if (!machineId || !serviceId) return
-    let live = true
-    graphQLLocalPort(machineId, serviceId).then(found => live && setLocal(found ?? undefined))
-    return () => {
-      live = false
-    }
-  }, [machineId, serviceId])
+  useReadEffect(
+    again => {
+      if (!again) setLocal(undefined)
+      if (!again) setError(undefined)
+      if (!machineId || !serviceId) return
+      let live = true
+      graphQLLocalPort(machineId, serviceId).then(found => live && setLocal(found ?? undefined))
+      return () => {
+        live = false
+      }
+    },
+    [machineId, serviceId]
+  )
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!polling || !machineId || !serviceId || local?.state !== 'pending') return
     if (Date.now() - polling > POLL_FOR_MS) return
     const timer = setTimeout(async () => {

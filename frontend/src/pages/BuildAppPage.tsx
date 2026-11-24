@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -11,6 +11,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { AppPublisher, AppPublishing, graphQLAppPublisher } from '../services/graphQLAppPublishers'
 import { starterArchive } from '../helpers/appStarter'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* Build it yourself (/apps/build; presence-server docs/device-apps-new-app.md): the same publishing from a terminal,
    a script or CI, with remoteit-app (remoteit/apps tools/) — the steps, the key file the Publisher page made (the
@@ -33,14 +34,17 @@ export const BuildAppPage: React.FC = () => {
 
   // Read afresh for each account: switching organizations here must not leave the last one's publisher to name the
   // starter until the new one is known.
-  useEffect(() => {
-    let current = true
-    setRead(undefined)
-    graphQLAppPublisher(account).then(answer => current && setRead(answer ?? null))
-    return () => {
-      current = false
-    }
-  }, [account])
+  useReadEffect(
+    again => {
+      let current = true
+      if (!again) setRead(undefined)
+      graphQLAppPublisher(account).then(answer => current && setRead(answer ?? null))
+      return () => {
+        current = false
+      }
+    },
+    [account]
+  )
 
   // The publisher the starter and the steps are named for: none until it is read, and then the account's or none.
   const id = read?.publisher?.id

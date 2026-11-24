@@ -28,6 +28,7 @@ import { DataDisplay } from '../components/DataDisplay'
 import { Gutters } from '../components/Gutters'
 import { JobRunPanel, JobRunStatus, useJobRuns, useJobWatch } from '../components/JobRunPanel'
 import { radius, spacing } from '../styling'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Props = {
   showBack?: boolean
@@ -60,12 +61,13 @@ export const JobDetailPage: React.FC<Props> = () => {
 
   // Reset tracked attempts when the active account changes so users who
   // switch orgs/accounts can re-attempt the same URL under the new context.
-  useEffect(() => {
+  // And when another sign-in comes to serve the account: what it could not read, the one serving it now may.
+  useReadEffect(() => {
     attempted.current = new Set()
   }, [accountId])
 
   // Load jobs if not already loaded
-  useEffect(() => {
+  useReadEffect(() => {
     if (job) return
 
     // Prefer file-scoped fetch when the script is in our local cache.
@@ -87,7 +89,7 @@ export const JobDetailPage: React.FC<Props> = () => {
   }, [file, job, fetching, fileID, jobID, jobsFetching])
 
   // Ensure files are loaded for file argument display
-  useEffect(() => {
+  useReadEffect(() => {
     dispatch.files.fetchIfEmpty()
   }, [])
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Box, ListItem, ListItemIcon } from '@mui/material'
@@ -23,6 +23,7 @@ import { ListItemSetting } from './ListItemSetting'
 import { Notice } from './Notice'
 import { SelectSetting } from './SelectSetting'
 import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 /* remote.it Protect and the exit it routes through (graphql-api docs/PROXY-GROUPS.md §13, §15), apart, as the device's
    own app ("remote.it Protect", "Route through") and its menu show them: a Protect switch, and a Route through picker
@@ -49,7 +50,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const settings = useDeviceSettings(device.id)
   const protectSetting = settings.setting('protect')
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     const answer = await graphQLDeviceExit(device.id)
     setInfo(answer && typeof answer === 'object' ? answer : null)
     if (!answer || typeof answer !== 'object') return
@@ -63,7 +64,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
     setKeepProtect(keeps)
   }, [device.id])
 
-  useEffect(() => {
+  useReadEffect(() => {
     load()
   }, [load])
 

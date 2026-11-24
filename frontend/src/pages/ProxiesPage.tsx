@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography } from '@mui/material'
@@ -17,6 +17,7 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Choice = Exclude<Awaited<ReturnType<typeof graphQLProxies>>, 'ERROR' | typeof UNSUPPORTED>[number]
 
@@ -33,7 +34,7 @@ export const ProxiesPage: React.FC = () => {
   const { value: proxies } = useAccountProxies()
   const [remoteit, setRemoteit] = useState<Choice[]>([])
 
-  useEffect(() => {
+  useReadEffect(() => {
     graphQLProxies().then(list => setRemoteit(Array.isArray(list) ? list.filter(proxy => proxy.remoteit) : []))
   }, [])
 

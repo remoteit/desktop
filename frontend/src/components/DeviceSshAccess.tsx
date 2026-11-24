@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
@@ -22,6 +22,7 @@ import {
   validExistingAccount,
   validSshHandle,
 } from '../services/graphQLDeviceSsh'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* Who may log in through a device's console by SSH certificate (services/graphQLDeviceSsh), on its details page: for
    whoever manages it. A person is let in as their own account there — r3-<their handle or email's name>, made by the
@@ -39,10 +40,13 @@ export const DeviceSshAccess: React.FC<{ deviceId: string }> = ({ deviceId }) =>
   const [naming, setNaming] = useState<string>() // the person whose own account is being named
   const load = async () => setRead(await graphQLDeviceSsh(deviceId))
 
-  useEffect(() => {
-    setRead(undefined)
-    load()
-  }, [deviceId])
+  useReadEffect(
+    again => {
+      if (!again) setRead(undefined)
+      load()
+    },
+    [deviceId]
+  )
 
   if (!read) return null
 

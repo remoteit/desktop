@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { List, ListSubheader } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Contacts = { billingEmail: string; notificationEmail: string }
 
@@ -10,7 +11,7 @@ export function OrganizationContactSettings({ accountId }: { accountId: string }
   const { t } = useTranslation()
   const [contacts, setContacts] = useState<Contacts>()
 
-  useEffect(() => {
+  useReadEffect(() => {
     let current = true
     async function load() {
       const result = await graphQLBasicRequest(

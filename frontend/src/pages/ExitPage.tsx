@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHistory, useParams } from 'react-router-dom'
 import { List, ListItem, ListItemText, ListSubheader, MenuItem, TextField, Typography } from '@mui/material'
@@ -36,6 +36,7 @@ import { Gutters } from '../components/Gutters'
 import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 /* One exit (graphql-api docs/PROXY-GROUPS.md §13). For whoever manages it: its name and activation, whether its users
    reach its devices' local networks — the exit's setting, asked before it is opened, and closed at once —, the devices
@@ -70,7 +71,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
   const reads = useRef(0)
 
   // Only the last read asked for is shown: one answered late never overwrites a newer one.
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     const read = ++reads.current
     const answer = await graphQLExit(exitID)
     if (read === reads.current) setExit(answer)
@@ -81,7 +82,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
     await load()
   }
 
-  useEffect(() => {
+  useReadEffect(() => {
     load()
   }, [load])
 
@@ -491,7 +492,7 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
   // The exit chosen last: what an earlier choice's answer says is not shown for it.
   const chosen = useRef('')
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!exit.owner) return
     graphQLAccountExits(exit.owner.id).then(read =>
       setTargets(

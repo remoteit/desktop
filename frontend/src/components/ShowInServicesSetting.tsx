@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { graphQLSetShowInServices, graphQLShowInServices } from '../services/graphQLServiceShortcuts'
 import { useServiceShortcutsSupport } from '../hooks/useServiceShortcutsSupport'
 import { ListItemCheckbox } from './ListItemCheckbox'
 import { Notice } from './Notice'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 export function ShowInServicesSetting({ serviceId }: { serviceId: string }) {
   const { t } = useTranslation()
@@ -13,7 +14,7 @@ export function ShowInServicesSetting({ serviceId }: { serviceId: string }) {
   const [failed, setFailed] = useState(false)
   const supported = !!support && support !== 'ERROR' && support.available
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!supported) return
     let current = true
     graphQLShowInServices(serviceId).then(result => {

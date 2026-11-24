@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { State } from '../store'
 import { fetchFileStorage, FileStorage } from '../services/fileStorage'
+import { useReadEffect } from './useReadAgain'
 
 type Read = ReturnType<typeof fetchFileStorage>
 
@@ -23,7 +24,7 @@ export function useFileStorage(accountId?: string): FileStorage | null | undefin
   const files = useSelector((state: State) => (accountId ? state.files.all[accountId] : undefined))
   const [storage, setStorage] = useState<FileStorage | null>()
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!accountId) return setStorage(null)
     let current = true
     read(accountId).then(result => {

@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Dispatch } from '../store'
 import { selectOrganization } from '../selectors/organizations'
+import { useReadEffect } from './useReadAgain'
 
 // Lazily loads the active org's guests (they are not part of the normal
 // organization.fetch query) and returns them along with the loaded flag. Safe
@@ -11,7 +11,7 @@ export function useGuests(): { guests: IGuest[]; guestsLoaded: boolean } {
   const dispatch = useDispatch<Dispatch>()
   const { guests, guestsLoaded } = useSelector(selectOrganization)
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!guestsLoaded) dispatch.organization.fetchGuests()
   }, [guests])
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Button, List, ListItem, ListItemText, MenuItem, Stack, TextField, Typography } from '@mui/material'
 import { NetworkDeviceRole } from '../services/graphQLDeviceNetworks'
@@ -17,6 +17,7 @@ import { ConfirmIconButton } from '../buttons/ConfirmIconButton'
 import { ListItemSetting } from './ListItemSetting'
 import { Notice } from './Notice'
 import { roleName } from '../helpers/productPolicyHelper'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Props = {
   productId: string
@@ -226,7 +227,7 @@ const Proxies: React.FC<{ productId: string; accountId: string; manage: boolean;
     setProxies(answer === 'ERROR' ? [] : answer)
   }
 
-  useEffect(() => {
+  useReadEffect(() => {
     load()
   }, [productId, accountId])
 

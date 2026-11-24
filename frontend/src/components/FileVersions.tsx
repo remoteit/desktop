@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { List, ListItem, ListItemText, Typography } from '@mui/material'
@@ -9,6 +9,7 @@ import { formatBytes } from '../helpers/usageHelper'
 import { DeleteButton } from '../buttons/DeleteButton'
 import { Timestamp } from './Timestamp'
 import { Notice } from './Notice'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 /* A file's versions, newest first, each with what it stores — every one counts against the account's storage — and,
    for one who may, a delete for each old version, freeing its bytes at once (graphql deleteFileVersion). The newest
@@ -19,12 +20,12 @@ export const FileVersions: React.FC<{ fileId: string; canDelete?: boolean }> = (
   const accountId = useSelector(selectActiveAccountId)
   const [versions, setVersions] = useState<FileVersionEntry[] | null>()
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     const result = await fetchFileVersions(accountId, fileId)
     setVersions(Array.isArray(result) ? result : null)
   }, [accountId, fileId])
 
-  useEffect(() => {
+  useReadEffect(() => {
     load()
   }, [load])
 

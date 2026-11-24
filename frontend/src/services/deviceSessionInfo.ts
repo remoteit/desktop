@@ -1,6 +1,7 @@
 import { post } from './post'
 import { store } from '../store'
 import { requestSignIn } from '../selectors/signIns'
+import { accountCache } from './accountCaches'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { Upkeep, withoutDeviceSessions } from './graphQLDaemon'
 
@@ -166,6 +167,10 @@ async function read(ids: string[], sub: string) {
 export function refreshDeviceSessionInfo() {
   for (const id of [...info.keys()]) requestDeviceSessionInfo(id, true)
 }
+
+// Kept by device, read as the sign-in that served its account then: when accounts' stored data is dropped, another
+// may serve it, and says what it may see of it (the agent, who it acts for).
+accountCache(refreshDeviceSessionInfo)
 
 // User mode (graphql setDeviceUserMode): a device the caller manages acting for them — or no longer — then read anew.
 export async function setDeviceUserMode(deviceId: string, on: boolean) {

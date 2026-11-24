@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { useDispatch, useSelector } from 'react-redux'
@@ -34,6 +34,7 @@ import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
 import { AppCapabilities } from '../components/AppRootConsent'
 import { addAsks, adminControlLine, allowLine, asksConsent, channelName } from '../helpers/appsHelper'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Target = 'devices' | 'tag' | 'product'
 
@@ -88,7 +89,7 @@ export const AppAddDialog: React.FC = () => {
 
   const close = () => history.push(`/apps/${appID}`)
 
-  useEffect(() => {
+  useReadEffect(() => {
     let current = true
     graphQLCatalogApp(appID, { accountId: account, releases: 100 }).then(
       answer => current && setApp(answer === 'UNSERVED' ? 'ERROR' : answer)
@@ -100,7 +101,7 @@ export const AppAddDialog: React.FC = () => {
     }
   }, [appID, account])
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (target !== 'devices') return
     let current = true
     const timer = setTimeout(
@@ -113,17 +114,20 @@ export const AppAddDialog: React.FC = () => {
     }
   }, [appID, account, search, target])
 
-  useEffect(() => {
-    setTagCount(undefined)
-    if (target !== 'tag' || !tagged.length) return
-    let current = true
-    graphQLFetchDeviceCount({ tag: { operator, values: tagged }, accountId } as gqlOptions).then(response => {
-      if (current && response !== 'ERROR') setTagCount(response?.data?.data?.login?.account?.devices?.total)
-    })
-    return () => {
-      current = false
-    }
-  }, [target, tagged.join(','), operator, accountId])
+  useReadEffect(
+    again => {
+      if (!again) setTagCount(undefined)
+      if (target !== 'tag' || !tagged.length) return
+      let current = true
+      graphQLFetchDeviceCount({ tag: { operator, values: tagged }, accountId } as gqlOptions).then(response => {
+        if (current && response !== 'ERROR') setTagCount(response?.data?.data?.login?.account?.devices?.total)
+      })
+      return () => {
+        current = false
+      }
+    },
+    [target, tagged.join(','), operator, accountId]
+  )
 
   const ready = app && app !== 'ERROR' ? app : undefined
   const standing = ready?.releases.filter(r => !r.withdrawn) ?? []

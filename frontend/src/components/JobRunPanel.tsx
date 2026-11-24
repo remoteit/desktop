@@ -18,6 +18,7 @@ import {
 } from '../services/jobRuns'
 import { watchJobRun } from '../services/jobOutputSocket'
 import { jobChangeKey } from '../hooks/useJobDevices'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* A job's runs on the job runner (device-package docs/scripting-plan.md, "As built (phase 4)"): each run's phase, its
    progress and why it failed, read on their own beside the job; and for the run shown, the account it ran as, its exit,
@@ -42,7 +43,7 @@ export function useJobRuns(
   const timer = useRef<ReturnType<typeof setTimeout>>()
   const key = job ? `${jobChangeKey(job)}:${tick}:${size}:${jobDeviceId}` : ''
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!job || unsupported.current) return
     const load = async () => {
       last.current = Date.now()
@@ -172,7 +173,7 @@ export const JobRunPanel: React.FC<PanelProps> = ({ accountId, jobId, jobDeviceI
   const follow = useRef(true)
 
   // What it has said so far (the live tail, or once it has ended its output.log), read when shown and at its end.
-  useEffect(() => {
+  useReadEffect(() => {
     if (!run) return
     let gone = false
     fetchRunOutput(accountId, jobId, jobDeviceId).then(result => {

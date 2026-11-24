@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert,
@@ -22,6 +22,7 @@ import {
   revokePortalUserMode,
   UserModeScope,
 } from '../services/devicePortalUserMode'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Binding = PortalUserMode['portalUserMode'][number]
 type Confirmation = { enable: UserModeScope } | { revoke: Binding }
@@ -44,7 +45,7 @@ export const DevicePortalUserMode: React.FC<{ deviceId: string; legacy: React.Re
   const pending = refreshDue || !!data?.portalUserMode.some(binding => binding.state === 'pending')
   const refresh = () => setRevision(value => value + 1)
 
-  useEffect(() => {
+  useReadEffect(() => {
     let current = true
     let reading = false
     const read = async () => {
