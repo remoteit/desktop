@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
@@ -31,6 +31,7 @@ import { Gutters } from './Gutters'
 import { Icon } from './Icon'
 import { LIST_ITEM_ICON_WIDTH, spacing } from '../styling'
 import { roleName } from '../helpers/productPolicyHelper'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Props = {
   productId: string
@@ -257,7 +258,7 @@ const Proxies: React.FC<{ productId: string; accountId: string; manage: boolean;
     setProxies(answer === 'ERROR' ? [] : answer)
   }
 
-  useEffect(() => {
+  useReadEffect(() => {
     load()
   }, [productId, accountId])
 

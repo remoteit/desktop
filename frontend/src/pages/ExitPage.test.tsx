@@ -601,7 +601,7 @@ describe('who it is shared with, its tags, and its networks', () => {
     expect(networks.map(each => each.getAttribute('data-location'))).toEqual(['/networks/N1', '/networks/N2'])
     expect(networks[1].textContent).toContain('Shop')
     await click(button('Remove from Shop'))
-    expect(setNetworkExit).toHaveBeenCalledWith('N2', 'xoffice', false)
+    expect(setNetworkExit).toHaveBeenCalledWith('N2', 'xoffice', false, 'exit')
     expect(readExit).toHaveBeenCalledTimes(2)
     expect(reload).toHaveBeenCalledTimes(1)
   })

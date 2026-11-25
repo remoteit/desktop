@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -39,6 +39,7 @@ import {
   PublisherChange,
   releasesSignedBy,
 } from '../services/graphQLAppPublishers'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* The account's app publisher (presence-server docs/device-apps-design.md, build step 7): claim a publisher id — the
    first part of every app id it publishes, first come, first served, remote.it's and well-known names reserved, and for
@@ -72,14 +73,17 @@ export const PublisherPage: React.FC = () => {
   const createLabels = useCreateLabels()
   const [createRequest, setCreateRequest] = useState<CreateRequest>()
 
-  useEffect(() => {
-    let current = true
-    setRead(undefined)
-    graphQLAppPublisher(account).then(answer => current && setRead(answer ?? null))
-    return () => {
-      current = false
-    }
-  }, [account])
+  useReadEffect(
+    again => {
+      let current = true
+      if (!again) setRead(undefined)
+      graphQLAppPublisher(account).then(answer => current && setRead(answer ?? null))
+      return () => {
+        current = false
+      }
+    },
+    [account]
+  )
 
   const apply = async (work: () => Promise<PublisherChange>) => {
     setBusy(true)

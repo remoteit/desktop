@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Stack, Chip } from '@mui/material'
 import { Dispatch } from '../store'
 import { useDispatch } from 'react-redux'
 import { useTranslation } from 'react-i18next'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Props = {
   role: Partial<IOrganizationRole>
@@ -14,7 +15,7 @@ export const RoleAccessCounts: React.FC<Props> = ({ role }) => {
   const [loading, setLoading] = useState<boolean>(true)
   const [counts, setCounts] = useState<{ devices: number; networks: number } | null>(null)
 
-  useEffect(() => {
+  useReadEffect(() => {
     ;(async () => {
       setLoading(true)
       const devices = await dispatch.devices.fetchCount(role)

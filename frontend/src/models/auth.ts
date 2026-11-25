@@ -6,6 +6,7 @@ import pushNotifications from '../services/pushNotifications'
 import browser from '../services/browser'
 import analytics from '../services/analytics'
 import { selectDeviceModelAttributes } from '../selectors/devices'
+import { RowKey, rowAccount, rowKey, rowSub } from '../helpers/rowKey'
 import {
   AGENT_RELEASE_TIMEOUT,
   SIGN_OUT_BACKEND_TIMEOUT,
@@ -15,6 +16,7 @@ import {
 } from '../constants'
 import { chooseStage, reloadIfStageChanged } from '../helpers/stageHelper'
 import { persistor, persistsState, store } from '../store'
+import type { State } from '../store'
 import { graphQLLogin } from '../services/graphQLRequest'
 import { getToken } from '../services/remoteit'
 import { changePassword as changeAccountPassword } from '../services/accountSecurity'
@@ -38,6 +40,14 @@ import {
   oidcActor,
   oidcTakeSupportTicket,
   oidcSelectKnownAccount,
+  oidcAccounts,
+  oidcSignIns,
+  oidcSignOutAccount,
+  oidcPromoteSignIn,
+  oidcSubscribe,
+  oidcSeveral,
+  oidcSetSeveral,
+  oidcUseAccount,
   oidcClearAutoStarts,
   oidcUseShell,
   oidcShell,
@@ -47,6 +57,7 @@ import {
   OidcErrorCode,
 } from '../services/oidc'
 import { createModel } from '@rematch/core'
+import { ISignIn, getSignIns, selectAccountRoutes, storedRows } from '../selectors/signIns'
 import { RootModel } from '.'
 import zendesk from '../services/zendesk'
 import i18n from '../i18n'
@@ -142,6 +153,30 @@ const rehydrated = () =>
     })
   })
 
+// The sign-ins in use are followed from the moment someone is signed in: one joining or leaving (here, in another
+// tab, or in the app's menu) changes the rows with no reload. A token rotating changes no one, and asks nothing.
+const signInSubs = () =>
+  oidcSignIns()
+    .filter(signIn => !signIn.primary)
+    .map(signIn => signIn.sub)
+    .sort()
+    .join(' ')
+let followed: string | undefined
+let unfollow: (() => void) | undefined
+function followSignIns() {
+  followed = signInSubs()
+  unfollow ??= oidcSubscribe(() => {
+    const now = signInSubs()
+    if (now === followed || !store.getState().auth.authenticated) return
+    followed = now
+    void store.dispatch.accounts.fetchSignIns()
+  })
+}
+function unfollowSignIns() {
+  unfollow?.()
+  unfollow = followed = undefined
+}
+
 const signInCleared = {
   signInFailed: false,
   signInError: undefined,
@@ -190,12 +225,16 @@ export default createModel<RootModel>()({
             return
           }
           const previous = oidcClaims()?.sub
-          // A different account arriving on this phone: the leaving one's push token goes while its session can still mint
+          // With one account in use, a different one arriving on this phone replaces it: the leaving one's push
+          // token goes while its session can still mint.
           const claims = await oidcCompleteFromUrl(undefined, async returned => {
-            if (previous && returned?.sub !== previous) await pushNotifications.unregister()
+            if (!oidcSeveral() && previous && returned?.sub !== previous) await pushNotifications.unregister()
             return true
           })
-          if (claims) await dispatch.auth.handleSignInSuccess()
+          // With several in use, another account arriving joined the one signed in (services/oidc exchangeCallback):
+          // the page's person is who they were, restored and checked below like any stored session, and the new
+          // account's rows follow.
+          if (claims && claims.sub === oidcClaims()?.sub) await dispatch.auth.handleSignInSuccess()
           else if (oidcSignedIn()) {
             // Stored tokens are a CLAIM of a session, not proof of one: the AS may have
             // revoked it (sign-out elsewhere, admin action, family revocation). Force one
@@ -216,6 +255,10 @@ export default createModel<RootModel>()({
               // a refused silent round falls to the ordinary sign-in screen.
               const hint = switched && oidcActivationHint()
               if (hint) await oidcStart({ prompt: 'none', loginHint: hint, auto: `activate:${hint}` })
+              // This account's grant is dead and its tokens are gone, with others still signed in: the page boots
+              // as the next of them, as it does when its person signs out (signedOut). Each dead one is dropped
+              // before the next is tried, so this ends. Not under the app's shell, which says who is active.
+              else if (!oidcSignedIn() && !oidcShell() && oidcPromoteSignIn()) return window.location.assign('/')
             }
           } else if (!oidcConfigured()) console.error('VITE_OAUTH_ISSUER is not configured')
         } catch (error: any) {
@@ -264,52 +307,103 @@ export default createModel<RootModel>()({
         console.warn('AUTH: grant heal check failed (leaving the session as it is)', error)
       }
     },
-    /** Account switch: re-run authorize with select_account — the AS chooser shows the
-     * real session chips. Completion replaces the session like any sign-in (a SAME-account
-     * re-auth revokes the old family; a DIFFERENT account files the old one in the registry —
-     * services/oidc.ts). On desktop the chooser returns through a deep link that the live
-     * window completes (completeCallback), so the agent is released only for a different account.
-     * Any other shell with a local backend (the browser UI on the backend's own port) returns
-     * through a fresh page load that cannot release it, so that shell still releases first. */
-    async switchAccount(_: void) {
-      if (!browser.isElectron && !(await dispatch.auth.releaseAgent())) return
+    /** "Sign in on this device": re-run authorize with select_account — the AS chooser shows the
+     * real session chips. A SAME-account re-auth replaces that account's family.
+     *
+     * With several used at once, the account that comes back JOINS the one signed in (services/oidc.ts
+     * exchangeCallback): the page's person, their rows and this computer's agent stay as they are, and
+     * the new account's rows appear beside them. On desktop the chooser returns through a deep link that
+     * the live window completes (completeCallback) with no reload; on the web the authorize is a page of
+     * its own, and the app boots again as the same person with the new account beside them.
+     *
+     * With one used at a time, the account that comes back becomes the page's person and the one it
+     * replaces stays saved. On desktop the live window releases the agent only for a different account
+     * (completeCallback); any other shell with a local backend returns through a fresh page load that
+     * cannot release it, so that shell releases first. */
+    async addAccount(_: void) {
+      if (!oidcSeveral() && !browser.isElectron && !(await dispatch.auth.releaseAgent())) return
       try {
         await oidcStart({ prompt: 'select_account' })
       } catch (error) {
         dispatch.auth.set(signInFailure(error))
       }
     },
-    /** Activate a SAVED account from the avatar menu (the oidc registry): a storage swap
-     * plus a full reload, so every model boots as the new identity — a soft swap would
-     * bleed one account's devices and orgs into the other's view. A stale saved session
-     * surfaces on boot exactly like any expired sign-in (refresh fails → sign-in screen),
-     * which is the honest fallback. An unknown sub falls to the add-account chooser, so a
-     * menu row that somehow outlived its registry entry still lands somewhere sensible. */
+    /** Make another account the page's person from the avatar menu: the pages about one person
+     * (profile, billing, keys, chat) are then about them. A storage swap plus a full reload, so every
+     * model boots as the new identity — a soft swap would show one account's profile under the other's
+     * name. A stale saved session surfaces on boot exactly like any expired sign-in (refresh fails →
+     * sign-in screen), which is the honest fallback.
+     *
+     * With one used at a time this is the switch: the account left stays saved, and is used no more.
+     * With several used at once, both stay in use and the switcher's rows are the same either way; an
+     * account that is NOT in use yet (saved, known to this browser, or remembered by the app's shell)
+     * is brought into use beside the page's person instead (useAccount), with no reload where none is
+     * needed. An unknown sub falls to the chooser, so a menu row that somehow outlived its entry still
+     * lands somewhere sensible. */
     async activateAccount(sub: string) {
       if (oidcClaims()?.sub === sub) return // already active — nothing to do
+      if (oidcSeveral() && !oidcAccounts().find(a => a.sub === sub)?.signedIn)
+        return dispatch.auth.useAccount({ sub, use: true })
       if (oidcIsSavedAccount(sub)) {
         if (!(await dispatch.auth.releaseAgent())) return
         await pushNotifications.unregister()
         if (oidcActivateAccount(sub)) return window.location.assign('/')
       }
-      // A KNOWN account (signed in on this browser, not in this app yet): silent selection —
-      // the AS serves the live set member the hint names, no chooser (docs/browser-accounts.md).
-      // Outside desktop it returns through a page load that cannot release the agent (switchAccount).
+      // Under the app's shell the accounts are the shell's: it makes this one active and the page boots as them.
+      // A KNOWN account (signed in on this browser, not in this app yet), with one used at a time: silent
+      // selection — the AS serves the live set member the hint names, no chooser (docs/browser-accounts.md).
+      // Outside desktop it returns through a page load that cannot release the agent (addAccount).
       if (!browser.isElectron && !(await dispatch.auth.releaseAgent())) return
       if (await oidcSelectKnownAccount(sub)) return
-      await dispatch.auth.switchAccount()
+      await dispatch.auth.addAccount()
+    },
+    /** The check beside an account, with several used at once. Checked: a saved account is used again
+     * and its rows appear, with no reload; one this browser only knows is signed in by a silent
+     * selection, and one that cannot be falls to the chooser. Unchecked: it is used no more — its rows
+     * and what was stored for them go, its socket closes — and it stays saved, a check away. Signing it
+     * out (signOutAccount) is what forgets it. */
+    async useAccount({ sub, use }: { sub: string; use: boolean }) {
+      try {
+        if (!(await oidcUseAccount(sub, use)) && use) return dispatch.auth.addAccount()
+      } catch (error) {
+        console.warn('AUTH: the account’s use was not changed', error)
+      }
+      await dispatch.accounts.fetchSignIns()
+    },
+    /** Use several at once, on or off (services/oidc oidcSetSeveral). Off: the page's person stays, and
+     * every other account's rows, stored data and socket go with its use; the accounts stay saved. */
+    async setSeveral(several: boolean) {
+      await oidcSetSeveral(several)
+      await dispatch.accounts.fetchSignIns()
+    },
+    /** Sign ONE account out and leave the rest. An account beside the page's person, in use or only
+     * saved: its sign-in ends (its own session at the AS; under the app's shell, the shell's sign-out of
+     * it) and it is forgotten here, and its rows and what was stored for them go, with no reload. The page's own person signs out as ever (signOut),
+     * and the page then boots as one of those still signed in. */
+    async signOutAccount(sub: string) {
+      if (oidcClaims()?.sub === sub) return dispatch.auth.signOut()
+      try {
+        await withTimeout(oidcSignOutAccount(sub), SIGN_OUT_SESSION_TIMEOUT)
+      } catch (error) {
+        console.warn('SIGN OUT: the account was not signed out', error)
+      }
+      await dispatch.accounts.fetchSignIns()
     },
     /** Desktop: a chooser's deep link delivered to this still signed-in window (liveAuthCallback).
-     *  A DIFFERENT account is stored only once this window has released the agent. */
+     *  With several used at once, a DIFFERENT account joins the one signed in: nothing reloads, the agent
+     *  stays its owner's, and the new account's rows are read (models/accounts followSignIns). With one
+     *  used at a time it becomes the page's person, stored only once this window has released the agent. */
     async completeCallback(search: string) {
       const previous = oidcClaims()?.sub
       const healing = oidcCallbackReason(search) === 'heal'
+      const several = oidcSeveral()
       try {
         const claims = await oidcCompleteFromUrl(
           search,
-          async returned => returned?.sub === previous || dispatch.auth.releaseAgent()
+          async returned => several || returned?.sub === previous || dispatch.auth.releaseAgent()
         )
-        if (claims) window.location.assign('/')
+        if (claims && (!several || claims.sub === previous)) window.location.assign('/')
+        else if (claims) await dispatch.accounts.fetchSignIns()
       } catch (error: any) {
         console.error('AUTH: sign-in callback did not complete', error)
         if (healing) return
@@ -357,11 +451,14 @@ export default createModel<RootModel>()({
       await rehydrated()
       const owner = store.getState().user.id
       if (persistsState && user?.id && owner !== user.id) {
-        auth.resetAccountData()
+        auth.adoptAccountData(user.id)
         broadcastChatSignout()
       }
       // Stamped here rather than when user.fetch lands, so a second switch before then still sees an owner.
-      if (user?.id) dispatch.user.set({ id: user.id })
+      if (user?.id) {
+        dispatch.user.set({ id: user.id })
+        dispatch.accounts.set({ primarySub: oidcClaims()?.sub })
+      }
 
       auth.set({ user, ...signInCleared })
       if (user.authhash && user.yoicsId) {
@@ -488,6 +585,7 @@ export default createModel<RootModel>()({
       await cloudSync.all()
     },
     async signedIn(_: void, state) {
+      followSignIns()
       dispatch.ui.init()
       zendesk.initChat(state.auth.user)
       analytics.signedIn(state.auth.user)
@@ -557,7 +655,12 @@ export default createModel<RootModel>()({
       // through it with no session — so it forgets itself: in signOut while the session lives, else here, its device
       // then left to its expiry if no token can remove it.
       await forgetBrowserClientAtSignOut()
-      await persistor.purge()
+      unfollowSignIns()
+      // Other accounts are still signed in: the page boots as one of them below, and what is stored for the rows
+      // they serve is theirs to keep — the boot's owner check drops what only this person's sign-in served
+      // (adoptAccountData). The last one out purges it all.
+      const others = oidcSignIns().some(signIn => !signIn.primary)
+      if (!others) await persistor.purge()
       // Drop this app's tokens. The AS is never called from here — the failure paths land here
       // too; the person's own sign-out ended the AS session in signOut before this.
       oidcClearLocal()
@@ -567,7 +670,8 @@ export default createModel<RootModel>()({
          a stale error and no redirect, for something that happened in someone else's
          session. */
       await dispatch.auth.set({ user: undefined, ...signInCleared })
-      dispatch.auth.resetAccountData()
+      if (others) dispatch.auth.resetPersonData()
+      else dispatch.auth.resetAccountData()
       dispatch.agents.reset()
       dispatch.logs.reset()
       dispatch.search.reset()
@@ -594,26 +698,81 @@ export default createModel<RootModel>()({
       emit('user/sign-out-complete')
       cloudController.reset()
       Controller.close()
-      reloadIfStageChanged()
+      // Someone is still signed in: the next of them becomes the page's person, and the page boots as them.
+      if (others && oidcPromoteSignIn()) window.location.assign('/')
+      else reloadIfStageChanged()
     },
-    /** Every persisted model: what sign-out clears, and what a sign-in finding another account's state clears. */
+    /** Every persisted model: what the last sign-out clears. */
     resetAccountData() {
-      dispatch.chat.reset()
-      dispatch.user.reset()
+      dispatch.auth.resetPersonData()
       dispatch.organization.reset()
       dispatch.networks.reset()
       dispatch.accounts.reset()
-      dispatch.connections.reset()
       dispatch.devices.reset()
-      dispatch.sessions.reset()
-      dispatch.announcements.reset()
       dispatch.applicationTypes.reset()
-      dispatch.plans.reset()
-      dispatch.contacts.reset()
       dispatch.files.reset()
       dispatch.jobs.reset()
       dispatch.tags.reset()
       dispatch.products.reset()
+    },
+    /** The persisted models that are about ONE person — the page's own — rather than kept by account id: what goes
+     *  whenever the page's person changes, whoever else stays signed in. */
+    resetPersonData() {
+      dispatch.chat.reset()
+      dispatch.user.reset()
+      dispatch.connections.reset()
+      dispatch.sessions.reset()
+      dispatch.announcements.reset()
+      dispatch.plans.reset()
+      dispatch.contacts.reset()
+    },
+    /** The page boots as `userId` over state stored for another person. What is about one person goes. What is
+     *  kept by row (helpers/rowKey) — an account's data as each sign-in read it — stays for every sign-in still in
+     *  use, said again for the new person: their rows become the plain ones, the former person's the rows under
+     *  their sub. So signing one account out, or making another the page's person, costs the others nothing, and
+     *  nothing is left to show that was read as someone who has left. With no record of whose the plain rows were,
+     *  none of them is kept. The rows are laid out again as stored for the people still signed in — the new person's
+     *  own memberships theirs, the former person a sign-in beside them — so that when they are read again
+     *  (accounts.fetch, fetchSignIns) a row whose sign-in changes then is still seen to (models/accounts rowsAfter). */
+    adoptAccountData(userId: string) {
+      const state = store.getState()
+      const { accounts, user } = state
+      const people = oidcSignIns()
+      const inUse = new Set(people.map(signIn => signIn.sub))
+      const primarySub = people.find(signIn => signIn.primary)?.sub
+      const formerSub = accounts.primarySub
+      const before = getSignIns(state)
+      // Every sign-in still in use as it was stored, by sub: those beside the former person, and the former person.
+      const known: ILookup<ISignIn> = { ...before }
+      if (formerSub && user.id)
+        known[formerSub] = { sub: formerSub, id: user.id, email: user.email || '', membership: accounts.membership }
+      const signIns: ILookup<ISignIn> = {}
+      people.forEach(({ sub, primary }) => !primary && known[sub] && (signIns[sub] = known[sub]))
+      const membership = (primarySub && before[primarySub]?.membership) || []
+      const reached = selectAccountRoutes({
+        auth: { user: { id: userId } },
+        user,
+        accounts: { membership, signIns },
+      } as State)
+      const rows: ILookup<RowKey> = {}
+      storedRows(state).forEach(row => {
+        const sub = rowSub(row) || formerSub
+        if (!sub || !inUse.has(sub)) return
+        const as = sub === primarySub ? '' : sub
+        if (reached[rowAccount(row)]?.reach.some(who => who.sub === as)) rows[row] = rowKey(rowAccount(row), as)
+      })
+      dispatch.accounts.rekey(rows)
+      dispatch.auth.resetPersonData()
+      // The new person starts on their own account.
+      dispatch.accounts.set({
+        membership,
+        signIns,
+        activeId: undefined,
+        activeSub: undefined,
+        primarySub: undefined,
+        pendingOrganizationClosures: undefined,
+      })
+      console.log('AUTH: stored state was another person’s — kept the accounts the same sign-ins still serve', userId)
     },
     /** Test Settings' stage switch. This signs out of the old login server; the reload at the end of
      *  signedOut boots every endpoint on the new stage, where init drops the old stage's accounts. */

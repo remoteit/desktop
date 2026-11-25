@@ -469,7 +469,7 @@ let schema: Promise<RolloutSchema | 'ERROR'> | undefined
 
 export function rolloutSchema(): Promise<RolloutSchema | 'ERROR'> {
   if (!schema)
-    schema = post({ query: PROBE }).then(response => {
+    schema = post({ query: PROBE }, '', false, false, { sub: '' }).then(response => {
       if (response === 'ERROR' || response.data?.errors) {
         schema = undefined
         return 'ERROR'
@@ -485,7 +485,7 @@ export function resetRolloutSchema() {
 }
 
 async function read<T>(query: string, variables: ILookup<any>, field: string): Promise<Result<T | null>> {
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', false, false, { sub: '' })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, field)) return UNSUPPORTED
@@ -605,7 +605,7 @@ export async function graphQLRolloutMutation(
   const selection =
     name === 'setDaemonInstall' ? served.install : name === 'refreshDaemonRollout' ? '__typename' : served.returns
   const request = buildCall('mutation', field, variables, selection)
-  const response = await graphQLRequestWithReason(request.query, request.variables)
+  const response = await graphQLRequestWithReason(request.query, request.variables, { sub: '' })
   if (response === 'ERROR') return { ok: false, reason: `${name} failed.` }
   if ('reason' in response) return { ok: false, reason: response.reason || `${name} was refused.` }
   return { ok: true, data: response.data?.data?.[name] }

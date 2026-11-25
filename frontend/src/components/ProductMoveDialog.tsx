@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MenuItem, TextField, Typography } from '@mui/material'
 import {
@@ -14,6 +14,7 @@ import { syncLabel, syncMeaning } from '../helpers/productPolicyHelper'
 import { ProductPolicyPreview, PreviewState } from './ProductPolicyPreview'
 import { Confirm } from './Confirm'
 import { Notice } from './Notice'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Props = {
   open: boolean
@@ -51,13 +52,16 @@ export const ProductMoveDialog: React.FC<Props> = ({ open, accountId, deviceIds,
   const previewed = deviceIds.length <= PREVIEWED
   const tooMany = deviceIds.length > MOVED_AT_ONCE
 
-  useEffect(() => {
-    if (!open) return
-    setTarget('')
-    setPreview(undefined)
-    setRefusal(undefined)
-    graphQLProductChoices(accountId).then(answer => setProducts(answer === 'ERROR' ? [] : answer))
-  }, [open, accountId])
+  useReadEffect(
+    again => {
+      if (!open) return
+      if (!again) setTarget('')
+      if (!again) setPreview(undefined)
+      if (!again) setRefusal(undefined)
+      graphQLProductChoices(accountId).then(answer => setProducts(answer === 'ERROR' ? [] : answer))
+    },
+    [open, accountId]
+  )
 
   const choose = async (choice: string) => {
     setTarget(choice)

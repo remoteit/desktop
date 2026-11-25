@@ -2,6 +2,7 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { memberPolicyFields } from './productPolicy'
+import { RequestFor, noteAccountOf } from '../selectors/signIns'
 
 /* Networks of devices (presence-server docs/device-principals.md §2, §8): each network's devices — initiators, targets
    or both, and what a target exposes (the services the network lists, all of them, any port of its own) — its tag
@@ -159,7 +160,8 @@ export const peopleCount = (network: Pick<DeviceNetwork, 'owner' | 'access' | 'a
   ]).size
 
 export async function graphQLDeviceNetworks(
-  accountId?: string
+  accountId?: string,
+  requestFor?: RequestFor
 ): Promise<DeviceNetwork[] | 'ERROR' | typeof UNSUPPORTED> {
   const policy = await memberPolicyFields()
   const query = `query DeviceNetworks($accountId: String) {
@@ -185,13 +187,34 @@ export async function graphQLDeviceNetworks(
     }
   }`
   const variables = { accountId }
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, 'kind')) return UNSUPPORTED
   if (errors) return 'ERROR'
-  return response.data?.data?.login?.account?.networks ?? []
+  const networks: DeviceNetwork[] = response.data?.data?.login?.account?.networks ?? []
+  // These networks are kept by a hook, in no stored list: what is asked of one, or of a rule of its, by id alone is
+  // asked as the sign-in serving the account they were read for.
+  // Under the sign-in that read them, which is not always the one the account is looked at through: a search of the
+  // other rows reads as each (services/networkElsewhere).
+  noteAccountOf(
+    accountId,
+    networks.flatMap(network => [network.id, ...(network.deviceRules || []).map(rule => rule.id)]),
+    requestFor?.sub
+  )
+  return networks
 }
+
+/* WHOSE A CHANGE TO A NETWORK IS, with several sign-ins in use. graphql takes each of these from whoever manages the
+   network (network-device-resolver, network-resolver): a device is added by one who manages the network AND the
+   device; a rule by an administrator of the network who administers the account whose devices it takes too; a
+   service is listed, a share's role set and an account's tags set by the network's manager. That is the sign-in the
+   network was read as — the one serving the account its page lists it for — whichever account's list a device named
+   beside it is in, and whatever account a rule or a tag names: those are what the change is about, not who makes
+   it. So each says it is `about` the network. (A removal graphql also takes from the other side — a device's
+   manager, the account a rule takes devices from — goes as the network's too from the network's page; from the
+   other side's own page it says so: components/TaggedIntoList.) */
+const forNetwork = (networkId: string): RequestFor => ({ about: [networkId] })
 
 // A device you manage onto a network you manage — or a change of its role or what it exposes there.
 export const graphQLAddNetworkDevice = (
@@ -203,7 +226,9 @@ export const graphQLAddNetworkDevice = (
     `mutation AddNetworkDevice($networkId: String!, $deviceId: String!, $role: NetworkDeviceRole!, $scope: NetworkDeviceScope, $anyPort: Boolean) {
       addNetworkDevice(networkId: $networkId, deviceId: $deviceId, role: $role, scope: $scope, anyPort: $anyPort) { deviceId }
     }`,
-    { networkId, deviceId, ...set }
+    { networkId, deviceId, ...set },
+    false,
+    forNetwork(networkId)
   )
 
 export const graphQLRemoveNetworkDevice = (networkId: string, deviceId: string) =>
@@ -211,7 +236,9 @@ export const graphQLRemoveNetworkDevice = (networkId: string, deviceId: string) 
     `mutation RemoveNetworkDevice($networkId: String!, $deviceId: String!) {
       removeNetworkDevice(networkId: $networkId, deviceId: $deviceId)
     }`,
-    { networkId, deviceId }
+    { networkId, deviceId },
+    false,
+    forNetwork(networkId)
   )
 
 // A service the network lists: what a target exposing the listed services exposes.
@@ -224,7 +251,9 @@ export const graphQLListNetworkService = (networkId: string, serviceId: string, 
       : `mutation RemoveNetworkConnection($networkId: String!, $serviceId: String!) {
           removeNetworkConnection(networkId: $networkId, serviceId: $serviceId)
         }`,
-    { networkId, serviceId }
+    { networkId, serviceId },
+    false,
+    forNetwork(networkId)
   )
 
 // A device's Any port setting: the ports of its own it takes beyond its services ('' for none).
@@ -238,7 +267,8 @@ export const graphQLSetDeviceAnyPort = (deviceId: string, set: { tcp?: string; u
 
 export async function graphQLDeviceAnyPort(deviceId: string) {
   const query = `query DeviceAnyPort { login { device(id: ${JSON.stringify([deviceId])}) { anyPort { tcp udp } } } }`
-  const response = await post({ query })
+  // The id is in the query's own text, not its variables: said apart, so it is asked as the device's sign-in.
+  const response = await post({ query }, '', false, false, { about: [deviceId] })
   if (response === 'ERROR') return 'ERROR'
   const errors = graphQLGetErrors(response, true, { query, variables: {} })
   if (withoutDeviceSessions(errors, 'anyPort')) return UNSUPPORTED
@@ -256,24 +286,32 @@ export const graphQLCreateNetworkDeviceRule = (
     `mutation CreateNetworkDeviceRule($networkId: String!, $tags: [String!]!, $operator: ListOperator, $initiator: Boolean, $allServices: Boolean, $anyPort: Boolean, $accountId: String) {
       createNetworkDeviceRule(networkId: $networkId, tags: $tags, operator: $operator, initiator: $initiator, allServices: $allServices, anyPort: $anyPort, accountId: $accountId) { id }
     }`,
-    { networkId, ...rule }
+    { networkId, ...rule },
+    false,
+    forNetwork(networkId)
   )
 
-export const graphQLUpdateNetworkDeviceRule = (ruleId: string, rule: RuleChoices) =>
+// `requestFor`, here and for its removal: a rule's id is in no stored list, so the caller says whose request it is —
+// the network's sign-in, or the account's whose devices the rule takes.
+export const graphQLUpdateNetworkDeviceRule = (ruleId: string, rule: RuleChoices, requestFor?: RequestFor) =>
   graphQLBasicRequest(
     `mutation UpdateNetworkDeviceRule($ruleId: String!, $tags: [String!], $operator: ListOperator, $initiator: Boolean, $allServices: Boolean, $anyPort: Boolean) {
       updateNetworkDeviceRule(ruleId: $ruleId, tags: $tags, operator: $operator, initiator: $initiator, allServices: $allServices, anyPort: $anyPort) { id }
     }`,
-    { ruleId, ...rule }
+    { ruleId, ...rule },
+    false,
+    requestFor
   )
 
 // Either side may end a rule: the network's, or an administrator of the account whose devices it takes (withdrawing).
-export const graphQLRemoveNetworkDeviceRule = (ruleId: string) =>
+export const graphQLRemoveNetworkDeviceRule = (ruleId: string, requestFor?: RequestFor) =>
   graphQLBasicRequest(
     `mutation RemoveNetworkDeviceRule($ruleId: String!) {
       removeNetworkDeviceRule(ruleId: $ruleId)
     }`,
-    { ruleId }
+    { ruleId },
+    false,
+    requestFor
   )
 
 export const graphQLSetNetworkShareRole = (networkId: string, email: string, role: ShareRole) =>
@@ -281,7 +319,9 @@ export const graphQLSetNetworkShareRole = (networkId: string, email: string, rol
     `mutation SetNetworkShareRole($networkId: String!, $email: String!, $role: String!) {
       setNetworkShareRole(networkId: $networkId, email: $email, role: $role)
     }`,
-    { networkId, email, role }
+    { networkId, email, role },
+    false,
+    forNetwork(networkId)
   )
 
 // Other accounts' networks taking this account's devices by its tags: what its administrators see, and may withdraw.
@@ -311,11 +351,17 @@ export async function graphQLTaggedInto(accountId: string): Promise<TaggedInto[]
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, 'taggedInto')) return UNSUPPORTED
   if (errors) return 'ERROR'
-  return response.data?.data?.login?.account?.taggedInto ?? []
+  const rules: TaggedInto[] = response.data?.data?.login?.account?.taggedInto ?? []
+  noteAccountOf(
+    accountId,
+    rules.map(rule => rule.id)
+  )
+  return rules
 }
 
 // An account's tags on a network — the owner's, or an organization's it is shared with — which decide which of its
-// members reach it by role.
+// members reach it by role. Asked as that account's sign-in, not the network's: graphql takes them from an administrator
+// of the account whose tags they are (NetworkTag.mayTag), who need not manage the network.
 export const graphQLNetworkTag = (networkId: string, accountId: string, name: string, on: boolean) =>
   graphQLBasicRequest(
     on
@@ -325,5 +371,7 @@ export const graphQLNetworkTag = (networkId: string, accountId: string, name: st
       : `mutation RemoveNetworkTag($networkId: String!, $name: [String!]!, $accountId: String) {
           removeNetworkTag(networkId: $networkId, name: $name, accountId: $accountId)
         }`,
-    { networkId, name: [name], accountId }
+    { networkId, name: [name], accountId },
+    false,
+    { account: accountId }
   )

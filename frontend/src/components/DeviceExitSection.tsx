@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Box, ListItem, ListItemIcon } from '@mui/material'
@@ -22,6 +22,7 @@ import { ListItemSetting } from './ListItemSetting'
 import { Notice } from './Notice'
 import { SelectSetting } from './SelectSetting'
 import { TransferUsageHintText, useTransferUsageHint } from './TransferUsage'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 /* Route through (graphql-api docs/PROXY-GROUPS.md §13, §15), one control as the device's own app and its menu show it:
    Off, or one of the exits offered for the device (exits, with the device; never the one it runs), each named by why it
@@ -46,7 +47,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
   const settings = useDeviceSettings(device.id)
   const protectSetting = settings.setting('protect')
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     const answer = await graphQLDeviceExit(device.id)
     setInfo(answer && typeof answer === 'object' ? answer : null)
     if (!answer || typeof answer !== 'object') return
@@ -55,7 +56,7 @@ export const DeviceExitChoice: React.FC<{ device: IDevice }> = ({ device }) => {
     setProtect(kept && typeof kept === 'object' ? kept : null)
   }, [device.id])
 
-  useEffect(() => {
+  useReadEffect(() => {
     load()
   }, [load])
 

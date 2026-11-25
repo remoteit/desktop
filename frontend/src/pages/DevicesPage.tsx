@@ -1,3 +1,4 @@
+import { selectMemberships } from '../selectors/accounts'
 import React, { useEffect, useRef, useState } from 'react'
 import { Dispatch, State } from '../store'
 import { useHistory } from 'react-router-dom'
@@ -52,7 +53,7 @@ export const DevicesPage: React.FC<Props> = ({ restore, select }) => {
   // is always set and changes on every switch, so each account decides exactly once.
   const activeAccountId = useSelector((state: State) => state.accounts.activeId || state.user.id)
   const standalone = useSelector((state: State) =>
-    state.accounts.membership.some(member => member.account.id === activeAccountId && member.standalone)
+    selectMemberships(state).some(member => member.account.id === activeAccountId && member.standalone)
   )
   const actedFor = useRef<string | undefined>(undefined)
   useEffect(() => {

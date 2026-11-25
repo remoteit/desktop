@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -17,6 +17,7 @@ import { Container } from '../components/Container'
 import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 /* What a device sees (graphql discover): what its network advertises and what listens on it, asked of the device as
    the page opens and again on refresh, each offered as a service to add. A device-session device's; the local scan
@@ -33,13 +34,13 @@ export const DeviceDiscoverPage: React.FC = () => {
     ?.running
   const hosts = !!device && virtualDevices && mayHostVirtualDevices(device, sessionDevice)
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     if (!device?.id) return
     setDiscovery(undefined)
     setDiscovery(await graphQLDiscover(device.id))
   }, [device?.id])
 
-  useEffect(() => {
+  useReadEffect(() => {
     load()
   }, [load])
 

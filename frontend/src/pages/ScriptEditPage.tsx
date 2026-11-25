@@ -15,6 +15,7 @@ import { FileUploadProgress } from '../components/FileUploadProgress'
 import { Container } from '../components/Container'
 import { Title } from '../components/Title'
 import { IconButton } from '../buttons/IconButton'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Props = {
   isNew?: boolean
@@ -92,7 +93,7 @@ export const ScriptEditPage: React.FC<Props> = ({ isNew }) => {
   }, [script, editForm, defaultEditForm])
 
   // Ensure files are loaded (needed for FileSelect arguments)
-  useEffect(() => {
+  useReadEffect(() => {
     dispatch.files.fetchIfEmpty()
   }, [])
 

@@ -11,7 +11,10 @@ vi.mock('../services/Controller', () => ({ emit: vi.fn() }))
 vi.mock('../constants', () => ({}))
 vi.mock('../store', () => ({ store: { getState: () => state } }))
 vi.mock('../selectors/connections', () => ({}))
-vi.mock('../selectors/accounts', () => ({ selectActiveUser: () => ({ id: 'user-1', email: 'user@example.com' }) }))
+vi.mock('../selectors/accounts', () => ({
+  selectActiveUser: () => ({ id: 'user-1', email: 'user@example.com' }),
+  selectRow: (_state: unknown, accountId?: string) => accountId || 'user-1',
+}))
 vi.mock('../selectors/devices', () => ({ getAllDevices: vi.fn(), selectById: () => [] }))
 
 import { newConnection, getRoute } from './connectionHelper'

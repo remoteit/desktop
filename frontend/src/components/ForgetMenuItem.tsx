@@ -14,7 +14,7 @@ export const ForgetMenuItem: React.FC<Props> = ({ connection, onClick }) => {
   const disabled = !connection || connection.default || connection.connectLink
 
   const forget = () => {
-    if (connection) dispatch.connections.forget(connection.id)
+    if (connection) dispatch.connections.forget(connection)
     onClick?.()
   }
 

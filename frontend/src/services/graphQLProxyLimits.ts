@@ -9,7 +9,7 @@ import { ProxyLimits } from '../helpers/proxyLimitHelper'
 
 export async function graphQLProxyLimits() {
   const query = `query ProxyLimits { proxyLimits { names plans rows { plan name value scale } } }`
-  const response = await post({ query, variables: {} })
+  const response = await post({ query, variables: {} }, '', false, false, { sub: '' })
   if (response === 'ERROR') return 'ERROR' as const
   const errors = graphQLGetErrors(response, true, { query, variables: {} })
   if (withoutDeviceSessions(errors, 'proxyLimits')) return UNSUPPORTED
@@ -29,5 +29,7 @@ export const graphQLSetProxyLimit = (change: {
     ` mutation SetProxyLimit($plan: String, $name: String!, $value: Int, $scale: Int, $inherit: Boolean) {
         setProxyLimit(plan: $plan, name: $name, value: $value, scale: $scale, inherit: $inherit) { names }
       }`,
-    change
+    change,
+    false,
+    { sub: '' }
   )

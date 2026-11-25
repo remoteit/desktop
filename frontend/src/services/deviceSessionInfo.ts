@@ -1,4 +1,7 @@
 import { post } from './post'
+import { store } from '../store'
+import { requestSignIn } from '../selectors/signIns'
+import { accountCache } from './accountCaches'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { Upkeep, withoutDeviceSessions } from './graphQLDaemon'
 
@@ -83,12 +86,20 @@ export function requestServiceSessionInfo(deviceId: string, serviceId: string) {
   timer ??= setTimeout(flush)
 }
 
+// One query per sign-in, each about the devices it serves: the ids are in the query's own text, not its variables, so
+// whose request it is is said apart.
 async function flush() {
   const ids = [...wanted]
   wanted = new Set()
   timer = undefined
   if (!ids.length) return
+  const state = store.getState()
+  const bySignIn: ILookup<string[]> = {}
+  ids.forEach(id => (bySignIn[requestSignIn(state, { about: [id] }) || ''] ??= []).push(id))
+  await Promise.all(Object.entries(bySignIn).map(([sub, own]) => read(own, sub)))
+}
 
+async function read(ids: string[], sub: string) {
   const upkeep = `${withUpkeep ? ' updatedBy howToUpdate available' : ''}${
     withSupport ? ' supported { supported minimum kind message }' : ''
   }`
@@ -97,7 +108,7 @@ async function flush() {
   )}) { id subnetName actsFor { email } agent { running package { version format } update { version state detail }${upkeep} } services { id subnetName${
     withServiceNames ? ` subnetOwnName subnetPort${withNamePorts ? ' subnetPorts subnetDefaultLabel' : ''}` : ''
   } } } } }`
-  const response = await post({ query })
+  const response = await post({ query }, '', false, false, { sub, about: ids })
   if (response !== 'ERROR') {
     if (withUpkeep && withoutDeviceSessions(response.data?.errors, 'howToUpdate')) {
       withUpkeep = false
@@ -156,6 +167,10 @@ async function flush() {
 export function refreshDeviceSessionInfo() {
   for (const id of [...info.keys()]) requestDeviceSessionInfo(id, true)
 }
+
+// Kept by device, read as the sign-in that served its account then: when accounts' stored data is dropped, another
+// may serve it, and says what it may see of it (the agent, who it acts for).
+accountCache(refreshDeviceSessionInfo)
 
 // User mode (graphql setDeviceUserMode): a device the caller manages acting for them — or no longer — then read anew.
 export async function setDeviceUserMode(deviceId: string, on: boolean) {

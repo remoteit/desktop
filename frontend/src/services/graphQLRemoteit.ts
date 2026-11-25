@@ -29,7 +29,7 @@ export type RemoteitMachine = {
 const LOCATED = 'id name remoteit location provider activation created'
 
 async function read<T>(query: string, marker: string, pick: (data: any) => T) {
-  const response = await post({ query, variables: {} })
+  const response = await post({ query, variables: {} }, '', false, false, { sub: '' })
   if (response === 'ERROR') return 'ERROR' as const
   const errors = graphQLGetErrors(response, true, { query, variables: {} })
   if (withoutDeviceSessions(errors, marker)) return UNSUPPORTED
@@ -83,7 +83,8 @@ export const graphQLCreateRemoteit = (kind: 'proxy' | 'exit', at: Location) =>
       : ` mutation CreateRemoteitExit($location: String!, $latitude: Float!, $longitude: Float!, $provider: String) {
           createRemoteitExit(location: $location, latitude: $latitude, longitude: $longitude, provider: $provider) { id }
         }`,
-    at
+    at,
+    { sub: '' }
   )
 
 // remote.it's proxy product (§11 wave 2): the system account's, which its machines register with — each with a join key,
@@ -106,6 +107,8 @@ export const graphQLRemoteitProxyProduct = () =>
 
 // A machine made before remote.it's were the system account's, moved into it.
 export const graphQLAdoptRemoteitProxy = (deviceId: string) =>
-  graphQLRequestWithReason(` mutation AdoptRemoteitProxy($deviceId: String!) { adoptRemoteitProxy(deviceId: $deviceId) }`, {
-    deviceId,
-  })
+  graphQLRequestWithReason(
+    ` mutation AdoptRemoteitProxy($deviceId: String!) { adoptRemoteitProxy(deviceId: $deviceId) }`,
+    { deviceId },
+    { sub: '' }
+  )

@@ -1,5 +1,7 @@
 import browser from './browser'
 import { graphQLBasicRequest } from './graphQL'
+import { requestSignInNow } from '../selectors/signIns'
+import { accountCache } from './accountCaches'
 
 /* Whether a name in device subnets works on this machine (presence-server docs/subnet-names-on-demand.md, "the
    portal"): Connect then hands out the name instead of starting a connection.
@@ -7,7 +9,10 @@ import { graphQLBasicRequest } from './graphQL'
    In a browser, the DNS beacon: a page cannot look a name up, nor reach a private address without a browser setting,
    but it can make its machine look a name up. graphql makes a one-time probe name; loading it sends the lookup to this
    machine's device daemon, which asks graphql over its own session — and graphql notes which device saw it. Then
-   graphql says, for each service, whether that device reaches it. Only the person who made the probe can read it.
+   graphql says, for each service, whether that device reaches it. Only the person who made the probe can read it —
+   so with several sign-ins in use there is a probe for each that is asked about a service: made, and read, as the
+   sign-in that serves the service. What names no service (the machine's device, signing in on it) is the page's own
+   person's.
 
    In the Desktop app, connectd's name API on the loopback address, which a window there may reach: the subnet
    resolver's own answer, with the address.
@@ -28,33 +33,54 @@ export const subnetWebURL = (name: string, port: number) =>
   port === 443 ? `https://${name}` : `https://${name}:${port}`
 
 const kept = new Map<string, { at: number; answer: Promise<LocalSubnetName | null> }>()
-let absentUntil = 0
+// An answer is the sign-in's that served the service then: none is kept past a change of who serves an account, and
+// whoever shows one (hooks/useLocalSubnetName) is told to ask again — the name asked about may be the very same.
+accountCache(() => {
+  kept.clear()
+  forgotten.forEach(listener => listener())
+})
+// Until when no daemon here is the answer, by the sign-in whose probe went unseen ('' the page's own person, and the
+// app's name API).
+const absent = new Map<string, number>()
+const absentUntil = (sub = '') => absent.get(sub) ?? 0
+
+// The sign-in that serves a service or device ('' the page's own person): whose probe says whether it is reached.
+const servedBy = (id: string) => requestSignInNow({ about: [id] }) || ''
+// A request made as it — the page's own person's as they always were, with nothing said.
+const ask = (sub: string, query: string, variables?: ILookup<any>) =>
+  sub
+    ? graphQLBasicRequest(query, variables ?? {}, false, { sub })
+    : variables
+    ? graphQLBasicRequest(query, variables)
+    : graphQLBasicRequest(query)
 
 // `id` is the service's, or the device's for the device itself; `name` its name in device subnets. `again`: asked anew,
 // not the answer kept — a "no" asked again (hooks/useLocalSubnetName useSubnetReach). No daemon here answers no all the
 // same until ABSENT_MS is past.
 export function localSubnetName(id: string, name: string, again?: boolean): Promise<LocalSubnetName | null> {
   const now = Date.now()
-  if (now < absentUntil) return Promise.resolve(null)
+  const sub = browser.isElectron ? '' : servedBy(id)
+  if (now < absentUntil(sub)) return Promise.resolve(null)
   // Kept by the name asked as well: a service's name changes (its own turned on or off, a rename) and the answer for
   // the name it had is not the new one's.
   const key = `${id} ${name}`
   const held = kept.get(key)
   if (held && now - held.at < KEPT_MS && !again) return held.answer
-  const answer = browser.isElectron ? askDaemon(name) : askBeacon(id)
+  const answer = browser.isElectron ? askDaemon(name) : askBeacon(id, sub)
   kept.set(key, { at: now, answer })
   return answer
 }
 
 // Whether no daemon here is the answer for now: a probe went unseen, or the name API did not answer (ABSENT_MS).
-export const localAbsent = () => Date.now() < absentUntil
+export const localAbsent = () => Date.now() < absentUntil()
 
-// The beacon: this page's probe (one for every service asked about), then the name, when the device that saw it
-// reaches the service.
-async function askBeacon(id: string): Promise<LocalSubnetName | null> {
-  const token = await seenProbe()
+// The beacon: the probe of the sign-in that serves the service (one for every service of its asked about), then the
+// name, when the device that saw it reaches the service.
+async function askBeacon(id: string, sub: string): Promise<LocalSubnetName | null> {
+  const token = await seenProbe(sub)
   if (!token) return null
-  const response = await graphQLBasicRequest(
+  const response = await ask(
+    sub,
     'query SubnetProbe($token: String!, $id: String) { subnetProbe(token: $token, serviceId: $id) { seen name } }',
     { token, id }
   )
@@ -65,7 +91,7 @@ async function askBeacon(id: string): Promise<LocalSubnetName | null> {
 // The device a probe of this page's was seen by — this machine's — when the person manages it (graphql subnetProbe's
 // deviceId): what a local port is opened on (services/localPorts). null: no daemon here, or an API without the field.
 export async function beaconDevice(): Promise<string | null> {
-  if (Date.now() < absentUntil) return null
+  if (Date.now() < absentUntil()) return null
   const token = await seenProbe()
   if (!token) return null
   const response = await graphQLBasicRequest(
@@ -76,30 +102,33 @@ export async function beaconDevice(): Promise<string | null> {
   return typeof id === 'string' ? id : null
 }
 
-let probe: { at: number; token: Promise<string | null> } | undefined
+const probes = new Map<string, { at: number; token: Promise<string | null> }>()
 
-function seenProbe(): Promise<string | null> {
-  if (!probe || Date.now() - probe.at > PROBE_KEPT_MS) probe = { at: Date.now(), token: sendProbe() }
+function seenProbe(sub = ''): Promise<string | null> {
+  let probe = probes.get(sub)
+  if (!probe || Date.now() - probe.at > PROBE_KEPT_MS) {
+    probe = { at: Date.now(), token: sendProbe(sub) }
+    probes.set(sub, probe)
+  }
   return probe.token
 }
 
 // Makes a probe, has this machine look it up, and waits for a device here to have seen it: its token, or null when
 // none has in time — no daemon here.
-async function sendProbe(): Promise<string | null> {
-  const made = await graphQLBasicRequest('mutation CreateSubnetProbe { createSubnetProbe { token name } }')
+async function sendProbe(sub: string): Promise<string | null> {
+  const made = await ask(sub, 'mutation CreateSubnetProbe { createSubnetProbe { token name } }')
   const { token, name } = made !== 'ERROR' ? made.data?.data?.createSubnetProbe || {} : {}
   if (!token || !name) return null
   // The request fails — the name is no one's — and the lookup is what counts.
   new Image().src = `https://${name}/`
   for (const until = Date.now() + TIMEOUT_MS; Date.now() < until; ) {
     await new Promise(resolve => setTimeout(resolve, POLL_MS))
-    const answer = await graphQLBasicRequest(
-      'query SubnetProbeSeen($token: String!) { subnetProbe(token: $token) { seen } }',
-      { token }
-    )
+    const answer = await ask(sub, 'query SubnetProbeSeen($token: String!) { subnetProbe(token: $token) { seen } }', {
+      token,
+    })
     if (answer !== 'ERROR' && answer.data?.data?.subnetProbe?.seen) return token
   }
-  absentUntil = Date.now() + ABSENT_MS
+  absent.set(sub, Date.now() + ABSENT_MS)
   return null
 }
 
@@ -115,7 +144,7 @@ export type LocalSignIn = { link?: string }
 let signInKept: { at: number; answer: Promise<LocalSignIn | null> } | undefined
 
 export function localSignIn(): Promise<LocalSignIn | null> {
-  if (browser.isElectron || Date.now() < absentUntil) return Promise.resolve(null)
+  if (browser.isElectron || Date.now() < absentUntil()) return Promise.resolve(null)
   if (signInKept && Date.now() - signInKept.at < KEPT_MS) return signInKept.answer
   signInKept = { at: Date.now(), answer: askSignIn() }
   return signInKept.answer
@@ -195,7 +224,7 @@ async function askDaemon(name: string): Promise<LocalSubnetName | null> {
     return typeof body?.address === 'string' ? { name: body.name || name, address: body.address } : null
   } catch {
     // Nothing listening, or too slow: no daemon to ask for now.
-    absentUntil = Date.now() + ABSENT_MS
+    absent.set('', Date.now() + ABSENT_MS)
     return null
   } finally {
     clearTimeout(timer)

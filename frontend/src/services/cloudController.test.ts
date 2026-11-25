@@ -21,7 +21,7 @@ vi.mock('../store', () => ({
   },
 }))
 vi.mock('./Notifications', () => ({}))
-vi.mock('../selectors/devices', () => ({ selectById }))
+vi.mock('../selectors/devices', () => ({ selectById, deviceRows: (devices: object) => Object.keys(devices) }))
 vi.mock('../helpers/connectionHelper', () => ({ setConnection }))
 vi.mock('../selectors/accounts', () => ({}))
 vi.mock('./graphQL', () => ({}))

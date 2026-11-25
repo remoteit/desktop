@@ -17,6 +17,7 @@ import { REGEX_TAG_SAFE } from '../constants'
 import { useLocation } from 'react-router-dom'
 import { canEditTags } from '../models/tags'
 import { selectTags } from '../selectors/tags'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 export const TagsPage: React.FC = () => {
   const { t } = useTranslation()
@@ -44,7 +45,7 @@ export const TagsPage: React.FC = () => {
     }
   }
 
-  React.useEffect(() => {
+  useReadEffect(() => {
     dispatch.tags.fetchIfEmpty(accountId)
   }, [dispatch, accountId])
 

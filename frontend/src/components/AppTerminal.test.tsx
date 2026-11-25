@@ -24,7 +24,7 @@ vi.mock('../hooks/useDeviceApps', async () => {
 vi.mock('../hooks/useLocalSubnetName', () => ({
   useSubnetName: (deviceId?: string) => (deviceId ? name.value : undefined),
 }))
-vi.mock('../helpers/terminalHelper', () => ({ openTerminal }))
+vi.mock('../helpers/terminalHelper', () => ({ inApp: () => env.isNative, openTerminal, terminalReaches: () => true }))
 vi.mock('../services/browser', () => ({ default: env, windowOpen: vi.fn() }))
 vi.mock('./Confirm', () => ({
   Confirm: ({ open, title, children, onConfirm, onDeny }: any) =>

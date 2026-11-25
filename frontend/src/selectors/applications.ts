@@ -9,7 +9,7 @@ import {
   getAllApplicationTypes,
   getEnvironment,
 } from './state'
-import { selectActiveAccountId } from './accounts'
+import { selectRow } from './accounts'
 
 // getApplication reads the types and environment through the adaptor; as inputs they drop stale results
 export const selectApplication = createSelector(
@@ -22,9 +22,9 @@ export const selectApplication = createSelector(
 )
 
 export const selectApplicationTypesGrouped = createSelector(
-  [getApplicationTypes, selectActiveAccountId],
-  (applicationTypes, accountId): IApplicationTypeGroup[] => {
-    const types = applicationTypes.account[accountId] || []
+  [getApplicationTypes, selectRow],
+  (applicationTypes, row): IApplicationTypeGroup[] => {
+    const types = applicationTypes.account[row] || []
 
     const groupMap: { [key: number]: string } = applicationTypes.groups.reduce((map, group) => {
       group.ids.forEach(id => (map[id] = group.name))

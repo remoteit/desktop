@@ -10,7 +10,6 @@ import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { useLocalSubnetName } from '../hooks/useLocalSubnetName'
 import { useServiceShortcutsSupport } from '../hooks/useServiceShortcutsSupport'
 import { graphQLServiceShortcuts, ServiceShortcut } from '../services/graphQLServiceShortcuts'
-import { openThroughGateway } from '../services/browserGateway'
 import { openServiceURL } from '../services/browser'
 import { subnetWebURL } from '../services/localSubnet'
 import { Container } from '../components/Container'
@@ -18,6 +17,7 @@ import { Gutters } from '../components/Gutters'
 import { LoadingMessage } from '../components/LoadingMessage'
 import { Notice } from '../components/Notice'
 import { IconButton } from '../buttons/IconButton'
+import { useReadAgain, useReadEffect } from '../hooks/useReadAgain'
 
 export function ServicesPage() {
   const accountId = useSelector(selectActiveAccountId)
@@ -34,22 +34,25 @@ function AccountServices({ accountId }: { accountId: string }) {
   const available = !!support && support !== 'ERROR' && support.available
   const namedAddress = available && support.namedAddress && deviceSessions
 
-  useEffect(() => {
-    if (!available) return
-    let current = true
-    setServices(undefined)
-    graphQLServiceShortcuts(accountId, namedAddress).then(result => {
-      if (!current) return
-      if (result === 'ERROR') setServices(result)
-      else
-        setServices(
-          [...result].sort((a, b) => a.name.localeCompare(b.name) || a.device.name.localeCompare(b.device.name))
-        )
-    })
-    return () => {
-      current = false
-    }
-  }, [accountId, available, namedAddress, revision])
+  useReadEffect(
+    again => {
+      if (!available) return
+      let current = true
+      if (!again) setServices(undefined)
+      graphQLServiceShortcuts(accountId, namedAddress).then(result => {
+        if (!current) return
+        if (result === 'ERROR') setServices(result)
+        else
+          setServices(
+            [...result].sort((a, b) => a.name.localeCompare(b.name) || a.device.name.localeCompare(b.device.name))
+          )
+      })
+      return () => {
+        current = false
+      }
+    },
+    [accountId, available, namedAddress, revision]
+  )
 
   return (
     <Container
@@ -97,16 +100,20 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   const { t } = useTranslation()
   const [opening, setOpening] = useState(false)
   const [failed, setFailed] = useState(false)
+  // Said of the sign-in serving the service then: not left up when another comes to serve it.
+  const dropped = useReadAgain()
+  useEffect(() => setFailed(false), [dropped])
   const to = `/devices/${service.device.id}/${service.id}/connect`
   const online = service.enabled && service.state === 'active'
   const type = useSelector((state: State) => state.applicationTypes.all.find(type => type.id === service.application))
   const web = isWebType(getApplicationType(service.application), type)
   const name = web ? service.subnetName : undefined
   const port = service.subnetPort
-  // Only the default HTTPS port can be opened through the browser gateway.
-  const needsLocal = online && !!name && !!port && port !== 443
-  const local = useLocalSubnetName(needsLocal ? service.device.id : undefined, needsLocal ? service.id : undefined)
-  const destination = port === 443 ? name : needsLocal ? local?.name : undefined
+  // Its name opens here only where an agent on this machine reaches it: nothing else answers for the name.
+  const named = online && !!name && !!port
+  const local = useLocalSubnetName(named ? service.device.id : undefined, named ? service.id : undefined)
+  // The port is this name's: an agent may answer with the device's own name instead, where the port is another's.
+  const destination = local?.name === name ? name : undefined
   const status = !service.enabled
     ? t('serviceShortcuts.disabled', 'Disabled')
     : service.state === 'unlicensed'
@@ -117,8 +124,7 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
     if (!destination || !port) return
     setOpening(true)
     try {
-      if (port === 443) setFailed(!(await openThroughGateway(destination)))
-      else await openServiceURL(subnetWebURL(destination, port))
+      await openServiceURL(subnetWebURL(destination, port))
     } catch {
       setFailed(true)
     } finally {

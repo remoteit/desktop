@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { DeviceContext } from '../services/Context'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
@@ -9,6 +9,7 @@ import { settingLocked } from '../services/graphQLDeviceSettings'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { ListItemSetting } from './ListItemSetting'
 import { lockedLine, settingNote } from './DeviceSettingRow'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Ports = { tcp: string | null; udp: string | null }
 
@@ -25,7 +26,7 @@ export const DeviceAnyPortSetting: React.FC = () => {
   const { setting, set } = useDeviceSettings(device?.id)
   const anyPort = setting('any_port')
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!enabled || !device?.id) return
     let current = true
     graphQLDeviceAnyPort(device.id).then(result => {

@@ -11,11 +11,11 @@ import { useDeviceSessions } from '../../hooks/useDeviceSessions'
 import { useServiceShortcutsSupport } from '../../hooks/useServiceShortcutsSupport'
 import { useLocalSubnetName, useSubnetName } from '../../hooks/useLocalSubnetName'
 import { graphQLServiceShortcuts, ServiceShortcut } from '../../services/graphQLServiceShortcuts'
-import { openThroughGateway } from '../../services/browserGateway'
 import { openServiceURL } from '../../services/browser'
 import { subnetWebURL } from '../../services/localSubnet'
 import { openTerminal } from '../../helpers/terminalHelper'
 import useClipboard from '../../hooks/useClipboard'
+import { useReadAgain, useReadEffect } from '../../hooks/useReadAgain'
 
 /* "Your devices" on This device (pages/ThisDevicePage.tsx), signed in: what this machine can reach, most useful first,
    each with one action. First the services marked "Show in Services" (the account's shortcuts, where the API has
@@ -74,7 +74,7 @@ export const ThisDeviceDevices: React.FC<{ uid?: string }> = ({ uid }) => {
   const available = !!support && support !== 'ERROR' && support.available
   const [shortcuts, setShortcuts] = useState<ServiceShortcut[]>()
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (support === undefined) return
     if (!available) return setShortcuts([])
     let current = true
@@ -168,16 +168,18 @@ const ServiceRow: React.FC<{ service: ServiceShortcut }> = ({ service }) => {
   const { t } = useTranslation()
   const [opening, setOpening] = useState(false)
   const [failed, setFailed] = useState(false)
+  const dropped = useReadAgain()
+  useEffect(() => setFailed(false), [dropped])
   const to = `#/devices/${service.device.id}/${service.id}/connect`
   const online = service.enabled && service.state === 'active'
   const type = useSelector((state: State) => state.applicationTypes.all.find(each => each.id === service.application))
   const web = isWebType(getApplicationType(service.application), type)
   const name = service.subnetName ?? undefined
   const port = service.subnetPort ?? undefined
-  // Only the default HTTPS port opens through the browser gateway; any other needs this machine's own name for it.
-  const needsLocal = online && web && !!name && !!port && port !== 443
-  const local = useLocalSubnetName(needsLocal ? service.device.id : undefined, needsLocal ? service.id : undefined)
-  const destination = web ? (port === 443 ? name : needsLocal ? local?.name : undefined) : undefined
+  // Its name opens here only where an agent on this machine reaches it, at the port of that name alone.
+  const named = online && web && !!name && !!port
+  const local = useLocalSubnetName(named ? service.device.id : undefined, named ? service.id : undefined)
+  const destination = named && local?.name === name ? name : undefined
   const secondary = online
     ? service.device.name
     : `${service.device.name} · ${
@@ -188,8 +190,7 @@ const ServiceRow: React.FC<{ service: ServiceShortcut }> = ({ service }) => {
     if (!destination || !port) return
     setOpening(true)
     try {
-      if (port === 443) setFailed(!(await openThroughGateway(destination)))
-      else await openServiceURL(subnetWebURL(destination, port))
+      await openServiceURL(subnetWebURL(destination, port))
     } catch {
       setFailed(true)
     } finally {
@@ -205,11 +206,13 @@ const ServiceRow: React.FC<{ service: ServiceShortcut }> = ({ service }) => {
     <Button
       size="small"
       data-action="terminal"
-      onClick={() => openTerminal({ name, port: port || 22, title: service.name, service: service.id })}
+      onClick={() =>
+        setFailed(openTerminal({ name, port: port || 22, title: service.name, service: service.id }) !== true)
+      }
     >
       {t('thisDevice.openTerminal', 'Open terminal')}
     </Button>
-  ) : name ? (
+  ) : name && !web ? (
     <CopyAddress address={name} />
   ) : (
     <Button size="small" href={to} data-action="connect">

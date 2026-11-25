@@ -1,5 +1,7 @@
 import type { TFunction } from 'i18next'
 import { post } from './post'
+import { accountCache, forgotten, rowNow } from './accountCaches'
+import { asRow } from '../selectors/signIns'
 
 /* Multi-port services (graphql-api docs/MULTI-PORT-SERVICES.md): a service's ports are a list of ports and ranges,
    the first where its type's launch goes. Address mode (the device subnet) reaches every one; a connection here —
@@ -37,21 +39,34 @@ export function multiPortServicesServed(): Promise<boolean> {
 // Whether the account's services take a list of ports: never where the API cannot say. Read once per account.
 export function multiPortServicesOn(accountId?: string): Promise<boolean> {
   if (!accountId) return Promise.resolve(false)
-  let on = accounts.get(accountId)
+  // By row (services/accountCaches): asked as the sign-in whose row of the account is looked at.
+  const row = rowNow(accountId)
+  let on = accounts.get(row)
   if (!on) {
     on = multiPortServicesServed().then(async served => {
       if (!served) return false
-      const response = await post({
-        query: `query MultiPortServices($accountId: String) { login { id account(id: $accountId) { id multiPortServices } } }`,
-        variables: { accountId },
-      })
-      if (response === 'ERROR') accounts.delete(accountId)
+      const response = await post(
+        {
+          query: `query MultiPortServices($accountId: String) { login { id account(id: $accountId) { id multiPortServices } } }`,
+          variables: { accountId },
+        },
+        '',
+        false,
+        false,
+        asRow(row)
+      )
+      if (response === 'ERROR') accounts.delete(row)
       return response !== 'ERROR' && !!response.data?.data?.login?.account?.multiPortServices
     })
-    accounts.set(accountId, on)
+    accounts.set(row, on)
   }
   return on
 }
+
+// A row's answer goes with the row (services/accountCaches): its account no longer one here, or its sign-in gone.
+accountCache((accountIds, rows) =>
+  [...accounts.keys()].forEach(row => forgotten(row, accountIds, rows) && accounts.delete(row))
+)
 
 // For tests, and for a change of API or sign-in.
 export function resetMultiPortServices() {

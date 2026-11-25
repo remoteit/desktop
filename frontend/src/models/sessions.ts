@@ -1,6 +1,8 @@
 import { State } from '../store'
 import { createModel } from '@rematch/core'
-import { getAccountIds } from './accounts'
+import { getAccountIds, accountIdsByReach } from './accounts'
+import { selectAccountRoutes, subOf } from '../selectors/signIns'
+import { selectLookedAtSessions, selectSessions } from '../selectors/connections'
 import { graphQLFetchSessions } from '../services/graphQLRequest'
 import { setConnection, getManufacturerType, getManufacturerUser } from '../helpers/connectionHelper'
 import { graphQLDisconnect } from '../services/graphQLMutation'
@@ -22,16 +24,39 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(_: void, state) {
       const ids: string[] = getAccountIds(state)
-      const result = await graphQLFetchSessions(ids)
-      if (result === 'ERROR') return
+      // One request per sign-in, each about every account it reaches: a session is kept as the sign-in that was given
+      // it (`sub`) — with its account, the ROW it is of (helpers/rowKey) — so an organization two people here belong
+      // to has each one's. A sign-in that could not be asked this time keeps the sessions known for it: a failed
+      // read says nothing of them, least of all that they ended.
+      const unanswered: string[] = []
+      const answers = await Promise.all(
+        accountIdsByReach(state, ids).map(async ([sub, own]) => {
+          const result = await graphQLFetchSessions(own, { sub, about: own, row: true })
+          if (result !== 'ERROR') return dispatch.sessions.parse({ result, ids: own, sub })
+          unanswered.push(sub)
+        })
+      )
+      if (answers.every(answer => !answer)) return
 
-      const all = await dispatch.sessions.parse({ result, ids })
+      const routes = selectAccountRoutes(state)
+      const kept = state.sessions.all.filter(session =>
+        unanswered.includes(subOf(routes, session.target.accountId, session.sub))
+      )
+      const all = [...answers.flatMap(answer => answer || []), ...kept]
       console.log('SESSIONS', all)
       dispatch.sessions.updatePublicConnections(all)
       dispatch.sessions.set({ all })
     },
 
-    async parse({ result, ids }: { result: AxiosResponse<any>; ids: string[] }): Promise<ISession[]> {
+    async parse({
+      result,
+      ids,
+      sub,
+    }: {
+      result: AxiosResponse<any>
+      ids: string[]
+      sub?: string
+    }): Promise<ISession[]> {
       const data = result.data?.data?.login
       let all: ISession[] = []
       for (let index = 0; index < ids.length; index++) {
@@ -39,7 +64,7 @@ export default createModel<RootModel>()({
         if (!data?.[`_${index}`]) continue
         const { sessions } = data[`_${index}`]
         const parsed = await dispatch.sessions.parseSessions({ data: sessions, accountId })
-        all = all.concat(parsed)
+        all = all.concat(sub === undefined ? parsed : parsed.map(session => ({ ...session, sub })))
       }
       return all
     },
@@ -94,20 +119,32 @@ export default createModel<RootModel>()({
       const publicConnections = state.connections.all.filter(c => c.public && !c.connectLink)
       console.log('PUBLIC CONNECTIONS', publicConnections)
       publicConnections.forEach(connection => {
-        const session = all.find(s => s.id === connection.sessionId)
+        // Its own sign-in's session: one two rows hold is one for each, as a connection to its service is.
+        const session =
+          all.find(s => s.id === connection.sessionId && (s.sub ?? '') === (connection.sub ?? '')) ||
+          (connection.sub === undefined ? all.find(s => s.id === connection.sessionId) : undefined)
         if (connection.connecting !== false || connection.enabled !== !!session || connection.connected !== !!session) {
           setConnection({ ...connection, connecting: false, enabled: !!session, connected: !!session })
         }
       })
     },
 
-    async disconnect({ id, sessionId }: { id: string; sessionId?: string }) {
+    async disconnect({ id, sessionId }: { id: string; sessionId?: string }, state) {
       if (!sessionId) {
         console.warn('No sessionId for disconnect')
         return
       }
 
-      const result = await graphQLDisconnect(id, sessionId)
+      // As the sign-in the session is of: the selected row's where two rows hold it.
+      const session =
+        selectSessions(state).find(session => session.id === sessionId) ||
+        state.sessions.all.find(session => session.id === sessionId)
+      const accountId = session?.target.accountId
+      const result = await graphQLDisconnect(
+        id,
+        sessionId,
+        accountId ? { sub: subOf(selectAccountRoutes(state), accountId, session?.sub) } : undefined
+      )
 
       if (result === 'ERROR') {
         return false
@@ -118,15 +155,19 @@ export default createModel<RootModel>()({
     },
   }),
   reducers: {
+    // One of a session for each row that holds it: its sign-in (`sub`) and the account it is under — one sign-in may
+    // hold the device under two accounts, each with its own.
     setSession(state, session: ISession) {
-      const index = state.all.findIndex(s => s.id === session.id)
+      const index = state.all.findIndex(
+        s => s.id === session.id && s.sub === session.sub && s.target.accountId === session.target.accountId
+      )
       if (index > -1) state.all[index] = session
       else state.all.push(session)
       return state
     },
+    // Ended: out of every row that holds it.
     removeSession(state, sessionId: string) {
-      const index = state.all.findIndex(s => s.id === sessionId)
-      state.all.splice(index, 1)
+      state.all = state.all.filter(s => s.id !== sessionId)
       return state
     },
     reset(state: ISessionsState) {
@@ -141,6 +182,6 @@ export default createModel<RootModel>()({
 })
 
 export function selectSessionsByService(state: State, id?: string) {
-  const sessions = state.sessions.all.filter(s => s.target.id === id)
+  const sessions = selectLookedAtSessions(state).filter(s => s.target.id === id)
   return sessions
 }

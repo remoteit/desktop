@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { selectFile, selectJobs } from '../selectors/scripting'
 import { State, Dispatch } from '../store'
 import { Redirect, useParams, useHistory } from 'react-router-dom'
@@ -20,6 +20,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { jobRunTotal } from '../helpers/jobHelper'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 const MAX_RUNS = 12
 
@@ -35,7 +36,7 @@ export const ScriptPage: React.FC = () => {
   const loaded = useSelector((state: State) => !!state.files.all[selectActiveAccountId(state)])
 
   // Load jobs if not already loaded
-  useEffect(() => {
+  useReadEffect(() => {
     if (!jobs.length && !fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
   }, [file])
 

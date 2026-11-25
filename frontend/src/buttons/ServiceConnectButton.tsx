@@ -14,7 +14,6 @@ import { Gutters } from '../components/Gutters'
 import { LocalSubnetConnect } from '../components/LocalSubnetConnect'
 import { opensTerminal } from '../helpers/sshHelper'
 import { useLocalSignIn, useSubnetReach } from '../hooks/useLocalSubnetName'
-import { useAddressReachable } from '../hooks/useAddressReachable'
 import { LocalSignInNotice } from '../components/LocalSignInNotice'
 import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
 import { AppTerminalOption } from '../components/AppTerminal'
@@ -49,11 +48,7 @@ export const ServiceConnectButton: React.FC = () => {
   const ssh = service?.typeID === 28
   const serving = useServiceApp(device, service)
   const byCertificate = opensTerminal(serving.app, serving.appService)
-  // The browser gateway uses the default HTTPS port. A shared name on another port needs a service connection.
-  const gatewayWeb = web && (reach.port === 443 || service?.port === 443 || defaultHttp)
   const named = reach.checked && !!reach.name
-  const browserRoute = named && !local && !!gatewayWeb
-  const reachable = useAddressReachable(browserRoute ? reach.name : undefined)
   const localPort = useLocalPort(service?.id, device?.id)
   const [portAsked, setPortAsked] = useState(false)
   useEffect(() => {
@@ -63,8 +58,6 @@ export const ServiceConnectButton: React.FC = () => {
 
   const routes = chooseRoutes({
     address: !!local,
-    browser: browserRoute,
-    browserReachable: reachable,
     terminal: named && ssh,
     localPort: localPort.offered,
     localPortChosen: portChosen,
@@ -73,11 +66,11 @@ export const ServiceConnectButton: React.FC = () => {
   // The app's own terminal while it runs is the terminal route; otherwise what the app is doing, and turning it on.
   const appOption = byCertificate && (!named || serving.app?.state !== 'running')
   const checking = !!reach.name && !reach.checked && !connection.enabled && !portChosen
-  const byAddress = routes.primary === 'address' || routes.primary === 'browser' || routes.primary === 'terminal'
+  const byAddress = routes.primary === 'address' || routes.primary === 'terminal'
   // remote.it is on this machine but does not act for this person (services/localSubnet localSignIn): signing in there
   // is offered, the other routes working meanwhile.
   const signIn = useLocalSignIn(!local && named && !portChosen)
-
+  const noAgent = named && !local && !ssh && !signIn && !portChosen
   const usePort = () => {
     setPortAsked(true)
     // A web service asks for https the first time (graphql serves it where it can); after that, as the person left it.
@@ -108,20 +101,16 @@ export const ServiceConnectButton: React.FC = () => {
             byCertificate={byCertificate}
           />
         )
-      case 'browser':
-        return <BrowserGatewayConnect key={kind} variant={variant} name={reach.name!} reachable={reachable} />
       case 'terminal':
         return (
           <BrowserGatewayConnect
             key={kind}
             variant={variant}
             name={reach.name!}
-            terminal={{
-              port: reach.port || service.port || 22,
-              title: service.name,
-              service: service.id,
-              byCertificate,
-            }}
+            port={reach.port || service.port || 22}
+            title={service.name}
+            service={service.id}
+            byCertificate={byCertificate}
           />
         )
       case 'localPort':
@@ -213,6 +202,21 @@ export const ServiceConnectButton: React.FC = () => {
             )}
           </Box>
         </GuideBubble>
+        {noAgent && (
+          <Typography
+            variant="caption"
+            color="textSecondary"
+            component="p"
+            sx={{ paddingX: { xs: 2, sm: 2.5 }, marginTop: 1 }}
+            data-testid="connect-no-agent"
+          >
+            {t(
+              'serviceConnectButton.noAgent',
+              'To open {{service}} by its address, use the Remote.It app on this computer with Access on.',
+              { service: service.name }
+            )}
+          </Typography>
+        )}
         {offline && (
           <Typography
             variant="caption"

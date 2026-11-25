@@ -12,7 +12,7 @@ export { MINIMUM_KINDS } from './deviceMinimumKinds'
 type Result<T> = T | 'ERROR' | typeof UNSUPPORTED
 
 export async function graphQLDeviceMinimums(): Promise<Result<DeviceMinimum[]>> {
-  const response = await post({ query: '{ deviceMinimums { kind minimum message } }' })
+  const response = await post({ query: '{ deviceMinimums { kind minimum message } }' }, '', false, false, { sub: '' })
   if (response === 'ERROR') return 'ERROR'
   const errors = response.data?.errors
   if (withoutDeviceSessions(errors, 'deviceMinimums')) return UNSUPPORTED
@@ -27,12 +27,18 @@ export async function graphQLSetDeviceMinimum(
   minimum: string,
   message: string
 ): Promise<{ set: DeviceMinimum | null } | { error: string }> {
-  const response = await post({
-    query: `mutation SetDeviceMinimum($kind: String!, $minimum: String, $message: String) {
+  const response = await post(
+    {
+      query: `mutation SetDeviceMinimum($kind: String!, $minimum: String, $message: String) {
       setDeviceMinimum(kind: $kind, minimum: $minimum, message: $message) { kind minimum message }
     }`,
-    variables: { kind, minimum: minimum.trim() || null, message: message.trim() || null },
-  })
+      variables: { kind, minimum: minimum.trim() || null, message: message.trim() || null },
+    },
+    '',
+    false,
+    false,
+    { sub: '' }
+  )
   if (response === 'ERROR') return { error: 'The request failed' }
   const errors = response.data?.errors
   if (errors?.length)

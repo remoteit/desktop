@@ -34,6 +34,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 import { AccountSlugSetting } from './AccountSlugSetting'
+import { forgetAccountCaches } from '../services/accountCaches'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 async function render(accountId?: string) {
@@ -51,6 +52,19 @@ beforeEach(() => {
 })
 
 describe('AccountSlugSetting', () => {
+  // Another sign-in comes to serve the account (hooks/useReadAgain): the slug is read again where it is.
+  it('reads the slug again as another sign-in, showing it meanwhile — and nothing of it if that read fails', async () => {
+    const container = await render('ORG')
+    let answer!: (value: unknown) => void
+    read.mockReturnValueOnce(new Promise(resolve => (answer = resolve)))
+    await act(async () => forgetAccountCaches(['ORG']))
+    expect(read).toHaveBeenCalledTimes(2)
+    // Still up while the new read is out: nothing under it is taken down.
+    expect(container.querySelector('[data-value]')!.textContent).toBe('acme')
+    await act(async () => answer('ERROR'))
+    expect(container.querySelector('[data-value]')?.textContent || '').not.toContain('acme')
+  })
+
   it("shows the account's slug and that the old one keeps working for 30 days", async () => {
     const container = await render('ORG')
     expect(read).toHaveBeenCalledWith('ORG')

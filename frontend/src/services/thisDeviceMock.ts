@@ -34,6 +34,9 @@ export type MockBridgeOptions = {
   exits?: ExitRef[]
   settings?: DeviceSetting[]
   accounts?: AuthAccount[]
+  // 1.13.0: the shell's mode, Use several at once. Not said: a shell from before auth.mode, which answers
+  // 'unsupported' to it — and keeps several in use if its accounts say `signedIn`, as such a shell did.
+  several?: boolean
   // The shell cannot say yet whose sign-in this is (its device has not said its stage): auth.* 'unavailable'.
   authUnavailable?: boolean
   tokenType?: 'Bearer' | 'DPoP'
@@ -79,6 +82,7 @@ export type MockBridge = {
   status: DeviceStatus
   settings: DeviceSetting[]
   accounts: AuthAccount[]
+  several?: boolean
   authUnavailable: boolean
   app: AppPrefs
   logging: LoggingState
@@ -173,6 +177,7 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
       { name: 'websocket', value: 'auto', source: 'cloud', locked: true },
     ],
     accounts: options.accounts ?? [{ sub: 'sub-person', email: 'person@example.com', active: true }],
+    several: options.several,
     authUnavailable: options.authUnavailable ?? false,
     app: options.app ?? { openAtLogin: { on: true } },
     logging: options.logging ?? { detailed: false },
@@ -202,6 +207,12 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
           throw new BridgeError('unavailable', 'its stage is not known yet')
         const a = args as any
         const active = () => bridge.accounts.find(x => x.active)
+        const multi = () => bridge.several !== false && bridge.accounts.some(x => typeof x.signedIn === 'boolean')
+        // 1.13.0: what an auth event says besides who — the mode, from a shell that has one.
+        const mode = () => (bridge.several === undefined ? {} : { several: bridge.several })
+        // Single mode on a shell that has the setting: the one in use is the active account, and only it is signedIn.
+        const only = (sub?: string) =>
+          bridge.accounts.map(x => ({ ...x, active: x.sub === sub, signedIn: x.sub === sub }))
         const changed = () => bridge.emit('status', bridge.status)
         switch (method) {
           case 'info':
@@ -380,7 +391,8 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             }
             return bridge.status
           case 'auth.accessToken': {
-            const who = active()
+            // A shell that keeps several credentials in use (its accounts say `signedIn`) mints for the one named.
+            const who = multi() && a.sub ? bridge.accounts.find(x => x.sub === a.sub && x.signedIn) : active()
             if (!who) throw new BridgeError('notSignedIn')
             return {
               accessToken: `token-for:${who.sub}:${a.resource ?? 'api'}`,
@@ -389,25 +401,71 @@ export function createMockBridge(options: MockBridgeOptions = {}): MockBridge {
             }
           }
           case 'auth.dpopProof':
-            return { proof: `proof:${a.method}:${a.url}` }
+            return { proof: `proof:${a.method}:${a.url}${multi() && a.sub ? `:${a.sub}` : ''}` }
           case 'auth.accounts':
             return bridge.accounts
+          case 'auth.mode':
+            if (bridge.several === undefined) throw new BridgeError('unsupported', method)
+            return { several: bridge.several }
+          case 'auth.setMode':
+            if (bridge.several === undefined) throw new BridgeError('unsupported', method)
+            bridge.several = !!a.several
+            // Off: the active credential stays in use, and the others are signed out on the device, remembered.
+            if (!bridge.several) bridge.accounts = only(active()?.sub)
+            bridge.emit('auth', { active: active(), accounts: bridge.accounts, ...mode() })
+            return { several: bridge.several }
           case 'auth.signIn': {
-            const added: AuthAccount = { sub: 'sub-new', email: 'new@example.com', active: true }
+            const added: AuthAccount = {
+              sub: 'sub-new',
+              email: 'new@example.com',
+              active: true,
+              ...((multi() || bridge.several === false) && { signedIn: true }),
+            }
             bridge.accounts = [...bridge.accounts.map(x => ({ ...x, active: false })), added]
-            bridge.emit('auth', { active: added })
+            if (bridge.several === false) bridge.accounts = only(added.sub)
+            bridge.emit('auth', {
+              active: added,
+              ...((multi() || bridge.several === false) && { accounts: bridge.accounts }),
+              ...mode(),
+            })
             return added
           }
           case 'auth.switch': {
             const to = bridge.accounts.find(x => x.sub === a.sub)
             if (!to) throw new BridgeError('refused', 'not remembered')
+            if (multi()) {
+              // Sets the active one and signs none out; a remembered credential not in use is signed in first.
+              bridge.accounts = bridge.accounts.map(x => ({
+                ...x,
+                active: x.sub === a.sub,
+                signedIn: x.signedIn || x.sub === a.sub,
+              }))
+              const now = active()!
+              bridge.emit('auth', { active: now, accounts: bridge.accounts, ...mode() })
+              return now
+            }
+            if (bridge.several === false) {
+              bridge.accounts = only(a.sub)
+              bridge.emit('auth', { active: active(), accounts: bridge.accounts, ...mode() })
+              return active()
+            }
             bridge.accounts = bridge.accounts.map(x => ({ ...x, active: x.sub === a.sub }))
             bridge.emit('auth', { active: { ...to, active: true } })
             return { ...to, active: true }
           }
           case 'auth.signOut':
-            bridge.accounts = bridge.accounts.map(x => ({ ...x, active: false }))
-            bridge.emit('auth', {})
+            if (multi()) {
+              // Signs that one out and leaves the others; the active one going, the next in use becomes active.
+              const leaving = a.sub ?? active()?.sub
+              const rest = bridge.accounts.map(x => (x.sub === leaving ? { ...x, active: false, signedIn: false } : x))
+              const next = rest.find(x => x.active) ?? rest.find(x => x.signedIn)
+              bridge.accounts = rest.map(x => ({ ...x, active: x.sub === next?.sub }))
+              bridge.emit('auth', { active: active(), accounts: bridge.accounts, ...mode() })
+              return {}
+            }
+            bridge.accounts =
+              bridge.several === false ? only(undefined) : bridge.accounts.map(x => ({ ...x, active: false }))
+            bridge.emit('auth', mode())
             return {}
         }
         throw new BridgeError('unsupported', method)

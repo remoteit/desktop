@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getAllDevices } from '../selectors/devices'
 import { selectNetworks } from '../selectors/networks'
@@ -10,6 +10,7 @@ import { TargetPlatform } from './TargetPlatform'
 import { ShareDetails } from './ShareDetails'
 import { Gutters } from './Gutters'
 import { Icon } from './Icon'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Props = {
   guest?: IGuest
@@ -26,7 +27,7 @@ export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => 
     guest?.deviceIds.includes(device.id)
   )
 
-  useEffect(() => {
+  useReadEffect(() => {
     setFetched(false)
     const missing = guest?.deviceIds.filter(id => !devices.find(device => device.id === id))
     if (missing?.length && !fetched) {
@@ -37,7 +38,7 @@ export const OrganizationGuestDetails: React.FC<Props> = ({ guest, loaded }) => 
     }
   }, [guest])
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!loaded) dispatch.organization.fetchGuests()
   }, [guest, loaded])
 

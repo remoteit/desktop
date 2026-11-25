@@ -2,12 +2,13 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { state, shortcuts, support, terminal, gateway, copy } = vi.hoisted(() => ({
+const { state, shortcuts, support, terminal, opened, agent, copy } = vi.hoisted(() => ({
   state: { current: {} as any },
   shortcuts: vi.fn(),
   support: vi.fn(),
   terminal: vi.fn(),
-  gateway: vi.fn(async () => true),
+  opened: vi.fn(async () => {}),
+  agent: { reaches: true },
   copy: vi.fn(),
 }))
 vi.mock('react-i18next', () => ({
@@ -25,12 +26,12 @@ vi.mock('../../selectors/connections', () => ({ selectConnections: (s: any) => s
 vi.mock('../../hooks/useDeviceSessions', () => ({ useDeviceSessions: () => true }))
 vi.mock('../../hooks/useServiceShortcutsSupport', () => ({ useServiceShortcutsSupport: () => support() }))
 vi.mock('../../hooks/useLocalSubnetName', () => ({
-  useLocalSubnetName: () => undefined,
+  useLocalSubnetName: (_deviceId?: string, serviceId?: string) =>
+    agent.reaches && serviceId === 'Grafana' ? { name: 'grafana.on.solo.remote.it' } : undefined,
   useSubnetName: (deviceId?: string) => (deviceId === 'NAS' ? 'nas-owner.on.solo.remote.it' : undefined),
 }))
 vi.mock('../../services/graphQLServiceShortcuts', () => ({ graphQLServiceShortcuts: shortcuts }))
-vi.mock('../../services/browserGateway', () => ({ openThroughGateway: gateway }))
-vi.mock('../../services/browser', () => ({ openServiceURL: vi.fn() }))
+vi.mock('../../services/browser', () => ({ openServiceURL: opened }))
 vi.mock('../../services/localSubnet', () => ({ subnetWebURL: (name: string, port: number) => `https://${name}:${port}` }))
 vi.mock('../../helpers/terminalHelper', () => ({ openTerminal: terminal }))
 vi.mock('../../hooks/useClipboard', () => ({ default: () => ({ copy, copied: false }) }))
@@ -74,7 +75,8 @@ beforeEach(() => {
   support.mockReset().mockReturnValue({ available: true, namedAddress: true })
   shortcuts.mockReset().mockResolvedValue([])
   terminal.mockReset()
-  gateway.mockClear()
+  opened.mockClear()
+  agent.reaches = true
   copy.mockReset()
   state.current = {
     accountId: 'ME',
@@ -115,11 +117,19 @@ describe('Your devices, signed in', () => {
     state.current.devices = [device('NAS')]
     const c = await render()
     await act(async () => (c.querySelector('[data-device-row="Grafana"] [data-action]') as HTMLElement).click())
-    expect(gateway).toHaveBeenCalledWith('grafana.on.solo.remote.it')
+    expect(opened).toHaveBeenCalledWith('https://grafana.on.solo.remote.it:443')
     await act(async () => (c.querySelector('[data-device-row="Shell"] [data-action]') as HTMLElement).click())
     expect(terminal).toHaveBeenCalledWith({ name: 'shell.on.solo.remote.it', port: 2222, title: 'Shell', service: 'Shell' })
     await act(async () => (c.querySelector('[data-device-row="NAS"] [data-action]') as HTMLElement).click())
     expect(copy).toHaveBeenCalledWith('nas-owner.on.solo.remote.it')
+  })
+
+  it('a web service no agent here reaches is not opened by its address: Connect on its page', async () => {
+    agent.reaches = false
+    shortcuts.mockResolvedValue([shortcut('Grafana', 8)])
+    const c = await render()
+    expect(rows(c)).toEqual([['Grafana', 'connect']])
+    expect(opened).not.toHaveBeenCalled()
   })
 
   it('an offline service says so, with nothing to do from here', async () => {

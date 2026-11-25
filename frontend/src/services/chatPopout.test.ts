@@ -57,4 +57,17 @@ describe('chatPopout — openChatPopout', () => {
     expect(open).not.toHaveBeenCalled()
     vi.unstubAllGlobals()
   })
+
+  /* The menu app's portal: its window opens no other, and its server answers no address but the page's own. */
+  it('is unsupported, and refuses to open, in the portal the menu app embeds', async () => {
+    vi.resetModules()
+    vi.doMock('../constants', async () => ({ ...(await vi.importActual<object>('../constants')), EMBEDDED: true }))
+    const open = vi.spyOn(window, 'open').mockReturnValue({} as Window)
+    const fresh = await import('./chatPopout')
+    expect(fresh.chatPopoutSupported).toBe(false)
+    expect(fresh.openChatPopout('org-1')).toBe(false)
+    expect(open).not.toHaveBeenCalled()
+    vi.doUnmock('../constants')
+    vi.resetModules()
+  })
 })

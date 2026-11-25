@@ -75,3 +75,35 @@ describe('clicking a desktop notification', () => {
     expect(open).toHaveBeenCalledWith('/devices/D1', { title: 'pi went offline', body: 'Linux', time: TIME })
   })
 })
+
+/* Several people signed in here: an event comes once, on whichever of their sockets is first (services/cloudController),
+   so "you" is any of them — not the one whose socket it was. */
+describe('with several people signed in here', () => {
+  const heardBy = (authUserId: string, more: object) =>
+    ({
+      ...wentOffline,
+      authUserId,
+      authUserIds: ['U1', 'U2'],
+      actor: { id: 'U1', email: 'one@x.test' },
+      ...more,
+    } as unknown as ICloudEvent)
+  const ownedBy = (id: string) => [{ ...wentOffline.target[0], owner: { id, email: `${id}@x.test` } }]
+
+  it('a transfer to one of them is to you, whoever heard it', async () => {
+    for (const heard of ['U1', 'U2']) await notify(heardBy(heard, { type: 'DEVICE_TRANSFER', target: ownedBy('U2') }))
+    expect(created.map(notification => notification.title)).toEqual([
+      'pi was transferred to you',
+      'pi was transferred to you',
+    ])
+    created.length = 0
+    await notify(heardBy('U1', { type: 'DEVICE_TRANSFER', target: ownedBy('U9') }))
+    expect(created).toHaveLength(0)
+  })
+
+  it('a connection one of them made is yours, and a device of theirs is not marked another’s', async () => {
+    await notify(heardBy('U2', { type: 'DEVICE_CONNECT', state: 'connected' }))
+    expect(created[0].title).toBe('You connected')
+    await notify(heardBy('U1', { target: ownedBy('U2') }))
+    expect(created[1].options.body).toBe('Linux')
+  })
+})

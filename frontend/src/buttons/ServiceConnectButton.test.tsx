@@ -4,10 +4,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '@common/constants'
 import { getApplication } from '@common/applications'
 
-const { env, reach, reachable, port, create, listed, openTerminal } = vi.hoisted(() => ({
+const { env, reach, port, create, listed, openTerminal } = vi.hoisted(() => ({
   env: { hasBackend: false, isNative: false, isIOSDeviceApp: false },
   reach: { value: { checked: true } as any },
-  reachable: { value: undefined as boolean | undefined },
   port: { value: { offered: false, others: [], busy: false } as any },
   create: vi.fn(),
   listed: vi.fn(),
@@ -31,7 +30,7 @@ vi.mock('../models/applicationTypes', async importOriginal => ({
 vi.mock('../services/browser', () => ({ default: env, openServiceURL: vi.fn(), openInSystem: vi.fn() }))
 vi.mock('../services/Controller', () => ({ emit: vi.fn() }))
 vi.mock('../helpers/connectionHelper', () => ({ clearConnectionError: vi.fn(), saveLaunchTokens: vi.fn() }))
-vi.mock('../helpers/terminalHelper', () => ({ openTerminal }))
+vi.mock('../helpers/terminalHelper', () => ({ openTerminal, inApp: () => false }))
 vi.mock('../hooks/useApplication', () => ({
   useApplication: (service?: IService, connection?: IConnection) => getApplication(service, connection),
 }))
@@ -40,7 +39,6 @@ vi.mock('../hooks/useLocalSubnetName', () => ({
   useLocalSignIn: () => null,
   useSubnetName: () => undefined,
 }))
-vi.mock('../hooks/useAddressReachable', () => ({ useAddressReachable: () => reachable.value }))
 vi.mock('../hooks/useLocalPort', () => ({ useLocalPort: () => port.value }))
 vi.mock('../hooks/useDeviceSessions', () => ({ useDeviceSessions: () => true, selectDeviceSessions: () => true }))
 vi.mock('../hooks/useDeviceApps', () => ({ useServiceApp: () => ({}) }))
@@ -60,10 +58,6 @@ vi.mock('../services/localPorts', () => ({
   localPortWebURL: () => '',
   namesResolve: async () => true,
   setNamesResolve: vi.fn(),
-}))
-vi.mock('../services/browserGateway', () => ({
-  gatewayURL: (name: string) => `https://${name}/`,
-  openThroughGateway: vi.fn(async () => true),
 }))
 vi.mock('../services/localSubnet', () => ({
   subnetWebURL: (name: string, port: number) => (port === 443 ? `https://${name}` : `https://${name}:${port}`),
@@ -109,9 +103,9 @@ describe('ServiceConnectButton', () => {
     root = createRoot(container)
     env.hasBackend = false
     reach.value = { name: NAME, checked: true }
-    reachable.value = undefined
     port.value = { offered: false, others: [], busy: false, open: vi.fn() }
     create.mockReset()
+    openTerminal.mockReset().mockReturnValue(true)
     listed.mockReset()
   })
 
@@ -151,20 +145,18 @@ describe('ServiceConnectButton', () => {
     expect(more()[0]).toContain('Connect through a public address')
   })
 
-  it('a browser and a web service: opens it in the browser, a public address one click away', async () => {
-    await render(webService)
-    expect(primary().getAttribute('data-route')).toBe('browser')
-    expect(primaryLabel()).toBe('Open in browser')
-    expect(more()).toHaveLength(1)
-  })
-
-  it('a browser and a web service whose address does not resolve: a signed-in public address first', async () => {
-    reachable.value = false
-    await render(webService)
+  it.each([
+    ['HTTPS on 443', { typeID: 8, port: 443 }, {}],
+    ['plain HTTP on 80', { typeID: 8, port: 80 }, {}],
+    ['a web service on another port', { typeID: 8, port: 8123 }, {}],
+    ['a web service with a name of its own', { typeID: 8, port: 8123 }, { port: 443 }],
+    ['a service that is not web', { typeID: 4, port: 5900 }, {}],
+  ])('no agent here reaches %s: a public address, its address not shown, Access named', async (_, kind, more) => {
+    reach.value = { ...reach.value, ...more }
+    await render({ ...webService, ...kind })
     expect(primary().getAttribute('data-route')).toBe('public')
-    expect(primaryLabel()).toBe('Open in browser')
-    expect(primary().textContent).toContain('Visitors sign in with Remote.It')
-    expect(more()[0]).toContain("This address doesn't open from here yet")
+    expect(container.textContent).not.toContain(NAME)
+    expect(container.querySelector('[data-testid="connect-no-agent"]')?.textContent).toContain('with Access on')
   })
 
   it('a browser and an ssh service: opens a terminal', async () => {
@@ -172,7 +164,43 @@ describe('ServiceConnectButton', () => {
     expect(primary().getAttribute('data-route')).toBe('terminal')
     expect(primaryLabel()).toBe('Open terminal')
     await act(async () => primary().querySelector('button')!.click())
-    expect(openTerminal).toHaveBeenCalledWith(expect.objectContaining({ name: NAME, port: 22, service: 'S2' }))
+    expect(openTerminal).toHaveBeenCalledExactlyOnceWith({ name: NAME, port: 22, title: 'SSH', service: 'S2' })
+    expect(container.querySelector('[data-testid="connect-no-agent"]')).toBeNull()
+    expect(more()[0]).toContain('Connect through a public address')
+  })
+
+  it('an ssh service: its terminal at its name’s port where it has one', async () => {
+    reach.value = { name: NAME, checked: true, port: 2222 }
+    await render(sshService)
+    await act(async () => primary().querySelector('button')!.click())
+    expect(openTerminal).toHaveBeenCalledWith(expect.objectContaining({ port: 2222 }))
+  })
+
+  it('an ssh service: a public address until its address is known, and with none', async () => {
+    reach.value = { name: NAME, checked: false }
+    await render(sshService)
+    expect(primary().getAttribute('data-route')).toBe('checking')
+    reach.value = { checked: true }
+    await render(sshService)
+    expect(primary().getAttribute('data-route')).toBe('public')
+  })
+
+  it('a connection started already leads, for ssh too', async () => {
+    await render(sshService, { enabled: true })
+    expect(primary().getAttribute('data-route')).toBe('public')
+  })
+
+  it.each([
+    ['web', { typeID: 8, port: 443 }],
+    ['web on another port', { typeID: 8, port: 8123 }],
+    ['ssh', { typeID: 28, port: 22 }],
+    ['any other', { typeID: 4, port: 5900 }],
+  ])('an agent here reaches %s: its address leads, a public address one step away', async (_, kind) => {
+    reach.value = { name: NAME, checked: true, local: { name: NAME } }
+    await render({ ...webService, ...kind })
+    expect(primary().getAttribute('data-route')).toBe('address')
+    expect(primary().textContent).toContain(NAME)
+    expect(more().some(row => row.includes('Connect through a public address'))).toBe(true)
   })
 
   it('a computer that offers a local port and nothing better: the local port', async () => {
@@ -197,7 +225,6 @@ describe('ServiceConnectButton', () => {
   })
 
   it('a signed-in public address: one the person has is opened again, never one open to anyone made', async () => {
-    reachable.value = false
     listed.mockResolvedValue([
       { kind: 'https', access: 'public', url: 'https://open.example' },
       { kind: 'https', access: 'signed-in', url: 'https://mine.example' },

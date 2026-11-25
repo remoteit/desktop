@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -21,6 +21,7 @@ import { graphQLAddDevice } from '../services/deviceIdentity'
 import { DeviceJoinKeyOnce, DownloadJoinKeyButton } from './DeviceJoinKeyOnce'
 import { Notice } from './Notice'
 import { Icon } from './Icon'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Props = { onClose: () => void }
 
@@ -47,7 +48,7 @@ export const AddDeviceAheadDialog: React.FC<Props> = ({ onClose }) => {
   const [adding, setAdding] = useState(false)
   const [added, setAdded] = useState<Added>()
 
-  useEffect(() => {
+  useReadEffect(() => {
     dispatch.products.fetchIfEmpty()
   }, [])
 

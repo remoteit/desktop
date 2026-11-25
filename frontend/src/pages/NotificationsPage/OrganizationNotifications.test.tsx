@@ -18,7 +18,7 @@ vi.mock('../../constants', () => ({
     return stage
   },
 }))
-vi.mock('../../selectors/organizations', () => ({ selectOrganizationOptions: () => organizations }))
+vi.mock('../../selectors/organizations', () => ({ selectPrimaryOrganizationOptions: () => organizations }))
 vi.mock('../../components/Avatar', () => ({ Avatar: () => null }))
 vi.mock('../../services/graphQLRequest', () => ({ graphQLOrganizationNotificationSettings: () => muted() }))
 vi.mock('../../services/graphQLMutation', () => ({

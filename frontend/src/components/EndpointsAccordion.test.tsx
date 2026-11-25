@@ -5,45 +5,49 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // Making an endpoint: the proxy choice defaults to remote.it's nearest the device, which shows its name like any other
 // choice and sends no proxy; a proxy chosen — remote.it's by its name and where, an own one by its name and host, and a
 // local network one marked so — is sent by its id.
-const { create, endpoints, usage } = vi.hoisted(() => ({
+const { create, endpoints, usage, choicesFor } = vi.hoisted(() => ({
+  choicesFor: vi.fn(),
   create: vi.fn(async () => ({} as any)),
   endpoints: vi.fn(async () => [] as any),
   usage: vi.fn(async (_accountId?: string) => [] as any),
 }))
 vi.mock('../services/graphQLProxy', () => ({
   graphQLServiceEndpoints: endpoints,
-  graphQLProxies: async () => [
-    {
-      id: 'P1',
-      name: 'remote.it pdx1a',
-      host: 'pdx1a-r3.solo.r3proxy.com',
-      remoteit: true,
-      local: false,
-      publicEndpoints: true,
-      location: 'pdx1',
-      provider: 'AWS us-west-2 (Boardman)',
-    },
-    {
-      id: 'P2',
-      name: 'Office gateway',
-      host: 'gw-acme.solo.r3proxy.com',
-      remoteit: false,
-      local: false,
-      publicEndpoints: true,
-      location: null,
-      provider: '',
-    },
-    {
-      id: 'P3',
-      name: 'Printers',
-      host: 'printers-acme.solo.r3proxy.com',
-      remoteit: false,
-      local: true,
-      publicEndpoints: true,
-      location: null,
-      provider: '',
-    },
-  ],
+  graphQLProxies: async (requestFor?: unknown) => (
+    choicesFor(requestFor),
+    [
+      {
+        id: 'P1',
+        name: 'remote.it pdx1a',
+        host: 'pdx1a-r3.solo.r3proxy.com',
+        remoteit: true,
+        local: false,
+        publicEndpoints: true,
+        location: 'pdx1',
+        provider: 'AWS us-west-2 (Boardman)',
+      },
+      {
+        id: 'P2',
+        name: 'Office gateway',
+        host: 'gw-acme.solo.r3proxy.com',
+        remoteit: false,
+        local: false,
+        publicEndpoints: true,
+        location: null,
+        provider: '',
+      },
+      {
+        id: 'P3',
+        name: 'Printers',
+        host: 'printers-acme.solo.r3proxy.com',
+        remoteit: false,
+        local: true,
+        publicEndpoints: true,
+        location: null,
+        provider: '',
+      },
+    ]
+  ),
   graphQLCreateEndpoint: create,
   graphQLRemoveEndpoint: vi.fn(),
   // As graphQLProxy's own: graphql's url, a tcp or udp one's without its scheme.
@@ -75,6 +79,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 import { EndpointsAccordion } from './EndpointsAccordion'
+import { forgetAccountCaches } from '../services/accountCaches'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
 
 const NEAREST = "Remote.It's, nearest the device"
@@ -112,6 +117,12 @@ describe('the endpoint form’s proxy choice', () => {
     expect(field.querySelector('label')?.getAttribute('data-shrink')).toBe('true')
   })
 
+  it('is read as the service’s own sign-in: the proxies of whoever the endpoint is then made as', async () => {
+    choicesFor.mockClear()
+    await openForm()
+    expect(choicesFor).toHaveBeenCalledWith({ about: ['SERVICE'] })
+  })
+
   it('sends no proxy for the nearest choice', async () => {
     await makeIt(await openForm())
     expect(create).toHaveBeenCalledTimes(1)
@@ -128,6 +139,28 @@ describe('the endpoint form’s proxy choice', () => {
       o.textContent?.includes('gw-acme.solo.r3proxy.com')
     ) as HTMLElement
     await act(async () => option.click())
+    expect(field.querySelector('.MuiSelect-select')?.textContent).toBe('Office gateway · gw-acme.solo.r3proxy.com')
+    await makeIt(container)
+    expect((create.mock.calls[0] as any[])[1].proxy).toBe('P2')
+  })
+
+  // Another sign-in comes to serve the service's account while the form is half filled (models/accounts readAgain):
+  // the endpoints are read again — as that sign-in, by services/post — and the form is not taken down under the person.
+  it('is kept as the person left it when the endpoints are read again for another sign-in', async () => {
+    const container = await openForm()
+    const field = proxyField(container)
+    await act(async () => (field.closest('.MuiListItemButton-root') as HTMLElement).click())
+    const option = [...document.querySelectorAll('[role="option"]')].find(o =>
+      o.textContent?.includes('gw-acme.solo.r3proxy.com')
+    ) as HTMLElement
+    await act(async () => option.click())
+    const read = endpoints.mock.calls.length
+
+    await act(async () => forgetAccountCaches(['ACCOUNT']))
+    expect(endpoints.mock.calls.length).toBe(read + 1)
+    expect(endpoints).toHaveBeenLastCalledWith('DEVICE', 'SERVICE')
+    // The same form, with the choice made in it.
+    expect(proxyField(container)).toBe(field)
     expect(field.querySelector('.MuiSelect-select')?.textContent).toBe('Office gateway · gw-acme.solo.r3proxy.com')
     await makeIt(container)
     expect((create.mock.calls[0] as any[])[1].proxy).toBe('P2')

@@ -2,7 +2,10 @@
 import structuredClone from '@ungap/structured-clone'
 import { selectJobs } from '../selectors/scripting'
 import { getDevices } from '../selectors/devices'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { RowSaid, rowSaid, selectActiveAccountId } from '../selectors/accounts'
+import { asRow, rowGone, selectRowOf } from '../selectors/signIns'
+import { RowKey, rowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
+import { FAILED, findElsewhere } from '../services/elsewhere'
 import { graphQLSetJob, graphQLStartJob, graphQLCancelJob, graphQLDeleteJob } from '../services/graphQLMutation'
 import { jobRunOptionFields, JobRunOptions, parseJobRunOptions } from '../services/jobRunOptions'
 import { AxiosResponse } from 'axios'
@@ -21,7 +24,7 @@ type ScriptsState = {
   from: number
   total: number
   all: {
-    [accountId: string]: IJob[]
+    [row: string]: IJob[] // by ROW (helpers/rowKey): an account's jobs as each sign-in that belongs to it is given them
   }
 }
 
@@ -40,14 +43,15 @@ const refreshing: ILookup<ReturnType<typeof setTimeout>> = {}
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
-    async fetch(args: { accountId?: string; fileID?: string; from?: number } | void, state) {
-      const accountId = args?.accountId || selectActiveAccountId(state)
+    // Each read is made for a row (selectors/accounts rowSaid), and its answer is kept under that row.
+    async fetch(args: (RowSaid & { fileID?: string; from?: number }) | void, state) {
+      const { accountId, row } = rowSaid(state, args)
       const fileID = args?.fileID
       const from = args?.from ?? 0
       const size = state.jobs.size || defaultState.size
       dispatch.jobs.set({ fetching: true })
       const fileIds = fileID ? [fileID] : undefined
-      const result = await graphQLJobs({ accountId, fileIds, from, size })
+      const result = await graphQLJobs({ accountId, fileIds, from, size, requestFor: asRow(row) })
       if (result === 'ERROR') {
         dispatch.jobs.set({ fetching: false })
         return
@@ -56,8 +60,8 @@ export default createModel<RootModel>()({
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED JOBS', accountId, jobs)
       const merge = from > 0 || !!fileID
-      if (merge) dispatch.jobs.appendJobs({ accountId, jobs })
-      else dispatch.jobs.setAccount({ accountId, jobs })
+      if (merge) dispatch.jobs.appendJobs({ accountId, row, jobs })
+      else dispatch.jobs.setAccount({ accountId, row, jobs })
       dispatch.jobs.set({ fetching: false, initialized: true, total, from })
     },
     async loadMore(args: { fileID?: string } | void, state) {
@@ -66,7 +70,7 @@ export default createModel<RootModel>()({
       const size = state.jobs.size || defaultState.size
       await dispatch.jobs.fetch({ fileID: args?.fileID, from: from + size })
     },
-    async fetchSingle({ accountId, jobId }: { accountId?: string; jobId: string }, state) {
+    async fetchSingle({ jobId, ...of }: RowSaid & { jobId: string }, state) {
       dispatch.jobs.set({ fetching: true })
 
       // // Find latest job by fileId if jobId is not valid
@@ -75,22 +79,45 @@ export default createModel<RootModel>()({
       //   jobId = selectJobs(state).find(j => j.file?.id === fileId)?.id || jobId
       // }
 
-      accountId = accountId || selectActiveAccountId(state)
-      const result = await graphQLJobs({ accountId, ids: [jobId] })
+      const { accountId, row } = rowSaid(state, of)
+      const result = await graphQLJobs({ accountId, ids: [jobId], requestFor: asRow(row) })
       if (result === 'ERROR') {
         dispatch.jobs.set({ fetching: false })
         return
       }
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED JOB', accountId, jobs)
-      dispatch.jobs.setJobs({ accountId, jobs })
+      // Opened at its address, the caller naming no row, and not this row's: another sign-in's here to see, maybe —
+      // whose row is then selected, and the job put in it (services/elsewhere).
+      if (!jobs.length && !of.accountId && !of.row && of.sub === undefined) {
+        const found = await findElsewhere<IJob[]>({
+          ids: [jobId],
+          asked: row,
+          byAccount: true,
+          read: async (id, requestFor) => {
+            const answer = await graphQLJobs({ accountId: id, ids: [jobId], requestFor })
+            if (answer === 'ERROR') return FAILED
+            const theirs: IJob[] = await dispatch.jobs.parse(answer)
+            return theirs.length ? theirs : undefined
+          },
+        })
+        if (found)
+          dispatch.jobs.setJobs({
+            accountId: found.accountId,
+            row: rowKey(found.accountId, found.sub),
+            jobs: found.answer,
+          })
+        dispatch.jobs.set({ fetching: false })
+        return
+      }
+      dispatch.jobs.setJobs({ accountId, row, jobs })
       dispatch.jobs.set({ fetching: false })
     },
-    async fetchByFileIds({ accountId, fileIds }: { accountId?: string; fileIds: string[] }, state) {
+    async fetchByFileIds({ fileIds, ...of }: RowSaid & { fileIds: string[] }, state) {
       dispatch.jobs.set({ fetching: true })
-      accountId = accountId || selectActiveAccountId(state)
+      const { accountId, row } = rowSaid(state, of)
 
-      const result = await graphQLJobs({ accountId, fileIds })
+      const result = await graphQLJobs({ accountId, fileIds, requestFor: asRow(row) })
       if (result === 'ERROR') {
         dispatch.jobs.set({ fetching: false })
         return
@@ -99,12 +126,12 @@ export default createModel<RootModel>()({
       const jobs = await dispatch.jobs.parse(result)
       console.log('LOADED FILE JOBS', accountId, jobs)
 
-      dispatch.jobs.appendJobs({ accountId, jobs })
+      dispatch.jobs.appendJobs({ accountId, row, jobs })
       dispatch.jobs.set({ fetching: false })
     },
     async fetchIfEmpty(accountId: string | void, state) {
       accountId = accountId || selectActiveAccountId(state)
-      if (!state.jobs.all[accountId]) dispatch.jobs.fetch({ accountId })
+      if (!state.jobs.all[selectRowOf(state, accountId)]) dispatch.jobs.fetch({ accountId })
     },
     async parse(result: AxiosResponse<any>): Promise<IJob[]> {
       const data = result.data?.data?.login?.account
@@ -112,12 +139,15 @@ export default createModel<RootModel>()({
     },
     // A job read again soon, quietly, at most once in REFRESH_MS: its runs' events (one a run) come by the thousand from
     // a large job, and each changes only its counts.
-    async refreshSoon({ accountId, jobId }: { accountId: string; jobId: string }) {
-      if (refreshing[jobId]) return
-      refreshing[jobId] = setTimeout(async () => {
-        delete refreshing[jobId]
-        const result = await graphQLJobs({ accountId, ids: [jobId] })
-        if (result !== 'ERROR') dispatch.jobs.setJobs({ accountId, jobs: await dispatch.jobs.parse(result) })
+    async refreshSoon({ jobId, ...of }: RowSaid & { accountId: string; jobId: string }, state) {
+      // A job in two rows is read again for each: once per row in REFRESH_MS.
+      const { accountId, row } = rowSaid(state, of)
+      const timer = `${row} ${jobId}`
+      if (refreshing[timer]) return
+      refreshing[timer] = setTimeout(async () => {
+        delete refreshing[timer]
+        const result = await graphQLJobs({ accountId, ids: [jobId], requestFor: asRow(row) })
+        if (result !== 'ERROR') dispatch.jobs.setJobs({ accountId, row, jobs: await dispatch.jobs.parse(result) })
       }, REFRESH_MS)
     },
     // Every device a job ran on, for a new run made from it: those it holds where they are all of them, else read.
@@ -142,11 +172,13 @@ export default createModel<RootModel>()({
       const job = selectJobs(state).find(j => j.id === form.jobId)
       if (job?.status !== 'READY') delete form.jobId
       const data = formAdaptor(form)
+      // The row it is saved from: where the saved job is put, whichever row is looked at by then.
+      const at = rowSaid(state)
       const result = await graphQLSetJob(data)
       if (result === 'ERROR') return '-'
       console.log('SAVED JOB', form, result?.data)
       const jobId: string = result?.data.data.setJob
-      await dispatch.jobs.fetchSingle({ jobId })
+      await dispatch.jobs.fetchSingle({ jobId, ...at })
       dispatch.ui.set({ redirect: `/script/${form.fileId}/latest` })
       return jobId
     },
@@ -200,7 +232,8 @@ export default createModel<RootModel>()({
       if (result.kind === 'ok' && result.data.zipTooBig) {
         dispatch.ui.set({
           errorMessage: i18n.t('notices:job.zipTooBig', {
-            defaultValue: 'This run has too many devices for one download. Download each device’s log from its own page.',
+            defaultValue:
+              'This run has too many devices for one download. Download each device’s log from its own page.',
           }),
         })
         return false
@@ -222,6 +255,7 @@ export default createModel<RootModel>()({
       console.log('CANCELED JOB', { result, jobId })
     },
     async delete({ jobId, fileId }: { jobId: string; fileId: string }, state) {
+      const { row } = rowSaid(state)
       const result = await graphQLDeleteJob(jobId)
       if (result === 'ERROR') {
         dispatch.ui.set({ errorMessage: i18n.t('notices:job.deleteError', { defaultValue: 'Error deleting job' }) })
@@ -229,9 +263,7 @@ export default createModel<RootModel>()({
       }
       console.log('DELETED JOB', { result, jobId })
       // Remove from local state
-      const accountId = selectActiveAccountId(state)
-      const jobs = state.jobs.all[accountId]?.filter(j => j.id !== jobId) || []
-      dispatch.jobs.setAccount({ accountId, jobs })
+      dispatch.jobs.removeJob({ row, jobId })
       // Redirect to script page
       dispatch.ui.set({ redirect: `/script/${fileId}` })
       return true
@@ -241,23 +273,48 @@ export default createModel<RootModel>()({
         d => deviceIds.includes(d.id) && (!d.permissions.includes('SCRIPTING') || !d.scriptable)
       )
     },
-    async setJobs({ accountId, jobs }: { accountId: string; jobs: IJob[] }, state) {
+    async setJobs({ accountId, row: said, jobs }: { accountId: string; row?: RowKey; jobs: IJob[] }, state) {
+      const row = said ?? selectRowOf(state, accountId)
       // Prepends new entries — fetchSingle uses this so freshly-saved jobs appear at the top.
-      dispatch.jobs.setAccount({ accountId, jobs: upsertJobs(state.jobs.all[accountId], jobs, 'start') })
+      dispatch.jobs.setAccount({ accountId, row, jobs: upsertJobs(state.jobs.all[row], jobs, 'start') })
     },
-    async appendJobs({ accountId, jobs }: { accountId: string; jobs: IJob[] }, state) {
+    async appendJobs({ accountId, row: said, jobs }: { accountId: string; row?: RowKey; jobs: IJob[] }, state) {
+      const row = said ?? selectRowOf(state, accountId)
       // Appends new entries — preserves server order for paginated and filtered fetches.
-      dispatch.jobs.setAccount({ accountId, jobs: upsertJobs(state.jobs.all[accountId], jobs, 'end') })
+      dispatch.jobs.setAccount({ accountId, row, jobs: upsertJobs(state.jobs.all[row], jobs, 'end') })
     },
-    async setAccount(params: { jobs: IJob[]; accountId: string }, state) {
-      let all = structuredClone(state.jobs.all)
-      all[params.accountId] = params.jobs
-      dispatch.jobs.set({ all })
+    /* The one write of a row's jobs. `row` is the key (helpers/rowKey): the row said — the one a read was made for —
+       else the one the account is looked at through. */
+    async setAccount(params: { jobs: IJob[]; accountId: string; row?: RowKey }, state) {
+      // An answer for a row whose sign-in has left since it was asked: the row is gone, and is not put back.
+      if (params.row && rowGone(state, params.row)) return
+      dispatch.jobs.setRow({ row: params.row ?? selectRowOf(state, params.accountId), jobs: params.jobs })
     },
   }),
   reducers: {
     reset() {
       return { ...defaultState }
+    },
+    /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
+    forget(state, accountIds: string[]) {
+      state.all = withoutAccounts(state.all, accountIds)
+      return state
+    },
+    forgetRows(state, rows: string[]) {
+      state.all = withoutRows(state.all, rows)
+      return state
+    },
+    rekey(state, rows: ILookup<RowKey>) {
+      state.all = rekeyed(state.all, rows)
+      return state
+    },
+    removeJob(state, { row, jobId }: { row: RowKey; jobId: string }) {
+      if (state.all[row]) state.all = { ...state.all, [row]: state.all[row].filter(job => job.id !== jobId) }
+      return state
+    },
+    setRow(state, { row, jobs }: { row: RowKey; jobs: IJob[] }) {
+      state.all = { ...state.all, [row]: jobs }
+      return state
     },
     set(state, params: Partial<ScriptsState>) {
       Object.keys(params).forEach(key => (state[key] = params[key]))

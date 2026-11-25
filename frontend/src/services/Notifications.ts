@@ -20,6 +20,9 @@ const actions = {
   remove: 'was unshared',
 }
 
+// "You", for an event: anyone signed in here, whichever of their sockets brought it (services/cloudController).
+const isYou = (event: ICloudEvent, id?: string) => !!id && (event.authUserIds ?? [event.authUserId]).includes(id)
+
 export async function notify(event: ICloudEvent) {
   if (!notificationSupported()) return
   if (!showNotice(event)) return
@@ -77,7 +80,7 @@ function stateNotification(event: ICloudEvent) {
       let body = platforms.name(target.platform)
       let url = `/devices/${target.deviceId}`
       if (target.service?.id) url += `/${target.service?.id}`
-      if (event.authUserId !== target.owner?.id) body += ' - ' + target.owner?.email
+      if (!isYou(event, target.owner?.id)) body += ' - ' + target.owner?.email
       createNotification(url, { title: `${target.name} ${actions[event.state]}`, body, time: event.timestamp })
     }
   })
@@ -89,7 +92,7 @@ function stateNotification(event: ICloudEvent) {
 */
 function connectNotification(event: ICloudEvent) {
   event.target.forEach(target => {
-    const you = event.authUserId === event.actor.id
+    const you = isYou(event, event.actor.id)
     const disconnect = event.state === 'disconnected'
     const title = (you ? 'You ' : event.actor.email + ' ') + actions[event.state]
     let url = `/devices/${target.deviceId}`
@@ -105,7 +108,7 @@ function connectNotification(event: ICloudEvent) {
 
 function shareNotification(event: ICloudEvent) {
   // don't notify of actions you've done
-  if (event.authUserId === event.actor.id) return
+  if (isYou(event, event.actor.id)) return
 
   let name
   const state = store.getState()
@@ -113,7 +116,7 @@ function shareNotification(event: ICloudEvent) {
   const accountTo = event.users.find(u => accountIds.includes(u.id))
 
   if (accountTo) {
-    if (event.authUserId === accountTo.id) name = 'you'
+    if (isYou(event, accountTo.id)) name = 'you'
     else name = selectOrganization(state, accountTo.id)?.name || accountTo.email
 
     event.target.forEach(target => {
@@ -130,7 +133,7 @@ function shareNotification(event: ICloudEvent) {
 function transferNotification(event: ICloudEvent) {
   event.target.forEach(target => {
     if (target.typeID === DEVICE_TYPE) {
-      const isReceiving = target.owner?.id === event.authUserId
+      const isReceiving = isYou(event, target.owner?.id)
 
       if (isReceiving) {
         const title = `${target.name} was transferred to you`

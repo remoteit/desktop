@@ -10,6 +10,7 @@ import {
   onLocalForgotten,
 } from '../services/localSubnet'
 import { requestServiceSessionInfo } from '../services/deviceSessionInfo'
+import { useReadEffect } from './useReadAgain'
 
 export type SubnetReach = {
   name?: string // the service's name in device subnets, when it has one
@@ -24,7 +25,7 @@ export const useSubnetName = (deviceId?: string, serviceId?: string): string | u
   const enabled = useDeviceSessions()
   const info = useDeviceSessionInfo(enabled ? deviceId : undefined)
   // A service added since the device was read is not in its answer: read it again for the service's name.
-  useEffect(() => {
+  useReadEffect(() => {
     if (enabled && deviceId && serviceId && info) requestServiceSessionInfo(deviceId, serviceId)
   }, [enabled, deviceId, serviceId, info])
   return enabled ? (serviceId ? info?.services?.[serviceId] : info?.subnetName) ?? undefined : undefined
@@ -45,7 +46,8 @@ export const useSubnetPort = (deviceId?: string, serviceId?: string): number | u
 export const REACH_RETRY_MS = [2_000, 5_000, 10_000, 20_000, 40_000]
 
 // A service's name in device subnets, and whether it works on this machine: through the daemon here when one reaches
-// it, or else — once asked and answered — through the browser client (services/browserGateway).
+// it. Where none does — once asked and answered — the name is no address a page here can open: only a terminal's
+// session, through the browser's client (components/BrowserGatewayConnect), uses it.
 export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetReach => {
   const name = useSubnetName(deviceId, serviceId)
   const port = useSubnetPort(deviceId, serviceId)

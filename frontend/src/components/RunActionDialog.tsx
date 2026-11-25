@@ -15,6 +15,7 @@ import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { LoadingMessage } from './LoadingMessage'
 import { Confirm } from './Confirm'
 import { Notice } from './Notice'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 export const DEFAULT_MAX_WAIT = 60
 
@@ -25,7 +26,9 @@ type Props = {
   // How the action was offered in one exit or proxy server: its plain words in the title, button and effects.
   plain?: PlainAction
   // The device as a whole — every proxy and exit it runs —, or one of them alone, by name.
-  scope: 'device' | { kind: 'proxy' | 'exit'; name: string }
+  // `id`: the proxy's or exit's, where its own page takes the action — whose sign-in is asked for a device no stored
+  // list holds (services/graphQLDeviceRuns).
+  scope: 'device' | { kind: 'proxy' | 'exit'; name: string; id?: string }
   onClose: () => void
   onDone: (runs: DeviceRuns) => void
 }
@@ -44,21 +47,25 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, plain, 
   const kind = scope === 'device' ? undefined : scope.kind
   const words = kind ? plain ?? plainActionOf(action) : undefined
   const said = plain ?? plainActionOf(action)
+  const run = scope === 'device' ? undefined : scope.id
 
-  useEffect(() => {
-    if (!open) return
-    let live = true
-    setEffects(undefined)
-    setRefusal(undefined)
-    graphQLActionEffects(device.id, action, force).then(read => {
-      if (!live) return
-      if (!Array.isArray(read)) return setEffects('ERROR')
-      setEffects(kind ? read.filter(effect => effect.kind === kind) : read)
-    })
-    return () => {
-      live = false
-    }
-  }, [open, device.id, action, force, kind])
+  useReadEffect(
+    again => {
+      if (!open) return
+      let live = true
+      if (!again) setEffects(undefined)
+      if (!again) setRefusal(undefined)
+      graphQLActionEffects(device.id, action, force, ...(run ? [run] : [])).then(read => {
+        if (!live) return
+        if (!Array.isArray(read)) return setEffects('ERROR')
+        setEffects(kind ? read.filter(effect => effect.kind === kind) : read)
+      })
+      return () => {
+        live = false
+      }
+    },
+    [open, device.id, action, force, kind]
+  )
 
   useEffect(() => {
     if (open) {
@@ -82,6 +89,7 @@ export const RunActionDialog: React.FC<Props> = ({ open, device, action, plain, 
     const result = await graphQLRunAction(kind ?? 'device', device.id, action, {
       maxWaitMinutes: action === 'DRAIN' ? wait : undefined,
       force,
+      ...(run && { run }),
     })
     setBusy(false)
     if ('reason' in result) return setRefusal(result.reason || t('runAction.failed', 'It was not done: try again.'))
@@ -219,7 +227,7 @@ export const DeviceRunEffects: React.FC<{ deviceId: string; action: 'DELETE' | '
   const deviceSessions = useDeviceSessions()
   const [effects, setEffects] = useState<DeviceActionEffect[]>([])
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!deviceSessions) return
     let live = true
     graphQLActionEffects(deviceId, action).then(read => live && setEffects(Array.isArray(read) ? read : []))

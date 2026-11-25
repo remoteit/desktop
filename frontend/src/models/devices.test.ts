@@ -10,7 +10,13 @@ const {
   graphQLKeepDuplicates,
   graphQLMakeOriginal,
   requestDuplicateCopies,
+  graphQLAddService,
+  graphQLSetAttributes,
+  graphQLUnShareDevice,
 } = vi.hoisted(() => ({
+  graphQLUnShareDevice: vi.fn(),
+  graphQLAddService: vi.fn(),
+  graphQLSetAttributes: vi.fn(),
   graphQLFetchDeviceList: vi.fn(),
   graphQLDeviceAdaptor: vi.fn(),
   graphQLDisableDevices: vi.fn(),
@@ -33,22 +39,37 @@ vi.mock('../services/deviceIdentity', () => ({
   graphQLMakeOriginal,
   requestDuplicateCopies,
 }))
-vi.mock('../services/graphQLMutation', () => ({}))
+vi.mock('../services/graphQLMutation', () => ({ graphQLAddService, graphQLSetAttributes, graphQLUnShareDevice }))
 vi.mock('../services/graphQLRequest', () => ({}))
 vi.mock('../services/graphQLVirtualDevices', () => ({}))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'acct' }))
+vi.mock('../selectors/accounts', () => ({
+  selectActiveAccountId: () => 'acct',
+  // One sign-in: a row is its account's own id.
+  selectRow: (_state: unknown, accountId?: string) => accountId || 'acct',
+  rowSaid: (_state: unknown, of?: any) => {
+    const accountId = (typeof of === 'string' ? of : of?.accountId) || 'acct'
+    return { accountId, row: of?.row ?? accountId }
+  },
+}))
 vi.mock('../selectors/devices', () => ({
   selectDeviceModelAttributes: (state: any) => state.devices.acct,
   selectActiveColumns: () => [],
   selectDevice: (state: any, _: any, id: string) => state.devices.acct.all.find((d: any) => d.id === id),
+  getDeviceModelFn: (devices: any, row: string) => devices[row] || devices.default,
+  deviceRows: (devices: object) => Object.keys(devices),
 }))
 vi.mock('../selectors/ui', () => ({ selectTimeSeries: () => ({}) }))
 vi.mock('../selectors/organizations', () => ({}))
 vi.mock('../store', () => ({ store: {} }))
 
 import devices, { defaultState } from './devices'
+import { requestSignIn, resetNotedAccounts } from '../selectors/signIns'
 
-const stateWith = (over: Partial<typeof defaultState> = {}) => ({ devices: { acct: { ...defaultState, ...over } } })
+// One sign-in: the selected account's row is kept by the account's own id.
+const stateWith = (over: Partial<typeof defaultState> = {}) => ({
+  accounts: { activeId: 'acct', membership: [] as IMembership[] },
+  devices: { acct: { ...defaultState, ...over } },
+})
 
 let dispatch: any
 const effects = () => {
@@ -77,8 +98,8 @@ describe('a failed device list fetch keeps the held list', () => {
       graphQLFetchDeviceList.mockResolvedValue(response)
       expect(await effects().fetchList(undefined, stateWith(over))).toBe(false)
       expect(dispatch.devices.set.mock.calls).toEqual([
-        [{ fetching: true, accountId: 'acct' }],
-        [{ fetching: false, append: false, accountId: 'acct' }],
+        [{ fetching: true, accountId: 'acct', row: 'acct' }],
+        [{ fetching: false, append: false, accountId: 'acct', row: 'acct' }],
       ])
       expect(dispatch.accounts.truncateMergeDevices).not.toHaveBeenCalled()
       expect(dispatch.accounts.appendUniqueDevices).not.toHaveBeenCalled()
@@ -91,11 +112,15 @@ describe('a failed device list fetch keeps the held list', () => {
     graphQLFetchDeviceList.mockResolvedValue({ data: { data: { login: { account: { devices: { total: 1 } } } } } })
     graphQLDeviceAdaptor.mockReturnValue([fetched])
     expect(await effects().fetchList(undefined, stateWith({ query: 'new' }))).toBe(true)
-    expect(dispatch.accounts.truncateMergeDevices).toHaveBeenCalledWith({ devices: [fetched], accountId: 'acct' })
+    expect(dispatch.accounts.truncateMergeDevices).toHaveBeenCalledWith({
+      devices: [fetched],
+      accountId: 'acct',
+      row: 'acct',
+    })
     expect(dispatch.devices.set.mock.calls).toEqual([
-      [{ fetching: true, accountId: 'acct' }],
-      [{ total: 1, accountId: 'acct' }],
-      [{ fetching: false, append: false, initialized: true, appliedName: 'new', accountId: 'acct' }],
+      [{ fetching: true, accountId: 'acct', row: 'acct' }],
+      [{ total: 1, accountId: 'acct', row: 'acct' }],
+      [{ fetching: false, append: false, initialized: true, appliedName: 'new', accountId: 'acct', row: 'acct' }],
     ])
   })
 
@@ -103,14 +128,14 @@ describe('a failed device list fetch keeps the held list', () => {
     dispatch.devices.fetchList.mockResolvedValue(false)
     await effects().fetchPage({ from: 100, append: true }, stateWith({ from: 50 }))
     expect(dispatch.devices.set.mock.calls).toEqual([
-      [{ from: 100, append: true, accountId: 'acct' }],
-      [{ from: 50, accountId: 'acct' }],
+      [{ from: 100, append: true, accountId: 'acct', row: 'acct' }],
+      [{ from: 50, accountId: 'acct', row: 'acct' }],
     ])
 
     dispatch.devices.set.mockClear()
     dispatch.devices.fetchList.mockResolvedValue(true)
     await effects().fetchPage({ from: 100, append: true }, stateWith({ from: 50 }))
-    expect(dispatch.devices.set.mock.calls).toEqual([[{ from: 100, append: true, accountId: 'acct' }]])
+    expect(dispatch.devices.set.mock.calls).toEqual([[{ from: 100, append: true, accountId: 'acct', row: 'acct' }]])
   })
 })
 
@@ -146,7 +171,7 @@ describe('disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md)', 
       ['d1', true, 'person', 'me@x'],
       ['d2', true, 'person', 'me@x'],
     ])
-    expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 4, accountId: 'acct' })
+    expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 4, accountId: 'acct', row: 'acct' })
     expect(dispatch.devices.cleanup).not.toHaveBeenCalled()
   })
 
@@ -161,14 +186,14 @@ describe('disable, restore, decommission (graphql-api docs/DEVICE-DISABLE.md)', 
     expect(await effects().disable({ ids: ['g1'], keepHosted: false }, stateWith({ all, total: 4 }))).toBe(true)
     expect(graphQLDisableDevices).toHaveBeenCalledWith(['g1'], false)
     expect(dispatch.accounts.setDevice.mock.calls.map(([a]: any) => a.id)).toEqual(['g1', 'v1', 'v2'])
-    expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 1, accountId: 'acct' })
+    expect(dispatch.devices.set).toHaveBeenCalledWith({ total: 1, accountId: 'acct', row: 'acct' })
     expect(dispatch.devices.fetchDevices).not.toHaveBeenCalled()
 
     dispatch.accounts.setDevice.mockReset()
     expect(await effects().disable({ ids: ['g1'], keepHosted: true }, stateWith({ all, total: 4 }))).toBe(true)
     expect(graphQLDisableDevices).toHaveBeenLastCalledWith(['g1'], true)
     expect(dispatch.accounts.setDevice.mock.calls.map(([a]: any) => a.id)).toEqual(['g1'])
-    expect(dispatch.devices.fetchDevices).toHaveBeenCalledWith({ ids: ['v1', 'v2'] })
+    expect(dispatch.devices.fetchDevices).toHaveBeenCalledWith({ ids: ['v1', 'v2'], accountId: 'acct', sub: '' })
   })
 
   it('one without MANAGE is refused before the API is asked', async () => {
@@ -224,19 +249,19 @@ describe('duplicates (graphql-api docs/PROXY-GROUPS.md §11, wave 3)', () => {
     graphQLKeepDuplicate.mockResolvedValue(undefined)
     const state = stateWith({ all: [copy('Y1')] })
     expect(await effects().keepDuplicates({ ids: ['Y1'], fromOriginal: false }, state)).toBeUndefined()
-    expect(graphQLKeepDuplicate).toHaveBeenCalledWith('Y1', false)
-    expect(dispatch.devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'Y1', accountId: 'org', silent: true })
+    expect(graphQLKeepDuplicate).toHaveBeenCalledWith('Y1', false, 'org')
+    expect(dispatch.devices.fetchSingleFull).toHaveBeenCalledWith({ id: 'Y1', accountId: 'org', sub: '', silent: true })
     expect(dispatch.devices.fetchList).toHaveBeenCalled()
     expect(requestDuplicateCopies).toHaveBeenCalledWith('org', true)
 
     await effects().keepDuplicates({ ids: ['Y1'] }, state)
-    expect(graphQLKeepDuplicate).toHaveBeenLastCalledWith('Y1', true)
+    expect(graphQLKeepDuplicate).toHaveBeenLastCalledWith('Y1', true, 'org')
   })
 
   it('several are kept together', async () => {
     graphQLKeepDuplicates.mockResolvedValue(undefined)
     expect(await effects().keepDuplicates({ ids: ['Y1', 'Y2'] }, stateWith({ all: [] }))).toBeUndefined()
-    expect(graphQLKeepDuplicates).toHaveBeenCalledWith(['Y1', 'Y2'])
+    expect(graphQLKeepDuplicates).toHaveBeenCalledWith(['Y1', 'Y2'], 'acct')
     expect(graphQLKeepDuplicate).not.toHaveBeenCalled()
     expect(requestDuplicateCopies).toHaveBeenCalledWith('acct', true)
   })
@@ -253,8 +278,107 @@ describe('duplicates (graphql-api docs/PROXY-GROUPS.md §11, wave 3)', () => {
     expect(
       await effects().makeOriginal({ id: 'Y1', originalId: 'X1' }, stateWith({ all: [copy('Y1')] }))
     ).toBeUndefined()
-    expect(graphQLMakeOriginal).toHaveBeenCalledWith('Y1')
+    expect(graphQLMakeOriginal).toHaveBeenCalledWith('Y1', 'org')
     expect(dispatch.devices.fetchSingleFull.mock.calls.map((c: any) => c[0].id)).toEqual(['Y1', 'X1'])
     expect(requestDuplicateCopies).toHaveBeenCalledWith('org', true)
+  })
+})
+
+/* Unshared from some of the accounts here (services/cloudController DEVICE_SHARE): theirs to lose, not everyone's. */
+describe('a device some accounts here lost', () => {
+  beforeEach(() => {
+    dispatch.devices.cleanup = vi.fn()
+    dispatch.accounts.removeDeviceFrom = vi.fn()
+  })
+
+  it('leaves their lists alone while another account here holds it: its connections and networks stay', async () => {
+    dispatch.accounts.removeDeviceFrom.mockResolvedValue(true)
+    await effects().cleanupFor({ ids: ['D1'], accountIds: ['work'] })
+    expect(dispatch.accounts.removeDeviceFrom).toHaveBeenCalledWith({ id: 'D1', accountIds: ['work'] })
+    expect(dispatch.devices.cleanup).not.toHaveBeenCalled()
+  })
+
+  it('is cleaned up as gone when no other account here holds it', async () => {
+    dispatch.accounts.removeDeviceFrom.mockResolvedValue(false)
+    await effects().cleanupFor({ ids: ['D1'], accountIds: ['work'] })
+    expect(dispatch.devices.cleanup).toHaveBeenCalledWith(['D1'])
+  })
+})
+
+/* A device of another sign-in's account: its new service is in no list until the device is read again, so what is
+   asked next by the service's id alone would go as the page's own person. */
+describe('a service added to a device', () => {
+  it('has its attributes set, and its device read again, as the device’s own account', async () => {
+    resetNotedAccounts()
+    dispatch.devices.addService = vi.fn()
+    dispatch.devices.fetchSingleFull = vi.fn()
+    dispatch.ui = { set: vi.fn() }
+    graphQLAddService.mockResolvedValue({ data: { data: { addService: { id: 'S-NEW' } } } })
+    const form = { name: 'ssh', typeID: 28, host: '127.0.0.1', port: 22, enabled: true, attributes: { route: 'p2p' } }
+    const state = stateWith({ all: [{ id: 'D1', accountId: 'work', services: [] }] as any })
+    await effects().cloudAddService({ form, deviceId: 'D1' }, state)
+    expect(graphQLSetAttributes).toHaveBeenCalledWith({ route: 'p2p' }, 'S-NEW', { about: ['D1'] })
+    expect(dispatch.devices.fetchSingleFull).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'D1', accountId: 'work' })
+    )
+    // Whatever else names the new service alone, before it is read, goes the same way.
+    const signedIn: any = {
+      auth: { user: { id: 'me' } },
+      accounts: { membership: [], signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: '', membership: [] } } },
+    }
+    expect(requestSignIn(signedIn, undefined, { serviceId: 'S-NEW' })).toBe('sub-work')
+    resetNotedAccounts()
+  })
+})
+
+/* A device shared with Work, who is signed in beside the page's own person: Work leaves it. */
+describe('leaving a device shared with another sign-in', () => {
+  it('is asked as that person, of their own share, and takes it from their account’s list alone', async () => {
+    dispatch.ui = { set: vi.fn() }
+    dispatch.devices.cleanupFor = vi.fn()
+    dispatch.devices.cleanup = vi.fn()
+    graphQLUnShareDevice.mockResolvedValue({})
+    const state = {
+      ...stateWith(),
+      auth: { user: { id: 'me', email: 'me@x.test' } },
+      user: { id: 'me', email: 'me@x.test' },
+      accounts: {
+        membership: [],
+        signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+      },
+    }
+    await effects().leave({ id: 'D1', name: 'pi', accountId: 'work' }, state)
+    expect(graphQLUnShareDevice).toHaveBeenCalledWith({ deviceId: 'D1', email: ['work@x.test'] }, { account: 'work' })
+    expect(dispatch.devices.cleanupFor).toHaveBeenCalledWith({ ids: ['D1'], accountIds: ['work'] })
+    expect(dispatch.devices.cleanup).not.toHaveBeenCalled()
+
+    // The page's own person's share is left as them, as ever.
+    await effects().leave({ id: 'D2', name: 'pi', accountId: 'me' }, state)
+    expect(graphQLUnShareDevice).toHaveBeenLastCalledWith({ deviceId: 'D2', email: ['me@x.test'] }, { account: 'me' })
+  })
+})
+
+/* The disabled devices' page lists devices that are in no stored list: restored or decommissioned from it, they are
+   asked for as the account the page read them for. From a device's own page, as ever. */
+describe('restore and decommission from the disabled devices of an account', () => {
+  beforeEach(() => {
+    dispatch.ui = { set: vi.fn() }
+    dispatch.devices.fetchList = vi.fn()
+    dispatch.devices.cleanup = vi.fn()
+    graphQLRestoreDevices.mockResolvedValue({})
+    graphQLDecommissionDevices.mockResolvedValue({})
+  })
+
+  it('carry the account the devices were listed for', async () => {
+    await effects().restore({ ids: ['d1'], accountId: 'work' }, stateWith())
+    expect(graphQLRestoreDevices).toHaveBeenCalledWith(['d1'], 'work')
+    await effects().decommission({ ids: ['d1', 'd2'], accountId: 'work' })
+    expect(graphQLDecommissionDevices).toHaveBeenCalledWith(['d1', 'd2'], 'work')
+    expect(dispatch.devices.cleanup).toHaveBeenCalledWith(['d1', 'd2'])
+  })
+
+  it('name the devices alone where the caller has them in a stored list', async () => {
+    await effects().restore(['d1'], stateWith())
+    expect(graphQLRestoreDevices).toHaveBeenCalledWith(['d1'])
   })
 })

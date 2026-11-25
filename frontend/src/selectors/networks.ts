@@ -1,12 +1,10 @@
 import { DEFAULT_ID } from '../models/networks'
 import { createSelector } from 'reselect'
 import { getAllNetworks, optionalId } from './state'
-import { selectActiveAccountId } from './accounts'
+import { selectRow } from './accounts'
 
-export const selectNetworks = createSelector(
-  [selectActiveAccountId, getAllNetworks],
-  (activeAccountId, allNetworks) => allNetworks[activeAccountId] || []
-)
+// The networks of the row an account is looked at through: the selected row's where none is named.
+export const selectNetworks = createSelector([selectRow, getAllNetworks], (row, allNetworks) => allNetworks[row] || [])
 
 export const selectNetworkByService = createSelector(
   [selectNetworks, optionalId],

@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Collapse, List, ListSubheader } from '@mui/material'
 import { DeviceContext } from '../services/Context'
@@ -23,6 +23,7 @@ import { Notice } from '../components/Notice'
 import { BROWSER_PLATFORM } from '../services/browserClients'
 import { belowMinimumText, upkeepText, withAvailable } from '../services/upkeepText'
 import { useInterval } from '../hooks/useInterval'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 // How often an upgrade under way is looked at again: its states pass in seconds.
 const WATCH_INTERVAL = 3000
@@ -36,15 +37,20 @@ export const DeviceAgentSection: React.FC = () => {
   const [saving, setSaving] = useState(false)
   const [open, setOpen] = useState(false)
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     if (device?.id) setDaemon(await graphQLDeviceDaemon(device.id))
   }, [device?.id])
 
-  useEffect(() => {
-    setDaemon(undefined)
-    setOpen(false)
-    load()
-  }, [load])
+  useReadEffect(
+    again => {
+      if (!again) {
+        setDaemon(undefined)
+        setOpen(false)
+      }
+      load()
+    },
+    [load]
+  )
 
   const waiting = typeof daemon === 'object' && !!daemon?.update && daemon.update.state !== 'installed'
   useEffect(() => {
