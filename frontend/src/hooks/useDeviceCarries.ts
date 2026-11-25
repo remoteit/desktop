@@ -1,11 +1,21 @@
-import { useEffect, useSyncExternalStore } from 'react'
+import { useSyncExternalStore } from 'react'
 import { graphQLDeviceRuns, DeviceRuns } from '../services/graphQLDeviceRuns'
 import { useDeviceSessions } from './useDeviceSessions'
+import { useReadEffect } from './useReadAgain'
+import { accountCache } from '../services/accountCaches'
 
 const carried = new Map<string, boolean>()
 const asked = new Set<string>()
 const listeners = new Set<() => void>()
 const notify = () => listeners.forEach(listener => listener())
+let generation = 0
+
+accountCache(() => {
+  carried.clear()
+  asked.clear()
+  generation++
+  notify()
+})
 
 export const runsCarry = (runs?: DeviceRuns | null) => !!(runs?.exit || runs?.proxy)
 
@@ -17,7 +27,9 @@ export function setDeviceCarries(deviceId: string, runs?: DeviceRuns | null) {
 async function ask(deviceId: string) {
   if (asked.has(deviceId)) return
   asked.add(deviceId)
+  const read = generation
   const runs = await graphQLDeviceRuns(deviceId)
+  if (read !== generation) return
   if (runs === 'ERROR') asked.delete(deviceId)
   carried.set(deviceId, typeof runs === 'object' && runsCarry(runs))
   notify()
@@ -35,7 +47,7 @@ export function useDeviceCarries(device?: Pick<IDevice, 'id' | 'virtual'>): bool
     },
     () => (id ? carried.get(id) : undefined)
   )
-  useEffect(() => {
+  useReadEffect(() => {
     if (id) ask(id)
   }, [id])
   if (!device) return undefined

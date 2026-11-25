@@ -4,6 +4,7 @@ import { Redirect } from 'react-router-dom'
 import { useHistory } from 'react-router-dom'
 import { Dispatch, State } from '../store'
 import { selectOrganization } from '../selectors/organizations'
+import { selectActiveUser } from '../selectors/accounts'
 import { Box, TextField, Typography, Button } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import { spacing } from '../styling'
@@ -13,7 +14,8 @@ import { Body } from '../components/Body'
 export const OrganizationEmptyPage: React.FC = () => {
   const { t } = useTranslation()
   const { username, hasOrganization } = useSelector((state: State) => ({
-    username: (state.auth.user?.email || '').split('@')[0],
+    // The selected account's person: the organization is theirs, which may be another sign-in's than the page's own.
+    username: (selectActiveUser(state).email || state.auth.user?.email || '').split('@')[0],
     hasOrganization: selectOrganization(state)?.id && state.organization.initialized,
   }))
   const [name, setName] = React.useState<string>(`${username}'s org`)

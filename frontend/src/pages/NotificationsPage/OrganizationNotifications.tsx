@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import { store } from '../../store'
 import { Avatar } from '../../components/Avatar'
 import { ListItemSetting } from '../../components/ListItemSetting'
-import { selectOrganizationOptions } from '../../selectors/organizations'
+import { selectPrimaryOrganizationOptions } from '../../selectors/organizations'
 import { graphQLOrganizationNotificationSettings } from '../../services/graphQLRequest'
 import { graphQLSetOrganizationNotificationSettings } from '../../services/graphQLMutation'
 import { inOrder } from '../../helpers/inOrder'
@@ -32,7 +32,8 @@ const load = async () => {
 
 export const OrganizationNotifications: React.FC<{ disabled?: boolean }> = ({ disabled }) => {
   const { t } = useTranslation()
-  const organizations = useSelector(selectOrganizationOptions)
+  // The page's own person's notifications: for the organizations their own sign-in reaches.
+  const organizations = useSelector(selectPrimaryOrganizationOptions)
   const [muted, setMuted] = useState<string[] | null>(null)
   const hasOrganizations = organizations.length > 0
 

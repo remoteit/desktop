@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useParams, useHistory } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
@@ -27,6 +27,7 @@ import { dispatch } from '../../store'
 import { getProductModel } from '../../selectors/products'
 import { fontSizes, spacing } from '../../styling'
 import { Gutters } from '../../components/Gutters'
+import { useReadEffect } from '../../hooks/useReadAgain'
 
 const Section: React.FC<{ title: string; action?: React.ReactNode; children?: React.ReactNode }> = ({
   title,
@@ -55,28 +56,32 @@ export const ProductPage: React.FC = () => {
   const [creatingKey, setCreatingKey] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (productId) {
       dispatch.products.fetchSingle(productId)
     }
   }, [productId])
 
-  useEffect(() => {
+  useReadEffect(() => {
     dispatch.tags.fetchIfEmpty()
   }, [])
 
-  useEffect(() => {
-    if (!productId) return
-    let current = true
-    setCounts(undefined)
-    graphQLProductMaxDevices(productId, accountId).then(result => {
-      if (current && result && result !== 'ERROR')
-        setCounts({ devices: result.devicesCounted, maxDevices: result.maxDevices })
-    })
-    return () => {
-      current = false
-    }
-  }, [productId, accountId, product?.updated])
+  useReadEffect(
+    again => {
+      if (!productId) return
+      let current = true
+      if (!again) setCounts(undefined)
+      graphQLProductMaxDevices(productId, accountId).then(result => {
+        if (!current) return
+        if (result && result !== 'ERROR') setCounts({ devices: result.devicesCounted, maxDevices: result.maxDevices })
+        else if (again) setCounts(undefined)
+      })
+      return () => {
+        current = false
+      }
+    },
+    [productId, accountId, product?.updated]
+  )
 
   if (fetching && !initialized) {
     return (

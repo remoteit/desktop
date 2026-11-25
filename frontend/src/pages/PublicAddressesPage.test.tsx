@@ -157,7 +157,7 @@ describe('public addresses', () => {
     expect(opened).toHaveBeenCalledWith('https://a.example', '_blank', true)
     expect(rows[0].querySelector('[data-remove]')?.getAttribute('data-confirm')).toBe('Remove this public address?')
     await act(async () => (rows[0].querySelector('[data-remove]') as HTMLButtonElement).click())
-    expect(removed).toHaveBeenCalledWith('a')
+    expect(removed).toHaveBeenCalledWith('a', { about: [expect.any(String)] })
     expect(read).toHaveBeenCalledTimes(2)
   })
 

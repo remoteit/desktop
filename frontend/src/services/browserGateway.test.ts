@@ -1,72 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { request, browser, openInSystem } = vi.hoisted(() => ({
-  request: vi.fn(),
-  browser: { isIOSDeviceApp: false },
-  openInSystem: vi.fn(),
-}))
+const { request } = vi.hoisted(() => ({ request: vi.fn() }))
 vi.mock('./graphQL', () => ({ graphQLBasicRequest: request }))
-vi.mock('./browser', () => ({ default: browser, openInSystem }))
 
-import { gatewayURL, openThroughGateway } from './browserGateway'
+import { handoff } from './browserGateway'
 
-beforeEach(() => {
-  request.mockReset()
-  openInSystem.mockReset()
-  browser.isIOSDeviceApp = false
-})
+beforeEach(() => request.mockReset())
 
-const handoff = { code: 'CODE-1', presence: ['198.51.100.1:5960'], reflector: 'wss://wsp.remote.it' }
-const answer = {
-  data: {
-    data: {
-      deviceSessionServers: { presence: handoff.presence, reflector: handoff.reflector },
-      login: { registrationCode: handoff.code },
-    },
-  },
-}
+const servers = { presence: ['198.51.100.1:5960'], reflector: 'wss://wsp.remote.it' }
 
-describe('gatewayURL', () => {
-  it('the device’s own name, as with an agent: its web service, whatever port it is on', () => {
-    expect(gatewayURL('r3devicedebian-owner.on.local.remote.it')).toBe(
-      'https://r3devicedebian-owner.on.local.remote.it/'
-    )
-  })
-})
-
-describe('openThroughGateway', () => {
-  it('opens the tab on the click, then sends it to the device with the one-time code in the fragment', async () => {
-    const tab = { location: { href: '' }, opener: {}, close: vi.fn() }
-    vi.spyOn(window, 'open').mockReturnValue(tab as any)
-    request.mockResolvedValue(answer)
-    expect(await openThroughGateway('web1-owner.on.local.remote.it')).toBe(true)
-    expect(window.open).toHaveBeenCalledWith('', '_blank')
-    const [base, frag] = tab.location.href.split('#rit=')
-    expect(base).toBe('https://web1-owner.on.local.remote.it/')
-    const decoded = JSON.parse(atob(frag.replace(/-/g, '+').replace(/_/g, '/')))
-    expect(decoded).toEqual(handoff)
-    expect(tab.opener).toBeNull()
+describe('handoff', () => {
+  it('is a one-time code for the browser’s client, with where to sign in', async () => {
+    request.mockResolvedValue({
+      data: { data: { deviceSessionServers: servers, login: { registrationCode: 'CODE-1' } } },
+    })
+    expect(await handoff()).toEqual({ code: 'CODE-1', ...servers })
     // A browser's client is kept for its next visit; one never back is disabled by graphql's expiry after 30 days.
-    expect(request.mock.calls[0][0]).toMatch(/registrationCode\(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true, timeout: 2592000, platform: 1231\)/)
-  })
-  it('closes the tab when there is no code to give it', async () => {
-    const tab = { location: { href: '' }, opener: {}, close: vi.fn() }
-    vi.spyOn(window, 'open').mockReturnValue(tab as any)
-    request.mockResolvedValue('ERROR')
-    expect(await openThroughGateway('web1-owner.on.local.remote.it')).toBe(false)
-    expect(tab.close).toHaveBeenCalled()
-  })
-
-  it.each([true, false])('hands the gateway URL to the system browser on Solo iOS and returns %s', async completed => {
-    browser.isIOSDeviceApp = true
-    const popup = vi.spyOn(window, 'open').mockClear()
-    request.mockResolvedValue(answer)
-    openInSystem.mockResolvedValue(completed)
-
-    expect(await openThroughGateway('web1-owner.on.local.remote.it')).toBe(completed)
-    expect(openInSystem).toHaveBeenCalledExactlyOnceWith(
-      `https://web1-owner.on.local.remote.it/#rit=${btoa(JSON.stringify(handoff))}`
+    expect(request.mock.calls[0][0]).toMatch(
+      /registrationCode\(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true, timeout: 2592000, platform: 1231\)/
     )
-    expect(popup).not.toHaveBeenCalled()
+  })
+
+  it('is asked as the page’s own person, whichever account is selected', async () => {
+    request.mockResolvedValue('ERROR')
+    await handoff()
+    expect(request.mock.calls[0].slice(1)).toEqual([{}, false, { sub: '' }])
+  })
+
+  it.each([
+    ['a failed request', 'ERROR'],
+    ['no code', { data: { data: { deviceSessionServers: servers, login: { registrationCode: null } } } }],
+    ['nowhere to sign in', { data: { data: { deviceSessionServers: null, login: { registrationCode: 'CODE-1' } } } }],
+  ])('is nothing for %s', async (_what, answer) => {
+    request.mockResolvedValue(answer)
+    expect(await handoff()).toBeNull()
   })
 })

@@ -29,13 +29,15 @@ import { SignRequest, Signed, StandingKey } from '../services/releaseSigner'
 type Props = {
   built: Built
   publisher: string
+  // The account whose publisher it is, where not the person's own: the release is published as its sign-in.
+  account?: string
   keys: StandingKey[]
   onPublished: (result: { manifest: string; devices: number }) => void
   // Whether a signature or a publish is under way: the page holds the release still meanwhile.
   onBusy?: (busy: boolean) => void
 }
 
-export const NewAppPublish: React.FC<Props> = ({ built, publisher, keys, onPublished, onBusy }) => {
+export const NewAppPublish: React.FC<Props> = ({ built, publisher, account, keys, onPublished, onBusy }) => {
   const { t } = useTranslation()
   const labels = useSignLabels()
   const root = built.manifest.run?.as === 'root'
@@ -74,7 +76,9 @@ export const NewAppPublish: React.FC<Props> = ({ built, publisher, keys, onPubli
       built.manifest.version,
       files,
       done.current,
-      name => mounted.current && setUploaded(names => [...names, name])
+      name => mounted.current && setUploaded(names => [...names, name]),
+      undefined,
+      account
     )
     if (!mounted.current) return
     setBusy(false)

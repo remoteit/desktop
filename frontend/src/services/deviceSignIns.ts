@@ -1,5 +1,6 @@
 import { post } from './post'
 import { graphQLGetErrors } from './graphQL'
+import { sharedRead } from './accountCaches'
 
 /* Who is signed in on a device (graphql-api docs/PROXY-GROUPS.md §15): a sign-in belongs to the OS account that made
    it, several at once — each the account (its OS id, and its name there), the person, since when, and whether they
@@ -85,17 +86,9 @@ export const settingSignInFields = async () => (await served()).setting
 export const exitErrorFields = async () => (await served()).exitError
 
 // One read per device for every part of a page that asks in the same moment.
-const reading = new Map<string, Promise<DeviceSignIn[] | null>>()
-
 // A device's sign-ins, by account; null where the API has none, the device is not one the caller manages, or it failed.
-export function graphQLDeviceSignIns(deviceId: string): Promise<DeviceSignIn[] | null> {
-  let answer = reading.get(deviceId)
-  if (!answer) {
-    answer = readSignIns(deviceId).finally(() => reading.delete(deviceId))
-    reading.set(deviceId, answer)
-  }
-  return answer
-}
+const reading = sharedRead(readSignIns)
+export const graphQLDeviceSignIns = (deviceId: string): Promise<DeviceSignIn[] | null> => reading(deviceId)
 
 async function readSignIns(deviceId: string): Promise<DeviceSignIn[] | null> {
   if (!(await deviceSignInsServed())) return null
@@ -113,5 +106,5 @@ async function readSignIns(deviceId: string): Promise<DeviceSignIn[] | null> {
 // For tests, and for a change of API or sign-in.
 export function resetDeviceSignIns() {
   schema = undefined
-  reading.clear()
+  reading.forget()
 }

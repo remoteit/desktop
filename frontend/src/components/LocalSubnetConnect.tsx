@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Typography } from '@mui/material'
 import { directConnection } from '@common/applications'
@@ -15,6 +15,7 @@ import { graphQLDetectedSchemes, redirectLoops } from '../services/graphQLDetect
 import { sshCommand } from '../helpers/sshHelper'
 import { formatPorts, isMultiPort } from '../services/multiPortServices'
 import { ConnectRoute, ConnectRouteVariant } from './ConnectRoute'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* A service reached by its name on this machine: the device daemon here resolves it (services/localSubnet), so there
    is nothing to start — the name and port are the connection. Copy it into ssh, a browser, a database client, or
@@ -66,18 +67,21 @@ export const LocalSubnetConnect: React.FC<Props> = ({
   const web = app.web
   const webPort = port === 80 && defaultHttp ? 443 : port || 443
 
-  useEffect(() => {
-    setLoopPort(undefined)
-    if (!web || !deviceSessions || !service?.deviceID) return
-    let current = true
-    graphQLDetectedSchemes(service.deviceID).then(result => {
-      const detected = typeof result === 'object' ? result[service.id] : null
-      if (current && detected && redirectLoops(detected, service, webPort)) setLoopPort(detected.port)
-    })
-    return () => {
-      current = false
-    }
-  }, [web, webPort, deviceSessions, service?.deviceID, service?.id, service?.typeID, service?.port])
+  useReadEffect(
+    again => {
+      if (!again) setLoopPort(undefined)
+      if (!web || !deviceSessions || !service?.deviceID) return
+      let current = true
+      graphQLDetectedSchemes(service.deviceID).then(result => {
+        const detected = typeof result === 'object' ? result[service.id] : null
+        if (current) setLoopPort(detected && redirectLoops(detected, service, webPort) ? detected.port : undefined)
+      })
+      return () => {
+        current = false
+      }
+    },
+    [web, webPort, deviceSessions, service?.deviceID, service?.id, service?.typeID, service?.port]
+  )
   const launchable = web || app.canLaunch
   const endpoint = web
     ? subnetWebURL(local.name, webPort)

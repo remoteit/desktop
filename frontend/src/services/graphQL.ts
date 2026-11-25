@@ -2,14 +2,21 @@ import { AxiosResponse } from 'axios'
 import { post, resetErrorCount } from './post'
 import { rememberPictures } from './userPictures'
 import { store } from '../store'
+import { RequestFor } from '../selectors/signIns'
 
 const CLIENT_DEPRECATED = '121'
 
 // A dropped mutation may still have reached the server, so only reads are safe to resend.
 const isRead = (query: String) => /^\s*(query\b|\{)/.test(String(query))
 
-export async function graphQLBasicRequest(query: String, variables: ILookup<any> = {}, silent = false) {
-  const response = await post({ query, variables }, '', silent, isRead(query))
+// `requestFor` (services/post): the account or sign-in a request is for, where its variables do not say.
+export async function graphQLBasicRequest(
+  query: String,
+  variables: ILookup<any> = {},
+  silent = false,
+  requestFor?: RequestFor
+) {
+  const response = await post({ query, variables }, '', silent, isRead(query), requestFor)
   if (response === 'ERROR') return response
   const errors = graphQLGetErrors(response, silent, { query, variables })
   if (!errors && query.includes('picture')) rememberPictures(response.data?.data)
@@ -18,8 +25,8 @@ export async function graphQLBasicRequest(query: String, variables: ILookup<any>
 
 // A request whose refusal the caller shows itself, in graphql's own words — a refusal's reason (extensions.message),
 // else the error's message, as a sentence — rather than the generic snackbar.
-export async function graphQLRequestWithReason(query: String, variables: ILookup<any> = {}) {
-  const response = await post({ query, variables })
+export async function graphQLRequestWithReason(query: String, variables: ILookup<any> = {}, requestFor?: RequestFor) {
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return response
   const errors = graphQLGetErrors(response, true, { query, variables }) as
     | undefined
@@ -35,8 +42,8 @@ export const refusalOf = (result: Awaited<ReturnType<typeof graphQLRequestWithRe
   result === 'ERROR' ? '' : 'reason' in result ? result.reason : undefined
 
 // For batched per-account queries: one account the token can't read must not discard the ones that resolved.
-export async function graphQLPartialRequest(query: String, variables: ILookup<any> = {}) {
-  const response = await post({ query, variables }, '', false, isRead(query))
+export async function graphQLPartialRequest(query: String, variables: ILookup<any> = {}, requestFor?: RequestFor) {
+  const response = await post({ query, variables }, '', false, isRead(query), requestFor)
   if (response === 'ERROR') return response
   graphQLGetErrors(response, false, { query, variables })
   if (query.includes('picture')) rememberPictures(response.data?.data, response.data?.errors)

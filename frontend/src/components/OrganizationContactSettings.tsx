@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { List, ListSubheader } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { InlineTextFieldSetting } from './InlineTextFieldSetting'
 import { graphQLBasicRequest } from '../services/graphQL'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 type Contacts = { billingEmail: string; notificationEmail: string }
 
@@ -10,7 +11,7 @@ export function OrganizationContactSettings({ accountId }: { accountId: string }
   const { t } = useTranslation()
   const [contacts, setContacts] = useState<Contacts>()
 
-  useEffect(() => {
+  useReadEffect(() => {
     let current = true
     async function load() {
       const result = await graphQLBasicRequest(
@@ -22,13 +23,15 @@ export function OrganizationContactSettings({ accountId }: { accountId: string }
         }`,
         { accountId }
       )
-      if (!current || result === 'ERROR') return
-      const data = result.data?.data?.login?.account
-      if (data)
-        setContacts({
+      if (!current) return
+      const data = result === 'ERROR' ? undefined : result.data?.data?.login?.account
+      // Not read: nothing shown, rather than what was read before (as another sign-in, or of another account).
+      setContacts(
+        data && {
           billingEmail: data.billingDetails?.email || '',
           notificationEmail: data.notificationSettings?.notificationEmail || '',
-        })
+        }
+      )
     }
     void load()
     return () => {

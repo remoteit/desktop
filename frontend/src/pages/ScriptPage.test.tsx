@@ -12,7 +12,7 @@ vi.mock('react-router-dom', () => ({
   useHistory: () => ({ push: vi.fn() }),
   useParams: () => ({ fileID: 'F1' }),
 }))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: (s: any) => s.active }))
+vi.mock('../selectors/accounts', () => ({ selectRow: (s: any) => s.active }))
 vi.mock('../selectors/scripting', () => ({
   selectFile: (s: any, _: any, id: string) => s.files.all[s.active]?.find((f: any) => f.id === id),
   selectJobs: () => [],

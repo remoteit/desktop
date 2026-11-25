@@ -45,7 +45,7 @@ export const ConnectAdvanced: React.FC = () => {
           name="undo"
           color="grayDark"
           title={t('connectAdvanced.resetConnection', 'Reset connection')}
-          onClick={() => dispatch.connections.forget(connection.id)}
+          onClick={() => dispatch.connections.forget(connection)}
         />
       </Box>
       {headerHidesEndpoint && <ServiceConnectButton />}

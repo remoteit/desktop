@@ -1,6 +1,8 @@
 import { sha256 } from '@noble/hashes/sha2.js'
 import { bytesToHex } from '@noble/hashes/utils.js'
 import { post } from './post'
+import { store } from '../store'
+import { requestSignIn, RequestFor } from '../selectors/signIns'
 import { graphQLGetErrors } from './graphQL'
 
 /* Uploading a file straight to the store (graphql's storage-neutral multipart contract): the API checks the
@@ -128,8 +130,18 @@ type GraphQLError = { message?: string; extensions?: { code?: string } }
 const unknownToSchema = (errors: GraphQLError[], field: string) =>
   errors.some(error => (error.message || '').startsWith(`Cannot query field "${field}"`))
 
-async function request<T>(query: string, variables: ILookup<any>, field: string): Promise<T | typeof NOT_ENABLED> {
-  const response = await post({ query, variables })
+// An upload is the account's it was created for, and every later call names only the upload: each is made as the
+// sign-in that created it (selectors/signIns), remembered by upload id while the page lives.
+const uploadSignIn = new Map<string, string>()
+const madeAs = (uploadId: string): RequestFor => ({ sub: uploadSignIn.get(uploadId) ?? '' })
+
+async function request<T>(
+  query: string,
+  variables: ILookup<any>,
+  field: string,
+  requestFor?: RequestFor
+): Promise<T | typeof NOT_ENABLED> {
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') throw new UploadError('Upload request failed', undefined, true)
   const errors: GraphQLError[] | undefined = graphQLGetErrors(response, true, { query, variables }) as any
   if (errors?.length) {
@@ -140,8 +152,8 @@ async function request<T>(query: string, variables: ILookup<any>, field: string)
   return response.data?.data?.[field]
 }
 
-async function required<T>(query: string, variables: ILookup<any>, field: string): Promise<T> {
-  const result = await request<T>(query, variables, field)
+async function required<T>(query: string, variables: ILookup<any>, field: string, requestFor: RequestFor): Promise<T> {
+  const result = await request<T>(query, variables, field, requestFor)
   if (result === NOT_ENABLED) throw new UploadError('File upload is not enabled', FILE_UPLOAD_NOT_ENABLED)
   return result
 }
@@ -149,19 +161,25 @@ async function required<T>(query: string, variables: ILookup<any>, field: string
 const UPLOAD_FIELDS = `uploadId expiresAt partSize receiptHeader parts { number method url headers { name value } offset length }`
 
 export const graphQLUploadApi: UploadApi = {
-  create: input =>
-    request<FileUpload>(
+  create: async input => {
+    const sub = requestSignIn(store.getState(), { account: input.accountId }) ?? ''
+    const created = await request<FileUpload>(
       `mutation CreateFileUpload($name: String!, $size: Float!, $sha256: String!, $executable: Boolean, $accountId: String, $shortDesc: String, $longDesc: String, $arguments: [FileArgumentDefinition!]) {
         createFileUpload(name: $name, size: $size, sha256: $sha256, executable: $executable, accountId: $accountId, shortDesc: $shortDesc, longDesc: $longDesc, arguments: $arguments) { ${UPLOAD_FIELDS} }
       }`,
       input,
-      'createFileUpload'
-    ),
+      'createFileUpload',
+      { sub }
+    )
+    if (created !== NOT_ENABLED && created?.uploadId) uploadSignIn.set(created.uploadId, sub)
+    return created
+  },
   renew: uploadId =>
     required<FileUpload>(
       `mutation RenewFileUpload($uploadId: ID!) { renewFileUpload(uploadId: $uploadId) { ${UPLOAD_FIELDS} } }`,
       { uploadId },
-      'renewFileUpload'
+      'renewFileUpload',
+      madeAs(uploadId)
     ),
   complete: (uploadId, parts) =>
     required<FileUploadResult>(
@@ -169,13 +187,15 @@ export const graphQLUploadApi: UploadApi = {
         completeFileUpload(uploadId: $uploadId, parts: $parts) { fileId fileVersionId version name size sha256 }
       }`,
       { uploadId, parts },
-      'completeFileUpload'
+      'completeFileUpload',
+      madeAs(uploadId)
     ),
   abort: async uploadId => {
     await request<boolean>(
       `mutation AbortFileUpload($uploadId: ID!) { abortFileUpload(uploadId: $uploadId) }`,
       { uploadId },
-      'abortFileUpload'
+      'abortFileUpload',
+      madeAs(uploadId)
     )
   },
 }

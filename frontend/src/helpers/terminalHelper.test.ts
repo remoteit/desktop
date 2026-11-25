@@ -1,8 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { env, windowOpen } = vi.hoisted(() => ({ env: { isNative: false }, windowOpen: vi.fn() }))
+const { env, build, windowOpen } = vi.hoisted(() => ({
+  env: { isNative: false },
+  build: { embedded: false },
+  windowOpen: vi.fn(),
+}))
 vi.mock('../services/browser', () => ({ default: env, windowOpen }))
-vi.mock('../constants', () => ({ PORTAL_URL: 'https://app.remote.it', TERMINAL_PATH: '/terminal' }))
+vi.mock('../constants', () => ({
+  PORTAL_URL: 'https://app.remote.it',
+  TERMINAL_PATH: '/terminal',
+  get EMBEDDED() {
+    return build.embedded
+  },
+}))
 
 import { openTerminal, portalOrigin, terminalURL } from './terminalHelper'
 
@@ -10,6 +20,7 @@ const target = { name: 'pi-evan.on.dev.remote.it', port: 2222, title: 'Console',
 
 beforeEach(() => {
   env.isNative = false
+  build.embedded = false
   windowOpen.mockReset()
 })
 
@@ -48,6 +59,25 @@ describe('terminalURL', () => {
   })
 })
 
+/* The menu app's portal is at its local server's 127.0.0.1, which the browser's client takes no channel from: opened
+   there, the terminal asked another stage's client and said it "did not answer". */
+describe('from the portal embedded in the menu app', () => {
+  it('opens in the web portal of the name’s stage, in the system browser, whoever’s service it is', async () => {
+    build.embedded = true
+    const open = vi.spyOn(window, 'open').mockReturnValue(null)
+    const { terminalReaches } = await import('./terminalHelper')
+    expect(terminalReaches(target.service)).toBe(true)
+    expect(openTerminal(target)).toBe(true)
+    expect(windowOpen).toHaveBeenCalledWith(
+      'https://app.dev.remote.it/#/terminal?name=pi-evan.on.dev.remote.it&port=2222&title=Console&service=S1',
+      '_blank',
+      true
+    )
+    expect(open).not.toHaveBeenCalled()
+    open.mockRestore()
+  })
+})
+
 describe('openTerminal', () => {
   it('opens a tab of its own on the web', () => {
     const open = vi.spyOn(window, 'open').mockReturnValue(null)
@@ -63,5 +93,69 @@ describe('openTerminal', () => {
     expect(windowOpen).toHaveBeenCalledWith(terminalURL(target), '_blank', true)
     expect(open).not.toHaveBeenCalled()
     open.mockRestore()
+  })
+})
+
+/* In this page's own app the terminal's session is the browser's one client's, which is the page's own person's. A
+   service only another sign-in reaches is not opened in it — said, not a tab that cannot connect. */
+describe('a service another sign-in serves', () => {
+  it('is not opened in this browser’s terminal; from the desktop app it opens in the web portal as ever', async () => {
+    const { readStateWith } = await import('../selectors/signIns')
+    readStateWith(
+      () =>
+        ({
+          auth: { user: { id: 'me' } },
+          accounts: {
+            membership: [],
+            signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+          },
+          devices: {
+            me: { all: [{ id: 'd-me', services: [{ id: 's-me' }] }] },
+            work: { all: [{ id: 'd-work', services: [{ id: 's-work' }] }] },
+          },
+        } as any)
+    )
+    const { terminalReaches } = await import('./terminalHelper')
+    const opened = vi.spyOn(window, 'open').mockReturnValue(null)
+    env.isNative = false
+    expect(openTerminal({ name: 'pi-acme.on.remote.it', port: 22, service: 's-work' })).toBe('OTHER_SIGN_IN')
+    expect(opened).not.toHaveBeenCalled()
+    expect(terminalReaches('s-work')).toBe(false)
+    expect(openTerminal({ name: 'mac-me.on.remote.it', port: 22, service: 's-me' })).toBe(true)
+    expect(opened).toHaveBeenCalledTimes(1)
+    expect(terminalReaches('s-me')).toBe(true)
+    env.isNative = true
+    expect(terminalReaches('s-work')).toBe(true)
+    env.isNative = false
+    readStateWith(() => ({} as any))
+    opened.mockRestore()
+  })
+
+  // The page's own person's service, shared with the other sign-in, whose account is selected: a request about it
+  // would be made as that other — and the browser's client, which is the page's own person's, still reaches it.
+  it('opens a service of the page’s own person though another sign-in’s account, selected, holds it too', async () => {
+    const { readStateWith } = await import('../selectors/signIns')
+    const { terminalReaches } = await import('./terminalHelper')
+    const shared = { id: 'd-me', services: [{ id: 's-me' }] }
+    const stateWith = (devices: object, activeId?: string) =>
+      readStateWith(
+        () =>
+          ({
+            auth: { user: { id: 'me' } },
+            accounts: {
+              activeId,
+              membership: [],
+              signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+            },
+            devices,
+          } as any)
+      )
+    stateWith({ me: { all: [shared] }, work: { all: [shared] } }, 'work')
+    expect(terminalReaches('s-me')).toBe(true)
+    // One nothing is known of is taken to be theirs; one only the other's list holds is not.
+    expect(terminalReaches('s-unknown')).toBe(true)
+    stateWith({ work: { all: [shared] } })
+    expect(terminalReaches('s-me')).toBe(false)
+    readStateWith(() => ({} as any))
   })
 })

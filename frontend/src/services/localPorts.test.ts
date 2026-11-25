@@ -26,14 +26,16 @@ import {
   resetLocalPorts,
   setNamesResolve,
   thisMachine,
+  thisMachineNow,
 } from './localPorts'
 
 const MAC = '80:00:00:00:00:00:00:A1'
-const shellOf = (platform: string, capabilities: string[] = [], signedIn?: { sub: string; email?: string }) => ({
+type Person = { sub: string; email?: string }
+const shellOf = (platform: string, capabilities: string[] = [], signedIn?: Person, signIns?: Person[]) => ({
   compatible: true,
   info: { platform, capabilities },
   has: (c: string) => capabilities.includes(c),
-  call: async () => ({ device: { uid: MAC }, ...(signedIn && { signedIn }) }),
+  call: async () => ({ device: { uid: MAC }, ...(signedIn && { signedIn }), ...(signIns && { signIns }) }),
 })
 
 // The schema probe's answer: an API whose openLocalPort takes scope and whose LocalPort has it, or one before scope.
@@ -66,7 +68,36 @@ describe('this machine', () => {
     expect(beacon).not.toHaveBeenCalled()
     resetLocalPorts()
     shell.value = shellOf('mac', [], { sub: 'U1', email: 'u@example.com' })
-    expect(await thisMachine()).toEqual({ id: MAC, platform: 'mac', localPorts: false, signedIn: 'U1' })
+    expect(await thisMachine()).toEqual({ id: MAC, platform: 'mac', localPorts: false, signIns: ['U1'] })
+  })
+
+  it('in an app whose shell lists everyone signed in on the machine: all of them', async () => {
+    const people = [{ sub: 'U1', email: 'u@example.com' }, { sub: 'U2' }]
+    shell.value = shellOf('mac', [], people[0], people)
+    expect(await thisMachine()).toEqual({ id: MAC, platform: 'mac', localPorts: false, signIns: ['U1', 'U2'] })
+  })
+
+  it('who is signed in on it now: asked of the shell again, an account added since the first read among them', async () => {
+    const people = [{ sub: 'U1', email: 'u@example.com' }, { sub: 'U2' }]
+    shell.value = shellOf('mac', [], people[0])
+    expect((await thisMachine())?.signIns).toEqual(['U1'])
+    shell.value = shellOf('mac', [], people[0], people)
+    // Kept as first read until asked as it is now; from then on what is kept is that.
+    expect((await thisMachine())?.signIns).toEqual(['U1'])
+    expect(scopeFor(await thisMachineNow(), 'u2')).toBe('ACCOUNT')
+    expect((await thisMachine())?.signIns).toEqual(['U1', 'U2'])
+    shell.value = shellOf('mac', [], people[0])
+    expect(scopeFor(await thisMachineNow(), 'u2')).toBeUndefined()
+  })
+
+  it('as it is now, with no shell to ask or one that does not answer: what was known', async () => {
+    beacon.mockResolvedValue(MAC)
+    expect(await thisMachineNow()).toEqual({ id: MAC, platform: undefined })
+    resetLocalPorts()
+    shell.value = shellOf('mac', [], { sub: 'U1' })
+    await thisMachine()
+    shell.value = { ...shellOf('mac'), call: async () => Promise.reject(new Error('gone')) }
+    expect((await thisMachineNow())?.signIns).toEqual(['U1'])
   })
 
   it('a browser: the device the beacon was seen by; none, asked again later', async () => {
@@ -93,6 +124,8 @@ describe('open', () => {
     answering({ data: { data: { openLocalPort: { port: 33000 } } } })
     expect(await openLocalPort(MAC, 'S', 8080)).toEqual({ port: 33000 })
     expect(calls()[0][1]).toEqual({ deviceId: MAC, serviceId: 'S', port: 8080 })
+    // Made as the sign-in that serves the service, whichever account holds this machine's device.
+    expect(calls()[0].at(-1)).toEqual({ about: ['S'] })
     answering({ reason: "Port 8080 is web-pi's on this machine" })
     expect(await openLocalPort(MAC, 'S', 8080)).toEqual({ reason: "Port 8080 is web-pi's on this machine" })
   })
@@ -102,11 +135,19 @@ describe('open', () => {
 // its account, is theirs; the portal's elsewhere, the machine's.
 describe('scope', () => {
   it('ACCOUNT only where the app runs here and the person signed in on its account is the one using it', () => {
-    expect(scopeFor({ id: MAC, signedIn: 'u1' }, 'U1')).toBe('ACCOUNT')
-    expect(scopeFor({ id: MAC, signedIn: 'U2' }, 'U1')).toBeUndefined()
+    expect(scopeFor({ id: MAC, signIns: ['u1'] }, 'U1')).toBe('ACCOUNT')
+    expect(scopeFor({ id: MAC, signIns: ['U2'] }, 'U1')).toBeUndefined()
     expect(scopeFor({ id: MAC }, 'U1')).toBeUndefined() // a browser: the beacon's device, no account known
-    expect(scopeFor({ id: MAC, signedIn: 'U1' }, undefined)).toBeUndefined()
+    expect(scopeFor({ id: MAC, signIns: ['U1'] }, undefined)).toBeUndefined()
     expect(scopeFor(null, 'U1')).toBeUndefined()
+  })
+
+  it('ACCOUNT for any of the people signed in on the machine, and for no one else', () => {
+    const machine = { id: MAC, signIns: ['U1', 'u2'] }
+    expect(scopeFor(machine, 'U1')).toBe('ACCOUNT')
+    expect(scopeFor(machine, 'U2')).toBe('ACCOUNT')
+    expect(scopeFor(machine, 'U3')).toBeUndefined()
+    expect(scopeFor({ id: MAC, signIns: [] }, 'U1')).toBeUndefined()
   })
 
   it('the API takes it where openLocalPort has the argument and LocalPort the field', () => {

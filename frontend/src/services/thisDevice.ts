@@ -98,9 +98,19 @@
    the owner's exits and the one it runs with its checks, a join or a new exit, each confirmed by the machine's
    administrator first (a no is 'cancelled'), refused while held (exitNode.held). exitNode.leave takes the machine out
    of the exit it runs: no administrator asked, and refused by the cloud while the exit serves others through it —
-   drained and retired first, the account's, on the device's page. */
+   drained and retired first, the account's, on the device's page.
 
-export const BRIDGE_VERSION = '1.12.0'
+   1.13.0 (additive): several accounts at once (graphql-api docs/ACCOUNT-LINKS.md). auth.accounts says of each whether
+   it is signed in on the device (signedIn); auth.accessToken and auth.signOut take a sub; auth.signIn {addAccount:
+   true} signs another in; the status lists everyone signed in (signIns). And single mode and multi mode — the shell's
+   setting Use several
+   at once, `several`, off by default: auth.mode answers it, auth.setMode sets it, and the auth event carries it
+   beside active and accounts. Off, one credential is in use: auth.accounts marks only the active account signedIn, and
+   auth.signIn {addAccount: true} and auth.switch make the named account the one in use, the active account changing
+   with them; turning it off keeps the active credential and signs the others out on the device, remembered. A shell
+   without auth.mode answers 'unsupported': it is in single mode, and the page offers no setting. */
+
+export const BRIDGE_VERSION = '1.13.0'
 
 export type Capability =
   | 'status' // status() and the 'status' event
@@ -211,6 +221,8 @@ export type DeviceStatus = {
   registration?: { name: string; platform: number; pendingAccount?: string }
   engine: EngineState
   signedIn?: { sub: string; email?: string }
+  // Everyone signed in on the device, where the shell keeps several credentials in use; signedIn is then the first.
+  signIns?: { sub: string; email?: string }[]
   vpn: { on: boolean; changing?: boolean; error?: string }
   // The exit traffic goes through while the VPN is on; absent: none (the machine's own internet).
   exit?: ExitRef & { state: 'connecting' | 'up' | 'down'; error?: string }
@@ -328,7 +340,11 @@ export type DeviceSetting = {
   app?: DeviceSettingApp
 }
 
-export type DeviceSettingApp = { state: 'running' | 'starting' | 'unavailable' | 'disabled' | string; version?: string; detail?: string }
+export type DeviceSettingApp = {
+  state: 'running' | 'starting' | 'unavailable' | 'disabled' | string
+  version?: string
+  detail?: string
+}
 
 // 1.5.0: the app's own preferences for the person on this machine — the machine's, not a stage's, so every stage's
 // page shows them alike. openAtLogin absent where the app keeps no login item itself.
@@ -341,7 +357,9 @@ export type LoggingState = { detailed: boolean; error?: string }
 export type PermissionName = 'localNetwork' | 'vpnConfiguration' | 'notifications'
 export type PermissionState = 'granted' | 'denied' | 'notAsked' | 'unknown'
 
-export type AuthAccount = { sub: string; email?: string; name?: string; active: boolean }
+// signedIn (a shell that keeps several credentials in use): true for each one in use; `active` is then the one the page
+// opens on. Absent on a shell that keeps one in use, the active one.
+export type AuthAccount = { sub: string; email?: string; name?: string; active: boolean; signedIn?: boolean }
 
 export type StageStatus = {
   stage: string
@@ -402,17 +420,24 @@ export type BridgeMethods = {
   // An access token for the API, from the shell's sign-in; the shell keeps the refresh token and the DPoP key.
   // `resource` absent: the stage's API. expiresAt is the token's expiry in seconds since the epoch (a JWT's exp).
   'auth.accessToken': {
-    args: { resource?: string; scope?: string }
+    // `sub` (a shell that keeps several credentials in use): the credential to mint for; absent, the active one.
+    args: { resource?: string; scope?: string; sub?: string }
     result: { accessToken: string; expiresAt: number; tokenType: 'Bearer' | 'DPoP' }
   }
   // A DPoP proof for one request, made with the shell's key (only where the token is DPoP).
-  'auth.dpopProof': { args: { method: string; url: string; accessToken: string }; result: { proof: string } }
+  'auth.dpopProof': {
+    args: { method: string; url: string; accessToken: string; sub?: string }
+    result: { proof: string }
+  }
   'auth.accounts': { args: {}; result: AuthAccount[] }
   // deviceName: what to call this machine where the first sign-in registers it (a phone; iOS gives an app only
   // "iPhone"). A shell that registers nothing ignores it.
   'auth.signIn': { args: { addAccount?: boolean; deviceName?: string }; result: AuthAccount }
   'auth.switch': { args: { sub: string }; result: AuthAccount }
   'auth.signOut': { args: { sub?: string }; result: {} }
+  // 1.13.0: Use several at once — whether every signed-in credential is in use, or the active one alone.
+  'auth.mode': { args: {}; result: { several: boolean } }
+  'auth.setMode': { args: { several: boolean }; result: { several: boolean } }
   // 1.5.0
   'logging.get': { args: {}; result: LoggingState }
   'logging.set': { args: { detailed: boolean }; result: LoggingState }
@@ -445,7 +470,8 @@ export type BridgeEvents = {
   status: DeviceStatus
   settings: DeviceSetting[]
   // The shell's sign-in changed (signed in, out, switched, or the session ended): the portal reads auth.* again.
-  auth: { active?: AuthAccount }
+  // 1.13.0 several: the shell's mode, as auth.mode answers it.
+  auth: { active?: AuthAccount; accounts?: AuthAccount[]; several?: boolean }
   stages: StageStatus[]
   // 1.7.0: info()'s answer, changed — what the shell offers now.
   info: BridgeInfo

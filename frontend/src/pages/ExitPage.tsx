@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { useHistory, useParams } from 'react-router-dom'
@@ -54,6 +54,7 @@ import { Confirm } from '../components/Confirm'
 import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 /* One exit. For whoever manages it: its exit devices, each with Pause, Resume and Remove, and Add device; who can use
    it (sharing, networks, local networks, tags); its name and how new devices start; deleting it. For someone it is
@@ -83,7 +84,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
   const { reload: reloadList } = useAccountExits()
   const reads = useRef(0)
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     const read = ++reads.current
     const answer = await graphQLExit(exitID)
     if (read === reads.current) setExit(answer)
@@ -93,19 +94,19 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
     await load()
   }
 
-  useEffect(() => {
+  useReadEffect(() => {
     load()
   }, [load])
 
   // Remote.It's own exits are not read by id: they come from the exits offered to you.
-  useEffect(() => {
+  useReadEffect(() => {
     if (exit !== null) return
     graphQLOfferedExits().then(offered =>
       setRemoteit(Array.isArray(offered) ? offered.find(each => each.id === exitID && each.remoteit) ?? null : null)
     )
   }, [exit, exitID])
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!thisId) return
     graphQLDeviceExit(thisId).then(read =>
       setThisRoutes(!!read && typeof read === 'object' && read.usesExit?.id === exitID)
@@ -304,6 +305,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                 kind="exit"
                 run={device}
                 name={exit.name}
+                of={exit.id}
                 activation={exit.activation}
                 manage
                 onChanged={async (runs, which) => {
@@ -352,7 +354,7 @@ const OneExit: React.FC<{ exitID: string }> = ({ exitID }) => {
                   disabled={busy}
                   onClick={event => {
                     event.stopPropagation()
-                    change(() => graphQLSetNetworkExit(network.id, exit.id, false), failed)
+                    change(() => graphQLSetNetworkExit(network.id, exit.id, false, 'exit'), failed)
                   }}
                 />
               </ListItemLocation>
@@ -610,7 +612,7 @@ const MoveExitUsers: React.FC<{ exit: Exit; onClose: () => void; onMoved: () => 
   const [busy, setBusy] = useState(false)
   const chosen = useRef('')
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!exit.owner) return
     graphQLAccountExits(exit.owner.id).then(read =>
       setTargets(

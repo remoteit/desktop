@@ -14,6 +14,7 @@ type Props = {
   kind: 'proxy' | 'exit'
   run: ExitDevice | ProxyDevice
   name: string
+  of?: string // its id, where its own page shows the device: whose sign-in its actions are asked as
   activation?: string
   manage?: boolean
   // A local network proxy server's device: its private address, where its addresses lead on that network.
@@ -23,7 +24,7 @@ type Props = {
 
 /* One device of an exit or proxy server: its name, linked to its page, its state in a word, what is wrong when it is not
    carrying traffic, and Pause, Resume, Remove. */
-export const CarrierRow: React.FC<Props> = ({ kind, run, name, activation, manage, local, onChanged }) => {
+export const CarrierRow: React.FC<Props> = ({ kind, run, name, of, activation, manage, local, onChanged }) => {
   const { t } = useTranslation()
   const device = { id: run.id, name: run.name || run.id }
   const on = carrying(run)
@@ -86,7 +87,7 @@ export const CarrierRow: React.FC<Props> = ({ kind, run, name, activation, manag
             {manage && onChanged && (
               <RunActions
                 device={device}
-                scope={{ kind, name }}
+                scope={{ kind, name, ...(of && { id: of }) }}
                 run={run}
                 activation={activation}
                 onDone={runs => onChanged(runs, device)}

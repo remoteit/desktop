@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { List, ListSubheader, Typography } from '@mui/material'
@@ -17,6 +17,7 @@ import { Gutters } from '../components/Gutters'
 import { Notice } from '../components/Notice'
 import { NetworkSectionIntro } from '../components/NetworkSectionIntro'
 import { Icon } from '../components/Icon'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* Proxy servers: your own first, each saying whether it is ready and where it runs; Remote.It's, labelled; and last,
    for an admin of the account, the paid add-on that names public addresses under your own domain. */
@@ -27,7 +28,7 @@ export const ProxiesPage: React.FC = () => {
   const { value: proxies } = useAccountProxies()
   const [remoteit, setRemoteit] = useState<ProxyChoice[]>([])
 
-  useEffect(() => {
+  useReadEffect(() => {
     graphQLProxies().then(list => setRemoteit(Array.isArray(list) ? list.filter(proxy => proxy.remoteit) : []))
   }, [])
 

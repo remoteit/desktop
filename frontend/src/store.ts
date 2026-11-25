@@ -11,6 +11,7 @@ import DateTransform from './helpers/DateTransform'
 import { PERSISTED_MODELS } from './models/persistedModels'
 import immerPlugin from '@rematch/immer'
 import localForage from 'localforage'
+import { readStateWith } from './selectors/signIns'
 
 const loggerConfig: ReduxLoggerOptions = {
   predicate: () => !!(window as any).stateLogging,
@@ -71,7 +72,16 @@ export const store = init<RootModel>({
 })
 
 export const { dispatch } = store
+// Where a service with no hook reads the state as it is now (selectors/signIns requestSignInNow).
+readStateWith(() => store.getState())
+
 export const persistor = getPersistor()
+
+// State stored before it was kept by row is put right the moment it is read back, before anything asks of it
+// (models/accounts keepByRow).
+const keepByRow = () => persistor.getState().bootstrapped && (keptByRow(), dispatch.accounts.keepByRow())
+const keptByRow = persistor.subscribe(keepByRow)
+keepByRow()
 
 export type Store = typeof store
 export type Dispatch = RematchDispatch<RootModel>

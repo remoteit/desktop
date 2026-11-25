@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Box, Typography } from '@mui/material'
 import type { DeviceApp } from '../services/graphQLDeviceApps'
@@ -7,6 +7,7 @@ import type { DeviceApps } from '../hooks/useDeviceApps'
 import { asksConsent, capabilityWords, ConsentAsking } from '../helpers/appsHelper'
 import { graphQLCatalogApp } from '../services/graphQLAppCatalog'
 import { Confirm } from './Confirm'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* Asking for the person's yes to what a release asks (helpers/appsHelper asksConsent, graphql's rule): to run as root —
    full control of the device (presence-server docs/device-apps-design.md, "Root, shown and consented to") — and the
@@ -152,7 +153,7 @@ export function useReleaseAsks(
   const [read, setRead] = useState<{ key: string; asks: ConsentAsking | null }>()
   const releases = (Array.isArray(release) ? release : [release]).filter((r): r is string => !!r)
   const key = app?.id && releases.length ? `${accountId ?? ''}/${app.id}/${releases.join(',')}` : ''
-  useEffect(() => {
+  useReadEffect(() => {
     if (!key || !app?.id) return
     let current = true
     graphQLCatalogApp(app.id, { accountId, releases: 100 }).then(answer => {

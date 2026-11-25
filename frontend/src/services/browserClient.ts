@@ -1,10 +1,10 @@
 import { handoff } from './browserGateway'
 import { graphQLDecommissionDevices, graphQLDisableDevices } from './deviceDisable'
 
-/* The portal's channel to this browser's one remote.it client (presence-server docs/browser-client-plan.md §5): the
-   shared client at client.on.<stage>.remote.it, reached through a hidden frame of that origin, as a device's page
-   reaches it. The portal is the person's own app, so its channel may reach any device they may — a terminal, not one
-   device's pages. A client not yet registered is given a one-time code the first time it says so. */
+/* The portal's channel to this browser's one remote.it client (presence-server docs/browser-client-plan.md §5a): the
+   shared client at client.on.<stage>.remote.it, reached through a hidden frame of that origin. The portal is the
+   person's own app, so its channel may reach any device they may — a terminal. A client not yet registered is given a
+   one-time code the first time it says so. */
 
 export function clientOrigin(): string {
   const stage = /^app(\.[a-z]+)?\.remote\.it$/.exec(location.hostname)

@@ -3,6 +3,8 @@ import { describe, it, expect, vi } from 'vitest'
 vi.mock('./post', () => ({ post: vi.fn() }))
 vi.mock('./graphQL', () => ({ graphQLGetErrors: vi.fn() }))
 vi.mock('./graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED', withoutDeviceSessions: () => false }))
+vi.mock('../selectors/signIns', () => ({ noteAccountOf: vi.fn() }))
+vi.mock('./graphQLProxy', () => ({ ENDPOINT_FIELDS: '' }))
 import { publicAddressesOf } from './graphQLPublicAddresses'
 
 const endpoint = (id: string, created: string) => ({

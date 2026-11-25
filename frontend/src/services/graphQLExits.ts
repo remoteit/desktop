@@ -4,6 +4,9 @@ import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { EXIT_DEVICE_FIELDS, ExitDevice } from './graphQLDeviceRuns'
 import { PersonRef, exitErrorFields, exitSignInFields } from './deviceSignIns'
 import { ExitServing, exitServingFields } from './exitServing'
+import { RequestFor, isNoted, noteAccountOf, selectRowNow, selectedAccountId } from '../selectors/signIns'
+import { FAILED, findElsewhere } from './elsewhere'
+import { store } from '../store'
 
 /* Exits (graphql-api docs/PROXY-GROUPS.md §13): what devices send their traffic out through, run by devices — remote.it
    picks the one a device's new connections go through. remote.it's are at a location and offered by plan; an own exit
@@ -57,8 +60,14 @@ const FIELDS = `id name remoteit location provider activation manage offered dor
 const parsed = (exit: Exit): Exit =>
   exit?.tags ? { ...exit, tags: exit.tags.map(tag => ({ ...tag, created: tag.created && new Date(tag.created) })) } : exit
 
-async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
-  const response = await post({ query, variables })
+async function read<T>(
+  query: string,
+  variables: ILookup<any>,
+  marker: string,
+  pick: (data: any) => T,
+  requestFor?: RequestFor
+) {
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return 'ERROR' as const
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, marker)) return UNSUPPORTED
@@ -67,17 +76,25 @@ async function read<T>(query: string, variables: ILookup<any>, marker: string, p
 }
 
 // An account's own exits you manage — those no device runs too — and those other accounts share with it.
-export const graphQLAccountExits = (accountId: string) =>
+export const graphQLAccountExits = (accountId: string, requestFor?: RequestFor) =>
   read<{ own: Exit[]; shared: Exit[] }>(
     `query AccountExits($accountId: String) {
       login { id account(id: $accountId) { id exits { ${FIELDS} } sharedExits { ${FIELDS} } } }
     }`,
     { accountId },
     'exits',
-    data => ({
-      own: (data?.login?.account?.exits ?? []).map(parsed),
-      shared: (data?.login?.account?.sharedExits ?? []).map(parsed),
-    })
+    data => {
+      const own: Exit[] = (data?.login?.account?.exits ?? []).map(parsed)
+      const shared: Exit[] = (data?.login?.account?.sharedExits ?? []).map(parsed)
+      // An exit is in no stored list: what is asked of it by its id alone is asked as this account's sign-in.
+      noteAccountOf(
+        accountId,
+        [...own, ...shared].map(exit => exit.id),
+        requestFor?.sub
+      )
+      return { own, shared }
+    },
+    requestFor
   )
 
 // The exits you may send a device's traffic through, offered now — remote.it's by plan, your own, those shared with you,
@@ -89,6 +106,7 @@ export type OfferedExit = Pick<Exit, 'id' | 'name' | 'remoteit' | 'location' | '
   serving?: ExitServing | null
 }
 
+// With no device, the query names nothing: asked as the selected account's sign-in, whose offer it lists.
 export const graphQLOfferedExits = async (deviceId?: string) =>
   read<OfferedExit[]>(
     `query OfferedExits($deviceId: String) {
@@ -96,18 +114,46 @@ export const graphQLOfferedExits = async (deviceId?: string) =>
     }`,
     { deviceId },
     'exits',
-    data => data?.exits ?? []
+    data => data?.exits ?? [],
+    deviceId ? undefined : { account: selectedAccountId(store.getState()) }
   )
 
 // One exit, with the networks it is offered on: one you manage, or one you see — shared with you, or reached by your
 // role. None for one you may not see.
-export const graphQLExit = (id: string) =>
-  read<Exit | null>(
-    `query Exit($id: String!) { exit(id: $id) { ${FIELDS} networks { id name } } }`,
-    { id },
-    'exit',
-    data => (data?.exit ? parsed(data.exit) : null)
-  )
+// Where nothing read so far says whose the exit is (the page opened at its address, before any list), the selected
+// account's sign-in is asked, and the exit then remembered under it for what is asked of it next.
+// Found by none as the row looked at, and nothing known saying whose it is: the other sign-ins here are asked, and
+// the one that sees it has its row selected (services/elsewhere).
+export const graphQLExit = async (id: string) => {
+  const accountId = selectedAccountId(store.getState())
+  const unknown = !isNoted(id)
+  const asked = selectRowNow(accountId)
+  const exit = (requestFor: RequestFor, note?: string) =>
+    read<Exit | null>(
+      `query Exit($id: String!) { exit(id: $id) { ${FIELDS} networks { id name } } }`,
+      { id },
+      'exit',
+      data => {
+        if (!data?.exit) return null
+        if (note) noteAccountOf(note, [id])
+        return parsed(data.exit)
+      },
+      requestFor
+    )
+  const first = await exit({ orAccount: accountId }, unknown ? accountId : undefined)
+  if (first !== null || !unknown) return first
+  const found = await findElsewhere<Exit>({
+    ids: [id],
+    asked,
+    read: async (_own, requestFor) => {
+      const answer = await exit(requestFor)
+      // Not asked (a failure, or an API without it) is not the same as asked and none: it is looked for again.
+      return answer === null ? undefined : typeof answer === 'object' ? answer : FAILED
+    },
+    accountOf: answer => answer.owner?.id,
+  })
+  return found ? found.answer : first
+}
 
 // Made in your account, or one you manage: then devices are added to run it.
 export async function graphQLCreateExit(name: string, accountId?: string): Promise<Exit | { reason: string }> {
@@ -117,6 +163,7 @@ export async function graphQLCreateExit(name: string, accountId?: string): Promi
   )
   if (result === 'ERROR') return { reason: '' }
   if ('reason' in result) return result
+  noteAccountOf(accountId, [result.data?.data?.createExit?.id])
   return parsed(result.data?.data?.createExit)
 }
 
@@ -215,12 +262,20 @@ export const graphQLLeaveExitShare = (exit: string) =>
   graphQLRequestWithReason(` mutation LeaveExitShare($exit: String!) { leaveExitShare(exit: $exit) }`, { exit })
 
 // One of your exits made available on a network you manage — or no longer, from the network's side or the exit's.
-export const graphQLSetNetworkExit = (networkId: string, exit: string, available: boolean) =>
+// `side`: whose page asks — the network's, or the exit's. graphql takes an exit made available from one who manages
+// both, and one withdrawn from either side: asked as the sign-in of the side that asks.
+export const graphQLSetNetworkExit = (
+  networkId: string,
+  exit: string,
+  available: boolean,
+  side: 'network' | 'exit' = 'network'
+) =>
   graphQLRequestWithReason(
     ` mutation SetNetworkExit($networkId: String!, $exit: String!, $available: Boolean!) {
       setNetworkExit(networkId: $networkId, exit: $exit, available: $available)
     }`,
-    { networkId, exit, available }
+    { networkId, exit, available },
+    { about: [side === 'exit' ? exit : networkId] }
   )
 
 // Each of the account's networks' exits, by network. Asked apart from the networks, so an API without them still shows
@@ -239,6 +294,12 @@ export async function graphQLNetworkExits(
     data => data?.login?.account?.networks ?? []
   )
   if (!Array.isArray(result)) return result
+  result.forEach(network =>
+    noteAccountOf(
+      accountId,
+      (network.exits ?? []).map(exit => exit.id)
+    )
+  )
   return new Map(result.map(network => [network.id, network.exits ?? []]))
 }
 

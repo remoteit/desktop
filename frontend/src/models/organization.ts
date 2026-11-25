@@ -11,10 +11,12 @@ import {
   graphQLUpdateRole,
   graphQLRemoveRole,
 } from '../services/graphQLMutation'
-import { getAccountIds } from './accounts'
+import { getAccountIds, accountIdsByReach } from './accounts'
 import { graphQLFetchOrganizations, graphQLFetchGuests, graphQLGetResellerReportUrl } from '../services/graphQLRequest'
 import { selectOrganization, selectOrganizationReseller } from '../selectors/organizations'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { rowSaid, selectActiveAccountId, selectRow } from '../selectors/accounts'
+import { asRow, rowGone, sendAs } from '../selectors/signIns'
+import { RowKey, rowKey, withoutAccounts, withoutRows, rekeyed } from '../helpers/rowKey'
 import { AxiosResponse } from 'axios'
 import { RootModel } from '.'
 import { State } from '../store'
@@ -141,6 +143,8 @@ export const defaultState: IOrganizationState = {
 type IOrganizationAccountState = {
   initialized: boolean
   updating: boolean
+  // By ROW (helpers/rowKey): an account's organization as each sign-in that belongs to it sees it — its own role's
+  // view of the members, roles, licenses and limits.
   accounts: ILookup<IOrganizationState>
 }
 
@@ -155,47 +159,60 @@ export default createModel<RootModel>()({
   effects: dispatch => ({
     async fetch(_: void, state) {
       const ids: string[] = getAccountIds(state)
-      const result = await graphQLFetchOrganizations(ids)
-      if (result === 'ERROR') return
-      const accounts = await dispatch.organization.parse({ result, ids })
-      ids.forEach(id => {
-        if (!accounts[id] && state.organization.accounts[id]) accounts[id] = state.organization.accounts[id]
-      })
+      // One request per sign-in, each about every account it reaches — an organization two of them belong to is read
+      // as each, into its row under each (helpers/rowKey): the role, the members and the limits are that sign-in's
+      // own view of it. A sign-in that cannot be asked leaves its rows as they were stored.
+      const answers = await Promise.all(
+        accountIdsByReach(state, ids).map(async ([sub, own]) => {
+          const result = await graphQLFetchOrganizations(own, { sub, about: own, row: true })
+          return result === 'ERROR' ? undefined : dispatch.organization.parse({ result, ids: own, sub })
+        })
+      )
+      if (answers.every(answer => !answer)) return
+      // What was answered goes in beside what is stored, as it is THEN — not over the whole of it as it was when
+      // this was asked: another reading that overlaps this one (new rows, read at once) keeps what it found.
+      const accounts: IOrganizationAccountState['accounts'] = Object.assign({}, ...answers)
       console.log('ORGANIZATION FETCH', accounts)
-      if (accounts) await dispatch.organization.set({ accounts, initialized: true })
-      else await dispatch.organization.clearActive()
+      await dispatch.organization.merge(accounts)
     },
 
     async fetchGuests(_: void, state) {
-      const accountId = selectActiveAccountId(state)
-      const result = await graphQLFetchGuests(accountId)
+      // The row they are read for: asked as its sign-in, and kept under it whichever row is looked at by then.
+      const { accountId, row } = rowSaid(state)
+      const result = await graphQLFetchGuests(accountId, asRow(row))
       if (result === 'ERROR') {
         // Without guestsLoaded, OrganizationGuestList shows its spinner until remount.
-        await dispatch.organization.setActive({ guestsLoaded: true, id: accountId })
+        await dispatch.organization.setActive({ guestsLoaded: true, id: accountId, row })
         return
       }
       const guests = parseGuests(result)
       console.log('LOAD GUESTS', accountId, guests)
-      await dispatch.organization.setActive({ guests, guestsLoaded: true, id: accountId })
+      await dispatch.organization.setActive({ guests, guestsLoaded: true, id: accountId, row })
     },
 
-    async parse({ result, ids }: { result: AxiosResponse<any>; ids: string[] }) {
+    // `sub`: the sign-in that was asked ('' the page's own person): each account goes under its row for that sign-in.
+    async parse({ result, ids, sub }: { result: AxiosResponse<any>; ids: string[]; sub?: string }) {
       const data = result.data?.data?.login
       let orgs: IOrganizationAccountState['accounts'] = {}
       ids.forEach((id, index) => {
         if (!data?.[`_${index}`]) return
         const { organization, licenses, limits } = data[`_${index}`]
-        orgs[id] = parseOrganization(organization)
-        orgs[id].licenses = licenses?.map(l => parseLicense(l))
-        orgs[id].limits = limits
+        const row = rowKey(id, sub)
+        orgs[row] = parseOrganization(organization)
+        orgs[row].licenses = licenses?.map(l => parseLicense(l))
+        orgs[row].limits = limits
       })
       return orgs
     },
 
     async setOrganization(params: IOrganizationSettings, state) {
       let organization = selectOrganization(state)
-      await dispatch.organization.setActive({ ...params, id: organization.id || state.auth.user?.id })
-      const result = await graphQLSetOrganization({ ...params, accountId: organization.id })
+      // No organization yet: it is created for the selected account, by the sign-in that serves it — named, since a
+      // request that names no account is the page's own person's.
+      const accountId = organization.id || selectActiveAccountId(state)
+      await dispatch.organization.setActive({ ...params, id: accountId, row: selectRow(state) })
+      // Sent as the row it began in, whichever row is looked at once the write above is done.
+      const result = await sendAs(selectRow(state), () => graphQLSetOrganization({ ...params, accountId }))
       if (result !== 'ERROR') {
         if (!organization.id)
           dispatch.ui.set({
@@ -235,15 +252,17 @@ export default createModel<RootModel>()({
         if (index > -1) updated[index] = m
         else updated.push(m)
       })
-      await dispatch.organization.setActive({ members: updated })
+      await dispatch.organization.setActive({ members: updated, row: selectRow(state) })
 
       const action = updated.length > organization.members.length ? 'added' : 'updated'
       const member = members[0]
-      const result = await graphQLSetMembers(
-        members.map(member => member.user.email),
-        organization.id,
-        member.roleId,
-        member.license
+      const result = await sendAs(selectRow(state), () =>
+        graphQLSetMembers(
+          members.map(member => member.user.email),
+          organization.id || selectActiveAccountId(state),
+          member.roleId,
+          member.license
+        )
       )
       if (result !== 'ERROR') {
         dispatch.ui.set({
@@ -258,10 +277,12 @@ export default createModel<RootModel>()({
 
     async removeMember(member: IOrganizationMember, state) {
       const organization = selectOrganization(state)
-      const result = await graphQLRemoveMembers([member.user.email], organization.id)
+      const result = await graphQLRemoveMembers([member.user.email], organization.id || selectActiveAccountId(state))
       if (result !== 'ERROR') {
+        // The row it was removed in (this effect's own state), whichever row is looked at by now.
         dispatch.organization.setActive({
           members: organization.members.filter(m => m.user.email !== member.user.email),
+          row: selectRow(state),
         })
         dispatch.ui.set({
           successMessage: i18n.t('notices:organization.removedNamed', {
@@ -302,9 +323,9 @@ export default createModel<RootModel>()({
       let result
       if (index > -1) {
         roles[index] = role
-        result = await graphQLUpdateRole(data)
+        result = await sendAs(selectRow(state), () => graphQLUpdateRole(data))
       } else {
-        result = await graphQLCreateRole(data)
+        result = await sendAs(selectRow(state), () => graphQLCreateRole(data))
         if (result !== 'ERROR') role.id = result?.data?.data?.createRole?.id
         roles.push(role)
         dispatch.ui.set({ redirect: `/organization/roles/${role.id}` })
@@ -319,7 +340,7 @@ export default createModel<RootModel>()({
         successMessage: index > -1 ? `Successfully updated ${role.name}.` : `Successfully added ${role.name}.`,
       })
 
-      await dispatch.organization.setActive({ roles })
+      await dispatch.organization.setActive({ roles, row: selectRow(state) })
     },
 
     async removeRole(role: IOrganizationRole, state) {
@@ -339,7 +360,7 @@ export default createModel<RootModel>()({
           defaultValue: 'Successfully removed “{{name}}”.',
         }),
       })
-      dispatch.organization.setActive({ roles })
+      dispatch.organization.setActive({ roles, row: selectRow(state) })
     },
 
     async clearActive() {
@@ -416,13 +437,16 @@ export default createModel<RootModel>()({
       return result?.reportUrl
     },
 
-    async setActive(params: Partial<IOrganizationState>, state) {
+    /* The one write of a row's organization. `row` is the key (helpers/rowKey): the row said — the one an effect
+       began in, or a read was made for — else the one the account (`id`, or the selected one) is looked at through. */
+    async setActive({ row: said, ...params }: Partial<IOrganizationState> & { row?: RowKey }, state) {
+      // An answer for a row whose sign-in has left since it was asked: the row is gone, and is not put back.
+      if (said && rowGone(state, said)) return
       const id = params.id || selectActiveAccountId(state)
-      let org = { ...selectOrganization(state, id) }
+      const row = said ?? selectRow(state, id)
+      let org = { ...selectOrganization(state, id), ...state.organization.accounts[row] }
       Object.keys(params).forEach(key => (org[key] = params[key]))
-      const accounts = { ...state.organization.accounts }
-      accounts[id] = org
-      dispatch.organization.set({ accounts })
+      dispatch.organization.setRow({ row, organization: org })
     },
   }),
   reducers: {
@@ -430,8 +454,31 @@ export default createModel<RootModel>()({
       Object.keys(params).forEach(key => (state[key] = params[key]))
       return state
     },
+    /** Accounts as just read, beside those stored: the rest stay as they are. */
+    merge(state: IOrganizationAccountState, accounts: IOrganizationAccountState['accounts']) {
+      state.accounts = { ...state.accounts, ...accounts }
+      state.initialized = true
+      return state
+    },
     reset(state: IOrganizationAccountState) {
       state = { ...defaultAccountState }
+      return state
+    },
+    /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
+    forget(state: IOrganizationAccountState, accountIds: string[]) {
+      state.accounts = withoutAccounts(state.accounts, accountIds)
+      return state
+    },
+    forgetRows(state: IOrganizationAccountState, rows: string[]) {
+      state.accounts = withoutRows(state.accounts, rows)
+      return state
+    },
+    rekey(state: IOrganizationAccountState, rows: ILookup<RowKey>) {
+      state.accounts = rekeyed(state.accounts, rows)
+      return state
+    },
+    setRow(state: IOrganizationAccountState, { row, organization }: { row: RowKey; organization: IOrganizationState }) {
+      state.accounts = { ...state.accounts, [row]: organization }
       return state
     },
   },

@@ -2,6 +2,9 @@ import { post } from './post'
 import { graphQLBasicRequest, graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { PROXY_DEVICE_FIELDS, ProxyDevice } from './graphQLDeviceRuns'
+import { RequestFor, isNoted, noteAccountOf, selectRowNow, selectedAccountId } from '../selectors/signIns'
+import { FAILED, findElsewhere } from './elsewhere'
+import { store } from '../store'
 
 /* Proxies and their endpoints (graphql-api docs/PROXY-GROUPS.md §13 and §14, presence-server docs/proxy-plan.md): a
    proxy is reached at its name — its tcp and udp endpoints there, each at a port, and each https endpoint at a name of
@@ -123,8 +126,14 @@ const FIELDS = `${CHOICE_FIELDS} label localNetwork activation manage owner { id
 const LIST_FIELDS = `${FIELDS} ownName { name state via }`
 const PAGE_FIELDS = `${FIELDS} ownName { ${OWN_NAME_FIELDS} } endpoints { ${ENDPOINT_FIELDS} }`
 
-async function read<T>(query: string, variables: ILookup<any>, marker: string, pick: (data: any) => T) {
-  const response = await post({ query, variables })
+async function read<T>(
+  query: string,
+  variables: ILookup<any>,
+  marker: string,
+  pick: (data: any) => T,
+  requestFor?: RequestFor
+) {
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return 'ERROR' as const
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, marker)) return UNSUPPORTED
@@ -139,31 +148,70 @@ export type ProxyChoice = Pick<
 >
 
 // The proxies you may make endpoints on, each run in service: remote.it's, your own, and those your role reaches.
-export const graphQLProxies = () =>
+// `requestFor`: whose choice it is — the service's an endpoint is made for; left out, the selected account's. The
+// query names nothing, and unsaid it would be the page's own person's proxies, whoever the endpoint is then made as.
+export const graphQLProxies = (requestFor?: RequestFor) =>
   read<ProxyChoice[]>(
     `query Proxies { proxies { ${CHOICE_FIELDS} } }`,
     {},
     'proxies',
-    data => data?.proxies ?? []
+    data => data?.proxies ?? [],
+    requestFor ?? { account: selectedAccountId(store.getState()) }
   )
 
 // An account's own proxies you manage, those no device runs too.
-export const graphQLAccountProxies = (accountId: string) =>
+export const graphQLAccountProxies = (accountId: string, requestFor?: RequestFor) =>
   read<ListedProxy[]>(
     `query AccountProxies($accountId: String) { login { id account(id: $accountId) { id proxies { ${LIST_FIELDS} } } } }`,
     { accountId },
     'proxies',
-    data => data?.login?.account?.proxies ?? []
+    data => {
+      const proxies: ListedProxy[] = data?.login?.account?.proxies ?? []
+      // A proxy is in no stored list: what is asked of it by its id alone is asked as this account's sign-in.
+      noteAccountOf(
+        accountId,
+        proxies.map(proxy => proxy.id),
+        requestFor?.sub
+      )
+      return proxies
+    },
+    requestFor
   )
 
 // One proxy, with its endpoints: one you manage, or one you may make endpoints on. None for another.
-export const graphQLProxy = (id: string) =>
-  read<Proxy | null>(
-    `query Proxy($id: String!) { proxy(id: $id) { ${PAGE_FIELDS} } }`,
-    { id },
-    'proxy',
-    data => data?.proxy ?? null
-  )
+// Where nothing read so far says whose the proxy is (the page opened at its address, before any list), the selected
+// account's sign-in is asked, and the proxy then remembered under it for what is asked of it next.
+// Found by none as the row looked at, and nothing known saying whose it is: the other sign-ins here are asked, and
+// the one that sees it has its row selected (services/elsewhere).
+export const graphQLProxy = async (id: string) => {
+  const accountId = selectedAccountId(store.getState())
+  const unknown = !isNoted(id)
+  const asked = selectRowNow(accountId)
+  const proxy = (requestFor: RequestFor, note?: string) =>
+    read<Proxy | null>(
+      `query Proxy($id: String!) { proxy(id: $id) { ${PAGE_FIELDS} } }`,
+      { id },
+      'proxy',
+      data => {
+        if (data?.proxy && note) noteAccountOf(note, [id])
+        return data?.proxy ?? null
+      },
+      requestFor
+    )
+  const first = await proxy({ orAccount: accountId }, unknown ? accountId : undefined)
+  if (first !== null || !unknown) return first
+  const found = await findElsewhere<Proxy>({
+    ids: [id],
+    asked,
+    read: async (_own, requestFor) => {
+      const answer = await proxy(requestFor)
+      // Not asked (a failure, or an API without it) is not the same as asked and none: it is looked for again.
+      return answer === null ? undefined : typeof answer === 'object' ? answer : FAILED
+    },
+    accountOf: answer => answer.owner?.id,
+  })
+  return found ? found.answer : first
+}
 
 // Made in your account, or one you manage, under <label>-<slug> of the stage's proxy domain (the label made from the
 // name when none is given), Internet or Local network for good: then devices are added to run it.
@@ -184,6 +232,7 @@ export async function graphQLCreateProxy(set: {
   )
   if (result === 'ERROR') return { reason: '' }
   if ('reason' in result) return result
+  noteAccountOf(set.accountId, [result.data?.data?.createProxy?.id])
   return result.data?.data?.createProxy
 }
 
@@ -300,12 +349,13 @@ export type BaseMove = { moves: ProxyMove[]; applied: boolean }
 const BASE_MOVE_FIELDS = `moves { proxy { id name } host ownName ${OWN_NAME_MOVE_FIELDS} } applied`
 
 // The account's base as it stands, for an admin of it; none for another, or before one is set.
-export const graphQLProxyBase = (accountId: string) =>
+export const graphQLProxyBase = (accountId: string, requestFor?: RequestFor) =>
   read<AccountProxyBase | null>(
     `query ProxyBase($accountId: String) { proxyBase(accountId: $accountId) { ${BASE_FIELDS} } }`,
     { accountId },
     'proxyBase',
-    data => data?.proxyBase ?? null
+    data => data?.proxyBase ?? null,
+    requestFor
   )
 
 // A base claimed: pending until its delegation is seen, with the NS records to add.
@@ -423,8 +473,9 @@ export const graphQLCreateEndpoint = (serviceId: string, endpoint: NewEndpoint) 
     { serviceId, ...endpoint }
   )
 
-export const graphQLRemoveEndpoint = (id: string) =>
-  graphQLBasicRequest(` mutation RemoveEndpoint($id: String!) { removeEndpoint(id: $id) }`, { id })
+// `requestFor`: an endpoint's id is in no stored list, so the caller says whose it is — its service's.
+export const graphQLRemoveEndpoint = (id: string, requestFor?: RequestFor) =>
+  graphQLBasicRequest(` mutation RemoveEndpoint($id: String!) { removeEndpoint(id: $id) }`, { id }, false, requestFor)
 
 // Where an endpoint is reached, as a person would type it: graphql's url — under its proxy's own name once that is
 // active —, an https one's whole, a tcp or udp one's host and port, its scheme dropped.

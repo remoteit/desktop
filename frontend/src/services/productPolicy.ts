@@ -1,4 +1,5 @@
 import { post } from './post'
+import type { RequestFor } from '../selectors/signIns'
 import { graphQLGetErrors, graphQLRequestWithReason } from './graphQL'
 import type { NetworkDeviceRole } from './graphQLDeviceNetworks'
 import { choiceOf } from './deviceAppsShared'
@@ -556,7 +557,11 @@ async function ask<T>(
 
 /* The product side. */
 
-export async function graphQLProductPolicy(productId: string, accountId?: string): Promise<ProductPolicy | 'ERROR'> {
+export async function graphQLProductPolicy(
+  productId: string,
+  accountId?: string,
+  requestFor?: RequestFor
+): Promise<ProductPolicy | 'ERROR'> {
   const { served, schema } = await read()
   if (!served.product) return 'ERROR'
   const fields = select(schema, 'DeviceProduct', {
@@ -570,7 +575,7 @@ export async function graphQLProductPolicy(productId: string, accountId?: string
     login { account(id: $accountId) { deviceProducts(id: [$id]) { items { id ${fields} } } } }
   }`
   const variables = { id: productId, accountId }
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return 'ERROR'
   if (graphQLGetErrors(response, true, { query, variables })) return 'ERROR'
   const product = response.data?.data?.login?.account?.deviceProducts?.items?.[0]
@@ -676,7 +681,8 @@ export async function graphQLProductProxies(productId: string, accountId?: strin
 
 export async function graphQLDeviceProduct(
   deviceId: string,
-  accountId?: string
+  accountId?: string,
+  requestFor?: RequestFor
 ): Promise<DeviceProductState | 'ERROR'> {
   const { served, schema } = await read()
   if (!served.device) return 'ERROR'
@@ -694,7 +700,7 @@ export async function graphQLDeviceProduct(
     .join(' ')
   const query = `query DeviceProduct($id: [String!]!, $accountId: String) { login { id device(id: $id) { id ${fields} } } }`
   const variables = { id: [deviceId], accountId }
-  const response = await post({ query, variables })
+  const response = await post({ query, variables }, '', false, false, requestFor)
   if (response === 'ERROR') return 'ERROR'
   if (graphQLGetErrors(response, true, { query, variables })) return 'ERROR'
   const device = response.data?.data?.login?.device?.[0]

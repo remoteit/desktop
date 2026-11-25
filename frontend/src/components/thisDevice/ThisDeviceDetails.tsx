@@ -25,7 +25,13 @@ export const ThisDeviceDetails: React.FC<{ m: ThisDeviceModel }> = ({ m }) => {
         <List data-section="details">
           {row('name', t('thisDevice.name', 'Name'), d?.name)}
           {row('owner', t('thisDevice.owner', 'Owner'), d?.owner)}
-          {row('signedIn', t('thisDevice.signedIn', 'Signed in on this device'), status.signedIn?.email || status.signedIn?.sub)}
+          {row(
+            'signedIn',
+            t('thisDevice.signedIn', 'Signed in on this device'),
+            (status.signIns ?? (status.signedIn ? [status.signedIn] : []))
+              .map(person => person.email || person.sub)
+              .join(', ') || undefined
+          )}
           {row('dnsName', t('thisDevice.dnsName', 'Address'), d?.dnsName, true)}
           {status.subnet?.on &&
             row(

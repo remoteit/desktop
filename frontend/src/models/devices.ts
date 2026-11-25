@@ -46,6 +46,8 @@ import { listTimeSeriesKey, timeSeriesLoading, timeSeriesWithStyle } from '../he
 import {
   getAllDevices,
   getDeviceModel,
+  getDeviceModelFn,
+  deviceRows,
   getDevices,
   selectDevice,
   selectById,
@@ -53,7 +55,18 @@ import {
   selectDeviceModelAttributes,
   deviceMatchesFilters,
 } from '../selectors/devices'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { RowSaid, rowSaid, selectActiveAccountId } from '../selectors/accounts'
+import {
+  asRow,
+  rowFor,
+  sendAs,
+  noteAccountOf,
+  rowGone,
+  selectActiveRowKey,
+  selectPersonEmailFor,
+  selectRowOf,
+} from '../selectors/signIns'
+import { RowKey, rowAccount, rowSub } from '../helpers/rowKey'
 import { selectLimit } from '../selectors/organizations'
 import { Duration } from 'luxon'
 import { AxiosResponse } from 'axios'
@@ -61,6 +74,7 @@ import { createModel } from '@rematch/core'
 import { RootModel } from '.'
 import { State, store } from '../store'
 import { inOrder } from '../helpers/inOrder'
+import { FAILED, findElsewhere } from '../services/elsewhere'
 
 export type IDeviceState = {
   all: IDevice[]
@@ -115,8 +129,11 @@ export const defaultState: IDeviceState = {
   customAttributes: [],
 }
 
+// By ROW (helpers/rowKey): an account's devices as each sign-in that belongs to it sees them. The page's own
+// person's row of an account is keyed by the account's id, as it always was. Beside the rows, by their own names:
+// `default` (what a row starts from) and `connections` (the devices of the connections, of whichever account).
 type IDeviceAccountState = {
-  [accountId: string]: IDeviceState
+  [row: string]: IDeviceState
 }
 
 const settingsWrites = inOrder(() => store.getState().auth.user?.id)
@@ -128,9 +145,12 @@ const defaultAccountState: IDeviceAccountState = {
 export default createModel<RootModel>()({
   state: { ...defaultAccountState },
   effects: dispatch => ({
-    async fetchList(_: void, state) {
-      const accountId = selectActiveAccountId(state)
-      const deviceModel = selectDeviceModelAttributes(state, accountId)
+    async fetchList(of: RowSaid | void, state) {
+      // The row the list is read for: asked as its sign-in, and its answer kept under it — the row an effect that
+      // waited began in where it says so, else the row looked at when the read is sent, whichever is looked at by the
+      // time it answers (helpers/rowKey).
+      const { accountId, row } = rowSaid(state, of)
+      const deviceModel = getDeviceModelFn(state.devices, row)
       const columns = selectActiveColumns(state, accountId)
       const { set, graphQLListProcessor } = dispatch.devices
       const { truncateMergeDevices, appendUniqueDevices } = dispatch.accounts
@@ -154,38 +174,39 @@ export default createModel<RootModel>()({
         owner: owner === 'all' ? undefined : owner === 'me',
       }
 
-      set({ fetching: true, accountId })
-      const result = await graphQLListProcessor(options)
+      set({ fetching: true, accountId, row })
+      const result = await graphQLListProcessor({ ...options, row })
 
       // A failed fetch must not mark the account initialized: DevicesPage reads an
       // initialized empty list as "no devices" and redirects to /add.
       if (!result) {
-        set({ fetching: false, append: false, accountId })
+        set({ fetching: false, append: false, accountId, row })
         return false
       }
 
       const { devices, total } = result
-      if (searched) set({ results: total, accountId })
-      else set({ total, accountId })
+      if (searched) set({ results: total, accountId, row })
+      else set({ total, accountId, row })
 
       if (append) {
-        await appendUniqueDevices({ devices, accountId })
+        await appendUniqueDevices({ devices, accountId, row })
       } else {
-        await truncateMergeDevices({ devices, accountId })
+        await truncateMergeDevices({ devices, accountId, row })
       }
 
       dispatch.search.updateSearch()
       // Record the name the current list was actually filtered by (the live `query` can
       // be ahead of the results until re-submitted) so new devices match the same view.
-      set({ fetching: false, append: false, initialized: true, appliedName: query, accountId })
+      set({ fetching: false, append: false, initialized: true, appliedName: query, accountId, row })
       return true
     },
 
     async fetchPage({ from, append = false }: { from: number; append?: boolean }, state) {
-      const accountId = selectActiveAccountId(state)
-      const previous = selectDeviceModelAttributes(state, accountId).from
-      await dispatch.devices.set({ from, append, accountId })
-      if (!(await dispatch.devices.fetchList())) await dispatch.devices.set({ from: previous, accountId })
+      // The row the page is of (this effect's own state): read for it, and put back in it if the read fails.
+      const at = rowSaid(state)
+      const previous = selectDeviceModelAttributes(state, at.accountId).from
+      await dispatch.devices.set({ from, append, ...at })
+      if (!(await dispatch.devices.fetchList(at))) await dispatch.devices.set({ from: previous, ...at })
     },
 
     async fetchIfEmpty(_: void, state) {
@@ -196,23 +217,32 @@ export default createModel<RootModel>()({
       }
     },
 
-    async fetchDevices({ ids, hidden, accountId }: { ids: string[]; hidden?: boolean; accountId?: string }, state) {
+    // `sub`: the sign-in whose row of the account they are read for, where it is not the row looked at (an event
+    // about a device another row holds too).
+    async fetchDevices(
+      { ids, hidden, accountId, sub }: { ids: string[]; hidden?: boolean; accountId?: string; sub?: string },
+      state
+    ) {
       accountId = accountId || selectActiveAccountId(state)
+      const row = rowFor(state, accountId, sub)
       const timeSeries = selectTimeSeries(state)
-      const gqlResponse = await graphQLPreloadDevices({
-        ids,
-        accountId,
-        columns: selectActiveColumns(state, accountId),
-        ...timeSeries,
-      })
+      const gqlResponse = await graphQLPreloadDevices(
+        {
+          ids,
+          accountId,
+          columns: selectActiveColumns(state, accountId),
+          ...timeSeries,
+        },
+        asRow(row)
+      )
 
       if (gqlResponse === 'ERROR') return []
 
       const result = gqlResponse?.data?.data?.login?.account?.device
       const devices = graphQLDeviceAdaptor({ gqlDevices: result, accountId, hidden, ...timeSeries })
       if (devices.length) {
-        await dispatch.accounts.mergeDevices({ devices, accountId })
-        await dispatch.connections.updateConnectionState({ devices, accountId })
+        await dispatch.accounts.mergeDevices({ devices, accountId, row })
+        await dispatch.connections.updateConnectionState({ devices, accountId, sub: rowSub(row) })
       }
     },
 
@@ -225,7 +255,9 @@ export default createModel<RootModel>()({
         newDevice,
         isService,
         accountId,
+        sub,
         silent,
+        quiet,
       }: {
         id: string // service or device id
         hidden?: boolean
@@ -234,19 +266,25 @@ export default createModel<RootModel>()({
         newDevice?: boolean
         isService?: boolean
         accountId?: string
+        sub?: string // the sign-in whose row of the account it is read for, where not the row looked at
         silent?: boolean
+        quiet?: boolean // nothing said where it cannot be read: read for a row beside the one the event was handled for
       },
       state
     ) {
       if (!id) return
 
+      // Read for whatever row is looked at, the caller naming none: where it is not found, it may be looked for in
+      // the other sign-ins' (services/elsewhere).
+      const unnamed = !accountId && sub === undefined && !newDevice
       accountId = accountId || selectActiveAccountId(state)
+      const row = rowFor(state, accountId, sub)
       let result: IDevice | undefined
 
-      if (!silent) dispatch.devices.set({ fetching: true, accountId })
+      if (!silent) dispatch.devices.set({ fetching: true, accountId, row })
       const { serviceTimeSeries, deviceTimeSeries } = selectTimeSeries(state)
 
-      const gqlResponse = await graphQLFetchFullDevice(id, accountId, serviceTimeSeries, deviceTimeSeries)
+      const gqlResponse = await graphQLFetchFullDevice(id, accountId, serviceTimeSeries, deviceTimeSeries, asRow(row))
       if (gqlResponse !== 'ERROR') {
         const gqlData = gqlResponse?.data?.data?.login || {}
         result = graphQLDeviceAdaptor({
@@ -266,25 +304,53 @@ export default createModel<RootModel>()({
         // the active list filter — otherwise it shouldn't appear in the filtered view.
         let matchesFilter = true
         if (newDevice) {
-          const model = selectDeviceModelAttributes(state, accountId)
+          const model = getDeviceModelFn(state.devices, row)
           matchesFilter = deviceMatchesFilters(result, model, accountId)
           if (matchesFilter) {
             result.newDevice = true
-            dispatch.devices.incrementTotal(accountId)
+            dispatch.devices.incrementTotal({ accountId, row })
           }
         }
 
         console.log('FETCHED FULL DEVICE', { id, device: result, accountId, matchesFilter })
-        await dispatch.connections.updateConnectionState({ devices: [result], accountId })
+        await dispatch.connections.updateConnectionState({ devices: [result], accountId, sub: rowSub(row) })
         await dispatch.accounts.setDevice({
           id: result.id,
           device: result,
           accountId,
+          row,
           prepend: newDevice && matchesFilter,
           suppressAdd: newDevice && !matchesFilter,
         })
       } else {
-        if (gqlResponse !== 'ERROR' && !isService && state.ui.silent !== id)
+        // Opened at its address, and no row here known to hold it: another sign-in's to see, maybe — whose row is
+        // then selected, and the device read into it.
+        const elsewhere =
+          unnamed && gqlResponse !== 'ERROR'
+            ? await findElsewhere({
+                ids: [id],
+                asked: row,
+                read: async (own, requestFor) => {
+                  const answer = await graphQLFetchFullDevice(id, own, serviceTimeSeries, deviceTimeSeries, requestFor)
+                  return answer === 'ERROR' ? FAILED : [answer?.data?.data?.login?.device].flat()[0]
+                },
+                accountOf: (found: any) => found?.owner?.id,
+              })
+            : undefined
+        if (elsewhere) {
+          if (!silent) dispatch.devices.set({ fetching: false, accountId, row })
+          await dispatch.devices.fetchSingleFull({
+            id,
+            hidden,
+            thisDevice,
+            isService,
+            silent,
+            accountId: elsewhere.accountId,
+            sub: elsewhere.sub,
+          })
+          return
+        }
+        if (gqlResponse !== 'ERROR' && !isService && !quiet && state.ui.silent !== id)
           dispatch.ui.set({
             noticeMessage: isService
               ? i18n.t('notices:access.noService', {
@@ -298,12 +364,14 @@ export default createModel<RootModel>()({
           })
         if (redirect) dispatch.ui.set({ redirect })
         if (gqlResponse !== 'ERROR') {
-          if (isService) dispatch.connections.forget(id)
-          else dispatch.devices.cleanup([id])
+          // This row's connection to it: another row's, made as a sign-in that sees it still, stays.
+          if (isService) dispatch.connections.forget({ id, accountId, sub: rowSub(row) })
+          // Not this row's any more: another row here may hold it still.
+          else if (!(await dispatch.accounts.removeDeviceFrom({ id, rows: [row] }))) dispatch.devices.cleanup([id])
         }
       }
 
-      if (!silent) dispatch.devices.set({ fetching: false, accountId })
+      if (!silent) dispatch.devices.set({ fetching: false, accountId, row })
     },
 
     async fetchCount(params: Partial<IOrganizationRole>, state) {
@@ -324,9 +392,11 @@ export default createModel<RootModel>()({
       return count
     },
 
-    async sortByState(accountId: string | void, state) {
-      accountId = accountId || selectActiveAccountId(state)
-      const deviceModel = getDeviceModel(state, accountId)
+    // `row`: the one row to sort, where it is not the row the account is looked at through.
+    async sortByState(sort: { accountId?: string; row?: RowKey } | void, state) {
+      const accountId = sort?.accountId || selectActiveAccountId(state)
+      const row = sort?.row ?? selectRowOf(state, accountId)
+      const deviceModel = getDeviceModelFn(state.devices, row)
       const all = [...deviceModel.all]
 
       const sortKeys = deviceModel.sort.split(',').map(k => {
@@ -358,18 +428,18 @@ export default createModel<RootModel>()({
       })
 
       console.log('SORT DEVICES', { accountId, sortKeys })
-      await dispatch.devices.set({ all: result, accountId })
+      await dispatch.devices.set({ all: result, accountId, row })
     },
 
     async expire(_: void, state) {
-      const activeAccountId = selectActiveAccountId(state)
+      const selected: string = selectActiveRowKey(state)
       const rootState = structuredClone(state.devices)
       const expired: string[] = []
 
-      for (const accountId in rootState) {
-        if (['default', 'connections', activeAccountId].includes(accountId)) continue
-        rootState[accountId].initialized = false
-        expired.push(accountId)
+      for (const row in rootState) {
+        if (['default', 'connections', selected].includes(row)) continue
+        rootState[row].initialized = false
+        expired.push(row)
       }
 
       console.log('EXPIRE DEVICES CACHE', expired)
@@ -415,8 +485,8 @@ export default createModel<RootModel>()({
       await dispatch.devices.set({ all, accountId })
     },
 
-    async graphQLListProcessor(options: gqlOptions) {
-      const gqlResponse = await graphQLFetchDeviceList(options)
+    async graphQLListProcessor({ row, ...options }: gqlOptions & { row?: RowKey }) {
+      const gqlResponse = await graphQLFetchDeviceList(options, row === undefined ? undefined : asRow(row))
       if (!gqlResponse || gqlResponse === 'ERROR') return
 
       const [gqlDevices, total] = graphQLMetadata(gqlResponse)
@@ -434,12 +504,19 @@ export default createModel<RootModel>()({
       return await graphQLRename(id, name)
     },
 
-    async addService({ deviceId, service }: { deviceId: string; service: IService }, state) {
-      let device = await selectDevice(state, undefined, deviceId)
+    // `accountId` with `sub`: the row the device is in, where the caller began in it and has waited since.
+    async addService(
+      { deviceId, service, accountId, sub }: { deviceId: string; service: IService; accountId?: string; sub?: string },
+      state
+    ) {
+      const row = accountId ? rowFor(state, accountId, sub) : undefined
+      let device = row
+        ? getDeviceModelFn(state.devices, row).all.find(d => d.id === deviceId)
+        : await selectDevice(state, undefined, deviceId)
       device = structuredClone(device)
       if (!device) return
       device.services.push({ ...service, deviceID: deviceId })
-      dispatch.accounts.setDevice({ id: deviceId, device })
+      dispatch.accounts.setDevice({ id: deviceId, device, row })
     },
 
     async updateService({ id, set }: { id: string; set: Partial<IService> }, state) {
@@ -489,8 +566,9 @@ export default createModel<RootModel>()({
 
     // `ports`, a multi-port service's list, only from the service form where the account has them
     // (services/multiPortServices): a caller changing the port alone leaves the rest of the list as it is.
-    async cloudAddService({ form, deviceId, ports }: { form: IService; deviceId: string; ports?: string[] }) {
+    async cloudAddService({ form, deviceId, ports }: { form: IService; deviceId: string; ports?: string[] }, state) {
       if (!form.host || !form.port) return
+      const accountId = selectDevice(state, undefined, deviceId)?.accountId
       const result = await graphQLAddService({
         deviceId,
         name: form.name,
@@ -504,12 +582,16 @@ export default createModel<RootModel>()({
         const id = result?.data?.data?.addService?.id
         console.log('CLOUD ADD SERVICE', { id, form })
         if (id) {
-          await graphQLSetAttributes(form.attributes, id)
-          dispatch.devices.addService({ deviceId, service: { ...form, ports, id } })
+          // The new service is in no list yet to say whose it is: its device's sign-in made it, and sets what follows.
+          noteAccountOf(accountId, [id])
+          await sendAs(rowFor(state, begun(state, accountId).accountId), () =>
+            graphQLSetAttributes(form.attributes, id, { about: [deviceId] })
+          )
+          dispatch.devices.addService({ deviceId, service: { ...form, ports, id }, ...begun(state, accountId) })
           dispatch.ui.set({ redirect: `/devices/${deviceId}/${id}/connect` })
           // The form is not the service: read the device for its state — online already when its daemon took it up
           // before the service was here to be marked — and its name in device subnets.
-          dispatch.devices.fetchSingleFull({ id: deviceId, hidden: true, silent: true })
+          dispatch.devices.fetchSingleFull({ id: deviceId, hidden: true, silent: true, ...begun(state, accountId) })
           requestServiceSessionInfo(deviceId, id)
         }
         // ScreenView is an app now (remoteit.screenview, turned on in the device's Apps): adding a service never installs
@@ -588,9 +670,9 @@ export default createModel<RootModel>()({
       })
     },
 
-    async removeLink(id: string) {
+    async removeLink(id: string, state) {
       await dispatch.devices.updateService({ id, set: { link: undefined } })
-      const result = await graphQLRemoveLink(id)
+      const result = await sendAs(selectRowOf(state, selectActiveAccountId(state)), () => graphQLRemoveLink(id))
 
       if (result === 'ERROR') {
         dispatch.ui.set({
@@ -598,7 +680,7 @@ export default createModel<RootModel>()({
             defaultValue: 'An error occurred when trying to remove the service link.',
           }),
         })
-        await dispatch.devices.fetchSingleFull({ id, isService: true })
+        await dispatch.devices.fetchSingleFull({ id, isService: true, ...begun(state) })
       }
     },
 
@@ -614,7 +696,7 @@ export default createModel<RootModel>()({
         const device = result?.data?.data?.claimDevice
         if (device?.id) {
           // fixme should fetch single and in memory sort
-          await dispatch.devices.fetchList() // fetch all so that the sorting is correct
+          await dispatch.devices.fetchList(rowSaid(state)) // fetch all so that the sorting is correct
           await dispatch.applicationTypes.fetch()
           dispatch.ui.set({
             redirect: redirect ? `/devices/${device.id}` : undefined,
@@ -682,7 +764,7 @@ export default createModel<RootModel>()({
     },
 
     // keepHosted: for a gateway that hosts virtual devices, whether they stay (unhosted) or go with it.
-    async destroy({ device, keepHosted }: { device: IDevice; keepHosted?: boolean }) {
+    async destroy({ device, keepHosted }: { device: IDevice; keepHosted?: boolean }, state) {
       dispatch.ui.set({ destroying: true, silent: device.id })
       const hosted = device.hostedDevices?.map(h => h.id) || []
       const sample = isSampleId(device.id)
@@ -690,7 +772,8 @@ export default createModel<RootModel>()({
       if (sample || hosted.some(isSampleId)) deleteSampleDevice(device.id, keepHosted ?? true)
       if (result !== 'ERROR') {
         await dispatch.devices.cleanup(keepHosted === false ? [device.id, ...hosted] : [device.id])
-        if (keepHosted !== false && hosted.length) await dispatch.devices.fetchDevices({ ids: hosted })
+        if (keepHosted !== false && hosted.length)
+          await dispatch.devices.fetchDevices({ ids: hosted, ...begun(state, device.accountId) })
         dispatch.ui.set({
           successMessage: i18n.t('notices:device.deleted', {
             name: device.name,
@@ -795,8 +878,8 @@ export default createModel<RootModel>()({
 
       // The virtual devices these gateways host, as far as the store knows them: disabled with them, or read again.
       const hosted = new Set<string>()
-      for (const accountId in state.devices)
-        for (const device of state.devices[accountId].all) {
+      for (const row in state.devices)
+        for (const device of state.devices[row].all) {
           if (deviceIds.includes(device.id)) device.hostedDevices?.forEach(h => hosted.add(h.id))
           else if (device.hostedBy?.id && deviceIds.includes(device.hostedBy.id)) hosted.add(device.id)
         }
@@ -812,22 +895,25 @@ export default createModel<RootModel>()({
           await dispatch.connections.clearByDevice(id)
           await dispatch.networks.clearById(id)
         }
-        for (const accountId in state.devices) {
+        for (const row of deviceRows(state.devices)) {
+          const accountId = rowAccount(row)
           let listed = 0
-          for (const device of state.devices[accountId].all) {
+          for (const device of state.devices[row].all) {
             if (!disabling.includes(device.id) || device.disabled) continue
             await dispatch.accounts.setDevice({
               id: device.id,
               accountId,
+              row,
               device: { ...device, disabled: true, disabledAt, disabledReason: 'person', disabledBy: by },
             })
             if (!device.hidden) listed++
           }
           if (listed)
-            await dispatch.devices.set({ total: Math.max(0, state.devices[accountId].total - listed), accountId })
+            await dispatch.devices.set({ total: Math.max(0, state.devices[row].total - listed), accountId, row })
         }
         // Kept, a hosted device is unhosted now: it is read again.
-        if (keepHosted !== false && hosted.size) await dispatch.devices.fetchDevices({ ids: [...hosted] })
+        if (keepHosted !== false && hosted.size)
+          await dispatch.devices.fetchDevices({ ids: [...hosted], ...begun(state) })
         dispatch.ui.set({
           selected: [],
           successMessage:
@@ -848,18 +934,21 @@ export default createModel<RootModel>()({
     },
 
     // The list is read again: a restored device takes its place in it, and in its total, by graphql's sort.
-    async restore(deviceIds: string[], state) {
+    // `accountId`: the account whose disabled devices they were listed among, where the caller knows it.
+    async restore(devices: string[] | { ids: string[]; accountId?: string }, state) {
+      const { ids: deviceIds, accountId } = Array.isArray(devices) ? { ids: devices, accountId: undefined } : devices
       if (!deviceIds.length) return false
       dispatch.ui.set({ destroying: true })
-      const result = await graphQLRestoreDevices(deviceIds)
+      const result = await graphQLRestoreDevices(deviceIds, ...(accountId ? [accountId] : []))
       if (result !== 'ERROR') {
         for (const id of deviceIds)
-          for (const accountId in state.devices) {
-            const device = state.devices[accountId].all.find(d => d.id === id)
+          for (const row of deviceRows(state.devices)) {
+            const device = state.devices[row].all.find(d => d.id === id)
             if (device?.disabled)
               await dispatch.accounts.setDevice({
                 id,
-                accountId,
+                accountId: rowAccount(row),
+                row,
                 device: {
                   ...device,
                   disabled: false,
@@ -869,7 +958,7 @@ export default createModel<RootModel>()({
                 },
               })
           }
-        await dispatch.devices.fetchList()
+        await dispatch.devices.fetchList(rowSaid(state))
         dispatch.ui.set({
           successMessage: i18n.t('notices:device.restoredCount', {
             count: deviceIds.length,
@@ -883,10 +972,11 @@ export default createModel<RootModel>()({
     },
 
     // Called once the person has typed the confirmation (DecommissionDialog); graphql asks only for confirm: true.
-    async decommission(deviceIds: string[]) {
+    async decommission(devices: string[] | { ids: string[]; accountId?: string }) {
+      const { ids: deviceIds, accountId } = Array.isArray(devices) ? { ids: devices, accountId: undefined } : devices
       if (!deviceIds.length) return false
       dispatch.ui.set({ destroying: true })
-      const result = await graphQLDecommissionDevices(deviceIds)
+      const result = await graphQLDecommissionDevices(deviceIds, ...(accountId ? [accountId] : []))
       if (result !== 'ERROR') {
         await dispatch.devices.cleanup(deviceIds)
         dispatch.ui.set({
@@ -913,10 +1003,14 @@ export default createModel<RootModel>()({
       if (!ids.length) return
       const accountId = selectDevice(state, undefined, ids[0])?.accountId || selectActiveAccountId(state)
       dispatch.ui.set({ destroying: true })
+      // A copy is disabled, so in no stored list: asked as the sign-in serving the account it is a copy in.
       const refused =
-        ids.length === 1 ? await graphQLKeepDuplicate(ids[0], fromOriginal) : await graphQLKeepDuplicates(ids)
+        ids.length === 1
+          ? await graphQLKeepDuplicate(ids[0], fromOriginal, accountId)
+          : await graphQLKeepDuplicates(ids, accountId)
       if (refused === undefined) {
-        if (ids.length === 1) await dispatch.devices.fetchSingleFull({ id: ids[0], accountId, silent: true })
+        if (ids.length === 1)
+          await dispatch.devices.fetchSingleFull({ id: ids[0], silent: true, ...begun(state, accountId) })
         await dispatch.devices.fetchList()
         await requestDuplicateCopies(accountId, true)
         dispatch.ui.set({
@@ -936,10 +1030,11 @@ export default createModel<RootModel>()({
     async makeOriginal({ id, originalId }: { id: string; originalId?: string }, state): Promise<string | undefined> {
       const accountId = selectDevice(state, undefined, id)?.accountId || selectActiveAccountId(state)
       dispatch.ui.set({ destroying: true })
-      const refused = await graphQLMakeOriginal(id)
+      const refused = await graphQLMakeOriginal(id, accountId)
       if (refused === undefined) {
-        await dispatch.devices.fetchSingleFull({ id, accountId, silent: true })
-        if (originalId) await dispatch.devices.fetchSingleFull({ id: originalId, accountId, silent: true })
+        await dispatch.devices.fetchSingleFull({ id, silent: true, ...begun(state, accountId) })
+        if (originalId)
+          await dispatch.devices.fetchSingleFull({ id: originalId, silent: true, ...begun(state, accountId) })
         await requestDuplicateCopies(accountId, true)
         dispatch.ui.set({
           successMessage: i18n.t(
@@ -955,20 +1050,28 @@ export default createModel<RootModel>()({
     /* Virtual devices (graphql-api docs/VIRTUAL-DEVICES.md). Each reads anew what it changed: the device, and the
        gateways whose hosted devices changed with it. */
 
-    async addVirtualDevice({
-      gateway,
-      ...input
-    }: {
-      gateway: IDevice
-      name: string
-      host: string
-      platform?: number
-      services?: IVirtualServiceInput[]
-    }): Promise<string | undefined> {
+    async addVirtualDevice(
+      {
+        gateway,
+        ...input
+      }: {
+        gateway: IDevice
+        name: string
+        host: string
+        platform?: number
+        services?: IVirtualServiceInput[]
+      },
+      state
+    ): Promise<string | undefined> {
       const result = await addVirtualDevice(gateway, input)
       if (result === 'ERROR') return
-      await dispatch.devices.fetchSingleFull({ id: result.id, newDevice: true, silent: true })
-      await dispatch.devices.fetchSingleFull({ id: gateway.id, silent: true })
+      await dispatch.devices.fetchSingleFull({
+        id: result.id,
+        newDevice: true,
+        silent: true,
+        ...begun(state, gateway.accountId),
+      })
+      await dispatch.devices.fetchSingleFull({ id: gateway.id, silent: true, ...begun(state, gateway.accountId) })
       dispatch.ui.set({
         successMessage: i18n.t('notices:device.virtualAdded', {
           name: input.name,
@@ -978,7 +1081,7 @@ export default createModel<RootModel>()({
       return result.id
     },
 
-    async updateVirtualDevice({ device, set }: { device: IDevice; set: { host?: string; platform?: number } }) {
+    async updateVirtualDevice({ device, set }: { device: IDevice; set: { host?: string; platform?: number } }, state) {
       // At once, as graphql will: services on the old address move with it.
       const host = set.host ?? device.host
       dispatch.accounts.setDevice({
@@ -991,16 +1094,21 @@ export default createModel<RootModel>()({
         },
       })
       const result = await updateVirtualDevice(device.id, set)
-      await dispatch.devices.fetchSingleFull({ id: device.id, silent: true })
+      await dispatch.devices.fetchSingleFull({ id: device.id, silent: true, ...begun(state, device.accountId) })
       return result !== 'ERROR'
     },
 
-    async moveVirtualDevice({ device, gateway }: { device: IDevice; gateway: IDevice }) {
+    async moveVirtualDevice({ device, gateway }: { device: IDevice; gateway: IDevice }, state) {
       const result = await moveVirtualDevice(device.id, gateway)
       if (result === 'ERROR') return false
-      await dispatch.devices.fetchSingleFull({ id: device.id, silent: true })
-      await dispatch.devices.fetchSingleFull({ id: gateway.id, silent: true })
-      if (device.hostedBy?.id) await dispatch.devices.fetchSingleFull({ id: device.hostedBy.id, silent: true })
+      await dispatch.devices.fetchSingleFull({ id: device.id, silent: true, ...begun(state, device.accountId) })
+      await dispatch.devices.fetchSingleFull({ id: gateway.id, silent: true, ...begun(state, gateway.accountId) })
+      if (device.hostedBy?.id)
+        await dispatch.devices.fetchSingleFull({
+          id: device.hostedBy.id,
+          silent: true,
+          ...begun(state, device.accountId),
+        })
       dispatch.ui.set({
         successMessage: i18n.t('notices:device.virtualMoved', {
           name: device.name,
@@ -1011,33 +1119,44 @@ export default createModel<RootModel>()({
       return true
     },
 
-    async convertJumpService({
-      gateway,
-      service,
-      name,
-      platform,
-    }: {
-      gateway: IDevice
-      service: IService
-      name: string
-      platform?: number
-    }): Promise<string | undefined> {
+    async convertJumpService(
+      {
+        gateway,
+        service,
+        name,
+        platform,
+      }: {
+        gateway: IDevice
+        service: IService
+        name: string
+        platform?: number
+      },
+      state
+    ): Promise<string | undefined> {
       const result = await convertJumpService(gateway, service, name, platform)
       if (result === 'ERROR') return
-      await dispatch.devices.fetchSingleFull({ id: result.id, newDevice: true, silent: true })
-      await dispatch.devices.fetchSingleFull({ id: gateway.id, silent: true })
+      await dispatch.devices.fetchSingleFull({
+        id: result.id,
+        newDevice: true,
+        silent: true,
+        ...begun(state, gateway.accountId),
+      })
+      await dispatch.devices.fetchSingleFull({ id: gateway.id, silent: true, ...begun(state, gateway.accountId) })
       return result.id
     },
 
+    /** The person the device is shared with leaves it: the one whose sign-in serves the account it is listed in —
+     *  asked as them, of their own share — and it goes from that account's list; another account here that has it
+     *  (its owner's, signed in beside them) keeps it. */
     async leave(device: IDevice, state) {
-      const { auth } = state
+      const accountId = device.accountId || selectActiveAccountId(state)
       dispatch.ui.set({ destroying: true, silent: device.id })
-      const result = await graphQLUnShareDevice({
-        deviceId: device.id,
-        email: [auth.user?.email || ''],
-      })
+      const result = await graphQLUnShareDevice(
+        { deviceId: device.id, email: [selectPersonEmailFor(state, accountId)] },
+        { account: accountId }
+      )
       if (result !== 'ERROR') {
-        await dispatch.devices.cleanup([device.id])
+        await dispatch.devices.cleanupFor({ ids: [device.id], accountIds: [accountId] })
         dispatch.ui.set({
           successMessage: i18n.t('notices:device.removed', {
             name: device.name,
@@ -1139,28 +1258,42 @@ export default createModel<RootModel>()({
       await dispatch.connections.fetch()
     },
 
+    /** Devices that `accountIds` lost (unshared from them): out of their lists alone while another account here holds
+     *  them still — their connections and networks are that account's too — and cleaned up as gone when none does. */
+    async cleanupFor({ ids, accountIds }: { ids: string[]; accountIds: string[] }) {
+      for (const id of ids) {
+        if (!(await dispatch.accounts.removeDeviceFrom({ id, accountIds }))) await dispatch.devices.cleanup([id])
+      }
+    },
+
     async cleanupService(serviceId: string) {
       await dispatch.devices.removeService(serviceId)
-      await dispatch.connections.clear(serviceId)
+      await dispatch.connections.clear({ id: serviceId, every: true })
       await dispatch.networks.clearById(serviceId)
     },
 
-    async incrementTotal(accountId: string, state) {
-      accountId = accountId || selectActiveAccountId(state)
-      const total = selectDeviceModelAttributes(state, accountId).total + 1
-      console.log('INCREMENT TOTAL', { total, accountId })
-      await dispatch.devices.set({ total, accountId })
+    async incrementTotal({ accountId, row }: { accountId: string; row?: RowKey }, state) {
+      row ??= selectRowOf(state, accountId || selectActiveAccountId(state))
+      const total = getDeviceModelFn(state.devices, row).total + 1
+      console.log('INCREMENT TOTAL', { total, accountId, row })
+      await dispatch.devices.set({ total, accountId, row })
     },
 
-    async set(params: Partial<IDeviceState>, state) {
-      const accountId = params.accountId || selectActiveAccountId(state)
-      const deviceState = { ...getDeviceModel(state, accountId) }
+    /* THE ONE WRITE. What is kept of an account's devices is kept by row (helpers/rowKey), and this is where the key is
+       made: `row` where the caller has one — a read's answer, kept for the row it was sent for — else the row the
+       account (`accountId`, or the selected one) is looked at through now. Callers say accounts; only this and the
+       selectors (selectors/devices) index the store. */
+    async set({ row: said, ...params }: Partial<IDeviceState> & { row?: RowKey }, state) {
+      const row = said ?? selectRowOf(state, params.accountId || selectActiveAccountId(state))
+      // An answer for a row whose sign-in has left since it was asked: the row is gone, and is not put back.
+      if (said && rowGone(state, said)) return
+      const deviceState = { ...getDeviceModelFn(state.devices, row) }
 
       Object.keys(params).forEach(key => {
         deviceState[key] = params[key]
       })
 
-      await dispatch.devices.rootSet({ [accountId]: deviceState })
+      await dispatch.devices.rootSet({ [row]: deviceState })
     },
   }),
 
@@ -1168,6 +1301,24 @@ export default createModel<RootModel>()({
     reset(state: IDeviceAccountState) {
       state = { ...defaultAccountState }
       return state
+    },
+    /** An account's data dropped: its sign-in signed out, so it is no longer a row (models/accounts forgetData). */
+    forget(state: IDeviceAccountState, accountIds: string[]) {
+      // Every row of the account: the page's own person's, and each further sign-in's.
+      Object.keys(state).forEach(row => accountIds.includes(rowAccount(row)) && delete state[row])
+      return state
+    },
+    /** Rows that are no more: a sign-in that left takes its rows with it, each account's other rows staying. */
+    forgetRows(state: IDeviceAccountState, rows: string[]) {
+      rows.forEach(row => delete state[row])
+      return state
+    },
+    /** The rows said again, each by its new key (the page's person changed, and with it whose row a plain key is):
+     *  a row not said is dropped, and so are the lists kept beside the rows', which were the former person's. */
+    rekey(state: IDeviceAccountState, rows: ILookup<RowKey>) {
+      const next: IDeviceAccountState = { default: state.default }
+      Object.keys(rows).forEach(row => state[row] && (next[rows[row]] = state[row]))
+      return next
     },
     rootSet(state: IDeviceAccountState, params: IDeviceAccountState) {
       Object.keys(params).forEach(key => (state[key] = params[key]))
@@ -1200,4 +1351,11 @@ export function isOffline(instance?: IDevice | IService, connection?: IConnectio
 
 export function eachDevice(state: State, callback: (device: IDevice) => void) {
   getAllDevices(state).forEach(device => callback(device))
+}
+
+// The row an effect began in — its own state says, whatever is looked at by the time it writes — as the reads it
+// makes after waiting are told it: the account (the selected one where none is named) and the row's sign-in.
+function begun(state: State, accountId?: string) {
+  const id = accountId || selectActiveAccountId(state)
+  return { accountId: id, sub: rowSub(selectRowOf(state, id)) }
 }

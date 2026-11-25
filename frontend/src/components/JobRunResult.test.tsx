@@ -10,7 +10,7 @@ vi.mock('../services/jobRuns', () => ({
   fetchRunOutput,
 }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select({}) }))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'A1' }))
+vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'A1', selectRow: () => 'A1' }))
 vi.mock('./JobRunPanel', () => ({ JobRunStatus: ({ run }: any) => <span data-run-status>{run.phase}</span> }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
 vi.mock('react-i18next', () => {

@@ -131,6 +131,7 @@ export const DuplicateCopies: React.FC<Props> = ({ original, copies, accountId, 
       <DecommissionDialog
         open={removing}
         devices={copies}
+        accountId={accountId}
         onClose={() => setRemoving(false)}
         onDone={() => requestDuplicateCopies(accountId, true)}
       />

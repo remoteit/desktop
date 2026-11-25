@@ -595,16 +595,9 @@
     "title": "Billing"
   },
   "browserGatewayConnect": {
-    "failed": "Could not open it: try again",
-    "failedRetry": "Couldn't open it. Try again.",
-    "how": "Opens in a new tab. Nothing to install.",
-    "howExternal": "Opens in your web browser. Nothing to install.",
-    "launch": "Open in a new tab",
-    "terminal": "Open a terminal",
+    "otherSignIn": "Only another account signed in here reaches this service. Connect through a public address instead.",
     "terminalHow": "A terminal in a new tab. Nothing to install.",
-    "terminalNative": "A terminal in your web browser. Nothing to install.",
-    "title": "In this browser — nothing to install",
-    "unreachable": "This address doesn't open from here yet. Use another way below."
+    "terminalNative": "A terminal in your web browser. Nothing to install."
   },
   "buildApp": {
     "appTitle": "3. Start from the starter, or your own app",
@@ -3073,16 +3066,20 @@
     "services": "Services",
     "settings": "Settings",
     "signedInOnBrowser": "Signed in on this browser",
+    "signInOnDevice": "Sign in on this device",
     "signOut": "Sign out",
     "signOutConfirm": "Signing out will allow this device to be transferred or another user to sign in. It will stop all connections.",
     "support": "Support",
     "supportForum": "Support Forum",
-    "switchAccount": "Switch account",
     "testUI": "Test UI",
     "testUIConfirm": "Enabling alpha features may be unstable. It is only intended for testing and development.",
     "thisDevice": "This Device",
     "totalDevices": "Total Devices",
-    "totalNetworks": "Total Networks"
+    "totalNetworks": "Total Networks",
+    "useSeveral": "Use several at once",
+    "useSeveralOffAction": "Turn off",
+    "useSeveralOffConfirm": "This signs out {{accounts}} here. You stay signed in as {{keep}}, and the others stay saved so you can switch to them.",
+    "useSeveralOffTitle": "Use one account at a time?"
   },
   "navPage": {
     "partnerStats": "Partner stats",
@@ -3548,7 +3545,8 @@
     "memberLabel": "{{name}} - {{role}}",
     "organizations": "Organizations",
     "ownerLabel": "{{name}} - Owner",
-    "personalAccount": "Personal account"
+    "personalAccount": "Personal account",
+    "via": "Via {{account}}"
   },
   "organizationSelectList": {
     "membershipSettings": "Membership settings",
@@ -4908,6 +4906,7 @@
     "guideTitleBrowser": "Starting a connection",
     "guideTitleDesktop": "Connect on demand",
     "moreWays": "More ways to connect",
+    "noAgent": "To open {{service}} by its address, use the Remote.It app on this computer with Access on.",
     "offline": "{{device}} is offline. Connecting works again once it is back online.",
     "useLocalPort": "Connect on a local port instead",
     "useProxy": "Connect through the proxy instead"

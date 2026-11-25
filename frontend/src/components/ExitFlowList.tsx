@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Box, Button, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
@@ -17,6 +17,7 @@ import { formatBytes } from '../helpers/usageHelper'
 import { SelectSetting } from './SelectSetting'
 import { Timestamp } from './Timestamp'
 import { Icon } from './Icon'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 // The API refuses with this when the back end keeps no flow log at all: not an error the person can act on.
 const NO_LOG = /keeps no (exit )?flow log/i
@@ -46,14 +47,21 @@ export const ExitFlowList: React.FC<Props> = ({ scope, carrier }) => {
   const now = useRef(new Date())
   const key = JSON.stringify(scope)
 
-  const load = useCallback(
+  const load = useReadCallback(
     async (after?: string) => {
       setState('loading')
       setReason(undefined)
       if (!after) now.current = new Date()
       const page = await fetchExitFlows(scope, { hours, now: now.current }, after)
-      if (page === UNSUPPORTED || page === 'ERROR') return setState(page)
+      // The first page not read: none shown, rather than those read before (as another sign-in, or of another scope).
+      const none = () => {
+        if (after) return
+        setFlows(undefined)
+        setNext(null)
+      }
+      if (page === UNSUPPORTED || page === 'ERROR') return none(), setState(page)
       if ('reason' in page) {
+        none()
         setReason(page.reason)
         return setState('ERROR')
       }
@@ -65,11 +73,14 @@ export const ExitFlowList: React.FC<Props> = ({ scope, carrier }) => {
     [key, hours]
   )
 
-  useEffect(() => {
-    setFlows(undefined)
-    setNext(null)
-    load()
-  }, [load])
+  useReadEffect(
+    again => {
+      if (!again) setFlows(undefined)
+      if (!again) setNext(null)
+      load()
+    },
+    [load]
+  )
 
   if (state === UNSUPPORTED) return null
 

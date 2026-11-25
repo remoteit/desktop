@@ -4,6 +4,7 @@ import { State } from '../store'
 import { useDeviceSessions } from './useDeviceSessions'
 import { useListedPorts } from './useListedPorts'
 import { ListedPort } from '../services/thisDevice'
+import { selectPersonFor } from '../selectors/signIns'
 import {
   LocalPort,
   Machine,
@@ -15,7 +16,9 @@ import {
   openLocalPort,
   scopeFor,
   thisMachine,
+  thisMachineNow,
 } from '../services/localPorts'
+import { useReadEffect } from './useReadAgain'
 
 export type LocalPortState = {
   offered: boolean // this machine runs our daemon, and local ports are offered on it
@@ -41,7 +44,8 @@ const POLL_FOR_MS = 30_000
 export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortState {
   const enabled = useDeviceSessions()
   const phoneOverride = useSelector((state: State) => !!state.ui.testUI && !!state.ui.localPortsOnPhone)
-  const userId = useSelector((state: State) => state.auth?.user?.id)
+  // The person the port is opened as: the sign-in that serves the service's row (services/localPorts forService).
+  const userId = useSelector((state: State) => selectPersonFor(state, [serviceId]))
   const [machine, setMachine] = useState<Machine | null>()
   const [local, setLocal] = useState<LocalPort>()
   const [error, setError] = useState<string>()
@@ -60,25 +64,28 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
   // A service on this machine's own device has no local port: it is here already.
   const offered = enabled && offersLocalPorts(machine, phoneOverride) && !!serviceId && machine?.id !== deviceId
   const machineId = offered ? machine?.id : undefined
-  // Opened here by the person signed in on this machine: their account's alone (services/localPorts scopeFor).
-  const scope = scopeFor(machine, userId)
   // Read again as the port changes: the daemon lists it once it has applied it.
   const ports = useListedPorts(offered, local && `${local.initiatorId}:${local.open}:${local.state}`)
   const listed = ports && local?.open ? listedFor(ports, local) ?? null : undefined
   const others = ports && serviceId ? listedOthers(ports, serviceId, local) : NONE
 
-  useEffect(() => {
-    setLocal(undefined)
-    setError(undefined)
-    if (!machineId || !serviceId) return
-    let live = true
-    graphQLLocalPort(machineId, serviceId).then(found => live && setLocal(found ?? undefined))
-    return () => {
-      live = false
-    }
-  }, [machineId, serviceId])
+  useReadEffect(
+    again => {
+      if (!again) setLocal(undefined)
+      if (!again) setError(undefined)
+      if (!machineId || !serviceId) return
+      let live = true
+      graphQLLocalPort(machineId, serviceId).then(found => live && setLocal(found ?? undefined))
+      return () => {
+        live = false
+      }
+    },
+    // The person too: the port is their account's, so another person selected for the same service reads their own,
+    // and the one before's is not left shown as open.
+    [machineId, serviceId, userId]
+  )
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!polling || !machineId || !serviceId || local?.state !== 'pending') return
     if (Date.now() - polling > POLL_FOR_MS) return
     const timer = setTimeout(async () => {
@@ -87,20 +94,24 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
       else setPolling(0)
     }, POLL_MS)
     return () => clearTimeout(timer)
-  }, [polling, local, machineId, serviceId])
+  }, [polling, local, machineId, serviceId, userId])
 
   const open = useCallback(
     async (port?: number, https?: boolean) => {
       if (!machineId || !serviceId) return
       setBusy(true)
       setError(undefined)
-      const answer = await openLocalPort(machineId, serviceId, port, https, scope)
+      // Opened here by one of the people signed in on this machine: their account's alone (services/localPorts
+      // scopeFor) — as they are now, an account added since the page loaded among them.
+      const now = await thisMachineNow()
+      if (now) setMachine(now)
+      const answer = await openLocalPort(machineId, serviceId, port, https, scopeFor(now, userId))
       setBusy(false)
       if ('reason' in answer) return setError(answer.reason || undefined)
       setLocal(answer)
       setPolling(Date.now())
     },
-    [machineId, serviceId, scope]
+    [machineId, serviceId, userId]
   )
 
   const close = useCallback(async () => {
@@ -109,7 +120,7 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
     const answer = await closeLocalPort(machineId, serviceId)
     setBusy(false)
     if (answer) setLocal(answer)
-  }, [machineId, serviceId])
+  }, [machineId, serviceId, userId])
 
   return { offered, local, error, listed, others, busy, open, close }
 }

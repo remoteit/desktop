@@ -9,7 +9,7 @@ import { PlainAction, RUN_ACTION, plainActionLabel, plainActionsFor } from '../h
 type Props = {
   device: { id: string; name: string }
   // The device as a whole, or its proxy or its exit, by name.
-  scope: 'device' | { kind: 'proxy' | 'exit'; name: string }
+  scope: 'device' | { kind: 'proxy' | 'exit'; name: string; id?: string }
   // Its state there, for the actions that apply; the device as a whole offers each.
   run?: { state: RunState; joining: boolean }
   activation?: string

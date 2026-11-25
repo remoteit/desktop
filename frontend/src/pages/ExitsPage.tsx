@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Box, List, ListItem, ListItemText, ListSubheader, Typography } from '@mui/material'
@@ -15,6 +15,7 @@ import { Notice } from '../components/Notice'
 import { NetworkSectionIntro } from '../components/NetworkSectionIntro'
 import { Tags } from '../components/Tags'
 import { Icon } from '../components/Icon'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 /* Exits: your own first, each saying whether it is ready and which devices carry it; those shared with you; then
    Remote.It's, labelled as run by Remote.It. Each opens on its page (pages/ExitPage.tsx). */
@@ -25,7 +26,8 @@ export const ExitsPage: React.FC = () => {
   const [remoteit, setRemoteit] = useState<OfferedExit[]>([])
   const [tagFilter, setTagFilter] = useState<ITag>()
 
-  useEffect(() => {
+  // remote.it's, offered by plan: the exits offered to you that are remote.it's.
+  useReadEffect(() => {
     graphQLOfferedExits().then(offered =>
       setRemoteit(Array.isArray(offered) ? offered.filter(exit => exit.remoteit) : [])
     )

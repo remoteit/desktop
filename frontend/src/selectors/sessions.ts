@@ -1,9 +1,9 @@
 import { createSelector } from 'reselect'
-import { getSessions, optionalId } from './state'
-import { selectConnections } from './connections'
+import { optionalId } from './state'
+import { selectConnections, selectLookedAtSessions } from './connections'
 
 export const selectSessionUsers = createSelector(
-  [selectConnections, getSessions, optionalId],
+  [selectConnections, selectLookedAtSessions, optionalId],
   (connections, sessions, id) => {
     let ids: string[] = []
     const activeSessionIds = connections.map(c => c.sessionId)

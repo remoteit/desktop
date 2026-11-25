@@ -3,6 +3,7 @@
 import type { ChatTranscriptMessage } from '../models/chat'
 // Shared with electron/src/ElectronApp.ts, which allows and sizes the window
 import { CHAT_POPOUT_PARAM, CHAT_POPOUT_SIZE } from '@common/constants'
+import { EMBEDDED } from '../constants'
 
 /**
  * Chat popout: the panel moves into its own window (same bundle, boot flag)
@@ -77,8 +78,9 @@ const PRESENCE_TIMEOUT = 500
 const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL) : null
 const post = (message: PopoutMessage) => channel?.postMessage(message)
 /* The whole handoff rides the channel. Without it a popout would open, never say hello, never be
-   adopted, and neither window could hand the transcript back — so the action is not offered. */
-export const chatPopoutSupported = channel !== null
+   adopted, and neither window could hand the transcript back — so the action is not offered. Nor in the portal the menu
+   app embeds: its window opens no other, and its server answers no address but the page's own. */
+export const chatPopoutSupported = channel !== null && !EMBEDDED
 
 let popoutWindow: Window | null = null
 let pollTimer: number | undefined
@@ -105,7 +107,7 @@ const pingPopout = (id: string): Promise<boolean> =>
 /* `scope` is the opener's account scope (accounts.activeId, or the user for the personal
    account) — see popoutScopeId for why the popout needs it handed over at boot. */
 export function openChatPopout(scope?: string): boolean {
-  if (!channel) return false // no handoff possible (the button is hidden; this is the backstop)
+  if (!chatPopoutSupported) return false // no handoff possible (the button is hidden; this is the backstop)
   // Reuse the stored id so re-clicking Pop out re-targets the same named
   // window instead of orphaning it under a new identity
   const id = ownerId() || crypto.randomUUID().slice(0, 8)

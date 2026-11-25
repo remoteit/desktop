@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { AppIcon } from '../components/AppIcon'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
@@ -58,6 +58,7 @@ import {
   releaseChannelName,
   stateWord,
 } from '../helpers/appsHelper'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 
 const RELEASES_PAGE = 20
 // The version filter's choices besides a version: any (no filter), and none reported — catalogApp's devices(version: ""),
@@ -106,16 +107,19 @@ export const AppPage: React.FC = () => {
 
   // Only the latest read lands: a filter changed while one was under way does not show the one before.
   const latest = useRef(0)
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     const read = ++latest.current
     const answer = await graphQLCatalogApp(appID, { accountId: account, releases, ...filter })
     if (read === latest.current) setApp(answer)
   }, [appID, account, releases, filter.heldBack, filter.heldBackReason, filter.version])
 
-  useEffect(() => {
-    setSelected([])
-    load()
-  }, [load])
+  useReadEffect(
+    again => {
+      if (!again) setSelected([])
+      load()
+    },
+    [load]
+  )
 
   // Another app, or another account's: read afresh.
   useEffect(() => {
@@ -184,7 +188,8 @@ export const AppPage: React.FC = () => {
     const answer = await graphQLSetDeviceAppsRelease(
       app.id,
       chosen.map(d => d.deviceId),
-      values.consentRoot ? values : { version: values.version }
+      values.consentRoot ? values : { version: values.version },
+      ...(account ? [account] : [])
     )
     setBusy(false)
     if (refused(answer)) return setRefusal(answer.reason || t('apps.notChangedRetry', 'Couldn’t change the app. Try again.'))

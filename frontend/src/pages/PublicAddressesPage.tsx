@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
 import { Box, List, ListItem, ListItemIcon, ListItemText, Typography } from '@mui/material'
 import { selectActiveAccountId } from '../selectors/accounts'
 import { UNSUPPORTED } from '../services/graphQLDaemon'
@@ -36,14 +37,17 @@ export const PublicAddressesPage: React.FC = () => {
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
 
-  const load = useCallback(async () => {
+  const load = useReadCallback(async () => {
     setRead(await graphQLPublicAddresses(accountId))
   }, [accountId])
 
-  useEffect(() => {
-    setRead(undefined)
-    load()
-  }, [load])
+  useReadEffect(
+    again => {
+      if (!again) setRead(undefined)
+      load()
+    },
+    [load]
+  )
 
   const addresses = read && typeof read === 'object' ? read.addresses : []
   const usage = useTransferUsageHint(
@@ -52,9 +56,9 @@ export const PublicAddressesPage: React.FC = () => {
     addresses.some(address => address.proxy.remoteit)
   )
 
-  const remove = async (id: string) => {
+  const remove = async (id: string, serviceId: string) => {
     setBusy(true)
-    const result = await graphQLRemoveEndpoint(id)
+    const result = await graphQLRemoveEndpoint(id, { about: [serviceId] })
     setFailed(result === 'ERROR')
     await load()
     setBusy(false)
@@ -113,7 +117,7 @@ export const PublicAddressesPage: React.FC = () => {
           ) : (
             <List data-addresses>
               {addresses.map(address => (
-                <AddressRow key={address.id} address={address} busy={busy} onRemove={() => remove(address.id)} />
+                <AddressRow key={address.id} address={address} busy={busy} onRemove={() => remove(address.id, address.service.id)} />
               ))}
             </List>
           )}

@@ -11,13 +11,16 @@ import { Icon } from './Icon'
 type Props = {
   open: boolean
   devices: Pick<IDevice, 'id' | 'name'>[]
+  // The account they were listed for, where they are in no stored list (the disabled devices' page, an account's
+  // copies): whose sign-in decommissions them.
+  accountId?: string
   onClose: () => void
   onDone?: () => void
 }
 
 /* Delete permanently (graphql's decommission): final, so it says what goes and asks for it typed — the device's name, or for several, how many
    (graphql-api docs/DEVICE-DISABLE.md). Offered only on a disabled device. */
-export const DecommissionDialog: React.FC<Props> = ({ open, devices, onClose, onDone }) => {
+export const DecommissionDialog: React.FC<Props> = ({ open, devices, accountId, onClose, onDone }) => {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const destroying = useSelector((state: State) => state.ui.destroying)
@@ -54,7 +57,8 @@ export const DecommissionDialog: React.FC<Props> = ({ open, devices, onClose, on
       disabled={!matches || destroying}
       onConfirm={async () => {
         if (!matches) return
-        const done = await dispatch.devices.decommission(devices.map(d => d.id))
+        const ids = devices.map(d => d.id)
+        const done = await dispatch.devices.decommission(accountId ? { ids, accountId } : ids)
         onClose()
         if (done) onDone?.()
       }}

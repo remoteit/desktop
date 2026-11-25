@@ -22,6 +22,7 @@ import { LoadingMessage } from './LoadingMessage'
 import { Notice } from './Notice'
 import { Gutters } from './Gutters'
 import { FormField, choiceListSx } from './FormField'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 // An account of more than this many devices names those to weigh.
 export const CANDIDATES_MAX = 1000
@@ -80,7 +81,7 @@ export const RunDevicePicker: React.FC<Props> = ({
 
   // Read when shown, and again after each add — those added run it now. An account with too many devices to weigh
   // whole is weighed by those the app has listed.
-  useEffect(() => {
+  useReadEffect(() => {
     let live = true
     const listed = () =>
       devices

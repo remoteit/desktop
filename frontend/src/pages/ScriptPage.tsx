@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { selectFile, selectJobs } from '../selectors/scripting'
 import { State, Dispatch } from '../store'
 import { Redirect, useParams, useHistory } from 'react-router-dom'
@@ -10,7 +10,7 @@ import { ListItemLocation } from '../components/ListItemLocation'
 import { JobStatusIcon } from '../components/JobStatusIcon'
 import { JobFailureNote } from '../components/JobRunResult'
 import { LoadingMessage } from '../components/LoadingMessage'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { selectRow } from '../selectors/accounts'
 import { ReactiveTagNames } from '../components/ReactiveTagNames'
 import { Duration } from '../components/Duration'
 import { Container } from '../components/Container'
@@ -20,6 +20,7 @@ import { Notice } from '../components/Notice'
 import { Title } from '../components/Title'
 import { Icon } from '../components/Icon'
 import { jobRunTotal } from '../helpers/jobHelper'
+import { useReadEffect } from '../hooks/useReadAgain'
 
 const MAX_RUNS = 12
 
@@ -32,10 +33,10 @@ export const ScriptPage: React.FC = () => {
   const jobs = useSelector(selectJobs).filter(j => j.file?.id === fileID)
   const fetching = useSelector((state: State) => state.files.fetching)
   // The account's files are read once the app has signed in: until then a script's address is not known to be wrong.
-  const loaded = useSelector((state: State) => !!state.files.all[selectActiveAccountId(state)])
+  const loaded = useSelector((state: State) => !!state.files.all[selectRow(state)])
 
   // Load jobs if not already loaded
-  useEffect(() => {
+  useReadEffect(() => {
     if (!jobs.length && !fetching && file) dispatch.jobs.fetchByFileIds({ fileIds: [file.id] })
   }, [file])
 

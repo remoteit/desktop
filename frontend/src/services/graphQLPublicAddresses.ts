@@ -2,6 +2,7 @@ import { post } from './post'
 import { graphQLGetErrors } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { ENDPOINT_FIELDS, Endpoint } from './graphQLProxy'
+import { noteAccountOf } from '../selectors/signIns'
 
 /* Every public address across the account's services. graphql has no account-wide list of them, so they are read
    through the account's devices: each device's services, and each service's endpoints (Service.endpoints: all of them
@@ -58,7 +59,12 @@ export async function graphQLPublicAddresses(accountId?: string) {
   const errors = graphQLGetErrors(response, true, { query, variables })
   if (withoutDeviceSessions(errors, 'endpoints')) return UNSUPPORTED
   if (errors) return 'ERROR' as const
-  return publicAddressesOf(response.data?.data?.login?.account?.devices)
+  const read = publicAddressesOf(response.data?.data?.login?.account?.devices)
+  noteAccountOf(
+    accountId,
+    read.addresses.flatMap(address => [address.id, address.service.id, address.device.id])
+  )
+  return read
 }
 
 export type ServiceChoice = { id: string; name: string; device: { id: string; name: string }; manage: boolean }
@@ -74,6 +80,10 @@ export async function graphQLServiceChoices(accountId?: string) {
   if (graphQLGetErrors(response, true, { query, variables })) return 'ERROR' as const
   const items: { id: string; name: string; permissions?: string[]; services?: { id: string; name: string }[] }[] =
     response.data?.data?.login?.account?.devices?.items ?? []
+  noteAccountOf(
+    accountId,
+    items.flatMap(device => [device.id, ...(device.services ?? []).map(service => service.id)])
+  )
   return items.flatMap(device =>
     (device.services ?? []).map<ServiceChoice>(service => ({
       id: service.id,

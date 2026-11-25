@@ -16,7 +16,15 @@ vi.mock('../services/productPolicy', () => ({
 }))
 vi.mock('./useDeviceSessions', () => ({ useDeviceSessions: () => sessions.on }))
 vi.mock('react-redux', () => ({ useSelector: (select: any) => select({}) }))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'A1' }))
+vi.mock('../selectors/accounts', () => ({
+  selectActiveAccountId: () => 'A1',
+  // One sign-in: a row is its account's own id.
+  selectRow: (_state: unknown, accountId?: string) => accountId || 'A1',
+  rowSaid: (_state: unknown, of?: any) => {
+    const accountId = (typeof of === 'string' ? of : of?.accountId) || 'A1'
+    return { accountId, row: of?.row ?? accountId }
+  },
+}))
 
 import { resetProductPolicyReads, useDeviceProduct, useProductPolicy, useProductPolicyServed } from './useProductPolicy'
 ;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
@@ -77,7 +85,7 @@ describe('product policy’s reads', () => {
       </>
     )
     expect(productPolicy).toHaveBeenCalledTimes(1)
-    expect(productPolicy).toHaveBeenCalledWith('P1', 'A1')
+    expect(productPolicy).toHaveBeenCalledWith('P1', 'A1', { sub: '', row: true })
     expect(seen.a.policy).toEqual({ sync: 'synced' })
     expect(seen.b.policy).toEqual({ sync: 'synced' })
   })
@@ -110,7 +118,7 @@ describe('product policy’s reads', () => {
       </>
     )
     expect(deviceProduct).toHaveBeenCalledTimes(1)
-    expect(deviceProduct).toHaveBeenCalledWith('D1', 'A2')
+    expect(deviceProduct).toHaveBeenCalledWith('D1', 'A2', { sub: '', row: true })
     expect(seen.d.state).toEqual({ product: null, origin: null, tags: [], services: [] })
     expect(seen.v.state).toBeNull()
   })

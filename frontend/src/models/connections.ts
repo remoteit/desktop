@@ -20,7 +20,9 @@ import {
   getFetchConnectionIds,
   newConnection,
   setConnection,
+  connectionAs,
   getConnectionLookup,
+  lookedRecord,
   updateImmutableData,
 } from '../helpers/connectionHelper'
 import {
@@ -35,6 +37,10 @@ import { selectApplication } from '../selectors/applications'
 import { accountFromDevice } from './accounts'
 import { selectConnection } from '../selectors/connections'
 import { selectById } from '../selectors/devices'
+import { requestSignIn, selectAccountRoutes, selectRowOf } from '../selectors/signIns'
+import { pickRecord, sameRecord } from '../helpers/connectionRecords'
+import type { State } from '../store'
+import { rowSub } from '../helpers/rowKey'
 import { RootModel } from '.'
 import { emit } from '../services/Controller'
 import heartbeat from '../services/Heartbeat'
@@ -62,6 +68,9 @@ const defaultState: IConnectionsState = {
   updating: false,
 }
 
+// Whose a request about a connection is: its record's sign-in (helpers/connectionHelper connectionAs).
+const forConnection = (connection: IConnection) => connectionAs(connection)
+
 export default createModel<RootModel>()({
   state: { ...defaultState },
   effects: dispatch => ({
@@ -86,17 +95,56 @@ export default createModel<RootModel>()({
     async fetch(_: void, state) {
       const accountId = state.auth.user?.id || state.user.id
       const serviceIds = getFetchConnectionIds(state)
-      const gqlResponse = await graphQLFetchConnections({ ids: serviceIds })
-      if (gqlResponse === 'ERROR') {
+      // One request per sign-in, each about the connections of the accounts it serves: a service another sign-in
+      // alone reaches is not the page's own person's to read. With one sign-in in use, the one request as ever.
+      const groups: ILookup<{ ids: string[]; accounts: string[] }> = {}
+      const ask = (id: string, accountId?: string, said?: string) => {
+        // As the sign-in the connection was made as, where it says.
+        const sub = said ?? (requestSignIn(state, { about: [id], orAccount: accountId }) || '')
+        const group = (groups[sub] ??= { ids: [], accounts: [] })
+        if (!group.ids.includes(id)) group.ids.push(id)
+        if (accountId && !group.accounts.includes(accountId)) group.accounts.push(accountId)
+      }
+      // Every record of each service: one two rows are connected to is read as each of their sign-ins.
+      serviceIds.forEach(id => {
+        const records = state.connections.all.filter(c => c.id === id)
+        if (!records.length) ask(id)
+        records.forEach(c => ask(id, c.accountId, c.sub))
+      })
+      const several = Object.keys(groups).some(sub => sub)
+      const told: string[] = []
+      const untold: string[] = []
+      const answers = await Promise.all(
+        Object.entries(groups).map(async ([sub, { ids, accounts }]) => {
+          const response = await graphQLFetchConnections({ ids }, several ? { sub, about: accounts } : undefined)
+          if (response === 'ERROR') {
+            untold.push(...ids)
+            return undefined
+          }
+          told.push(...ids)
+          return (response?.data?.data?.login?.device || []) as any[]
+        })
+      )
+      // A service is answered for only when every sign-in with a connection to it was: one that could not be asked
+      // may still reach it, whatever another found — its device is kept, and its connection is no orphan.
+      const answered = told.filter(id => !untold.includes(id))
+      if (answers.every(answer => !answer)) {
         await dispatch.connections.set({ initialized: true })
         return
       }
 
-      const gqlDevices = gqlResponse?.data?.data?.login?.device || []
+      const gqlDevices = answers.flatMap(answer => answer || [])
       const devices = graphQLDeviceAdaptor({ gqlDevices, accountId, hidden: true })
-      await dispatch.accounts.truncateMergeDevices({ devices, accountId: 'connections' })
+      // A sign-in that could not be asked this time keeps the devices known for its connections: its failed read
+      // says nothing of them, least of all that they are gone.
+      const kept = (state.devices.connections?.all || []).filter(
+        (device: IDevice) =>
+          !devices.some(read => read.id === device.id) &&
+          device.services.some(service => serviceIds.includes(service.id) && !answered.includes(service.id))
+      )
+      await dispatch.accounts.truncateMergeDevices({ devices: [...devices, ...kept], accountId: 'connections' })
 
-      cleanOrphanConnections(serviceIds)
+      cleanOrphanConnections(answered)
       await dispatch.connections.set({ initialized: true })
     },
 
@@ -105,8 +153,23 @@ export default createModel<RootModel>()({
       await dispatch.connections.updateCLI()
     },
 
-    async updateConnectionState({ devices }: { devices: IDevice[]; accountId: string }, state) {
-      let lookup = getConnectionLookup(state)
+    // `sub`: the sign-in the devices were read as, where they were read for a row of it: a connection made here for
+    // one of their links is that row's.
+    async updateConnectionState(
+      { devices, accountId, sub }: { devices: IDevice[]; accountId: string; sub?: string },
+      state
+    ) {
+      // Each service's record as the row the devices were read for has it (`sub`), else as the row looked at does.
+      const routes = selectAccountRoutes(state)
+      const looked = getConnectionLookup(state)
+      const lookup: ConnectionLookup = {}
+      devices.forEach(d =>
+        d.services.forEach(s => {
+          const own = sub === undefined ? undefined : pickRecord(routes, state.connections.all, s.id, accountId, sub, true)
+          const record = sub === undefined ? looked[s.id] : own
+          if (record) lookup[s.id] = record
+        })
+      )
       let result: IConnection[] = []
 
       devices.forEach(d => {
@@ -134,12 +197,25 @@ export default createModel<RootModel>()({
           }
 
           if (connection) {
-            // assign account id
-            connection.accountId = accountFromDevice(
-              state,
-              d.owner.id,
-              d.access.map(a => a.id)
-            )
+            // Its row — the account, with the sign-in — as it was made. Made here: the row its device was read for
+            // (a device shared with two people here is in a row of each one's account, so the account is the row's,
+            // not the first of them the device belongs to); else its account, as that is looked at.
+            const made = lookup[s.id]
+            if (made?.sub === undefined || !made.accountId) {
+              const of = sub !== undefined && accountId ? accountId : undefined
+              connection.accountId =
+                of ??
+                accountFromDevice(
+                  state,
+                  d.owner.id,
+                  d.access.map(a => a.id)
+                )
+              if (!made) {
+                const as = sub ?? rowSub(selectRowOf(state, connection.accountId))
+                if (as) connection.sub = as
+                else delete connection.sub
+              }
+            }
 
             // disable connection if service is offline
             if (!online && !connection.connectLink && connection.enabled) {
@@ -168,9 +244,10 @@ export default createModel<RootModel>()({
     async mergeConnections(connections: IConnection[], state) {
       if (!connections.length) return
       const all = state.connections.all
-      // merge and remove new connections
+      const routes = selectAccountRoutes(state)
+      // merge and remove new connections: each into its own record (the service, as its sign-in)
       const updated = all.map(c => {
-        const index = connections.findIndex(a => a.id === c.id)
+        const index = connections.findIndex(a => sameRecord(routes, a, c))
         if (index >= 0) {
           const merged = { ...c, ...connections[index] }
           connections.splice(index, 1)
@@ -183,10 +260,11 @@ export default createModel<RootModel>()({
 
     async updateConnection(connection: IConnection, state) {
       const all = structuredClone(state.connections.all)
+      const routes = selectAccountRoutes(state)
 
       let exists = false
       all.some((c, index) => {
-        if (c.id === connection.id) {
+        if (sameRecord(routes, c, connection)) {
           const transition = {
             id: connection.id,
             previous: {
@@ -268,7 +346,7 @@ export default createModel<RootModel>()({
             console.error(
               `No service or connection port found in connection. Connection cleared. ${JSON.stringify(connection)}`
             )
-            dispatch.connections.forget(connection.id)
+            dispatch.connections.forget(connection)
           } else {
             console.warn(`No service found for connection ${connection.id}. ${JSON.stringify(connection)}`)
             // @TODO fetch device if trying to restore a non-loaded connection
@@ -332,7 +410,7 @@ export default createModel<RootModel>()({
       }
 
       setConnection(proxyConnection)
-      const result = await graphQLConnect(connection.id, connection.publicRestriction)
+      const result = await graphQLConnect(connection.id, connection.publicRestriction, forConnection(connection))
 
       if (result === 'ERROR') {
         connection.error = { message: 'An error occurred connecting. Please ensure that the device is online.' }
@@ -375,7 +453,7 @@ export default createModel<RootModel>()({
         return
       }
 
-      const result = await graphQLDisconnect(connection.id, connection.sessionId)
+      const result = await graphQLDisconnect(connection.id, connection.sessionId, forConnection(connection))
 
       if (result === 'ERROR') {
         setConnection(connection)
@@ -391,18 +469,22 @@ export default createModel<RootModel>()({
       console.log('SET CONNECT LINK', connection)
 
       dispatch.connections.updateConnection(creating)
-      const result = await graphQLSetLink({
-        serviceId: connection.id,
-        enabled: connection.enabled,
-        password: REGEX_HIDDEN_PASSWORD.test(connection.password || '')
-          ? undefined
-          : connection.password?.trim() || null,
-      })
+      const result = await graphQLSetLink(
+        {
+          serviceId: connection.id,
+          enabled: connection.enabled,
+          password: REGEX_HIDDEN_PASSWORD.test(connection.password || '')
+            ? undefined
+            : connection.password?.trim() || null,
+        },
+        forConnection(connection)
+      )
 
       if (result === 'ERROR' || 'reason' in result || !result?.data?.data?.setConnectLink?.url) {
         const reason = result !== 'ERROR' && 'reason' in result ? result.reason : ''
         dispatch.connections.patchConnection({
           id: connection.id,
+          sub: connection.sub,
           error: { message: reason || 'Persistent connection update failed. Please contact support.' },
           updating: false,
         })
@@ -443,11 +525,12 @@ export default createModel<RootModel>()({
 
       dispatch.connections.setConnectLink({ ...connection, enabled: false })
       dispatch.devices.updateService({ id: connection.id, set: { link: undefined } })
-      const result = await graphQLRemoveLink(connection.id)
+      const result = await graphQLRemoveLink(connection.id, forConnection(connection))
 
       if (result === 'ERROR') {
         dispatch.connections.patchConnection({
           id: connection.id,
+          sub: connection.sub,
           error: { message: 'An error occurred removing your persistent connection. Please contact support.' },
         })
       }
@@ -507,6 +590,7 @@ export default createModel<RootModel>()({
         connection = { ...connection, disconnecting: true, connecting: false, starting: false }
         dispatch.connections.patchConnection({
           id: connection.id,
+          sub: connection.sub,
           disconnecting: true,
           connecting: false,
           starting: false,
@@ -526,7 +610,7 @@ export default createModel<RootModel>()({
           starting: false,
         }
         connection = { ...connection, ...stopUpdate }
-        dispatch.connections.patchConnection({ id: connection.id, ...stopUpdate })
+        dispatch.connections.patchConnection({ id: connection.id, sub: connection.sub, ...stopUpdate })
         emit('service/stop', connection)
       }
       heartbeat.disconnect()
@@ -534,7 +618,7 @@ export default createModel<RootModel>()({
 
     async survey({ rating, connection }: { rating: number; connection: IConnection }) {
       if (!connection.sessionId) return
-      const result = await graphQLSurvey(connection.id, connection.sessionId, rating)
+      const result = await graphQLSurvey(connection.id, connection.sessionId, rating, forConnection(connection))
       if (result === 'ERROR' || !result?.data?.data?.rateConnection) {
         dispatch.ui.set({
           errorMessage: i18n.t('notices:connection.surveyFailed', {
@@ -544,18 +628,23 @@ export default createModel<RootModel>()({
       }
     },
 
-    async forget(id: string, state) {
+    /* Forgotten, and cleared, is ONE record: the service's, as one sign-in (helpers/connectionRecords). `of` is the
+       record itself, or a service's id — then the record the row looked at has; `every`: all of the service's (it is
+       gone). The other row's connection to the same service stays. */
+    async forget(of: RecordSaid, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
-      set({ all: all.filter(c => c.id !== id) })
-      if (state.auth.backendAuthenticated) emit('service/forget', { id })
+      const gone = recordsSaid(state, of)
+      set({ all: all.filter(c => !gone.includes(c)) })
+      if (state.auth.backendAuthenticated) emit('service/forget', { id: typeof of === 'string' ? of : of.id })
     },
 
-    async clear(id: string, state) {
+    async clear(of: RecordSaid, state) {
       const { set } = dispatch.connections
       const { all } = state.connections
-      set({ all: all.filter(c => c.id !== id) })
-      if (state.auth.backendAuthenticated) emit('service/clear', { id })
+      const gone = recordsSaid(state, of)
+      set({ all: all.filter(c => !gone.includes(c)) })
+      if (state.auth.backendAuthenticated) emit('service/clear', { id: typeof of === 'string' ? of : of.id })
     },
 
     async clearByDevice(deviceId: string, state) {
@@ -564,7 +653,7 @@ export default createModel<RootModel>()({
       all.forEach(async connection => {
         if (connection.deviceID === deviceId) {
           if (connection.connected) await disconnect({ connection })
-          await clear(connection.id)
+          await clear(connection)
         }
       })
     },
@@ -583,7 +672,7 @@ export default createModel<RootModel>()({
         emit('launch/app', app.disconnectString, app.launchType)
         await sleep(2000)
       }
-      dispatch.connections.patchConnection({ id: connection.id, launched: false })
+      dispatch.connections.patchConnection({ id: connection.id, sub: connection.sub, launched: false })
     },
 
     async setAll(all: IConnection[]) {
@@ -602,11 +691,27 @@ export default createModel<RootModel>()({
       })
       return state
     },
+    // Into ONE record: the service's (`id`) as the sign-in said (`sub`; none, the page's own person).
     patchConnection(state: IConnectionsState, params: Partial<IConnection> & { id: string }) {
-      const index = state.all.findIndex(c => c.id === params.id)
+      const of = state.all.filter(c => c.id === params.id)
+      const record = browser.hasBackend ? of[0] : of.find(c => (c.sub || '') === (params.sub || ''))
+      const index = record ? state.all.indexOf(record) : -1
       if (index >= 0) state.all[index] = { ...state.all[index], ...params }
       return state
     },
   },
 })
 
+// The record(s) a caller means (forget, clear).
+type RecordSaid = string | (Pick<IConnection, 'id' | 'accountId' | 'sub'> & { every?: boolean })
+
+function recordsSaid(state: State, of: RecordSaid): IConnection[] {
+  const { all } = state.connections
+  if (typeof of === 'string') {
+    const looked = lookedRecord(state, of)
+    return looked ? [looked] : []
+  }
+  if (of.every) return all.filter(c => c.id === of.id)
+  const routes = selectAccountRoutes(state)
+  return all.filter(c => sameRecord(routes, c, of))
+}

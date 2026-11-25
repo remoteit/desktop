@@ -10,6 +10,7 @@ import {
   requestDuplicateCopies,
   subscribeDuplicateCopies,
 } from '../services/deviceIdentity'
+import { useReadEffect } from './useReadAgain'
 
 /* What this API serves of device identity (services/deviceIdentity): undefined until it has answered. */
 export function useDeviceIdentity(): IdentityServed | undefined {
@@ -61,7 +62,7 @@ export function useDuplicateCopies(
   ).join(' ')
   const read = useRef<string>()
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!served || !accountId || reading) return
     const key = counted ? `${accountId} ${originals}` : accountId
     const again = read.current === key

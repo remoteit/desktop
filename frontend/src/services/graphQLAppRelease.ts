@@ -7,7 +7,10 @@ import { ReleaseFile } from '../helpers/appRelease'
    Cache-Control the URL is signed for, then setAppRelease with the hosted manifest URL — which reads the manifest and
    its signature back, takes them only if the signature is one of the publisher's standing keys', catalogues a new app
    private, and makes the release its stable one. What is sent: the manifest, its signature and the archives — all
-   public once published —, never a key: the signature is made in the signer (components/SignerFrame). */
+   public once published —, never a key: the signature is made in the signer (components/SignerFrame).
+
+   `accountId`: the account whose publisher's app it is, where that is not the person's own. Both steps are asked as
+   the sign-in that serves it: the uploads name it (graphql takes it there), the release cannot, so is said apart. */
 
 export type Upload = { name: string; url: string; served: string }
 
@@ -17,11 +20,12 @@ export type Step<T> = { ok: T } | { reason: string }
 export async function graphQLReleaseUploads(
   app: string,
   version: string,
-  files: { name: string; size: number }[]
+  files: { name: string; size: number }[],
+  accountId?: string
 ): Promise<Step<Upload[]>> {
   const result = await graphQLRequestWithReason(
-    'mutation AppReleaseUploads($app: String!, $version: String!, $files: [AppReleaseFileInput!]!) { appReleaseUploads(app: $app, version: $version, files: $files) { name url served } }',
-    { app, version, files }
+    'mutation AppReleaseUploads($app: String!, $version: String!, $files: [AppReleaseFileInput!]!, $accountId: String) { appReleaseUploads(app: $app, version: $version, files: $files, accountId: $accountId) { name url served } }',
+    { app, version, files, accountId }
   )
   const reason = refusalOf(result)
   if (reason !== undefined) return { reason }
@@ -29,10 +33,16 @@ export async function graphQLReleaseUploads(
   return Array.isArray(uploads) ? { ok: uploads } : { reason: '' }
 }
 
-export async function graphQLSetAppRelease(app: string, version: string, manifest: string): Promise<Step<number>> {
+export async function graphQLSetAppRelease(
+  app: string,
+  version: string,
+  manifest: string,
+  accountId?: string
+): Promise<Step<number>> {
   const result = await graphQLRequestWithReason(
     'mutation SetAppRelease($app: String!, $version: String!, $manifest: String!) { setAppRelease(app: $app, version: $version, manifest: $manifest) }',
-    { app, version, manifest }
+    { app, version, manifest },
+    accountId ? { account: accountId } : undefined
   )
   const reason = refusalOf(result)
   if (reason !== undefined) return { reason }
@@ -78,12 +88,14 @@ export async function publishRelease(
   files: ReleaseFile[],
   done: Set<string>,
   progress: Progress = () => {},
-  fetchImpl: typeof fetch = fetch
+  fetchImpl: typeof fetch = fetch,
+  accountId?: string
 ): Promise<Step<{ manifest: string; devices: number }>> {
   const uploads = await graphQLReleaseUploads(
     app,
     version,
-    files.map(file => ({ name: file.name, size: file.data.length }))
+    files.map(file => ({ name: file.name, size: file.data.length })),
+    accountId
   )
   if ('reason' in uploads) return uploads
   const byName = new Map(uploads.ok.map(upload => [upload.name, upload]))
@@ -98,6 +110,6 @@ export async function publishRelease(
   }
   const manifest = byName.get('manifest.json')?.served
   if (!manifest) return { reason: 'manifest.json: graphql gave no hosted URL for it' }
-  const set = await graphQLSetAppRelease(app, version, manifest)
+  const set = await graphQLSetAppRelease(app, version, manifest, accountId)
   return 'reason' in set ? set : { ok: { manifest, devices: set.ok } }
 }
