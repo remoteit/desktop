@@ -275,6 +275,24 @@ describe('Services page', () => {
     expect(openServiceURL.mock.calls).toEqual([[`https://${subnetName}:8123`], [`https://${subnetName}:8959`]])
   })
 
+  it('a device’s name, answered by an agent in place of the service’s own, is not opened at the own name’s port', async () => {
+    state.localNames = { home: 'server-acme.on.remote.it' }
+    list.mockResolvedValue([home])
+    const container = document.createElement('div')
+    root = createRoot(container)
+    await act(async () =>
+      root?.render(
+        <MemoryRouter>
+          <ServicesPage />
+        </MemoryRouter>
+      )
+    )
+    const [row] = [...container.querySelectorAll('li')]
+    expect(row.querySelector('button')).toBeNull()
+    expect(row.querySelector(':scope > a')?.textContent).toBe('Connect')
+    expect(openServiceURL).not.toHaveBeenCalled()
+  })
+
   it('clears the old account’s shortcuts on a switch', async () => {
     list.mockResolvedValueOnce([home]).mockResolvedValueOnce([])
     const container = document.createElement('div')

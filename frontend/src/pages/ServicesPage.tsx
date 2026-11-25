@@ -114,13 +114,15 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   // does — once asked — it is opened at its web address.
   const named = online && !!name && !!port
   const reach = useSubnetReach(named ? service.device.id : undefined, named ? service.id : undefined)
-  const destination = reach.local?.name
+  // The port is this name's: an agent may answer with the device's own name instead, where the port is another's. The
+  // service is reached then, from its own page, so it is not opened at its web address.
+  const destination = reach.local?.name === name ? name : undefined
   const route = service.attributes?.$remoteit?.route
   const couldBe = online && !!service.subnetName && !!port && web
   const target = { id: service.id, deviceID: service.device.id, route, web: couldBe, type: service.application }
   const checked = useWebAddress(target)
-  const webAddress = checked === true && !destination && reach.checked
-  const unchecked = checked === 'UNCHECKED' && !destination
+  const webAddress = checked === true && !reach.local && reach.checked
+  const unchecked = checked === 'UNCHECKED' && !reach.local
   const { checking, recheck } = useRecheck(target)
   const address = useOpenWebAddress(service.id)
   const status = !service.enabled
