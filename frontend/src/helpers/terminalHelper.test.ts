@@ -123,13 +123,39 @@ describe('a service another sign-in serves', () => {
     expect(terminalReaches('s-work')).toBe(false)
     expect(openTerminal({ name: 'mac-me.on.remote.it', port: 22, service: 's-me' })).toBe(true)
     expect(opened).toHaveBeenCalledTimes(1)
-    // The page's own person's service, held in the other's list too with that account selected: still theirs.
     expect(terminalReaches('s-me')).toBe(true)
-    expect(terminalReaches('s-unknown')).toBe(true)
     env.isNative = true
     expect(terminalReaches('s-work')).toBe(true)
     env.isNative = false
     readStateWith(() => ({} as any))
     opened.mockRestore()
+  })
+
+  // The page's own person's service, shared with the other sign-in, whose account is selected: a request about it
+  // would be made as that other — and the browser's client, which is the page's own person's, still reaches it.
+  it('opens a service of the page’s own person though another sign-in’s account, selected, holds it too', async () => {
+    const { readStateWith } = await import('../selectors/signIns')
+    const { terminalReaches } = await import('./terminalHelper')
+    const shared = { id: 'd-me', services: [{ id: 's-me' }] }
+    const stateWith = (devices: object, activeId?: string) =>
+      readStateWith(
+        () =>
+          ({
+            auth: { user: { id: 'me' } },
+            accounts: {
+              activeId,
+              membership: [],
+              signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
+            },
+            devices,
+          } as any)
+      )
+    stateWith({ me: { all: [shared] }, work: { all: [shared] } }, 'work')
+    expect(terminalReaches('s-me')).toBe(true)
+    // One nothing is known of is taken to be theirs; one only the other's list holds is not.
+    expect(terminalReaches('s-unknown')).toBe(true)
+    stateWith({ work: { all: [shared] } })
+    expect(terminalReaches('s-me')).toBe(false)
+    readStateWith(() => ({} as any))
   })
 })
