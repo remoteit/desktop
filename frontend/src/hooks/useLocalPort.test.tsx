@@ -13,6 +13,7 @@ const api = vi.hoisted(() => ({
   accounts: undefined as any,
   devices: undefined as any,
   shell: undefined as any,
+  agent: new Set<() => void>(),
 }))
 vi.mock('react-redux', () => ({
   useSelector: (select: any) => select({ ui: api.ui, auth: api.auth, accounts: api.accounts, devices: api.devices }),
@@ -20,7 +21,13 @@ vi.mock('react-redux', () => ({
 vi.mock('./useDeviceSessions', () => ({ useDeviceSessions: () => true }))
 vi.mock('../services/browser', () => ({ default: { isIOS: false } }))
 vi.mock('../services/thisDevice', () => ({ thisDevice: async () => api.shell }))
-vi.mock('../services/localSubnet', () => ({ beaconDevice: async () => null }))
+vi.mock('../services/localSubnet', () => ({
+  beaconDevice: async () => null,
+  onLocalAgent: (listener: () => void) => {
+    api.agent.add(listener)
+    return () => api.agent.delete(listener)
+  },
+}))
 vi.mock('../services/graphQL', () => ({ graphQLBasicRequest: vi.fn(), graphQLRequestWithReason: vi.fn() }))
 vi.mock('../services/localPorts', async importOriginal => ({
   ...(await importOriginal<typeof import('../services/localPorts')>()),
@@ -69,6 +76,16 @@ describe('useLocalPort', () => {
     await render()
     expect(seen.offered).toBe(true)
     expect(api.read).toHaveBeenCalledWith(api.machine.id, SERVICE)
+  })
+
+  it('a daemon found here since the page loaded: offered then', async () => {
+    const machine = api.machine
+    api.machine = null
+    await render()
+    expect(seen.offered).toBe(false)
+    api.machine = machine
+    await act(async () => api.agent.forEach(told => told()))
+    expect(seen.offered).toBe(true)
   })
 
   it("not for a service on this machine's own device", async () => {

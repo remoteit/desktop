@@ -23,10 +23,16 @@ import { useReadAgain, useReadEffect } from './useReadAgain'
 
 // A service as the web address is decided of it (services/webAddress webTarget).
 export function useWebTarget(service?: IService, connection?: IConnection): WebTarget | undefined {
-  const web = useSelector((state: State) => !!webTarget(state, service, connection)?.web)
+  const web = useSelector((state: State) => webTarget(state, service, connection)?.web)
   const id = service?.id ?? connection?.id
   return id
-    ? { id, deviceID: service?.deviceID ?? connection?.deviceID, route: service?.attributes.route, web }
+    ? {
+        id,
+        deviceID: service?.deviceID ?? connection?.deviceID,
+        route: service?.attributes.route,
+        web,
+        type: service?.typeID ?? connection?.typeID,
+      }
     : undefined
 }
 
@@ -44,7 +50,7 @@ export function useWebAddress(target: WebTarget | undefined): boolean | undefine
   const allowed = webAddressAllowed(target)
   const now = opensAtWebAddress(target)
   // What was asked of, and answered or given up on.
-  const asked = allowed && target ? `${target.id} ${target.deviceID} ${fleet} ${dropped}` : ''
+  const asked = allowed && target ? `${target.id} ${target.deviceID} ${target.web} ${fleet} ${dropped}` : ''
   const [answered, setAnswered] = useState<{ asked: string; is?: boolean }>()
 
   useEffect(() => {

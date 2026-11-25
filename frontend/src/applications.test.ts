@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterEach } from 'vitest'
 import { initialize } from '@common/adaptor'
-import { getApplication } from '@common/applications'
+import { getApplication, isWebType, getApplicationType, webTypeOf } from '@common/applications'
 import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '@common/constants'
 
 const HTTP = 7
@@ -99,5 +99,38 @@ describe('public reverse proxy launch template', () => {
   it('is not a public reverse proxy on a persistent connect link', () => {
     const app = getApplication(service(HTTP), connection({ public: true, connectLink: true }))
     expect(app.publicReverseProxy).toBe(false)
+  })
+})
+
+// Before the cloud's list of types is loaded, what only it says is not known — never taken for not web.
+describe('whether a type is a web one', () => {
+  const list = [
+    { id: 7, scheme: 'http', proxy: true },
+    { id: 48, scheme: '', proxy: true },
+    { id: 28, scheme: 'ssh', proxy: false },
+    { id: 900, scheme: 'https', proxy: true },
+  ] as IApplicationType[]
+
+  it('is the list’s to say, once it is loaded', () => {
+    for (const id of [7, 48, 28, 900, 901])
+      expect(webTypeOf(id, list)).toBe(
+        isWebType(
+          getApplicationType(id),
+          list.find(type => type.id === id)
+        )
+      )
+    expect([7, 48, 28, 900, 901].map(id => webTypeOf(id, list))).toEqual([true, true, false, true, false])
+  })
+
+  it('is known before where the app itself knows: a web form, or a protocol no browser opens', () => {
+    expect([7, 8, 33, 37, 38, 42].map(id => webTypeOf(id, []))).toEqual(Array(6).fill(true))
+    expect([1, 4, 5, 28, 34, 39, 41, 44, 45, 46, 49, 32769, 40000].map(id => webTypeOf(id, []))).toEqual(
+      Array(13).fill(false)
+    )
+    expect(webTypeOf(undefined, [])).toBe(false)
+  })
+
+  it('is not known before where only the list says: ScreenView, Docker, a type the app does not know', () => {
+    expect([48, 47, 900].map(id => webTypeOf(id, []))).toEqual([undefined, undefined, undefined])
   })
 })

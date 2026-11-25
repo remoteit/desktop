@@ -1,17 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { env, post, basic, openInSystem, windowOpen, state, info, name, readName, localName } = vi.hoisted(() => ({
-  env: { isNative: false, isMobile: false, hasBackend: false, embedded: false },
-  post: vi.fn(),
-  basic: vi.fn(),
-  openInSystem: vi.fn(),
-  windowOpen: vi.fn(),
-  state: { deviceSessions: true, api: 'https://api.one', setting: undefined as string | undefined },
-  info: vi.fn(),
-  name: vi.fn(),
-  readName: vi.fn(),
-  localName: vi.fn(),
-}))
+const { env, post, basic, openInSystem, windowOpen, state, info, name, readName, localName, fetchAll } = vi.hoisted(
+  () => ({
+    env: { isNative: false, isMobile: false, hasBackend: false, embedded: false },
+    post: vi.fn(),
+    basic: vi.fn(),
+    openInSystem: vi.fn(),
+    windowOpen: vi.fn(),
+    state: {
+      deviceSessions: true,
+      api: 'https://api.one',
+      setting: undefined as string | undefined,
+      types: [] as object[],
+    },
+    info: vi.fn(),
+    name: vi.fn(),
+    readName: vi.fn(),
+    localName: vi.fn(),
+    fetchAll: vi.fn(),
+  })
+)
 vi.mock('./browser', () => ({ default: env, openInSystem, windowOpen }))
 vi.mock('../constants', () => ({
   get EMBEDDED() {
@@ -22,13 +30,16 @@ vi.mock('../store', () => ({
   store: {
     getState: () => ({
       ui: { proxyFleet: state.setting },
-      applicationTypes: { all: [{ id: 7, scheme: 'http' }, { id: 28 }] },
+      applicationTypes: { all: state.types },
     }),
+    dispatch: { applicationTypes: { fetchAll } },
   },
 }))
+// 48 is a type only the cloud's list says of; 28 one the app knows is not web, and 7 one it knows is.
 vi.mock('@common/applications', () => ({
-  getApplicationType: () => ({}),
-  isWebType: (_app: unknown, type?: { scheme?: string }) => type?.scheme === 'http',
+  webTypeOf: (typeID: number | undefined, types: { id: number; scheme?: string }[]) =>
+    typeID === 7 ||
+    (typeID === 48 && !types.length ? undefined : types.find(type => type.id === typeID)?.scheme === 'http'),
 }))
 vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => state.api }))
 vi.mock('../hooks/useDeviceSessions', () => ({ selectDeviceSessions: () => state.deviceSessions }))
@@ -80,6 +91,7 @@ import {
   webTarget,
 } from './webAddress'
 
+const TYPES = [{ id: 7, scheme: 'http' }, { id: 28 }, { id: 48, scheme: 'http' }]
 const ADDRESS = 'https://web-acme.solo.r3proxy.com'
 const NAME = 'server-acme.on.solo.remote.it'
 const answered = (url: unknown) => ({ data: { data: { openWebAddress: url } } })
@@ -101,9 +113,10 @@ let tab: { location: { href: string }; opener: unknown; close: ReturnType<typeof
 let open: ReturnType<typeof vi.spyOn>
 beforeEach(() => {
   Object.assign(env, { isNative: false, isMobile: false, hasBackend: false, embedded: false })
-  Object.assign(state, { deviceSessions: true, api: 'https://api.one', setting: undefined })
+  Object.assign(state, { deviceSessions: true, api: 'https://api.one', setting: undefined, types: TYPES })
   api = { mutation: ['connect', 'openWebAddress'], query: ['proxyFleet'], service: ['webAddress'], fleet: 'CONNECTD' }
-  for (const mock of [post, basic, openInSystem, windowOpen, info, name, readName, localName]) mock.mockReset()
+  for (const mock of [post, basic, openInSystem, windowOpen, info, name, readName, localName, fetchAll])
+    mock.mockReset()
   basic.mockImplementation(async (query: string) => {
     if (query.includes('WebAddressSchema'))
       return (
@@ -252,11 +265,78 @@ describe('whether a service is opened at its web address', () => {
     expect(basic).not.toHaveBeenCalled()
   })
 
+  describe('of a type only the cloud’s list says of', () => {
+    const unknown = () => target({ web: undefined, type: 48 })
+    beforeEach(() => void (state.types = []))
+
+    it('is not known until the list is: it is read, once, by whoever asks', async () => {
+      fetchAll.mockImplementation(async () => void (state.types = TYPES))
+      await decideWebAddress(target())
+      expect(opensAtWebAddress(unknown())).toBeUndefined()
+      expect(await Promise.all([decideWebAddress(unknown()), decideWebAddress(unknown())])).toEqual([true, true])
+      expect(await decideWebAddress(unknown())).toBe(true)
+      expect(fetchAll).toHaveBeenCalledTimes(1)
+    })
+
+    it('is none where the list says it is not web', async () => {
+      fetchAll.mockImplementation(async () => void (state.types = [{ id: 48 }]))
+      expect(await decideWebAddress(unknown())).toBe(false)
+      expect(readName).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ['failed', async () => {}],
+      ['threw', async () => Promise.reject(new Error('gone'))],
+    ])('is not known where the list could not be read (%s), which is read again by the next', async (_what, how) => {
+      fetchAll.mockImplementationOnce(how)
+      expect(await decideWebAddress(unknown())).toBeUndefined()
+      fetchAll.mockImplementationOnce(async () => void (state.types = TYPES))
+      expect(await decideWebAddress(unknown())).toBe(true)
+    })
+
+    it('nor is a list that never answers waited on for good', async () => {
+      await decideWebAddress(target())
+      vi.useFakeTimers()
+      fetchAll.mockReturnValueOnce(new Promise(() => {}))
+      const decided = decideWebAddress(unknown())
+      await vi.advanceTimersByTimeAsync(WEB_ADDRESS_WAIT_MS)
+      expect(await decided).toBeUndefined()
+      fetchAll.mockImplementationOnce(async () => void (state.types = TYPES))
+      expect(await decideWebAddress(unknown())).toBe(true)
+    })
+
+    it.each([
+      ['the gate is off', () => void (api.fleet = 'LEGACY')],
+      ['the API has no web addresses', () => void (api.mutation = [])],
+      ['the Test setting is the legacy fleet', () => void (state.setting = 'LEGACY')],
+      ['the app makes its own connections', () => void (env.hasBackend = true)],
+      ['device sessions are off', () => void (state.deviceSessions = false)],
+    ])('is not waited on where %s', async (_what, off) => {
+      off()
+      expect(await decideWebAddress(unknown())).toBe(false)
+      expect(opensAtWebAddress(unknown())).toBe(false)
+      expect(fetchAll).not.toHaveBeenCalled()
+    })
+
+    it('a type known not to be web waits on nothing, and reads nothing', async () => {
+      const of = webTarget(
+        { applicationTypes: { all: [] } } as any,
+        { id: 'S1', deviceID: 'D1', typeID: 28, attributes: {} } as any
+      )
+      expect(of?.web).toBe(false)
+      expect(opensAtWebAddress(of)).toBe(false)
+      expect(await decideWebAddress(of)).toBe(false)
+      expect(basic).not.toHaveBeenCalled()
+    })
+  })
+
   it('is looked at by the service, or by its connection alone', () => {
     const of = (service?: object, connection?: object) =>
       webTarget({ applicationTypes: { all: [{ id: 7, scheme: 'http' }] } } as any, service as any, connection as any)
-    expect(of({ id: 'S1', deviceID: 'D1', typeID: 7, attributes: { route: 'p2p' } })).toEqual(target({ route: 'p2p' }))
-    expect(of(undefined, { id: 'S1', deviceID: 'D1', typeID: 7 })).toEqual(target())
+    expect(of({ id: 'S1', deviceID: 'D1', typeID: 7, attributes: { route: 'p2p' } })).toEqual(
+      target({ route: 'p2p', type: 7 })
+    )
+    expect(of(undefined, { id: 'S1', deviceID: 'D1', typeID: 7 })).toEqual(target({ type: 7 }))
     expect(of({ id: 'S1', deviceID: 'D1', typeID: 28, attributes: {} })?.web).toBe(false)
     expect(of()).toBeUndefined()
   })

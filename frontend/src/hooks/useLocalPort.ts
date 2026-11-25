@@ -18,6 +18,7 @@ import {
   thisMachine,
   thisMachineNow,
 } from '../services/localPorts'
+import { onLocalAgent } from '../services/localSubnet'
 import { useReadEffect } from './useReadAgain'
 
 export type LocalPortState = {
@@ -55,9 +56,13 @@ export function useLocalPort(serviceId?: string, deviceId?: string): LocalPortSt
   useEffect(() => {
     if (!enabled) return
     let live = true
-    thisMachine().then(found => live && setMachine(found))
+    const ask = () => thisMachine().then(found => live && setMachine(found))
+    ask()
+    // A daemon found here since: the machine is known once it is.
+    const off = onLocalAgent(ask)
     return () => {
       live = false
+      off()
     }
   }, [enabled])
 

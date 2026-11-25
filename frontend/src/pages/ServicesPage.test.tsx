@@ -35,7 +35,8 @@ vi.mock('../hooks/useLocalSubnetName', () => ({
 vi.mock('../hooks/useWebAddress', async () => {
   const { useState } = await import('react')
   return {
-    useWebAddress: (target: any) => (target.web && state.webAddresses ? allowed(target) : state.webAddresses && false),
+    useWebAddress: (target: any) =>
+      target.web !== false && state.webAddresses ? allowed(target) : state.webAddresses && false,
     useRecheck: () => ({ checking: false, recheck }),
     useOpenWebAddress: (id: string) => {
       const [failed, setFailed] = useState<{ reason: string }>()
@@ -151,7 +152,7 @@ describe('a web service where the new proxies are enabled', () => {
       expect((await renderPage()).querySelector('li button')).toBeNull()
       await act(async () => root?.unmount())
     }
-    expect(allowed).toHaveBeenCalledWith({ id: 'home', deviceID: 'server', route: 'p2p', web: true })
+    expect(allowed).toHaveBeenCalledWith({ id: 'home', deviceID: 'server', route: 'p2p', web: true, type: 7 })
   })
 
   it('is tried again where it could not be checked, with nothing to open; not where an agent here reaches it', async () => {
@@ -169,6 +170,18 @@ describe('a web service where the new proxies are enabled', () => {
     row = (await renderPage()).querySelector('li')!
     expect(row.textContent).not.toContain('Could not check')
     expect(row.querySelector('button')!.textContent).toBe('Open')
+  })
+
+  it('of a type not known yet is tried again where it could not be checked, its name not opened meanwhile', async () => {
+    const types = state.applicationTypes.all
+    state.applicationTypes.all = []
+    allowed.mockReturnValue('UNCHECKED')
+    state.localNames = { screen: 'x.on.remote.it' }
+    list.mockResolvedValue([{ ...home, id: 'screen', application: 48, subnetPort: 8959 }])
+    const row = (await renderPage()).querySelector('li')!
+    expect(allowed.mock.calls[0][0]).toMatchObject({ web: undefined, type: 48 })
+    expect(row.querySelector('button')!.textContent).toBe('Try again')
+    state.applicationTypes.all = types
   })
 
   it('has Connect for a service that is not web, or is offline', async () => {

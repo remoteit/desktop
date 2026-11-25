@@ -548,7 +548,7 @@ export default createModel<RootModel>()({
       // page, a tab being only a click's to open.
       const target = webTarget(state, service, connection)
       // Where whether it is could not be checked nothing is connected: its proxy connection would be anyone's to use.
-      const atAddress = !!target?.web && (await decideWebAddress(target))
+      const atAddress = !!target && target.web !== false && (await decideWebAddress(target))
       if (atAddress !== false) dispatch.ui.clearAutoLaunch(connection.id)
       if (atAddress === undefined) {
         const message = i18n.t('webAddress.unchecked', {

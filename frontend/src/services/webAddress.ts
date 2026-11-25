@@ -1,9 +1,10 @@
-import { getApplicationType, isWebType } from '@common/applications'
+import { webTypeOf } from '@common/applications'
 import browser, { openInSystem, windowOpen } from './browser'
 import { EMBEDDED } from '../constants'
 import { State, store } from '../store'
 import { getApiURL } from '../helpers/apiHelper'
 import { httpsOnly } from '../helpers/utilHelper'
+import { within as withinMs } from '../helpers/within'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 import { selectById } from '../selectors/devices'
 import { requestSignIn } from '../selectors/signIns'
@@ -61,11 +62,7 @@ export function webAddressGate(): boolean | undefined {
 // Waited on no longer than this by anything a person has asked for: a check that does not answer is one that failed.
 export const WEB_ADDRESS_WAIT_MS = 5_000
 
-const within = <T>(asked: Promise<T>): Promise<T | undefined> =>
-  new Promise(resolve => {
-    const timer = setTimeout(() => resolve(undefined), WEB_ADDRESS_WAIT_MS)
-    asked.then(resolve, () => resolve(undefined)).finally(() => clearTimeout(timer))
-  })
+const within = <T>(asked: Promise<T>) => withinMs(asked, WEB_ADDRESS_WAIT_MS)
 
 // One read at a time of each kind, whoever asks; one not answered this long is made anew by whoever asks next.
 const ANSWER_MS = 4_000
@@ -111,16 +108,20 @@ async function readGate(): Promise<boolean | undefined> {
   return webAddressGate()
 }
 
-/** What is looked at of a service: `web`, whether it is a web service. */
-export type WebTarget = { id: string; deviceID?: string; route?: IRouteType; web: boolean }
+/** What is looked at of a service: `web`, whether it is a web service — undefined until the cloud's list of types is
+ *  loaded, for a type only that list says it of: `type`. */
+export type WebTarget = { id: string; deviceID?: string; route?: IRouteType; web: boolean | undefined; type?: number }
 
-/** Whether a type of service is a web one. */
-export const selectWebType = (state: State, typeID?: number): boolean =>
-  typeID !== undefined &&
-  isWebType(
-    getApplicationType(typeID),
-    state.applicationTypes.all.find(type => type.id === typeID)
-  )
+/** Whether a type of service is a web one, as far as is known. */
+export const selectWebType = (state: State, typeID?: number): boolean | undefined =>
+  webTypeOf(typeID, state.applicationTypes.all)
+
+// The same, the list read where it is needed: undefined where it could not be.
+async function readWebType(target: WebTarget): Promise<boolean | undefined> {
+  const known = () => target.web ?? selectWebType(store.getState(), target.type)
+  if (known() === undefined) await reading('types', async () => void (await store.dispatch.applicationTypes.fetchAll()))
+  return known()
+}
 
 /** A service as it is looked at; by its connection alone where the service itself is in no stored list. */
 export function webTarget(state: State, service?: IService, connection?: IConnection): WebTarget | undefined {
@@ -131,14 +132,16 @@ export function webTarget(state: State, service?: IService, connection?: IConnec
     deviceID: service?.deviceID ?? connection?.deviceID,
     route: service?.attributes.route,
     web: selectWebType(state, service?.typeID ?? connection?.typeID),
+    type: service?.typeID ?? connection?.typeID,
   }
 }
 
-/** Whether a service could be opened at its web address, the gate apart. Not one that is not web, nor one set to be
+/** Whether a service could be opened at its web address, the gate apart. Not one known not to be web, nor one set to be
  *  reached peer to peer alone. Not where the app has a backend: its connections are its own machine's, peer to peer where
  *  they can be. */
 export const webAddressAllowed = (target: WebTarget | undefined): boolean =>
-  !!target?.web &&
+  !!target &&
+  target.web !== false &&
   !!target.deviceID &&
   !browser.hasBackend &&
   target.route !== 'p2p' &&
@@ -150,11 +153,12 @@ export function opensAtWebAddress(target: WebTarget | undefined): boolean | unde
   if (!target?.deviceID || !webAddressAllowed(target)) return false
   const gate = webAddressGate()
   if (!gate) return gate
+  if (target.web === undefined) return undefined
   const name = deviceSessionName(target.deviceID, target.id)
   return name === undefined ? undefined : !!name
 }
 
-/* COULD NOT BE CHECKED: the gate, or the device's names, could not be read, or not in time. That is not that the service
+/* COULD NOT BE CHECKED: the gate, the list of types or the device's names could not be read, or not in time. That is not that the service
    has no web address, and it is not connected in place of it — a proxy connection's address is anyone's who has it: that
    is said, and whoever tries next reads again. */
 export type Unchecked = 'UNCHECKED'
@@ -164,6 +168,8 @@ export async function decideWebAddress(target: WebTarget | undefined): Promise<b
   if (!target?.deviceID || !webAddressAllowed(target)) return false
   const gate = await within(readGate())
   if (!gate) return gate
+  const web = await within(readWebType(target))
+  if (!web) return web
   const name = await within(readDeviceSessionName(target.deviceID, target.id))
   return name === undefined ? undefined : !!name
 }

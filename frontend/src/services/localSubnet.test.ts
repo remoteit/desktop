@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { rowKey } from '../helpers/rowKey'
 
 // Work's own account, in its row: under the sign-in that read it.
@@ -134,7 +134,7 @@ describe('localSubnetName', () => {
     expect(asked()).toBe(2)
     expect(await mod.localSubnetName('S1', NAME)).toEqual({ name: NAME })
     expect(asked()).toBe(2)
-    expect(mod.localAbsent()).toBe(false)
+    expect(mod.localPresent()).toBe(true)
   })
 
   // presence-server docs/subnet-service-names.md: a service's own name turned on or off changes the name asked about,
@@ -149,28 +149,422 @@ describe('localSubnetName', () => {
     })
     expect(asked()).toBe(2)
   })
+})
 
-  it('no daemon here: no, without asking, even asked again, until its backoff is past', async () => {
+/* Whether an agent is here: one answer for every page, asked as the page loads and again behind what is shown. */
+describe('whether an agent is here', () => {
+  const NAME = 'pi-ada.on.solo.remote.it'
+  let here: boolean | 'ERROR' | 'SLOW' // what its machine says
+  let made: number
+  let known: Set<string> // the tokens graphql has
+  let stop: (() => void) | undefined
+  let hidden = false
+
+  const count = (what: string) => request.mock.calls.filter(([query]) => query.includes(what)).length
+  const looked = () => document.dispatchEvent(new Event('visibilitychange'))
+  const pass = (ms: number) => vi.advanceTimersByTimeAsync(ms)
+
+  beforeEach(() => {
     vi.useFakeTimers()
-    try {
-      request.mockImplementation(async (query: string) => {
-        if (query.includes('CreateSubnetProbe'))
-          return { data: { data: { createSubnetProbe: { token: 'b'.repeat(24), name: 'b-probe.on.solo.remote.it' } } } }
-        return { data: { data: { subnetProbe: { seen: false } } } }
-      })
-      const mod = await load()
-      const first = mod.localSubnetName('S1', NAME)
-      await vi.advanceTimersByTimeAsync(2_000)
-      expect(await first).toBeNull()
-      expect(mod.localAbsent()).toBe(true)
-      const calls = request.mock.calls.length
-      expect(await mod.localSubnetName('S1', NAME, true)).toBeNull()
-      expect(request.mock.calls.length).toBe(calls)
-      await vi.advanceTimersByTimeAsync(60_000)
-      expect(mod.localAbsent()).toBe(false)
-    } finally {
-      vi.useRealTimers()
+    here = false
+    made = 0
+    known = new Set()
+    hidden = false
+    vi.spyOn(document, 'hidden', 'get').mockImplementation(() => hidden)
+    request.mockImplementation(async (query: string, variables: any = {}) => {
+      const data = (d: any) => ({ data: { data: d } })
+      if (here === 'SLOW') return new Promise(() => {})
+      if (here === 'ERROR') return 'ERROR'
+      if (query.includes('CreateSubnetProbe')) {
+        const token = `token-${++made}`
+        known.add(token)
+        return data({ createSubnetProbe: { token, name: `${token}-probe.on.solo.remote.it` } })
+      }
+      if (query.includes('SubnetProbeSeen')) return data({ subnetProbe: { seen: here } })
+      const seen = known.has(variables.token)
+      if (query.includes('SubnetProbeFields')) return data({ answer: { fields: [] } })
+      if (query.includes('SubnetProbeDevice')) return data({ subnetProbe: { seen, deviceId: seen ? 'D1' : null } })
+      if (query.includes('query SubnetProbe(')) return data({ subnetProbe: { seen, name: seen ? NAME : null } })
+      throw new Error(`unexpected ${query}`)
+    })
+  })
+  afterEach(() => {
+    stop?.()
+    stop = undefined
+    vi.restoreAllMocks()
+    vi.useRealTimers()
+  })
+  const follow = async () => {
+    const mod = await load()
+    stop = mod.followLocalAgent()
+    return mod
+  }
+
+  it('is asked once as the page loads, however many pages ask: one probe, four requests with none here', async () => {
+    const mod = await follow()
+    const asked = [
+      mod.localSubnetName('S1', NAME),
+      mod.localSubnetName('S2', NAME),
+      mod.beaconDevice(),
+      mod.localSignIn(),
+    ]
+    await pass(2_000)
+    expect(await Promise.all(asked)).toEqual([null, null, null, null])
+    expect([made, count('SubnetProbeSeen'), request.mock.calls.length]).toEqual([1, 3, 4])
+    request.mockClear()
+    // No later page waits, nor asks.
+    for (const id of ['S1', 'S3', 'S4']) {
+      expect(mod.localNow(id, NAME)).toEqual({ checked: true })
+      expect(await mod.localSubnetName(id, NAME, true)).toBeNull()
     }
+    expect(await mod.beaconDevice()).toBeNull()
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it('with one here is two requests, and each service is asked of it', async () => {
+    here = true
+    const mod = await follow()
+    await pass(200)
+    expect(mod.localPresent()).toBe(true)
+    expect([made, count('SubnetProbeSeen'), request.mock.calls.length]).toEqual([1, 1, 2])
+    expect(await mod.localSubnetName('S1', NAME)).toEqual({ name: NAME })
+    expect(await mod.beaconDevice()).toBe('D1')
+    expect(made).toBe(1)
+  })
+
+  it('is never asked by a timer', async () => {
+    await follow()
+    await pass(60 * 60_000)
+    expect(made).toBe(1)
+  })
+
+  it('is asked again when the page is looked at, at a pace: a minute, then less and less where none is found', async () => {
+    const mod = await follow()
+    await pass(2_000)
+    const at = async (ms: number) => {
+      await pass(ms)
+      looked()
+      window.dispatchEvent(new Event('focus'))
+      await pass(2_000)
+    }
+    await at(30_000)
+    expect(made).toBe(1)
+    request.mockClear()
+    await at(30_000)
+    expect(made).toBe(2)
+    expect(request).toHaveBeenCalledTimes(3) // hurried for no one, and asked after less
+    await at(90_000)
+    expect(made).toBe(2)
+    await at(30_000)
+    expect(made).toBe(3)
+    await at(200_000)
+    expect(made).toBe(3)
+    await at(100_000)
+    expect(made).toBe(4)
+    expect(mod.localPresent()).toBe(false)
+  })
+
+  it('is asked again at once when the network comes back', async () => {
+    await follow()
+    await pass(2_000)
+    window.dispatchEvent(new Event('online'))
+    window.dispatchEvent(new Event('online'))
+    await pass(2_000)
+    expect(made).toBe(2)
+  })
+
+  it('is asked again when the sign-ins change, at that pace, and when a service is opened with an answer over a minute old', async () => {
+    const mod = await follow()
+    await pass(2_000)
+    const { forgetAccountCaches } = await import('./accountCaches')
+    forgetAccountCaches(['a'])
+    await pass(2_000)
+    expect(made).toBe(1)
+    await pass(60_000)
+    forgetAccountCaches(['a'])
+    await pass(2_000)
+    expect(made).toBe(2)
+    await pass(61_000)
+    // Behind the page: it has the answer there is, at once.
+    const opened = mod.localSubnetName('S1', NAME)
+    expect(await opened).toBeNull()
+    await pass(2_000)
+    expect(made).toBe(3)
+    await mod.localSubnetName('S2', NAME)
+    await pass(2_000)
+    expect(made).toBe(3)
+  })
+
+  it('is asked again by a sign-in on this machine where none was known, every ten seconds at most; not where one is here', async () => {
+    const mod = await follow()
+    await pass(2_000)
+    for (let i = 0; i < 10; i++) {
+      mod.forgetLocal()
+      await pass(3_000)
+    }
+    expect(made).toBe(3)
+    here = true
+    await pass(10_000)
+    mod.forgetLocal()
+    await pass(2_000)
+    expect(mod.localPresent()).toBe(true)
+    made = 0
+    for (let i = 0; i < 10; i++) {
+      mod.forgetLocal()
+      await pass(3_000)
+    }
+    expect(made).toBe(0)
+  })
+
+  it('tells who shows it when one comes, and when it goes', async () => {
+    const mod = await follow()
+    await pass(2_000)
+    const told = vi.fn()
+    const changed = vi.fn()
+    mod.onLocalForgotten(told)
+    mod.onLocalAgent(changed)
+    here = true
+    window.dispatchEvent(new Event('online'))
+    await pass(1_000)
+    expect([told.mock.calls.length, changed.mock.calls.length]).toEqual([1, 1])
+    expect(await mod.localSubnetName('S1', NAME)).toEqual({ name: NAME })
+    expect(mod.localNow('S1', NAME)).toEqual({ local: { name: NAME }, checked: true })
+    window.dispatchEvent(new Event('online'))
+    await pass(1_000)
+    expect(told).toHaveBeenCalledTimes(1) // the same answer tells no one
+    here = false
+    window.dispatchEvent(new Event('online'))
+    await pass(2_000)
+    expect([told.mock.calls.length, changed.mock.calls.length]).toEqual([2, 2])
+    expect(mod.localNow('S1', NAME)).toEqual({ checked: true })
+    expect(await mod.localSubnetName('S1', NAME)).toBeNull()
+  })
+
+  it('shows the last answer for a service while it is asked again', async () => {
+    here = true
+    const mod = await follow()
+    await pass(1_000)
+    await mod.localSubnetName('S1', NAME)
+    await pass(20_000)
+    request.mockClear()
+    expect(mod.localNow('S1', NAME)).toEqual({ local: { name: NAME }, checked: true })
+    expect(mod.localNow('S2', NAME)).toEqual({ checked: false })
+    expect(await mod.localSubnetName('S1', NAME)).toEqual({ name: NAME })
+    expect(count('query SubnetProbe(')).toBe(1)
+  })
+
+  it('makes a token anew once it has been used its minute, as it is needed: quick where one is here', async () => {
+    here = true
+    const mod = await follow()
+    await pass(1_000)
+    expect(await mod.localSubnetName('S1', NAME)).toEqual({ name: NAME })
+    await pass(61_000)
+    expect(made).toBe(1)
+    const asked = mod.localSubnetName('S1', NAME)
+    const other = mod.localSubnetName('S2', NAME)
+    await pass(200)
+    expect(await Promise.all([asked, other])).toEqual([{ name: NAME }, { name: NAME }])
+    expect(made).toBe(2)
+    // Gone meanwhile: found as it is renewed.
+    here = false
+    await pass(61_000)
+    const gone = mod.localSubnetName('S1', NAME)
+    await pass(2_000)
+    expect(await gone).toBeNull()
+    expect(mod.localPresent()).toBe(false)
+  })
+
+  it('a token graphql does not know any more is no answer, and is made anew at the pace kept for it', async () => {
+    here = true
+    const mod = await follow()
+    await pass(1_000)
+    known.clear()
+    expect(await mod.localSubnetName('S1', NAME)).toBeUndefined()
+    expect(await mod.localSubnetName('S2', NAME)).toBeUndefined()
+    expect(made).toBe(1)
+    await pass(60_000)
+    const asked = mod.localSubnetName('S1', NAME)
+    await pass(1_000)
+    expect(await asked).toEqual({ name: NAME })
+    expect(made).toBe(2)
+  })
+
+  it.each(['ERROR', 'SLOW'] as const)(
+    'a request that fails, or never answers, is not that none is here: %s',
+    async how => {
+      here = how
+      const mod = await follow()
+      const first = mod.localSubnetName('S1', NAME)
+      await pass(4_000)
+      expect(await first).toBeUndefined()
+      expect(mod.localPresent()).toBe(false)
+      expect(mod.localNow('S1', NAME)).toEqual({ checked: false })
+      here = true
+      // Asked again at the pace kept for it, or where the network comes back.
+      window.dispatchEvent(new Event('online'))
+      await pass(1_000)
+      expect(await mod.localSubnetName('S1', NAME)).toEqual({ name: NAME })
+    }
+  )
+
+  it('nor is what it was, where it was here', async () => {
+    here = true
+    const mod = await follow()
+    await pass(1_000)
+    await mod.localSubnetName('S1', NAME)
+    here = 'ERROR'
+    window.dispatchEvent(new Event('online'))
+    await pass(2_000)
+    expect(mod.localPresent()).toBe(true)
+    expect(await mod.localSubnetName('S9', NAME)).toBeUndefined()
+    expect(mod.localNow('S1', NAME)).toEqual({ local: { name: NAME }, checked: true })
+  })
+
+  it('nor is a probe whose last poll failed: whether it was seen is not known', async () => {
+    const answering = request.getMockImplementation()!
+    request.mockImplementation(async (query: string, variables: any) =>
+      query.includes('SubnetProbeSeen') ? 'ERROR' : answering(query, variables)
+    )
+    const mod = await follow()
+    const first = mod.localSubnetName('S1', NAME)
+    await pass(2_000)
+    expect(await first).toBeUndefined()
+    expect(mod.localNow('S1', NAME)).toEqual({ checked: false })
+  })
+
+  it('a poll that fails before the last is asked again; the last says', async () => {
+    const answering = request.getMockImplementation()!
+    let polls = 0
+    request.mockImplementation(async (query: string, variables: any) =>
+      query.includes('SubnetProbeSeen') && ++polls < 3 ? 'ERROR' : answering(query, variables)
+    )
+    const mod = await follow()
+    await pass(2_000)
+    expect(mod.localNow('S1', NAME)).toEqual({ checked: true })
+  })
+
+  it('sends nothing while the page is hidden, and asks once it is shown', async () => {
+    hidden = true
+    const mod = await follow()
+    expect(await mod.localSubnetName('S1', NAME)).toBeUndefined()
+    window.dispatchEvent(new Event('online'))
+    looked()
+    await pass(120_000)
+    expect(request).not.toHaveBeenCalled()
+    hidden = false
+    here = true
+    looked()
+    await pass(1_000)
+    expect(made).toBe(1)
+    expect(mod.localPresent()).toBe(true)
+  })
+
+  it('asks once shown what the network coming back asked while it was hidden, whatever the pace', async () => {
+    await follow()
+    await pass(2_000)
+    hidden = true
+    window.dispatchEvent(new Event('online'))
+    await pass(1_000)
+    expect(made).toBe(1)
+    // Looked at so soon, it would not be asked again but for that.
+    hidden = false
+    looked()
+    await pass(2_000)
+    expect(made).toBe(2)
+    looked()
+    await pass(2_000)
+    expect(made).toBe(2)
+  })
+
+  it('stops asking where the page is hidden meanwhile: no try, and asked again once shown', async () => {
+    const mod = await follow()
+    await pass(300)
+    hidden = true
+    request.mockClear()
+    await pass(5_000)
+    expect(request).not.toHaveBeenCalled()
+    expect(mod.localNow('S1', NAME)).toEqual({ checked: false })
+    hidden = false
+    looked()
+    await pass(2_000)
+    expect(made).toBe(2)
+    expect(mod.localNow('S1', NAME)).toEqual({ checked: true })
+  })
+
+  it('is forgotten at sign-out, and what was under way says nothing to whoever signs in next', async () => {
+    here = true
+    const mod = await follow()
+    await pass(100)
+    stop!()
+    await pass(1_000)
+    expect(mod.localPresent()).toBe(false)
+    request.mockClear()
+    looked()
+    window.dispatchEvent(new Event('online'))
+    await pass(2_000)
+    expect(request).not.toHaveBeenCalled()
+    stop = mod.followLocalAgent()
+    await pass(1_000)
+    expect(made).toBe(2)
+  })
+
+  it('sends nothing before it is followed, nor unless it is asked', async () => {
+    await load()
+    looked()
+    window.dispatchEvent(new Event('focus'))
+    await pass(120_000)
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  describe('in the Desktop app', () => {
+    let answers: boolean
+    const fetched = vi.fn()
+    beforeEach(() => {
+      browser.isElectron = true
+      answers = true
+      fetched.mockReset().mockImplementation(async (url: string) => {
+        if (!answers) throw new Error('refused')
+        const name = new URL(url).searchParams.get('name')
+        return { ok: true, json: async () => (name ? { name, address: '10.0.0.1' } : {}) }
+      })
+      vi.stubGlobal('fetch', fetched)
+    })
+    afterEach(() => vi.unstubAllGlobals())
+
+    it('is the name API’s to say, and nothing is asked of graphql', async () => {
+      const mod = await follow()
+      await pass(0)
+      expect(mod.localPresent()).toBe(true)
+      expect(await mod.localSubnetName('S1', NAME)).toEqual({ name: NAME, address: '10.0.0.1' })
+      expect(request).not.toHaveBeenCalled()
+      answers = false
+      window.dispatchEvent(new Event('online'))
+      await pass(0)
+      expect(mod.localPresent()).toBe(false)
+      fetched.mockClear()
+      expect(await mod.localSubnetName('S1', NAME)).toBeNull()
+      expect(fetched).not.toHaveBeenCalled()
+      answers = true
+      await pass(61_000)
+      expect(await mod.localSubnetName('S1', NAME)).toBeNull()
+      await pass(0)
+      expect(mod.localPresent()).toBe(true)
+    })
+
+    it('a local port’s machine is the beacon’s still, which says nothing of the name API', async () => {
+      const mod = await follow()
+      await pass(0)
+      here = true
+      const device = mod.beaconDevice()
+      await pass(1_000)
+      expect(await device).toBe('D1')
+      here = false
+      await pass(61_000)
+      const none = mod.beaconDevice()
+      await pass(2_000)
+      expect(await none).toBeNull()
+      expect(mod.localPresent()).toBe(true)
+    })
   })
 })
 
@@ -228,6 +622,60 @@ describe('with several sign-ins in use', () => {
     Object.keys(state).forEach(key => delete state[key])
   })
 
+  it('with none here, no sign-in but the first to ask sends a probe: it is the machine’s answer', async () => {
+    vi.useFakeTimers()
+    const answering = request.getMockImplementation()!
+    request.mockImplementation(async (query: string, ...rest: any[]) =>
+      query.includes('SubnetProbeSeen')
+        ? { data: { data: { subnetProbe: { seen: false } } } }
+        : answering(query, ...rest)
+    )
+    const { localSubnetName, followLocalAgent } = await load()
+    const stop = followLocalAgent()
+    await vi.advanceTimersByTimeAsync(2_000)
+    expect(await localSubnetName('s-work', 'pi')).toBeNull()
+    expect(await localSubnetName('s-me', 'mac')).toBeNull()
+    expect(made).toEqual([undefined])
+    stop()
+    vi.useRealTimers()
+    Object.keys(state).forEach(key => delete state[key])
+  })
+
+  it('a sign-in’s probe given up as the page was hidden is no try of it', async () => {
+    vi.useFakeTimers()
+    let hidden = false
+    const spy = vi.spyOn(document, 'hidden', 'get').mockImplementation(() => hidden)
+    const { localSubnetName, followLocalAgent } = await load()
+    const stop = followLocalAgent()
+    await vi.advanceTimersByTimeAsync(1_000)
+    const asked = localSubnetName('s-work', 'pi')
+    await vi.advanceTimersByTimeAsync(50)
+    hidden = true
+    await vi.advanceTimersByTimeAsync(1_000)
+    expect(await asked).toBeUndefined()
+    hidden = false
+    const again = localSubnetName('s-work', 'pi')
+    await vi.advanceTimersByTimeAsync(1_000)
+    expect(await again).toEqual({ name: 's-work.on.solo.remote.it' })
+    stop()
+    spy.mockRestore()
+    vi.useRealTimers()
+    Object.keys(state).forEach(key => delete state[key])
+  })
+
+  it('each sign-in has one probe under way, and its own token when one comes back', async () => {
+    vi.useFakeTimers()
+    const { localSubnetName, followLocalAgent } = await load()
+    const stop = followLocalAgent()
+    const asked = [localSubnetName('s-work', 'pi'), localSubnetName('d-work', 'x'), localSubnetName('s-me', 'mac')]
+    await vi.advanceTimersByTimeAsync(1_000)
+    expect((await Promise.all(asked)).every(Boolean)).toBe(true)
+    expect(made).toEqual([undefined, 'sub-work'])
+    stop()
+    vi.useRealTimers()
+    Object.keys(state).forEach(key => delete state[key])
+  })
+
   it('whoever shows an answer is told to ask again when another sign-in comes to serve an account, and asks as them', async () => {
     const { localSubnetName, onLocalForgotten } = await load()
     const { forgetAccountCaches } = await import('./accountCaches')
@@ -235,6 +683,7 @@ describe('with several sign-ins in use', () => {
     const off = onLocalForgotten(told)
     await localSubnetName('s-work', 'pi')
     expect(read).toEqual([['s-work', 'sub-work']])
+    told.mockClear() // told that an agent is here
     // The service's account is the page's own person's to serve from now on: the same name, another's answer.
     state.devices = { me: { all: [...state.devices.me.all, ...state.devices[WORK].all] } }
     forgetAccountCaches(['work'])

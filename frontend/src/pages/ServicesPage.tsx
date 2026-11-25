@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Box, Button, List, ListItem, ListItemText, Typography } from '@mui/material'
-import { getApplicationType, isWebType } from '@common/applications'
+import { webTypeOf } from '@common/applications'
 import { selectActiveAccountId } from '../selectors/accounts'
 import type { State } from '../store'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
@@ -107,8 +107,7 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   useEffect(() => setFailed(false), [dropped])
   const to = `/devices/${service.device.id}/${service.id}/connect`
   const online = service.enabled && service.state === 'active'
-  const type = useSelector((state: State) => state.applicationTypes.all.find(type => type.id === service.application))
-  const web = isWebType(getApplicationType(service.application), type)
+  const web = useSelector((state: State) => webTypeOf(service.application, state.applicationTypes.all))
   const name = web ? service.subnetName : undefined
   const port = service.subnetPort
   // Its name opens here only where an agent on this machine reaches it: nothing else answers for the name. Where none
@@ -117,7 +116,8 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   const reach = useSubnetReach(named ? service.device.id : undefined, named ? service.id : undefined)
   const destination = reach.local?.name
   const route = service.attributes?.$remoteit?.route
-  const target = { id: service.id, deviceID: service.device.id, route, web: named }
+  const couldBe = online && !!service.subnetName && !!port && web
+  const target = { id: service.id, deviceID: service.device.id, route, web: couldBe, type: service.application }
   const checked = useWebAddress(target)
   const webAddress = checked === true && !destination && reach.checked
   const unchecked = checked === 'UNCHECKED' && !destination

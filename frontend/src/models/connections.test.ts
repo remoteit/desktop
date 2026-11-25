@@ -349,6 +349,16 @@ describe('connecting to a service opened at its web address', () => {
     expect(dispatch.ui.set).not.toHaveBeenCalled()
   })
 
+  it('one of a type not known yet is decided of too: its list may say it is web', async () => {
+    target.mockReturnValue({ id: 'service-1', web: undefined, type: 48 })
+    web.mockResolvedValue(undefined)
+    expect(await connect()).toBe(false)
+    expect(dispatch.connections.proxyConnect).not.toHaveBeenCalled()
+    web.mockResolvedValue(false)
+    await connect()
+    expect(dispatch.connections.proxyConnect).toHaveBeenCalledOnce()
+  })
+
   it('a service that is not web is connected with nothing asked', async () => {
     target.mockReturnValue({ id: 'service-1', web: false })
     await connect()

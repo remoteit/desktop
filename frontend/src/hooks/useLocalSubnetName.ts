@@ -1,15 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDeviceSessions } from './useDeviceSessions'
 import { useDeviceSessionInfo } from './useDeviceSessionInfo'
 import {
   LocalSignIn,
   LocalSubnetName,
-  localAbsent,
+  localNow,
+  localPresent,
   localSignIn,
   localSubnetName,
   onLocalForgotten,
 } from '../services/localSubnet'
 import { requestServiceSessionInfo } from '../services/deviceSessionInfo'
+import { whenReleased } from '../helpers/pressed'
 import { useReadEffect } from './useReadAgain'
 
 export type SubnetReach = {
@@ -40,9 +42,9 @@ export const useSubnetPort = (deviceId?: string, serviceId?: string): number | u
   return (named?.own && named.port) || undefined
 }
 
-// A "no" from a daemon that is here may not last — a request that failed answers no too — and nothing else asks again
-// while the page is open (a reload did): asked again, anew, after each of these. Not where no daemon is here: that
-// waits out its own backoff (services/localSubnet ABSENT_MS).
+// A "no" from a daemon that is here may not last, and nothing else asks again while the page is open (a reload did): asked
+// again, anew, after each of these. Not where none is here, nor is known to be: whether one is has its own pace
+// (services/localSubnet).
 export const REACH_RETRY_MS = [2_000, 5_000, 10_000, 20_000, 40_000]
 
 // A service's name in device subnets, and whether it works on this machine: through the daemon here when one reaches
@@ -52,10 +54,14 @@ export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetRea
   const name = useSubnetName(deviceId, serviceId)
   const port = useSubnetPort(deviceId, serviceId)
   const id = serviceId || deviceId
-  const [reach, setReach] = useState<{ local?: LocalSubnetName; checked: boolean }>({ checked: false })
+  // What was answered, and of what. Until there is an answer what is known already is shown: that no agent is here, or
+  // the last answer — none is waited on for it.
+  const of = id && name ? `${id} ${name}` : ''
+  const [answered, setAnswered] = useState<{ of: string; local?: LocalSubnetName; checked: boolean }>()
+  const start = useMemo(() => (id && name ? localNow(id, name) : { checked: false }), [id, name])
+  const reach: Omit<SubnetReach, 'name' | 'port'> = answered?.of === of && of ? answered : start
 
   useEffect(() => {
-    setReach({ checked: false })
     if (!name || !id) return
     let current = true
     let timer: ReturnType<typeof setTimeout> | undefined
@@ -64,8 +70,15 @@ export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetRea
       clearTimeout(timer)
       localSubnetName(id, name, again).then(answer => {
         if (!current) return
-        setReach({ local: answer ?? undefined, checked: true })
-        if (!answer && tries < REACH_RETRY_MS.length && !localAbsent())
+        // Nothing moves from under a press: it acts on what was shown when it began.
+        whenReleased(() => {
+          if (!current) return
+          // Not known now: what was shown stays.
+          if (answer === undefined)
+            setAnswered(shown => ({ ...(shown?.of === of ? shown : localNow(id, name)), of, checked: true }))
+          else setAnswered({ of, local: answer ?? undefined, checked: true })
+        })
+        if (!answer && tries < REACH_RETRY_MS.length && localPresent())
           timer = setTimeout(() => ask(true), REACH_RETRY_MS[tries++])
       })
     }
@@ -81,7 +94,7 @@ export const useSubnetReach = (deviceId?: string, serviceId?: string): SubnetRea
     }
   }, [id, name])
 
-  return { name, ...(port && { port }), ...reach }
+  return { name, ...(port && { port }), local: reach.local, checked: reach.checked }
 }
 
 // A service's name in device subnets when it works on this machine: undefined otherwise — the device-sessions flag off,

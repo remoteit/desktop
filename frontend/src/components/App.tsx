@@ -20,6 +20,7 @@ import { SidebarMenu } from './SidebarMenu'
 import { SignInPage } from '../pages/SignInPage'
 import { ThisDeviceApp } from './ThisDeviceApp'
 import { useThisDevice } from '../hooks/useThisDevice'
+import { useLocalAgent } from '../hooks/useLocalAgent'
 import { BottomMenu } from './BottomMenu'
 import { Sidebar } from './Sidebar'
 import { useChatEnabled, useChatDocked, useSidebarWidth, useLayoutBreakpoints } from '../hooks/useChatEnabled'
@@ -71,6 +72,9 @@ export const App: React.FC = () => {
   const showBottomMenu = !terminalRoute && (mobile || browser.isMobile) && isRootMenu && hideSidebar
   const needsUserHydration = authenticated && !user
   const signedOut = !authInitialized || !authenticated
+  // Not for a window that shows no service: a terminal, the chat, or a sign-in on its way elsewhere.
+  const servicePages = !terminalRoute && !isChatPopout && !location.pathname.startsWith('/endpoint-sign-in')
+  useLocalAgent(!signedOut && !!user && servicePages)
 
   const layout: ILayout = {
     insets,
