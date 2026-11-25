@@ -17,7 +17,7 @@ vi.mock('../services/Context', async () => ({ DeviceContext: (await import('reac
 vi.mock('../services/graphQLAppCatalog', () => ({ graphQLCatalogApp: catalog }))
 vi.mock('../hooks/useDeviceApps', () => ({ useDeviceApps: () => apps.value }))
 vi.mock('../hooks/useLocalSubnetName', () => ({ useSubnetName: () => 'pi.on.remote.it' }))
-vi.mock('../helpers/terminalHelper', () => ({ openTerminal, terminalReaches: () => true }))
+vi.mock('../helpers/terminalHelper', () => ({ inApp: () => false, openTerminal, terminalReaches: () => true }))
 vi.mock('../services/browser', () => ({ default: { isNative: false }, windowOpen: vi.fn() }))
 vi.mock('../hooks/useWebAddress', () => ({
   useWebTarget: (service?: IService) => service && { id: service.id, web: true },

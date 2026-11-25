@@ -1,8 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { env, windowOpen } = vi.hoisted(() => ({ env: { isNative: false }, windowOpen: vi.fn() }))
+const { env, build, windowOpen } = vi.hoisted(() => ({
+  env: { isNative: false },
+  build: { embedded: false },
+  windowOpen: vi.fn(),
+}))
 vi.mock('../services/browser', () => ({ default: env, windowOpen }))
-vi.mock('../constants', () => ({ PORTAL_URL: 'https://app.remote.it', TERMINAL_PATH: '/terminal' }))
+vi.mock('../constants', () => ({
+  PORTAL_URL: 'https://app.remote.it',
+  TERMINAL_PATH: '/terminal',
+  get EMBEDDED() {
+    return build.embedded
+  },
+}))
 
 import { openTerminal, portalOrigin, terminalURL } from './terminalHelper'
 
@@ -10,6 +20,7 @@ const target = { name: 'pi-evan.on.dev.remote.it', port: 2222, title: 'Console',
 
 beforeEach(() => {
   env.isNative = false
+  build.embedded = false
   windowOpen.mockReset()
 })
 
@@ -45,6 +56,25 @@ describe('terminalURL', () => {
     expect(terminalURL(target)).toBe(
       'https://app.dev.remote.it/#/terminal?name=pi-evan.on.dev.remote.it&port=2222&title=Console&service=S1'
     )
+  })
+})
+
+/* The menu app's portal is at its local server's 127.0.0.1, which the browser's client takes no channel from: opened
+   there, the terminal asked another stage's client and said it "did not answer". */
+describe('from the portal embedded in the menu app', () => {
+  it('opens in the web portal of the name’s stage, in the system browser, whoever’s service it is', async () => {
+    build.embedded = true
+    const open = vi.spyOn(window, 'open').mockReturnValue(null)
+    const { terminalReaches } = await import('./terminalHelper')
+    expect(terminalReaches(target.service)).toBe(true)
+    expect(openTerminal(target)).toBe(true)
+    expect(windowOpen).toHaveBeenCalledWith(
+      'https://app.dev.remote.it/#/terminal?name=pi-evan.on.dev.remote.it&port=2222&title=Console&service=S1',
+      '_blank',
+      true
+    )
+    expect(open).not.toHaveBeenCalled()
+    open.mockRestore()
   })
 })
 

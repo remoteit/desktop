@@ -16,7 +16,7 @@ vi.mock('../services/graphQL', () => ({ graphQLBasicRequest: vi.fn(), graphQLGet
 vi.mock('../hooks/useDeviceApps', () => ({ useDeviceApps: () => apps.value }))
 vi.mock('../hooks/useDeviceSettings', () => ({ useDeviceSettings: () => ({ setting: () => undefined }) }))
 vi.mock('../hooks/useLocalSubnetName', () => ({ useSubnetName: () => name.value }))
-vi.mock('../helpers/terminalHelper', () => ({ openTerminal, terminalReaches: () => true }))
+vi.mock('../helpers/terminalHelper', () => ({ inApp: () => false, openTerminal, terminalReaches: () => true }))
 vi.mock('../services/browser', () => ({ default: { isNative: false }, windowOpen: vi.fn() }))
 vi.mock('../hooks/useWebAddress', () => ({
   useWebTarget: () => undefined,
