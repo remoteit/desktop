@@ -17,7 +17,7 @@ vi.mock('../services/graphQLDeviceNetworks', () => ({
   },
 }))
 vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
-vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'A1' }))
+vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: () => 'A1', selectRow: () => 'A1' }))
 vi.mock('../models/networks', () => ({ selectNetwork: () => ({ id: '', name: '' }) }))
 vi.mock('../hooks/useDeviceSessions', () => ({ useDeviceSessions: () => true }))
 vi.mock('../store', () => ({}))

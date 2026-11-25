@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Box, Typography } from '@mui/material'
-import { selectActiveAccountId } from '../selectors/accounts'
+import { selectActiveAccountId, selectRow } from '../selectors/accounts'
+import { accountCache } from '../services/accountCaches'
+import { useReadEffect } from '../hooks/useReadAgain'
+import type { State } from '../store'
 import { ENDED_PHASES, fetchJobRuns, fetchRunOutput, JobRun, RunOutput, UNSUPPORTED } from '../services/jobRuns'
 import { jobFailureLine, outputLines, runFailureWords, runFacts, runReason } from '../helpers/runSummary'
 import { JobRunStatus } from './JobRunPanel'
@@ -28,7 +31,7 @@ export const JobRunResult: React.FC<Props> = ({ accountId, jobId, jobDeviceId, r
   const ended = ENDED_PHASES.includes(run.phase)
   const [output, setOutput] = useState<RunOutput | null>()
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!ended || !preview) return
     let gone = false
     fetchRunOutput(accountId, jobId, jobDeviceId, PREVIEW_BYTES).then(result => {
@@ -109,19 +112,21 @@ export const JobRunResult: React.FC<Props> = ({ accountId, jobId, jobDeviceId, r
 
 // What a failed job's runs say, read once a job and its last change.
 const failures = new Map<string, Promise<string | undefined>>()
+accountCache(() => failures.clear())
 
 /* A failed job's row, in a list of runs: what failed in a few words, and where (runSummary jobFailureLine), from its
    first runs. Nothing for a job that did not fail, or on an API without the job runner's fields. */
 export const JobFailureNote: React.FC<{ job: IJob }> = ({ job }) => {
   const { t } = useTranslation()
   const accountId = useSelector(selectActiveAccountId)
+  const row = useSelector((state: State) => selectRow(state))
   const [line, setLine] = useState<string>()
   const failed = job.status === 'FAILED'
 
-  useEffect(() => {
+  useReadEffect(() => {
     if (!failed) return
     let gone = false
-    const key = `${accountId}:${job.id}:${job.updated}`
+    const key = `${row}:${job.id}:${job.updated}`
     let read = failures.get(key)
     if (!read) {
       read = fetchJobRuns(accountId, job.id, 10).then(runs => {
@@ -141,7 +146,7 @@ export const JobFailureNote: React.FC<{ job: IJob }> = ({ job }) => {
     return () => {
       gone = true
     }
-  }, [accountId, job.id, job.updated, failed])
+  }, [accountId, row, job.id, job.updated, failed])
 
   if (!failed || !line) return null
   return (

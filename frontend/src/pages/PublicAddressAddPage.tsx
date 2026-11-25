@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import { useReadEffect } from '../hooks/useReadAgain'
 import { useHistory, useLocation } from 'react-router-dom'
 import {
   Button,
@@ -51,10 +52,15 @@ export const PublicAddressAddPage: React.FC = () => {
   const [busy, setBusy] = useState(false)
   const [refusal, setRefusal] = useState<string>()
 
-  useEffect(() => {
+  useReadEffect(() => {
     graphQLServiceChoices(accountId).then(setServices)
-    graphQLProxies().then(list => Array.isArray(list) && setProxies(list))
   }, [accountId])
+
+  useReadEffect(() => {
+    graphQLProxies(serviceId ? { about: [serviceId] } : undefined).then(list =>
+      setProxies(Array.isArray(list) ? list : [])
+    )
+  }, [accountId, serviceId])
 
   const list = Array.isArray(services) ? services : []
   const service = list.find(each => each.id === serviceId)
