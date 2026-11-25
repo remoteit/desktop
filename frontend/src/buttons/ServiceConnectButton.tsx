@@ -17,7 +17,7 @@ import { opensTerminal } from '../helpers/sshHelper'
 import { useLocalSignIn, useSubnetReach } from '../hooks/useLocalSubnetName'
 import { LocalSignInNotice } from '../components/LocalSignInNotice'
 import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
-import { WebAddressConnect, WebAddressFailed } from '../components/WebAddressConnect'
+import { WebAddressConnect, WebAddressFailed, WebAddressUnchecked } from '../components/WebAddressConnect'
 import { useOpenWebAddress, useWebAddress, useWebTarget } from '../hooks/useWebAddress'
 import { useWaited } from '../hooks/useWaited'
 import { WEB_ADDRESS_WAIT_MS } from '../services/webAddress'
@@ -57,12 +57,16 @@ export const ServiceConnectButton: React.FC = () => {
   // A web service is opened at its web address where the new proxies are enabled (services/webAddress): shown where no
   // agent here reaches it, and what the proxy is where one does. Whether one does is waited on before either is, and no
   // connection is started meanwhile.
-  const webAddress = useWebAddress(useWebTarget(service, connection))
+  const webTarget = useWebTarget(service, connection)
+  const checked = useWebAddress(webTarget)
+  const webAddress = checked === true
+  // Where whether it is could not be checked there is no Connect to press, and no proxy to take: it is tried again.
+  const notChecked = checked === 'UNCHECKED'
   const address = useOpenWebAddress(service?.id)
-  const unchecked = !!webAddress && !reach.checked
+  const unchecked = webAddress && !reach.checked
   const unanswered = useWaited(unchecked, WEB_ADDRESS_WAIT_MS)
-  const webPanel = !!webAddress && !local && (reach.checked || unanswered)
-  const hold = webAddress === undefined || (unchecked && !unanswered)
+  const webPanel = webAddress && !local && (reach.checked || unanswered)
+  const hold = checked === undefined || (unchecked && !unanswered)
   // A local port of this machine (services/localPorts), where it runs our daemon: asked for here, or open already —
   // then it is what the panel shows, until it is disconnected.
   const localPort = useLocalPort(service?.id, device?.id)
@@ -71,7 +75,10 @@ export const ServiceConnectButton: React.FC = () => {
   useEffect(() => {
     if (localPort.local && !localPort.local.open && !localPort.busy) setPortAsked(false)
   }, [localPort.local?.open, localPort.busy])
-  const named = !connection.enabled && !onPort && ((!!local && (!!webAddress || !proxy)) || webPanel || terminal)
+  const named =
+    !connection.enabled &&
+    !onPort &&
+    ((!!local && (webAddress || notChecked || !proxy)) || webPanel || notChecked || terminal)
   // remote.it is on this machine but does not act for this person (services/localSubnet localSignIn): Connect goes
   // through this browser meanwhile, and signing in there is offered.
   const signIn = useLocalSignIn(!local && reach.checked && !!reach.name && !onPort)
@@ -92,8 +99,8 @@ export const ServiceConnectButton: React.FC = () => {
     if (connection?.error) clearConnectionError(connection)
   }
   useEffect(() => {
-    if (named && !webPanel) clearError()
-  }, [named, webPanel, connection?.error])
+    if (named && (local || terminal)) clearError()
+  }, [named, !!local, terminal, connection?.error])
   // Nothing is connected from here then: what was asked for on arrival at the page is what it shows.
   useEffect(() => {
     if (named && autoConnect && autoConnect === service?.id) dispatch.ui.set({ autoConnect: undefined })
@@ -169,6 +176,8 @@ export const ServiceConnectButton: React.FC = () => {
                   />
                 ) : webPanel ? (
                   service && <WebAddressConnect service={service} onOpened={clearError} />
+                ) : notChecked ? (
+                  <WebAddressUnchecked target={webTarget} />
                 ) : (
                   service && (
                     <BrowserGatewayConnect
@@ -180,7 +189,8 @@ export const ServiceConnectButton: React.FC = () => {
                     />
                   )
                 )}
-                {!webPanel && webAddress !== undefined && (
+                {!!local && notChecked && <WebAddressUnchecked target={webTarget} />}
+                {!webPanel && !notChecked && checked !== undefined && (
                   <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
                     <Link onClick={webAddress ? address.open : () => setProxy(true)}>
                       {t('serviceConnectButton.useProxy', 'Connect through the proxy instead')}

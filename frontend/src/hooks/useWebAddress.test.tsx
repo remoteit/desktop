@@ -37,16 +37,19 @@ vi.mock('react-redux', () => ({
 }))
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (_key: string, text: string) => text }) }))
 
-import { useOpenWebService, useWebAddress } from './useWebAddress'
+import { useOpenWebService, useRecheck, useWebAddress } from './useWebAddress'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
 const target = { id: 'S1', deviceID: 'D1', web: true }
-let seen: boolean | undefined
+let seen: boolean | undefined | 'UNCHECKED'
 let open: () => Promise<void>
+let recheck: () => Promise<void>
+let panel: ReturnType<typeof useRecheck>
 const Shown: React.FC = () => {
   seen = useWebAddress(target)
-  open = useOpenWebService(target).open
+  ;({ open, recheck } = useOpenWebService(target))
+  panel = useRecheck(target)
   return null
 }
 let root: Root
@@ -75,10 +78,13 @@ describe('whether a service is opened at its web address', () => {
     expect(seen).toBe(true)
   })
 
-  it('is not, where it could not be known, until it is after all', async () => {
+  it('is said not to be checked, as against not, where it could not be, until it is after all', async () => {
     await render()
     await act(async () => answer(undefined))
-    expect(seen).toBe(false)
+    expect(seen).toBe('UNCHECKED')
+    // Nothing is asked again by itself.
+    await render()
+    expect(service.decideWebAddress).toHaveBeenCalledTimes(1)
     service.opensAtWebAddress.mockReturnValue(true)
     service.webAddressGate.mockReturnValue(true)
     await act(async () => service.listeners.forEach(listener => listener()))
@@ -96,7 +102,7 @@ describe('whether a service is opened at its web address', () => {
   it('is asked for again when the Test setting changes', async () => {
     await render()
     await act(async () => answer(undefined))
-    expect(seen).toBe(false)
+    expect(seen).toBe('UNCHECKED')
     state.ui.proxyFleet = 'CONNECTD'
     await render()
     expect(service.decideWebAddress).toHaveBeenCalledTimes(2)
@@ -123,5 +129,38 @@ describe('one that did not open from a row', () => {
     service.openWebService.mockRejectedValueOnce(new Error('gone'))
     await act(() => open())
     expect(uiSet).toHaveBeenLastCalledWith({ errorMessage: 'Could not open it: try again' })
+  })
+})
+
+describe('trying again what could not be checked', () => {
+  it('asks once, however often it is pressed meanwhile', async () => {
+    await render()
+    await act(async () => answer(undefined))
+    service.decideWebAddress.mockClear()
+    let first: Promise<unknown>
+    await act(async () => void (first = panel.recheck()))
+    expect(panel.checking).toBe(true)
+    await act(async () => void panel.recheck())
+    expect(service.decideWebAddress).toHaveBeenCalledExactlyOnceWith(target)
+    service.opensAtWebAddress.mockReturnValue(true)
+    await act(async () => {
+      answer(true)
+      await first
+    })
+    expect(panel.checking).toBe(false)
+    expect(seen).toBe(true)
+  })
+
+  it('from a row says that it could not be then either, and opens nothing', async () => {
+    await render()
+    service.decideWebAddress.mockResolvedValueOnce(undefined)
+    await act(() => recheck())
+    expect(uiSet).toHaveBeenCalledExactlyOnceWith({
+      errorMessage: 'Could not check how this service opens, so it was not connected. Try again.',
+    })
+    service.decideWebAddress.mockResolvedValueOnce(true)
+    await act(() => recheck())
+    expect(uiSet).toHaveBeenCalledTimes(1)
+    expect(service.openWebService).not.toHaveBeenCalled()
   })
 })

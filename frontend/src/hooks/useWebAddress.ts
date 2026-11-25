@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { Dispatch, State } from '../store'
 import { deviceSessionInfo, subscribeDeviceSessionInfo } from '../services/deviceSessionInfo'
 import {
+  Unchecked,
   WebAddressOpened,
   WebTarget,
   decideWebAddress,
@@ -30,9 +31,9 @@ export function useWebTarget(service?: IService, connection?: IConnection): WebT
 }
 
 /* Whether a service is opened at its web address rather than by a proxy connection (services/webAddress): undefined while
-   that is read, which is asked for here. One that cannot be read, or not in time, is not — until it is known after all.
-   Looked at again when who serves its account changes, and when the Test setting does. */
-export function useWebAddress(target: WebTarget | undefined): boolean | undefined {
+   that is read, which is asked for here; UNCHECKED where it could not be, until it is known after all — by whoever tries
+   again (useRecheck). Looked at again when who serves its account changes, and when the Test setting does. */
+export function useWebAddress(target: WebTarget | undefined): boolean | undefined | Unchecked {
   const dropped = useReadAgain()
   useDeviceSessions()
   const fleet = useSelector((state: State) => state.ui.proxyFleet)
@@ -44,18 +45,32 @@ export function useWebAddress(target: WebTarget | undefined): boolean | undefine
   const now = opensAtWebAddress(target)
   // What was asked of, and answered or given up on.
   const asked = allowed && target ? `${target.id} ${target.deviceID} ${fleet} ${dropped}` : ''
-  const [answered, setAnswered] = useState('')
+  const [answered, setAnswered] = useState<{ asked: string; is?: boolean }>()
 
   useEffect(() => {
     if (!asked) return
     let current = true
-    decideWebAddress(target).then(() => current && setAnswered(asked))
+    decideWebAddress(target).then(is => current && setAnswered({ asked, is }))
     return () => {
       current = false
     }
   }, [asked])
 
-  return now ?? (answered === asked ? false : undefined)
+  return now ?? (answered?.asked === asked ? answered.is ?? 'UNCHECKED' : undefined)
+}
+
+// Trying again whether a service is opened at its web address, where it could not be checked: read again once, and what is
+// shown of it follows.
+export function useRecheck(target: WebTarget | undefined) {
+  const [checking, setChecking] = useState(false)
+  const recheck = async () => {
+    if (checking) return false
+    setChecking(true)
+    const is = await decideWebAddress(target)
+    setChecking(false)
+    return is
+  }
+  return { checking, recheck }
 }
 
 // A service's web address, where it is opened at one (`on`) and there is one: to show, and to copy.
@@ -100,8 +115,19 @@ export function useOpenWebService(target: WebTarget | undefined) {
   const { t } = useTranslation()
   const dispatch = useDispatch<Dispatch>()
   const { open, opening } = useOpenWebAddress(target?.id, () => openWebService(target!))
+  const { checking, recheck } = useRecheck(target)
   return {
-    opening,
+    opening: opening || checking,
+    // Where it could not be checked: tried again, and opened by the next click where that answers.
+    recheck: async () => {
+      if ((await recheck()) !== undefined) return
+      dispatch.ui.set({
+        errorMessage: t(
+          'webAddress.unchecked',
+          'Could not check how this service opens, so it was not connected. Try again.'
+        ),
+      })
+    },
     open: async () => {
       const result = await open()
       if (result !== true)

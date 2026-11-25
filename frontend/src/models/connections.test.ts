@@ -308,8 +308,40 @@ describe('connecting to a service opened at its web address', () => {
     expect(dispatch.connections.proxyConnect).not.toHaveBeenCalled()
   })
 
-  it.each([false, undefined])('any other is connected as ever: %s, the gate off or not known', async decided => {
-    web.mockResolvedValue(decided)
+  it('one that could not be checked is not connected: that is said, once, and it is checked again when asked again', async () => {
+    web.mockResolvedValue(undefined)
+    expect(await connect({ autoLaunch: true })).toBe(false)
+    expect(dispatch.ui.set.mock.calls).toEqual([
+      [{ errorMessage: 'Could not check how this service opens, so it was not connected. Try again.' }],
+    ])
+    expect(dispatch.ui.clearAutoLaunch).toHaveBeenCalledWith('service-1')
+    expect(dispatch.connections.proxyConnect).not.toHaveBeenCalled()
+    expect(setConnection).not.toHaveBeenCalled()
+    expect(ready).not.toHaveBeenCalled()
+    expect(web).toHaveBeenCalledOnce()
+    web.mockResolvedValue(false)
+    expect(await connect()).not.toBe(false)
+    expect(dispatch.connections.proxyConnect).toHaveBeenCalledOnce()
+  })
+
+  it('and where it is started with others, on it alone, as no enabled connection', async () => {
+    web.mockResolvedValue(undefined)
+    expect(await connect({ autoStart: true, enabled: true })).toBe(false)
+    expect(setConnection).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        id: 'service-1',
+        enabled: false,
+        autoStart: undefined,
+        error: { message: 'Could not check how this service opens, so it was not connected. Try again.' },
+      })
+    )
+    expect(dispatch.ui.set).not.toHaveBeenCalled()
+    expect(dispatch.connections.proxyConnect).not.toHaveBeenCalled()
+    expect(open).not.toHaveBeenCalled()
+  })
+
+  it('any other is connected as ever', async () => {
+    web.mockResolvedValue(false)
     expect(await connect({ autoStart: true })).not.toBe(false)
     expect(await connect()).not.toBe(false)
     expect(dispatch.connections.proxyConnect).toHaveBeenCalledTimes(2)

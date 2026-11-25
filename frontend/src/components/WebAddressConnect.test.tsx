@@ -2,8 +2,9 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { openWebAddress, dropped, known, request, opened } = vi.hoisted(() => ({
+const { openWebAddress, decide, dropped, known, request, opened } = vi.hoisted(() => ({
   openWebAddress: vi.fn(),
+  decide: vi.fn(),
   dropped: { value: 0 },
   known: { value: undefined as string | undefined },
   request: vi.fn(),
@@ -14,6 +15,7 @@ vi.mock('react-redux', () => ({ useDispatch: () => ({}), useSelector: (select: a
 vi.mock('../services/deviceSessionInfo', () => ({}))
 vi.mock('../services/webAddress', () => ({
   openWebAddress,
+  decideWebAddress: decide,
   subscribeWebAddresses: () => () => {},
   knownWebAddress: () => known.value,
   requestWebAddress: request,
@@ -34,7 +36,7 @@ vi.mock('../buttons/IconButton', () => ({
 vi.mock('../buttons/CopyIconButton', () => ({ CopyIconButton: ({ value }: any) => <span data-copy={value} /> }))
 vi.mock('./Icon', () => ({ Icon: () => null }))
 
-import { WebAddressConnect } from './WebAddressConnect'
+import { WebAddressConnect, WebAddressUnchecked } from './WebAddressConnect'
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true })
 
@@ -105,5 +107,24 @@ describe('the web address panel', () => {
     await render()
     expect(container.textContent).toContain('web-acme.solo.r3proxy.com')
     expect(container.querySelector<HTMLElement>('[data-copy]')!.dataset.copy).toBe('https://web-acme.solo.r3proxy.com')
+  })
+})
+
+describe('a service that could not be checked', () => {
+  it('says so, and is checked again when asked, once at a time', async () => {
+    const target = { id: 'S1', deviceID: 'D1', web: true }
+    let answer: (value: unknown) => void = () => {}
+    decide.mockReturnValue(new Promise(resolve => (answer = resolve)))
+    await act(async () => root.render(<WebAddressUnchecked target={target} />))
+    expect(container.textContent).toContain(
+      'Could not check how this service opens, so it was not connected. Try again.'
+    )
+    expect(decide).not.toHaveBeenCalled()
+    await open()
+    expect(button().disabled).toBe(true)
+    expect(decide).toHaveBeenCalledExactlyOnceWith(target)
+    await act(async () => answer(undefined))
+    expect(button().disabled).toBe(false)
+    expect(openWebAddress).not.toHaveBeenCalled()
   })
 })

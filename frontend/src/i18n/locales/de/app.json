@@ -5161,6 +5161,8 @@
     "caption": "Läuft über den Proxy von remote.it, der die Daten lesen kann. Für eine Ende-zu-Ende-Verbindung verwenden Sie die remote.it-App.",
     "failed": "Konnte nicht geöffnet werden: Versuchen Sie es erneut",
     "open": "Im Browser öffnen",
-    "title": "Anmelden und im Browser öffnen"
+    "retry": "Erneut versuchen",
+    "title": "Anmelden und im Browser öffnen",
+    "unchecked": "Es konnte nicht geprüft werden, wie dieser Dienst geöffnet wird, daher wurde er nicht verbunden. Versuchen Sie es erneut."
   }
 }

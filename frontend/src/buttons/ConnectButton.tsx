@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import browser from '../services/browser'
 import { Stack } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
@@ -43,6 +43,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const target = useWebTarget(service, connection)
   const webAddress = useWebAddress(starts && !preventDefault ? target : undefined)
   const web = useOpenWebService(target)
+  const [checking, setChecking] = useState(false)
   const held = starts && !preventDefault && (!!hold || webAddress === undefined)
 
   useEffect(() => {
@@ -82,15 +83,19 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     } else if (connection?.connecting || connection?.enabled || connection?.starting) {
       if (connection.connected) dispatch.connections.onClose(connection)
       await dispatch.connections.disconnect({ connection, forceStop })
-    } else if (held) {
+    } else if (held || checking) {
       return
-    } else if (webAddress && event) {
+    } else if (webAddress === true && event) {
       await web.open()
     } else {
       connection = connection || newConnection(service)
+      // What could not be checked is checked again as it connects, and connected only where it is known to be.
+      setChecking(webAddress === 'UNCHECKED')
       // Not connected where it is opened another way, from its page: nothing to list among the connections.
-      if ((await dispatch.connections.connect({ ...connection, connectOnReady: true })) !== false)
-        await dispatch.networks.join(instanceId)
+      const started = await dispatch.connections
+        .connect({ ...connection, connectOnReady: true })
+        .finally(() => setChecking(false))
+      if (started !== false) await dispatch.networks.join(instanceId)
     }
     event && onClick?.(event)
   }
@@ -107,7 +112,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   let loading = false
   let icon: string | undefined = 'play'
 
-  if (connection?.autoLaunch && !launchDisabled(connection) && !webAddress) title += ' + Launch'
+  if (connection?.autoLaunch && !launchDisabled(connection) && webAddress === false) title += ' + Launch'
 
   if (!permissions?.includes('CONNECT')) {
     disabled = true
@@ -159,8 +164,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   if (all) title += ' all'
 
-  props.loading = props.loading || loading || web.opening || (held && state !== 'offline')
-  disabled = disabled || held || web.opening
+  props.loading = props.loading || loading || web.opening || checking || (held && state !== 'offline')
+  disabled = disabled || held || web.opening || checking
 
   if (props.loading) icon = 'spinner-third'
   if (service?.attributes.route === 'p2p' && !browser.hasBackend) disabled = true

@@ -7,7 +7,7 @@ import type { SubnetReach } from '../hooks/useLocalSubnetName'
 // What the connect panel shows for a service: its name here where an agent on this machine reaches it, else a terminal
 // for SSH, its web address for a web service, else Connect. A device's name is shown, and opened, nowhere else.
 const { state, openWebAddress, uiSet, clearError } = vi.hoisted(() => ({
-  state: { reach: { checked: true } as any, webAddress: true as boolean | undefined, autoConnect: '' },
+  state: { reach: { checked: true } as any, webAddress: true as boolean | undefined | 'UNCHECKED', autoConnect: '' },
   openWebAddress: vi.fn(),
   clearError: vi.fn(),
   uiSet: vi.fn(),
@@ -70,6 +70,7 @@ vi.mock('../components/WebAddressConnect', () => ({
   WebAddressConnect: ({ service, onOpened }: any) => (
     <i data-panel="web" data-service={service.id} onClick={onOpened} />
   ),
+  WebAddressUnchecked: ({ target }: any) => <i data-panel="unchecked" data-service={target.id} />,
   WebAddressFailed: ({ reason }: any) => <em>{reason || 'failed'}</em>,
 }))
 vi.mock('../components/BrowserGatewayConnect', () => ({
@@ -149,6 +150,34 @@ describe('no agent on this machine reaches the service', () => {
     expect(held()).toBe(false)
     expect(proxyLink()).toBeUndefined()
     expect(container.textContent).not.toContain(NAME)
+  })
+
+  it('a web service that could not be checked has no Connect, only that and trying again', async () => {
+    state.webAddress = 'UNCHECKED'
+    for (const reach of [{ checked: false }, { checked: false, name: NAME }, { checked: true, name: NAME }]) {
+      state.reach = reach
+      await render(HTTPS, 443, { error: { message: 'left' } })
+      expect(panels()).toEqual(['unchecked'])
+      expect(proxyLink()).toBeUndefined()
+    }
+    expect(container.querySelector<HTMLElement>('[data-panel]')!.dataset.service).toBe('S1')
+    expect(clearError).not.toHaveBeenCalled()
+    state.webAddress = true
+    await render(HTTPS, 443)
+    expect(panels()).toEqual(['web'])
+    state.webAddress = false
+    await render(HTTPS, 443)
+    expect(panels()).toEqual(['connect'])
+    expect(held()).toBe(false)
+  })
+
+  it('nor one asked for on arrival at its page; one connected already is as it was', async () => {
+    state.webAddress = 'UNCHECKED'
+    state.autoConnect = 'S1'
+    await render(HTTPS, 443)
+    expect(uiSet).toHaveBeenCalledWith({ autoConnect: undefined })
+    await render(HTTPS, 443, { enabled: true })
+    expect(panels()).toEqual(['connect'])
   })
 
   it('a web service’s Connect is held until whether it is opened at one is known', async () => {
@@ -289,6 +318,16 @@ describe('an agent on this machine reaches the service', () => {
     await render(HTTP, 8123)
     expect(panels()).toEqual(['local'])
     expect(proxyLink()).toBeUndefined()
+  })
+
+  it('the proxy is not offered for a web service that could not be checked: that is said, and tried again', async () => {
+    state.webAddress = 'UNCHECKED'
+    await render(HTTP, 8123)
+    expect(panels()).toEqual(['local', 'unchecked'])
+    expect(proxyLink()).toBeUndefined()
+    await render(SSH, 22)
+    expect(panels()).toEqual(['local'])
+    expect(proxyLink()).toBeDefined()
   })
 
   it('an error left by the proxy is cleared', async () => {

@@ -3,7 +3,7 @@ import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const { apps, catalog, push, params, openTerminal, web } = vi.hoisted(() => ({
-  web: { value: false as boolean | undefined, opening: false, open: vi.fn() },
+  web: { value: false as boolean | undefined | 'UNCHECKED', opening: false, open: vi.fn(), recheck: vi.fn() },
   apps: { value: {} as any },
   catalog: vi.fn(),
   push: vi.fn(),
@@ -22,7 +22,11 @@ vi.mock('../services/browser', () => ({ default: { isNative: false }, windowOpen
 vi.mock('../hooks/useWebAddress', () => ({
   useWebTarget: (service?: IService) => service && { id: service.id, web: true },
   useWebAddress: (target?: unknown) => (target ? web.value : false),
-  useOpenWebService: (target?: { id: string }) => ({ opening: web.opening, open: () => web.open(target?.id) }),
+  useOpenWebService: (target?: { id: string }) => ({
+    opening: web.opening,
+    open: () => web.open(target?.id),
+    recheck: () => web.recheck(target?.id),
+  }),
 }))
 vi.mock('../services/graphQLDeviceApps', async () => ({
   ...(await import('../services/deviceAppsShared')),
@@ -167,6 +171,7 @@ beforeEach(() => {
   params.appID = 'acme.backup'
   Object.assign(web, { value: false, opening: false })
   web.open.mockReset()
+  web.recheck.mockReset()
   push.mockReset()
   openTerminal.mockReset()
   catalog.mockReset().mockResolvedValue(CATALOG)
@@ -446,6 +451,16 @@ describe('its service, settings, root, delivery and problems', () => {
       const page = await render()
       await click(open(page))
       expect(web.open).toHaveBeenCalledExactlyOnceWith('S7')
+      expect(push).not.toHaveBeenCalled()
+    })
+
+    it('is checked again where it could not be, with nothing opened or gone to', async () => {
+      web.value = 'UNCHECKED'
+      const page = await render()
+      expect(open(page).disabled).toBe(false)
+      await click(open(page))
+      expect(web.recheck).toHaveBeenCalledExactlyOnceWith('S7')
+      expect(web.open).not.toHaveBeenCalled()
       expect(push).not.toHaveBeenCalled()
     })
 

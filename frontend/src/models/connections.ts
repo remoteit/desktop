@@ -547,8 +547,18 @@ export default createModel<RootModel>()({
       // together is made ready, nothing opened; one asked for with no click — a link, on arrival — is opened from its
       // page, a tab being only a click's to open.
       const target = webTarget(state, service, connection)
-      if (target?.web && (await decideWebAddress(target))) {
-        dispatch.ui.clearAutoLaunch(connection.id)
+      // Where whether it is could not be checked nothing is connected: its proxy connection would be anyone's to use.
+      const atAddress = !!target?.web && (await decideWebAddress(target))
+      if (atAddress !== false) dispatch.ui.clearAutoLaunch(connection.id)
+      if (atAddress === undefined) {
+        const message = i18n.t('webAddress.unchecked', {
+          defaultValue: 'Could not check how this service opens, so it was not connected. Try again.',
+        })
+        if (connection.autoStart) setConnection({ ...connection, enabled: false, autoStart: undefined, error: { message } })
+        else dispatch.ui.set({ errorMessage: message })
+        return false
+      }
+      if (target && atAddress) {
         if (connection.autoStart) {
           const ready = await readyWebAddress(target.id)
           if (ready !== UNSUPPORTED) {

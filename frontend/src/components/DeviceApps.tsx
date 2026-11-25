@@ -241,7 +241,8 @@ export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp; service: Devic
       data-app-open
       disabled={webAddress === undefined || web.opening}
       onClick={() => {
-        if (webAddress) return web.open()
+        if (webAddress === true) return web.open()
+        if (webAddress === 'UNCHECKED') return web.recheck()
         history.push({
           pathname: `/devices/${device.id}/${service.serviceId}/connect`,
           // A udp service's connection is all it has: its port is for the person's own UDP client.

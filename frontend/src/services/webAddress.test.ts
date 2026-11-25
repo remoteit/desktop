@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { env, post, basic, openInSystem, windowOpen, state, info, readInfo, localName } = vi.hoisted(() => ({
+const { env, post, basic, openInSystem, windowOpen, state, info, name, readName, localName } = vi.hoisted(() => ({
   env: { isNative: false, isMobile: false, hasBackend: false, embedded: false },
   post: vi.fn(),
   basic: vi.fn(),
@@ -8,7 +8,8 @@ const { env, post, basic, openInSystem, windowOpen, state, info, readInfo, local
   windowOpen: vi.fn(),
   state: { deviceSessions: true, api: 'https://api.one', setting: undefined as string | undefined },
   info: vi.fn(),
-  readInfo: vi.fn(),
+  name: vi.fn(),
+  readName: vi.fn(),
   localName: vi.fn(),
 }))
 vi.mock('./browser', () => ({ default: env, openInSystem, windowOpen }))
@@ -41,7 +42,11 @@ vi.mock('../selectors/devices', () => ({
   ],
 }))
 vi.mock('./accountCaches', () => ({ accountCache: vi.fn() }))
-vi.mock('./deviceSessionInfo', () => ({ deviceSessionInfo: info, readDeviceSessionInfo: readInfo }))
+vi.mock('./deviceSessionInfo', () => ({
+  deviceSessionInfo: info,
+  deviceSessionName: name,
+  readDeviceSessionName: readName,
+}))
 vi.mock('./graphQLDetectedScheme', () => ({ defaultHttpOnName: () => false }))
 vi.mock('./localSubnet', () => ({
   localSubnetName: localName,
@@ -98,7 +103,7 @@ beforeEach(() => {
   Object.assign(env, { isNative: false, isMobile: false, hasBackend: false, embedded: false })
   Object.assign(state, { deviceSessions: true, api: 'https://api.one', setting: undefined })
   api = { mutation: ['connect', 'openWebAddress'], query: ['proxyFleet'], service: ['webAddress'], fleet: 'CONNECTD' }
-  for (const mock of [post, basic, openInSystem, windowOpen, info, readInfo, localName]) mock.mockReset()
+  for (const mock of [post, basic, openInSystem, windowOpen, info, name, readName, localName]) mock.mockReset()
   basic.mockImplementation(async (query: string) => {
     if (query.includes('WebAddressSchema'))
       return (
@@ -114,7 +119,8 @@ beforeEach(() => {
   })
   const session = { services: { S1: NAME } }
   info.mockReturnValue(session)
-  readInfo.mockResolvedValue(session)
+  name.mockReturnValue(NAME)
+  readName.mockResolvedValue(NAME)
   localName.mockResolvedValue(null)
   tab = { location: { href: '' }, opener: {}, close: vi.fn() }
   open = vi.spyOn(window, 'open').mockReturnValue(tab as any) as any
@@ -200,6 +206,9 @@ describe('the gate: web addresses, where the new proxies are enabled', () => {
       const decided = decideWebAddress(target())
       await vi.advanceTimersByTimeAsync(WEB_ADDRESS_WAIT_MS)
       expect(await decided).toBeUndefined()
+      // And is made anew by whoever asks next, not waited on again.
+      basic.mockImplementation(answering)
+      expect(await decideWebAddress(target())).toBe(true)
     }
   )
 })
@@ -209,20 +218,21 @@ describe('whether a service is opened at its web address', () => {
     expect(opensAtWebAddress(target())).toBeUndefined()
     expect(await decideWebAddress(target())).toBe(true)
     expect(opensAtWebAddress(target())).toBe(true)
-    info.mockReturnValue({ services: { S1: null } })
-    readInfo.mockResolvedValue({ services: { S1: null } })
+    name.mockReturnValue(null)
+    readName.mockResolvedValue(null)
     expect(opensAtWebAddress(target())).toBe(false)
     expect(await decideWebAddress(target())).toBe(false)
   })
 
-  it('is not known until its device is, or where its device was read before it was added; nor waited on for good', async () => {
+  it('is not known, and is not no, where its name could not be read; nor is that waited on for good', async () => {
     await decideWebAddress(target())
-    info.mockReturnValue(undefined)
+    name.mockReturnValue(undefined)
+    readName.mockResolvedValueOnce(undefined)
     expect(opensAtWebAddress(target())).toBeUndefined()
-    info.mockReturnValue({ services: {} })
-    expect(opensAtWebAddress(target())).toBeUndefined()
+    expect(await decideWebAddress(target())).toBeUndefined()
+    expect(await decideWebAddress(target())).toBe(true) // read again by the next
     vi.useFakeTimers()
-    readInfo.mockReturnValue(new Promise(() => {}))
+    readName.mockReturnValue(new Promise(() => {}))
     const decided = decideWebAddress(target())
     await vi.advanceTimersByTimeAsync(WEB_ADDRESS_WAIT_MS)
     expect(await decided).toBeUndefined()

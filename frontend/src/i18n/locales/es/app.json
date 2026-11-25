@@ -5274,6 +5274,8 @@
     "caption": "Pasa por el proxy de remote.it, que puede leer el contenido. Para una conexión de extremo a extremo, usa la aplicación remote.it.",
     "failed": "No se pudo abrir: inténtalo de nuevo",
     "open": "Abrir en el navegador",
-    "title": "Iniciar sesión y abrir en tu navegador"
+    "retry": "Intentar de nuevo",
+    "title": "Iniciar sesión y abrir en tu navegador",
+    "unchecked": "No se pudo comprobar cómo se abre este servicio, por lo que no se conectó. Inténtalo de nuevo."
   }
 }

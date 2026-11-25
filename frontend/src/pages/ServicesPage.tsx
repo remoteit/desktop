@@ -9,7 +9,7 @@ import type { State } from '../store'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { useSubnetReach } from '../hooks/useLocalSubnetName'
 import { useServiceShortcutsSupport } from '../hooks/useServiceShortcutsSupport'
-import { useOpenWebAddress, useWebAddress } from '../hooks/useWebAddress'
+import { useOpenWebAddress, useRecheck, useWebAddress } from '../hooks/useWebAddress'
 import { graphQLServiceShortcuts, ServiceShortcut } from '../services/graphQLServiceShortcuts'
 import { openServiceURL } from '../services/browser'
 import { subnetWebURL } from '../services/localSubnet'
@@ -117,10 +117,11 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   const reach = useSubnetReach(named ? service.device.id : undefined, named ? service.id : undefined)
   const destination = reach.local?.name
   const route = service.attributes?.$remoteit?.route
-  const webAddress =
-    useWebAddress({ id: service.id, deviceID: service.device.id, route, web: named }) === true &&
-    !destination &&
-    reach.checked
+  const target = { id: service.id, deviceID: service.device.id, route, web: named }
+  const checked = useWebAddress(target)
+  const webAddress = checked === true && !destination && reach.checked
+  const unchecked = checked === 'UNCHECKED' && !destination
+  const { checking, recheck } = useRecheck(target)
   const address = useOpenWebAddress(service.id)
   const status = !service.enabled
     ? t('serviceShortcuts.disabled', 'Disabled')
@@ -153,6 +154,14 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
         secondary={
           <>
             {online ? service.device.name : `${service.device.name} · ${status}`}
+            {unchecked && (
+              <Typography component="span" display="block" variant="caption" color="error">
+                {t(
+                  'webAddress.unchecked',
+                  'Could not check how this service opens, so it was not connected. Try again.'
+                )}
+              </Typography>
+            )}
             {(failed || address.failed) && (
               <Typography component="span" display="block" variant="caption" color="error">
                 {address.failed?.reason ||
@@ -165,6 +174,10 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
       {online && (destination || webAddress) && !failed && !address.failed ? (
         <Button size="small" variant="contained" disabled={opening || address.opening} onClick={open}>
           {t('serviceShortcuts.open', 'Open')}
+        </Button>
+      ) : unchecked ? (
+        <Button size="small" variant="outlined" disabled={checking} onClick={recheck}>
+          {t('webAddress.retry', 'Try again')}
         </Button>
       ) : (
         <Button size="small" variant="outlined" component={Link} to={to}>

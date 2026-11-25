@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ServicesPage } from './ServicesPage'
 import type { ServiceShortcut } from '../services/graphQLServiceShortcuts'
 
-const { state, list, openServiceURL, openWebAddress, allowed } = vi.hoisted(() => ({
+const { state, list, openServiceURL, openWebAddress, allowed, recheck } = vi.hoisted(() => ({
   state: {
     account: 'my-account',
     applicationTypes: { all: [{ id: 48, proxy: true, scheme: '' }] },
@@ -15,6 +15,7 @@ const { state, list, openServiceURL, openWebAddress, allowed } = vi.hoisted(() =
   },
   openWebAddress: vi.fn(),
   allowed: vi.fn(),
+  recheck: vi.fn(),
   list: vi.fn(),
   openServiceURL: vi.fn(),
 }))
@@ -35,6 +36,7 @@ vi.mock('../hooks/useWebAddress', async () => {
   const { useState } = await import('react')
   return {
     useWebAddress: (target: any) => (target.web && state.webAddresses ? allowed(target) : state.webAddresses && false),
+    useRecheck: () => ({ checking: false, recheck }),
     useOpenWebAddress: (id: string) => {
       const [failed, setFailed] = useState<{ reason: string }>()
       const open = async () => {
@@ -150,6 +152,23 @@ describe('a web service where the new proxies are enabled', () => {
       await act(async () => root?.unmount())
     }
     expect(allowed).toHaveBeenCalledWith({ id: 'home', deviceID: 'server', route: 'p2p', web: true })
+  })
+
+  it('is tried again where it could not be checked, with nothing to open; not where an agent here reaches it', async () => {
+    allowed.mockReturnValue('UNCHECKED')
+    list.mockResolvedValue([home])
+    let row = (await renderPage()).querySelector('li')!
+    expect(row.textContent).toContain('Could not check how this service opens, so it was not connected. Try again.')
+    expect(row.querySelector(':scope > a')).toBeNull()
+    expect(row.querySelector('button')!.textContent).toBe('Try again')
+    await act(async () => row.querySelector('button')!.click())
+    expect(recheck).toHaveBeenCalledOnce()
+    expect(openWebAddress).not.toHaveBeenCalled()
+    await act(async () => root?.unmount())
+    state.localNames = { home: 'home-acme.on.remote.it' }
+    row = (await renderPage()).querySelector('li')!
+    expect(row.textContent).not.toContain('Could not check')
+    expect(row.querySelector('button')!.textContent).toBe('Open')
   })
 
   it('has Connect for a service that is not web, or is offline', async () => {

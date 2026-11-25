@@ -1,9 +1,10 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
-import { useKnownWebAddress, useOpenWebAddress, useWebTarget } from '../hooks/useWebAddress'
+import { useKnownWebAddress, useOpenWebAddress, useRecheck, useWebTarget } from '../hooks/useWebAddress'
+import type { WebTarget } from '../services/webAddress'
 import { Icon } from './Icon'
 
 /* A web service with no agent here to reach it: opened at its web address (services/webAddress), through remote.it's
@@ -53,6 +54,22 @@ export const WebAddressConnect: React.FC<{ service: IService; onOpened?: () => v
         onClick={async () => (await open()) === true && onOpened?.()}
       />
       {address && <CopyIconButton value={address} color="primary" />}
+    </Box>
+  )
+}
+
+// A service that could not be checked for one (services/webAddress Unchecked): nothing is connected, and it is tried again.
+export const WebAddressUnchecked: React.FC<{ target?: WebTarget }> = ({ target }) => {
+  const { t } = useTranslation()
+  const { checking, recheck } = useRecheck(target)
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, paddingX: 2, paddingY: 1.25 }}>
+      <Typography variant="caption" color="error" component="div" sx={{ minWidth: 0, flex: 1 }} role="alert">
+        {t('webAddress.unchecked', 'Could not check how this service opens, so it was not connected. Try again.')}
+      </Typography>
+      <Button size="small" variant="contained" disabled={checking} onClick={recheck}>
+        {t('webAddress.retry', 'Try again')}
+      </Button>
     </Box>
   )
 }

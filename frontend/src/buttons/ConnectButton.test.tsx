@@ -5,7 +5,11 @@ import { DEFAULT_CONNECTION, DEFAULT_SERVICE } from '@common/constants'
 
 // Connect, wherever it is: a device's list of services, a chip in a list, the service's own page.
 const { state, dispatch, push, openWeb } = vi.hoisted(() => ({
-  state: { webAddress: false as boolean | undefined, opening: false, autoConnect: undefined as string | undefined },
+  state: {
+    webAddress: false as boolean | undefined | 'UNCHECKED',
+    opening: false,
+    autoConnect: undefined as string | undefined,
+  },
   dispatch: {
     ui: { set: vi.fn() },
     connections: { connect: vi.fn(), disconnect: vi.fn(), onClose: vi.fn(), setConnectLink: vi.fn() },
@@ -151,6 +155,39 @@ describe('until whether it is is known', () => {
     expect(button().disabled).toBe(false)
     await click()
     expect(dispatch.connections.connect).toHaveBeenCalledOnce()
+  })
+})
+
+describe('one that could not be checked', () => {
+  beforeEach(() => void (state.webAddress = 'UNCHECKED'))
+
+  it('is checked again as it is asked for, by what connects it: once at a time, and not listed where it was not', async () => {
+    let done: (value: unknown) => void = () => {}
+    dispatch.connections.connect.mockReturnValue(new Promise(resolve => (done = resolve)))
+    await render()
+    expect(button().disabled).toBe(false)
+    await click()
+    expect(button().disabled).toBe(true)
+    expect(openWeb).not.toHaveBeenCalled()
+    await act(async () => done(false))
+    expect(button().disabled).toBe(false)
+    expect(dispatch.connections.connect).toHaveBeenCalledOnce()
+    expect(dispatch.networks.join).not.toHaveBeenCalled()
+  })
+
+  it('asked for on arrival is asked of what connects it, once', async () => {
+    dispatch.connections.connect.mockResolvedValue(false)
+    state.autoConnect = 'S1'
+    await render()
+    state.autoConnect = undefined
+    await render()
+    expect(dispatch.connections.connect).toHaveBeenCalledOnce()
+    expect(openWeb).not.toHaveBeenCalled()
+  })
+
+  it('does not say it will launch', async () => {
+    await render({ connection: { ...DEFAULT_CONNECTION, id: 'S1', autoLaunch: true } })
+    expect(button().textContent).toBe('Connect')
   })
 })
 

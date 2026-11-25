@@ -7,7 +7,7 @@ import { httpsOnly } from '../helpers/utilHelper'
 import { selectDeviceSessions } from '../hooks/useDeviceSessions'
 import { selectById } from '../selectors/devices'
 import { requestSignIn } from '../selectors/signIns'
-import { deviceSessionInfo, readDeviceSessionInfo } from './deviceSessionInfo'
+import { deviceSessionInfo, deviceSessionName, readDeviceSessionName } from './deviceSessionInfo'
 import { graphQLBasicRequest, graphQLGetErrors } from './graphQL'
 import { UNSUPPORTED, withoutDeviceSessions } from './graphQLDaemon'
 import { defaultHttpOnName } from './graphQLDetectedScheme'
@@ -28,7 +28,7 @@ import { post } from './post'
 type Schema = { openWebAddress: boolean; proxyFleet: boolean; webAddress: boolean }
 const schemas = new Map<string, Schema>()
 const fleets = new Map<string, string>()
-const reads = new Map<string, Promise<void>>()
+const reads = new Map<string, { at: number; read: Promise<void> }>()
 const listeners = new Set<() => void>()
 
 const keep = <T>(kept: Map<string, T>, api: string, value: T) => {
@@ -58,7 +58,7 @@ export function webAddressGate(): boolean | undefined {
   return fleet === undefined ? undefined : fleet === 'CONNECTD'
 }
 
-// Waited on no longer than this by anything a person has asked for: a check that does not answer leaves it as it was.
+// Waited on no longer than this by anything a person has asked for: a check that does not answer is one that failed.
 export const WEB_ADDRESS_WAIT_MS = 5_000
 
 const within = <T>(asked: Promise<T>): Promise<T | undefined> =>
@@ -67,11 +67,14 @@ const within = <T>(asked: Promise<T>): Promise<T | undefined> =>
     asked.then(resolve, () => resolve(undefined)).finally(() => clearTimeout(timer))
   })
 
-// One read at a time of each kind, whoever asks.
+// One read at a time of each kind, whoever asks; one not answered this long is made anew by whoever asks next.
+const ANSWER_MS = 4_000
 function reading(key: string, read: () => Promise<void>): Promise<void> {
-  const asked = reads.get(key) ?? read().finally(() => reads.delete(key))
+  const before = reads.get(key)
+  if (before && Date.now() - before.at < ANSWER_MS) return before.read
+  const asked = { at: Date.now(), read: read() }
   reads.set(key, asked)
-  return asked
+  return asked.read.finally(() => reads.get(key) === asked && reads.delete(key))
 }
 
 async function readSchema(api: string) {
@@ -147,19 +150,22 @@ export function opensAtWebAddress(target: WebTarget | undefined): boolean | unde
   if (!target?.deviceID || !webAddressAllowed(target)) return false
   const gate = webAddressGate()
   if (!gate) return gate
-  const info = deviceSessionInfo(target.deviceID)
-  // A service added since its device was read is not in what is known of it: read again by whoever waits.
-  if (!info || (info.services && !(target.id in info.services))) return undefined
-  return !!info.services?.[target.id]
+  const name = deviceSessionName(target.deviceID, target.id)
+  return name === undefined ? undefined : !!name
 }
 
-/** The same, read where it is not known: undefined where it could not be, or not in time. */
+/* COULD NOT BE CHECKED: the gate, or the device's names, could not be read, or not in time. That is not that the service
+   has no web address, and it is not connected in place of it — a proxy connection's address is anyone's who has it: that
+   is said, and whoever tries next reads again. */
+export type Unchecked = 'UNCHECKED'
+
+/** The same, read where it is not known, whatever failed before: undefined where it could not be, or not in time. */
 export async function decideWebAddress(target: WebTarget | undefined): Promise<boolean | undefined> {
   if (!target?.deviceID || !webAddressAllowed(target)) return false
   const gate = await within(readGate())
   if (!gate) return gate
-  const info = await within(readDeviceSessionInfo(target.deviceID, target.id))
-  return info && !!info.services?.[target.id]
+  const name = await within(readDeviceSessionName(target.deviceID, target.id))
+  return name === undefined ? undefined : !!name
 }
 
 /** Its URL, made if it has none; a refusal in graphql's words ('' where none were said). */
