@@ -40,17 +40,15 @@ export const ServiceConnectButton: React.FC = () => {
   )
   const defaultHttp = !sharedHttpsInUse && service?.typeID === HTTP_TYPE && service.port === 80
   const [proxy, setProxy] = useState(false)
-  // No agent here reaches it, but it has a name and serves the web: this browser's client can open it in its own tab
-  // (services/browserGateway), the proxy one step away as for a local name.
   const web = useApplication(service, connection).web
   const ssh = service?.typeID === 28
   // The app the service belongs to, where it does: one whose service is ssh and that signs people in by certificate
   // opens in our web SSH as well, with the person's own account (components/AppTerminal).
   const serving = useServiceApp(device, service)
   const byCertificate = opensTerminal(serving.app, serving.appService)
-  // The browser gateway uses the default HTTPS port. A shared name on another port needs a service connection.
-  const gatewayWeb = web && (reach.port === 443 || service?.port === 443 || defaultHttp)
-  const gateway = !local && reach.checked && !!reach.name && (gatewayWeb || ssh) && !proxy
+  // No agent here reaches it, but it has a name and is SSH: a terminal opens it through this browser's client
+  // (components/BrowserGatewayConnect), the proxy one step away as for a local name.
+  const terminal = !local && reach.checked && !!reach.name && ssh && !proxy
   // A local port of this machine (services/localPorts), where it runs our daemon: asked for here, or open already —
   // then it is what the panel shows, until it is disconnected.
   const localPort = useLocalPort(service?.id, device?.id)
@@ -59,7 +57,7 @@ export const ServiceConnectButton: React.FC = () => {
   useEffect(() => {
     if (localPort.local && !localPort.local.open && !localPort.busy) setPortAsked(false)
   }, [localPort.local?.open, localPort.busy])
-  const named = !connection.enabled && !onPort && ((!!local && !proxy) || gateway)
+  const named = !connection.enabled && !onPort && ((!!local && !proxy) || terminal)
   // remote.it is on this machine but does not act for this person (services/localSubnet localSignIn): Connect goes
   // through this browser meanwhile, and signing in there is offered.
   const signIn = useLocalSignIn(!local && reach.checked && !!reach.name && !onPort)
@@ -149,20 +147,15 @@ export const ServiceConnectButton: React.FC = () => {
                     byCertificate={byCertificate}
                   />
                 ) : (
-                  <BrowserGatewayConnect
-                    name={reach.name!}
-                    service={service?.id}
-                    terminal={
-                      ssh && service
-                        ? {
-                            port: reach.port || service.port || 22,
-                            title: service.name,
-                            service: service.id,
-                            byCertificate,
-                          }
-                        : undefined
-                    }
-                  />
+                  service && (
+                    <BrowserGatewayConnect
+                      name={reach.name!}
+                      port={reach.port || service.port || 22}
+                      title={service.name}
+                      service={service.id}
+                      byCertificate={byCertificate}
+                    />
+                  )
                 )}
                 <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
                   <Link onClick={() => setProxy(true)}>

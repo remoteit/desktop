@@ -1,141 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { request, browser, openInSystem } = vi.hoisted(() => ({
-  request: vi.fn(),
-  browser: { isIOSDeviceApp: false },
-  openInSystem: vi.fn(),
-}))
+const { request } = vi.hoisted(() => ({ request: vi.fn() }))
 vi.mock('./graphQL', () => ({ graphQLBasicRequest: request }))
-vi.mock('./browser', () => ({ default: browser, openInSystem }))
 
-import { gatewayURL, openThroughGateway } from './browserGateway'
+import { handoff } from './browserGateway'
 
-beforeEach(() => {
-  request.mockReset()
-  openInSystem.mockReset()
-  browser.isIOSDeviceApp = false
-})
+beforeEach(() => request.mockReset())
 
-const handoff = { code: 'CODE-1', presence: ['198.51.100.1:5960'], reflector: 'wss://wsp.remote.it' }
-const answer = {
-  data: {
-    data: {
-      deviceSessionServers: { presence: handoff.presence, reflector: handoff.reflector },
-      login: { registrationCode: handoff.code },
-    },
-  },
-}
+const servers = { presence: ['198.51.100.1:5960'], reflector: 'wss://wsp.remote.it' }
 
-describe('gatewayURL', () => {
-  it('the device’s own name, as with an agent: its web service, whatever port it is on', () => {
-    expect(gatewayURL('r3devicedebian-owner.on.local.remote.it')).toBe(
-      'https://r3devicedebian-owner.on.local.remote.it/'
-    )
-  })
-})
-
-describe('openThroughGateway', () => {
-  it('opens the tab on the click, then sends it to the device with the one-time code in the fragment', async () => {
-    const tab = { location: { href: '' }, opener: {}, close: vi.fn() }
-    vi.spyOn(window, 'open').mockReturnValue(tab as any)
-    request.mockResolvedValue(answer)
-    expect(await openThroughGateway('web1-owner.on.local.remote.it')).toBe(true)
-    expect(window.open).toHaveBeenCalledWith('', '_blank')
-    const [base, frag] = tab.location.href.split('#rit=')
-    expect(base).toBe('https://web1-owner.on.local.remote.it/')
-    const decoded = JSON.parse(atob(frag.replace(/-/g, '+').replace(/_/g, '/')))
-    expect(decoded).toEqual(handoff)
-    expect(tab.opener).toBeNull()
+describe('handoff', () => {
+  it('is a one-time code for the browser’s client, with where to sign in', async () => {
+    request.mockResolvedValue({
+      data: { data: { deviceSessionServers: servers, login: { registrationCode: 'CODE-1' } } },
+    })
+    expect(await handoff()).toEqual({ code: 'CODE-1', ...servers })
     // A browser's client is kept for its next visit; one never back is disabled by graphql's expiry after 30 days.
-    expect(request.mock.calls[0][0]).toMatch(/registrationCode\(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true, timeout: 2592000, platform: 1231\)/)
+    expect(request.mock.calls[0][0]).toMatch(
+      /registrationCode\(name: "browser", clientOnly: true, userMode: true, oneTimeUse: true, timeout: 2592000, platform: 1231\)/
+    )
   })
-  it('closes the tab when there is no code to give it', async () => {
-    const tab = { location: { href: '' }, opener: {}, close: vi.fn() }
-    vi.spyOn(window, 'open').mockReturnValue(tab as any)
+
+  it('is asked as the page’s own person, whichever account is selected', async () => {
     request.mockResolvedValue('ERROR')
-    expect(await openThroughGateway('web1-owner.on.local.remote.it')).toBe(false)
-    expect(tab.close).toHaveBeenCalled()
-  })
-
-  it.each([true, false])('hands the gateway URL to the system browser on Solo iOS and returns %s', async completed => {
-    browser.isIOSDeviceApp = true
-    const popup = vi.spyOn(window, 'open').mockClear()
-    request.mockResolvedValue(answer)
-    openInSystem.mockResolvedValue(completed)
-
-    expect(await openThroughGateway('web1-owner.on.local.remote.it')).toBe(completed)
-    expect(openInSystem).toHaveBeenCalledExactlyOnceWith(
-      `https://web1-owner.on.local.remote.it/#rit=${btoa(JSON.stringify(handoff))}`
-    )
-    expect(popup).not.toHaveBeenCalled()
-  })
-})
-
-/* The browser has one client, the page's own person's. A service only another sign-in reaches is not opened through
-   it: no tab, no code — the browser is not registered as that other person, nor a tab opened that cannot reach it. */
-describe('with several sign-ins in use', () => {
-  it('opens what the page’s own person reaches, asking its code as them, and nothing another sign-in alone reaches', async () => {
-    const { readStateWith } = await import('../selectors/signIns')
-    readStateWith(
-      () =>
-        ({
-          auth: { user: { id: 'me' } },
-          accounts: {
-            membership: [],
-            signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
-          },
-          devices: {
-            me: { all: [{ id: 'd-me', services: [{ id: 's-me' }] }] },
-            work: { all: [{ id: 'd-work', services: [{ id: 's-work' }] }] },
-          },
-        } as any)
-    )
-    const { OTHER_SIGN_IN } = await import('./browserGateway')
-    const tab = { close: vi.fn(), location: { href: '' }, opener: {} }
-    vi.spyOn(window, 'open').mockReturnValue(tab as any)
-    request.mockReset().mockResolvedValue(answer)
-    expect(await openThroughGateway('web-work.on.local.remote.it', 's-work')).toBe(OTHER_SIGN_IN)
-    expect(window.open).not.toHaveBeenCalled()
-    expect(request).not.toHaveBeenCalled()
-
-    expect(await openThroughGateway('web-me.on.local.remote.it', 's-me')).toBe(true)
+    await handoff()
     expect(request.mock.calls[0].slice(1)).toEqual([{}, false, { sub: '' }])
-    readStateWith(() => ({} as any))
   })
 
-  // The page's own person's service, shared with the other sign-in, whose account is selected: a request about it
-  // would be made as that other — and the browser's client, which is the page's own person's, still reaches it.
-  it('opens a service of the page’s own person though another sign-in’s account, selected, holds it too', async () => {
-    const { readStateWith } = await import('../selectors/signIns')
-    const shared = { id: 'd-me', services: [{ id: 's-me' }] }
-    readStateWith(
-      () =>
-        ({
-          auth: { user: { id: 'me' } },
-          accounts: {
-            activeId: 'work',
-            membership: [],
-            signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
-          },
-          devices: { me: { all: [shared] }, work: { all: [shared] } },
-        } as any)
-    )
-    const { throughGateway } = await import('./browserGateway')
-    expect(throughGateway('s-me')).toBe(true)
-    // One nothing is known of is taken to be theirs; one only the other's list holds is not.
-    expect(throughGateway('s-unknown')).toBe(true)
-    readStateWith(
-      () =>
-        ({
-          auth: { user: { id: 'me' } },
-          accounts: {
-            membership: [],
-            signIns: { 'sub-work': { sub: 'sub-work', id: 'work', email: 'work@x.test', membership: [] } },
-          },
-          devices: { work: { all: [shared] } },
-        } as any)
-    )
-    expect(throughGateway('s-me')).toBe(false)
-    readStateWith(() => ({} as any))
+  it.each([
+    ['a failed request', 'ERROR'],
+    ['no code', { data: { data: { deviceSessionServers: servers, login: { registrationCode: null } } } }],
+    ['nowhere to sign in', { data: { data: { deviceSessionServers: null, login: { registrationCode: 'CODE-1' } } } }],
+  ])('is nothing for %s', async (_what, answer) => {
+    request.mockResolvedValue(answer)
+    expect(await handoff()).toBeNull()
   })
 })

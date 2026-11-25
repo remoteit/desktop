@@ -10,7 +10,6 @@ import { useDeviceSessions } from '../hooks/useDeviceSessions'
 import { useLocalSubnetName } from '../hooks/useLocalSubnetName'
 import { useServiceShortcutsSupport } from '../hooks/useServiceShortcutsSupport'
 import { graphQLServiceShortcuts, ServiceShortcut } from '../services/graphQLServiceShortcuts'
-import { openThroughGateway } from '../services/browserGateway'
 import { openServiceURL } from '../services/browser'
 import { subnetWebURL } from '../services/localSubnet'
 import { Container } from '../components/Container'
@@ -111,10 +110,9 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   const web = isWebType(getApplicationType(service.application), type)
   const name = web ? service.subnetName : undefined
   const port = service.subnetPort
-  // Only the default HTTPS port can be opened through the browser gateway.
-  const needsLocal = online && !!name && !!port && port !== 443
-  const local = useLocalSubnetName(needsLocal ? service.device.id : undefined, needsLocal ? service.id : undefined)
-  const destination = port === 443 ? name : needsLocal ? local?.name : undefined
+  // Its name opens here only where an agent on this machine reaches it: nothing else answers for the name.
+  const named = online && !!name && !!port
+  const destination = useLocalSubnetName(named ? service.device.id : undefined, named ? service.id : undefined)?.name
   const status = !service.enabled
     ? t('serviceShortcuts.disabled', 'Disabled')
     : service.state === 'unlicensed'
@@ -125,9 +123,7 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
     if (!destination || !port) return
     setOpening(true)
     try {
-      // Not opened — or not the browser's client's to open (another sign-in's service): Connect is offered either way.
-      if (port === 443) setFailed((await openThroughGateway(destination, service.id)) !== true)
-      else await openServiceURL(subnetWebURL(destination, port))
+      await openServiceURL(subnetWebURL(destination, port))
     } catch {
       setFailed(true)
     } finally {

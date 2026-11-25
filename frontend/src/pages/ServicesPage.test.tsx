@@ -5,14 +5,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ServicesPage } from './ServicesPage'
 import type { ServiceShortcut } from '../services/graphQLServiceShortcuts'
 
-const { state, list, open, openServiceURL } = vi.hoisted(() => ({
+const { state, list, openServiceURL } = vi.hoisted(() => ({
   state: {
     account: 'my-account',
     applicationTypes: { all: [{ id: 48, proxy: true, scheme: '' }] },
     localNames: {} as Record<string, string>,
   },
   list: vi.fn(),
-  open: vi.fn(),
   openServiceURL: vi.fn(),
 }))
 
@@ -30,7 +29,6 @@ vi.mock('../hooks/useServiceShortcutsSupport', () => ({
   useServiceShortcutsSupport: () => ({ available: true, namedAddress: true }),
 }))
 vi.mock('../services/graphQLServiceShortcuts', () => ({ graphQLServiceShortcuts: list }))
-vi.mock('../services/browserGateway', () => ({ openThroughGateway: open }))
 vi.mock('../services/browser', () => ({ default: {}, openServiceURL }))
 vi.mock('../services/graphQL', () => ({ graphQLBasicRequest: vi.fn() }))
 vi.mock('../components/Container', () => ({
@@ -80,9 +78,9 @@ afterEach(async () => {
 })
 
 describe('Services page', () => {
-  it('lists named and unnamed destinations, shows offline status, and opens the correct service', async () => {
+  it('lists services, shows offline status, and opens the name of one an agent here reaches', async () => {
+    state.localNames = { home: 'home-acme.on.remote.it' }
     list.mockResolvedValue([home, shell])
-    open.mockResolvedValue(true)
     const container = document.createElement('div')
     root = createRoot(container)
     await act(async () =>
@@ -99,8 +97,29 @@ describe('Services page', () => {
     expect(first.querySelector('a:last-child')?.getAttribute('href')).toBe('/devices/builder/shell/connect')
     expect(second.textContent).toContain('Home Assistant')
     await act(async () => second.querySelector('button')?.click())
-    expect(open).toHaveBeenCalledWith('home-acme.on.remote.it', 'home')
+    expect(openServiceURL.mock.calls).toEqual([['https://home-acme.on.remote.it']])
   })
+
+  it.each([443, 8123])(
+    'has Connect, and no name to open, on port %i where no agent here reaches it',
+    async subnetPort => {
+      list.mockResolvedValue([{ ...home, subnetPort }])
+      const container = document.createElement('div')
+      root = createRoot(container)
+      await act(async () =>
+        root?.render(
+          <MemoryRouter>
+            <ServicesPage />
+          </MemoryRouter>
+        )
+      )
+      const row = container.querySelector('li')!
+      expect(row.querySelector('button')).toBeNull()
+      const connect = row.querySelector(':scope > a')!
+      expect(connect.textContent).toBe('Connect')
+      expect(connect.getAttribute('href')).toBe('/devices/server/home/connect')
+    }
+  )
 
   it('opens reachable web services at their respective ports on a shared device name', async () => {
     const subnetName = 'server-acme.on.remote.it'
@@ -128,7 +147,6 @@ describe('Services page', () => {
     await act(async () => homeRow.querySelector('button')?.click())
     await act(async () => screenRow.querySelector('button')?.click())
     expect(openServiceURL.mock.calls).toEqual([[`https://${subnetName}:8123`], [`https://${subnetName}:8959`]])
-    expect(open).not.toHaveBeenCalled()
   })
 
   it('clears the old account’s shortcuts on a switch', async () => {
