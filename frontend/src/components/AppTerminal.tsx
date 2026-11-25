@@ -2,13 +2,12 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import { Button, Typography } from '@mui/material'
-import browser from '../services/browser'
 import { DeviceApp, DeviceAppService } from '../services/graphQLDeviceApps'
 import { ServiceApp, useServiceApp } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
 import { useSubnetName } from '../hooks/useLocalSubnetName'
 import { opensTerminal } from '../helpers/sshHelper'
-import { openTerminal, terminalReaches } from '../helpers/terminalHelper'
+import { inApp, openTerminal, terminalReaches } from '../helpers/terminalHelper'
 import { useReadAgain } from '../hooks/useReadAgain'
 import { IconButton } from '../buttons/IconButton'
 import { Link } from './Link'
@@ -20,14 +19,14 @@ import { Icon } from './Icon'
    same: the device's name in device subnets, the service's port, the person's own account and a certificate for it,
    and the host key the device reports for the app, which the terminal checks. An option beside the service's own ways
    to connect, which stay as they are. Nothing where the device has no name in device subnets or the API has no apps.
-   From the desktop and mobile apps it opens in the web portal, in the system browser (helpers/terminalHelper). */
+   From an app, the menu's embedded portal too, it opens in the web portal, in the system browser (helpers/terminalHelper). */
 
 function open(app: DeviceApp, serviceId: string, name: string, port: number) {
   openTerminal({ name, port, title: app.name, service: serviceId })
 }
 
 const label = (t: TFunction) =>
-  browser.isNative
+  inApp()
     ? t('appTerminal.openInBrowser', 'Open in web SSH, in your browser')
     : t('appTerminal.open', 'Open in web SSH')
 
