@@ -28,6 +28,9 @@ export const ChatAgentGuide: React.FC<Props> = ({ placement, children }) => {
             <b>{t('chat.guideAgentTitle', 'Meet Remote.It Agent')}</b>
           </Typography>
           <Typography variant="body2" gutterBottom>
+            <b>{t('chat.guideAgentFree', 'Included free in this special preview.')}</b>
+          </Typography>
+          <Typography variant="body2" gutterBottom>
             {t(
               'chat.guideAgentBody',
               'Ask about your devices, connections and services — or tell it to make changes. Open and close it here any time.'

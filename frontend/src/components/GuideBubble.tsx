@@ -78,16 +78,40 @@ const dismissedAt = (value: number | boolean): number | undefined =>
    drawer all make it false. Only an eligible successor earns a "Next" — one that
    is merely mounted may be barred by its own gate and would never appear, and a
    successor on another page is not mounted at all. `waiting` is deliberately not
-   part of it: an enter delay resolves on its own, so "Next" is still honest. */
-type Registration = { guide: string; queueAfter?: string; eligible: boolean }
+   part of it: an enter delay resolves on its own, so "Next" is still honest.
+
+   Separate tours (the welcome guide, the chat tour) each have a head with no
+   queueAfter, so several bubbles could be ready at once; only `active` opens. It
+   keeps the last pick while nothing is ready, so a dismissed bubble's successor
+   still wins once its enter delay ends. */
+type Registration = { guide: string; queueAfter?: string; added: number; eligible: boolean; ready: boolean }
 const mountedBubbles = new Set<Registration>()
 const bubbleListeners = new Set<() => void>()
+let active: Registration | undefined
 // Bumped on every change so getSnapshot stays O(1); the successor scan then runs
 // once per bubble per change instead of on every render.
 let bubbleVersion = 0
+
+const pickActive = (): Registration | undefined => {
+  if (active && mountedBubbles.has(active) && active.ready) return active
+  const ready = Array.from(mountedBubbles).filter(bubble => bubble.ready)
+  // Oldest tour first, so a feature tour waits for the welcome guide
+  const successor = active && ready.find(bubble => bubble.queueAfter === active?.guide)
+  return successor || ready.sort((a, b) => a.added - b.added)[0]
+}
+
+// Picked once per commit: picking per effect lets whichever bubble's effect runs first win, so after
+// "Reset interactive guides" (every bubble ready at once) the chat tour opens over the welcome guide.
+let pickScheduled = false
 const notifyBubbles = () => {
-  bubbleVersion++
-  bubbleListeners.forEach(listener => listener())
+  if (pickScheduled) return
+  pickScheduled = true
+  queueMicrotask(() => {
+    pickScheduled = false
+    active = pickActive() || active
+    bubbleVersion++
+    bubbleListeners.forEach(listener => listener())
+  })
 }
 const getBubbleVersion = () => bubbleVersion
 const subscribeBubbles = (listener: () => void) => {
@@ -156,11 +180,12 @@ export const GuideBubble: React.FC<Props> = ({
   const hideForSidebar = sidebarOpen && !sidebar
   const queued = !!queueAfter && !poppedBubbles.includes(queueAfter)
   const eligible = !hide && !poppedBubbles.includes(guide) && !expired && !hideForSidebar
-  const open: boolean = eligible && !waiting && !queued
+  const ready = eligible && !waiting && !queued
 
+  const addedAt = added.getTime()
   // Registered from an effect rather than during render: the Set is module state
   // shared with every other bubble, and a render can be discarded.
-  const registration = React.useRef<Registration>({ guide, queueAfter, eligible }).current
+  const registration = React.useRef<Registration>({ guide, queueAfter, added: addedAt, eligible, ready }).current
 
   React.useEffect(() => {
     mountedBubbles.add(registration)
@@ -173,14 +198,17 @@ export const GuideBubble: React.FC<Props> = ({
   React.useEffect(() => {
     registration.guide = guide
     registration.queueAfter = queueAfter
+    registration.added = addedAt
     registration.eligible = eligible
+    registration.ready = ready
     notifyBubbles()
-  }, [guide, queueAfter, eligible])
+  }, [guide, queueAfter, addedAt, eligible, ready])
 
   const version = React.useSyncExternalStore(subscribeBubbles, getBubbleVersion)
+  const open = ready && active === registration
   const hasNext = React.useMemo(
-    () => Array.from(mountedBubbles).some(bubble => bubble.queueAfter === guide && bubble.eligible),
-    [version, guide]
+    () => open && Array.from(mountedBubbles).some(bubble => bubble.queueAfter === guide && bubble.eligible),
+    [version, guide, open]
   )
 
   React.useEffect(() => {
