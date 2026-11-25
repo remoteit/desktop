@@ -9,11 +9,10 @@ import { ListItemLocation } from './ListItemLocation'
 import { UpgradeBanner } from './UpgradeBanner'
 import { ResellerLogo } from './ResellerLogo'
 import { ListItemLink } from './ListItemLink'
-import { Quote } from './Quote'
 import { Icon } from './Icon'
 import { useCounts } from '../hooks/useCounts'
 import { getLocale } from '../helpers/dateHelper'
-import { spacing } from '../styling'
+import { spacing, LIST_ITEM_ICON_WIDTH } from '../styling'
 import { useNavSections } from '../hooks/useNavSections'
 import { NAV_PAGES, NavPageId, NavSectionId, VisibleSection, sectionMatch, navPageLabel } from '../helpers/navSections'
 
@@ -31,6 +30,51 @@ const listSx = (theme: Theme) => ({
     '& .MuiListItemText-primary': { color: theme.palette.black.main, fontWeight: 500 },
   },
 })
+
+const CARET = 8
+const CARET_WIDTH = CARET * 2 + 1
+
+const ruleColor = (theme: Theme) => theme.palette.gray.main
+
+const groupSx = (theme: Theme) => ({
+  listStyle: 'none',
+  marginX: `${spacing.md}px`,
+  marginTop: `${spacing.xxs}px`,
+  marginBottom: `${spacing.md}px`,
+  '& > ul': { borderBottom: `1px solid ${ruleColor(theme)}` },
+  '& .MuiListItemButton-root': { marginLeft: 0, marginRight: 0, width: '100%' },
+})
+
+const pagesSx = { listStyle: 'none', margin: 0, paddingX: 0, paddingY: `${spacing.xxs}px` }
+
+const RuleCaret: React.FC = () => (
+  <Box
+    aria-hidden
+    sx={theme => ({
+      display: 'flex',
+      alignItems: 'flex-end',
+      height: CARET + 1,
+      color: ruleColor(theme),
+      '& > span': { flex: 1, borderBottom: '1px solid currentColor' },
+      '& > span:first-of-type': { flex: 'none', width: Math.round((LIST_ITEM_ICON_WIDTH - CARET_WIDTH) / 2) },
+    })}
+  >
+    <span />
+    <svg
+      width={CARET_WIDTH}
+      height={CARET + 1}
+      viewBox={`0 0 ${CARET_WIDTH} ${CARET + 1}`}
+      style={{ display: 'block' }}
+    >
+      <path
+        d={`M0 ${CARET + 0.5} H0.5 L${CARET + 0.5} 0.5 L${CARET_WIDTH - 0.5} ${CARET + 0.5} H${CARET_WIDTH}`}
+        fill="none"
+        stroke="currentColor"
+      />
+    </svg>
+    <span />
+  </Box>
+)
 
 export const SidebarNav: React.FC = () => {
   const counts = useCounts()
@@ -67,20 +111,19 @@ export const SidebarNav: React.FC = () => {
   }
 
   const pages = (section: VisibleSection) => (
-    <Box component="li" sx={{ listStyle: 'none' }}>
-      <Quote margin={null} noInset indent="listIcon" color="grayLight">
-        <Box component="ul" aria-label={section.label(t)} sx={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {section.pages.map(id => (
-            <li key={id}>
-              <PageLink id={id} current={nav.page === id} to={NAV_PAGES[id].to && nav.pageTo(id)} onOpen={nav.open}>
-                {id === 'connections' && !!counts.active && (
-                  <Chip size="small" label={counts.active.toLocaleString(getLocale())} />
-                )}
-              </PageLink>
-            </li>
-          ))}
-        </Box>
-      </Quote>
+    <Box component="li" sx={groupSx}>
+      <RuleCaret />
+      <Box component="ul" aria-label={section.label(t)} sx={pagesSx}>
+        {section.pages.map(id => (
+          <li key={id}>
+            <PageLink id={id} current={nav.page === id} to={NAV_PAGES[id].to && nav.pageTo(id)} onOpen={nav.open}>
+              {id === 'connections' && !!counts.active && (
+                <Chip size="small" label={counts.active.toLocaleString(getLocale())} />
+              )}
+            </PageLink>
+          </li>
+        ))}
+      </Box>
     </Box>
   )
 
@@ -169,15 +212,9 @@ const PageLink: React.FC<{
       selected={current}
       aria-current={current ? 'page' : undefined}
       dense
-      sx={{
-        marginLeft: `${spacing.xs}px`,
-        width: `calc(100% - ${spacing.xs + spacing.md}px)`,
-        paddingLeft: `${spacing.xs}px`,
-        minHeight: 34,
-        paddingY: 0.25,
-      }}
+      sx={{ minHeight: 34, paddingY: 0.25 }}
     >
-      <ListItemIcon sx={{ minWidth: 32 }}>
+      <ListItemIcon>
         <Icon name={NAV_PAGES[id].icon} size="base" fixedWidth />
       </ListItemIcon>
       <ListItemText primary={navPageLabel(id, t)} />
