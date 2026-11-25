@@ -11,7 +11,7 @@ One version bump feeds four targets, each released on its own:
 | **Desktop**       | **Build / Electron**, then **Copy / Electron to S3** |
 | **iOS**           | **Build / iOS** → TestFlight → submit for review     |
 | **Android**       | **Build / Android** → Play internal track → promote  |
-| **app.remote.it** | Merge `main` into the `release` branch               |
+| **app.remote.it** | Fast-forward the `release` branch                    |
 
 Do the version bump once, then run whichever targets you are shipping.
 
@@ -216,25 +216,33 @@ build as far as the store's own staging, and a human promotes it.
 
 Bump the version first (§1), even when the portal is the only target.
 
-The web portal deploys from the `release` branch. Each release merges `main`
-into it with a merge commit, so `release` keeps commits of its own and a
-fast-forward push of `main` is refused. Merge from a fresh checkout of the
-remote branch, so the deploy is exactly what is on the remote:
+The web portal deploys from the `release` branch. `release` carries no commits
+of its own, so shipping is a fast-forward of `main`. Never merge a PR into
+`release` directly: its commit is not on `main`, and every fast-forward after
+it is refused. To ship:
 
 ```bash
 git fetch origin
-git worktree add --detach ../desktop-release origin/release
-cd ../desktop-release
-git merge --no-ff origin/main -m "chore(release): merge main (X.Y.Z) into release"
-git diff --quiet origin/main HEAD && git push origin HEAD:release
-cd - && git worktree remove ../desktop-release
+git push origin origin/main:release
 ```
 
-The `git diff --quiet` guard pushes only when the merged tree is exactly
-`main`'s. If it is not, `release` has a change `main` lacks — a hotfix nobody
-merged back — so stop, look at `git diff origin/main HEAD`, and land that
-change on `main` first. Never `--force` the push: it cannot tell "`release` is
-behind" from "`release` has a hotfix", and silently destroys the second.
+Pushing `origin/main` rather than a local branch means the deploy is exactly
+what is on the remote, with no local checkout to be stale, and no need to switch
+branches.
+
+Leave off `--force`. Because this is a plain push, it **fails** if `release`
+has commits `main` does not — which is the entire point: a force push cannot
+tell "`release` is simply behind" from "`release` has a hotfix nobody merged
+back", and quietly destroys the second case. If the push is rejected, look
+before doing anything else:
+
+```bash
+git log --oneline origin/main..origin/release
+```
+
+Empty means it is safe to fast-forward and something else is wrong (branch
+protection, most likely). Not empty means there is work on `release` to merge
+back into `main` first.
 
 Amplify builds the branch from `amplify.yml` in this repo. A branch that
 contains it ignores the build settings in the Amplify console.
