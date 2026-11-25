@@ -24,7 +24,8 @@ import { Icon } from './Icon'
 import { useCounts } from '../hooks/useCounts'
 import { getLocale } from '../helpers/dateHelper'
 import { spacing, radius } from '../styling'
-import { NAV_STYLE, NavStyle } from '../helpers/navStyle'
+import { NavStyle, useNavStyle } from '../helpers/navStyle'
+import { NavStylePicker } from './NavStylePicker'
 import { useNavSections } from '../hooks/useNavSections'
 import { NAV_PAGES, NavPageId, NavSectionId, VisibleSection, sectionMatch, navPageLabel } from '../helpers/navSections'
 
@@ -213,6 +214,7 @@ export const SidebarNav: React.FC = () => {
   const { t } = useTranslation()
   const nav = useNavSections()
   const dark = useSelector((state: State) => state.ui.themeDark)
+  const { style } = useNavStyle()
 
   if (nav.remoteUI)
     return (
@@ -240,8 +242,8 @@ export const SidebarNav: React.FC = () => {
   }
 
   const pages = (section: VisibleSection) => (
-    <Box component="ul" aria-label={section.label(t)} sx={pagesSx(NAV_STYLE, dark)}>
-      {NAV_STYLE === 'c2' && <RuleCaret />}
+    <Box component="ul" aria-label={section.label(t)} sx={pagesSx(style, dark)}>
+      {style === 'c2' && <RuleCaret />}
       {section.pages.map(id => (
         <li key={id}>
           <PageLink
@@ -249,7 +251,7 @@ export const SidebarNav: React.FC = () => {
             current={nav.page === id}
             to={NAV_PAGES[id].to && nav.pageTo(id)}
             onOpen={nav.open}
-            quiet={NAV_STYLE === 'd'}
+            quiet={style === 'd'}
           >
             {id === 'connections' && !!counts.active && (
               <Chip size="small" label={counts.active.toLocaleString(getLocale())} />
@@ -272,7 +274,7 @@ export const SidebarNav: React.FC = () => {
             to={NAV_PAGES[landing].to && nav.pageTo(landing)}
             onClick={NAV_PAGES[landing].to ? undefined : () => nav.open(landing)}
             match={open ? [] : sectionMatch(section)}
-            sx={open ? { '& .MuiListItemText-primary': { fontWeight: NAV_STYLE === 'd' ? 700 : 500 } } : undefined}
+            sx={open ? { '& .MuiListItemText-primary': { fontWeight: style === 'd' ? 700 : 500 } } : undefined}
             dense
           >
             {count(section.id)}
@@ -280,7 +282,7 @@ export const SidebarNav: React.FC = () => {
         )
         if (!open) return <React.Fragment key={section.id}>{head}</React.Fragment>
         return (
-          <Box component="li" key={section.id} sx={groupSx(NAV_STYLE, dark)}>
+          <Box component="li" key={section.id} sx={groupSx(style, dark)}>
             {head}
             {pages(section)}
           </Box>
@@ -330,6 +332,7 @@ export const SidebarNav: React.FC = () => {
           dense
         />
       </Box>
+      <NavStylePicker />
     </List>
   )
 }

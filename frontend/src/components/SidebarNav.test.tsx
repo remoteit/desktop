@@ -59,6 +59,7 @@ vi.mock('@mui/material', () => ({
   ListItemIcon: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   ListItemText: ({ primary }: { primary: string }) => <span>{primary}</span>,
 }))
+vi.mock('./NavStylePicker', () => ({ NavStylePicker: () => null }))
 vi.mock('./Icon', () => ({ Icon: ({ name }: { name: string }) => <i data-icon={name} /> }))
 vi.mock('./Quote', () => ({
   Quote: ({ indent, children }: { indent?: string; children?: React.ReactNode }) => (
