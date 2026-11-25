@@ -112,7 +112,9 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   const port = service.subnetPort
   // Its name opens here only where an agent on this machine reaches it: nothing else answers for the name.
   const named = online && !!name && !!port
-  const destination = useLocalSubnetName(named ? service.device.id : undefined, named ? service.id : undefined)?.name
+  const local = useLocalSubnetName(named ? service.device.id : undefined, named ? service.id : undefined)
+  // The port is this name's: an agent may answer with the device's own name instead, where the port is another's.
+  const destination = local?.name === name ? name : undefined
   const status = !service.enabled
     ? t('serviceShortcuts.disabled', 'Disabled')
     : service.state === 'unlicensed'
