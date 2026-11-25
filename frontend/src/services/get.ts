@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getApiURL } from '../helpers/apiHelper'
+import { getApiTreeURL } from '../helpers/apiHelper'
 import { apiRequest } from './remoteit'
 import { apiError } from './post'
 import { store } from '../store'
@@ -7,7 +7,7 @@ import { store } from '../store'
 export async function get(path: string = '') {
   if (store.getState().ui.offline) return 'ERROR'
 
-  const url = getApiURL() + path
+  const url = getApiTreeURL() + path
   try {
     const response = await apiRequest('GET', url, async headers =>
       headers ? axios.request({ url, method: 'get', headers }) : undefined

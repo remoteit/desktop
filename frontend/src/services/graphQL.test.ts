@@ -14,7 +14,10 @@ vi.mock('./remoteit', () => ({
   apiRequest: (method: string, url: string, send: (headers?: object) => Promise<unknown>) =>
     apiHeaders(method, url).then(send),
 }))
-vi.mock('../helpers/apiHelper', () => ({ getApiURL: () => 'https://api.test/graphql' }))
+vi.mock('../helpers/apiHelper', () => ({
+  getApiURL: () => 'https://api.test/api/graphql',
+  getApiTreeURL: () => 'https://api.test/api',
+}))
 vi.mock('./Network', () => ({ default: { offline: vi.fn() } }))
 vi.mock('axios', () => ({ default: { request, isAxiosError: (error: any) => !!error?.isAxiosError } }))
 vi.mock('../helpers/sleep', async importOriginal => ({
@@ -146,6 +149,18 @@ describe('a request the network dropped in flight', () => {
     request.mockRejectedValue(answered)
     expect(await graphQLBasicRequest('{ login { id } }')).toBe('ERROR')
     expect(request).toHaveBeenCalledOnce()
+  })
+
+  it('sends GraphQL to the graphql URL and REST routes to the API tree', async () => {
+    request.mockResolvedValue({ data: {} })
+    await post({})
+    await post({ type: 'event' }, '/event')
+    await get('/file/download/f1')
+    expect(request.mock.calls.map(([config]) => config.url)).toEqual([
+      'https://api.test/api/graphql',
+      'https://api.test/api/event',
+      'https://api.test/api/file/download/f1',
+    ])
   })
 
   it('never resends a plain post', async () => {
