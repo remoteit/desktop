@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { State, Dispatch } from '../store'
-import { ButtonBase, Checkbox, Divider, Menu } from '@mui/material'
+import { Box, Button, ButtonBase, Checkbox, Divider, Menu } from '@mui/material'
 import { useHideSidebar } from '../hooks/useChatEnabled'
 import { useSelector, useDispatch } from 'react-redux'
 import { selectLicenseIndicator } from '../models/plans'
@@ -221,27 +221,39 @@ export const AvatarMenu: React.FC = () => {
               subLabel={
                 a.known ? t('nav.signedInOnBrowser', 'Signed in on this browser') : a.name && a.email ? a.email : undefined
               }
-              icon={<Avatar email={a.email} picture={a.picture} fallback={a.name} size={24} border={0} />}
+              icon={<Avatar email={a.email} picture={a.picture} fallback={a.name} size={20} border={0} />}
               confirm={!several && browser.hasBackend}
               confirmProps={switchConfirm}
               secondaryContent={
-                several ? (
-                  <Checkbox
-                    size="small"
-                    checked={a.signedIn}
-                    disabled={!other}
-                    tabIndex={-1}
-                    readOnly
-                    disableRipple
-                    inputProps={{ 'aria-label': a.email || a.name || a.sub }}
-                  />
-                ) : (
-                  !other && <Icon name="check" color="primary" fixedWidth />
-                )
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                  {other && a.saved && (
+                    <Button
+                      color="primary"
+                      size="small"
+                      onClick={event => {
+                        event.stopPropagation()
+                        dispatch.auth.signOutAccount(a.sub)
+                      }}
+                    >
+                      {t('nav.signOut', 'Sign out')}
+                    </Button>
+                  )}
+                  {several ? (
+                    <Checkbox
+                      size="small"
+                      checked={a.signedIn}
+                      disabled={!other}
+                      tabIndex={-1}
+                      readOnly
+                      disableRipple
+                      inputProps={{ 'aria-label': a.email || a.name || a.sub }}
+                    />
+                  ) : (
+                    !other && <Icon name="check" color="primary" fixedWidth />
+                  )}
+                </Box>
               }
-              button={other && a.saved ? t('nav.signOut', 'Sign out') : undefined}
-              onButtonClick={() => dispatch.auth.signOutAccount(a.sub)}
-              secondaryContentWidth={several ? '130px' : '90px'}
+              secondaryContentWidth={several ? '150px' : '110px'}
               onClick={
                 other
                   ? async () => {
