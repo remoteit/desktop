@@ -15,6 +15,10 @@ One version bump feeds four targets, each released on its own:
 
 Do the version bump once, then run whichever targets you are shipping.
 
+**Every release gets a new version number**, made with `npm version` (§1) —
+including a portal-only release to app.remote.it. A version that names two
+different builds can't tell support or the logs which one a user is running.
+
 ## Desktop: two channels, one release
 
 A desktop release reaches users two ways, and they are controlled separately:
@@ -209,6 +213,8 @@ So neither workflow publishes to the public store on its own — each one gets t
 build as far as the store's own staging, and a human promotes it.
 
 ## 8. app.remote.it
+
+Bump the version first (§1), even when the portal is the only target.
 
 The web portal deploys from the `release` branch. `release` carries no commits
 of its own, so shipping is a fast-forward of `main`:
