@@ -70,6 +70,28 @@ export function requestDeviceSessionInfo(deviceId: string, again?: boolean) {
   timer ??= setTimeout(flush)
 }
 
+// A device's, for what waits on it rather than shows it: read if it was not — again for a service it does not list —,
+// none from an API without them.
+export async function readDeviceSessionInfo(deviceId: string, serviceId: string): Promise<DeviceSessionInfo> {
+  const read = (done: () => boolean) =>
+    new Promise<void>(resolve => {
+      if (done()) return resolve()
+      const off = subscribeDeviceSessionInfo(() => {
+        if (!done()) return
+        off()
+        resolve()
+      })
+    })
+  requestDeviceSessionInfo(deviceId)
+  await read(() => info.has(deviceId) || unsupported)
+  requestServiceSessionInfo(deviceId, serviceId)
+  if (wanted.has(deviceId)) {
+    const before = info.get(deviceId)
+    await read(() => info.get(deviceId) !== before || unsupported)
+  }
+  return info.get(deviceId) ?? NONE
+}
+
 /* A service the device's answer does not list — added since it was read (here or anywhere else) — has its name only
    in a new answer: the device is read again, once for each such service, keeping what it has meanwhile so the names
    of its other services stay shown. A service still missing from the new answer is not asked about again. */

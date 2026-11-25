@@ -6,7 +6,7 @@ import { CopyIconButton } from '../buttons/CopyIconButton'
 import { IconButton } from '../buttons/IconButton'
 import { openServiceURL } from '../services/browser'
 import { emit } from '../services/Controller'
-import { LocalSubnetName, subnetWebURL } from '../services/localSubnet'
+import { LocalSubnetName, subnetWebPort, subnetWebURL } from '../services/localSubnet'
 import { useApplication } from '../hooks/useApplication'
 import { saveLaunchTokens } from '../helpers/connectionHelper'
 import { PromptModal } from './PromptModal'
@@ -63,7 +63,7 @@ export const LocalSubnetConnect: React.FC<Props> = ({
   const [loopPort, setLoopPort] = useState<number>()
   const deviceSessions = useDeviceSessions()
   const web = app.web
-  const webPort = port === 80 && defaultHttp ? 443 : port || 443
+  const webPort = subnetWebPort(port, defaultHttp)
 
   useReadEffect(
     again => {

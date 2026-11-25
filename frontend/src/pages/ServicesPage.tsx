@@ -7,8 +7,9 @@ import { getApplicationType, isWebType } from '@common/applications'
 import { selectActiveAccountId } from '../selectors/accounts'
 import type { State } from '../store'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
-import { useLocalSubnetName } from '../hooks/useLocalSubnetName'
+import { useSubnetReach } from '../hooks/useLocalSubnetName'
 import { useServiceShortcutsSupport } from '../hooks/useServiceShortcutsSupport'
+import { useOpenWebAddress, useWebAddress } from '../hooks/useWebAddress'
 import { graphQLServiceShortcuts, ServiceShortcut } from '../services/graphQLServiceShortcuts'
 import { openServiceURL } from '../services/browser'
 import { subnetWebURL } from '../services/localSubnet'
@@ -110,9 +111,17 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   const web = isWebType(getApplicationType(service.application), type)
   const name = web ? service.subnetName : undefined
   const port = service.subnetPort
-  // Its name opens here only where an agent on this machine reaches it: nothing else answers for the name.
+  // Its name opens here only where an agent on this machine reaches it: nothing else answers for the name. Where none
+  // does — once asked — it is opened at its web address.
   const named = online && !!name && !!port
-  const destination = useLocalSubnetName(named ? service.device.id : undefined, named ? service.id : undefined)?.name
+  const reach = useSubnetReach(named ? service.device.id : undefined, named ? service.id : undefined)
+  const destination = reach.local?.name
+  const route = service.attributes?.$remoteit?.route
+  const webAddress =
+    useWebAddress({ id: service.id, deviceID: service.device.id, route, web: named }) === true &&
+    !destination &&
+    reach.checked
+  const address = useOpenWebAddress(service.id)
   const status = !service.enabled
     ? t('serviceShortcuts.disabled', 'Disabled')
     : service.state === 'unlicensed'
@@ -120,6 +129,7 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
     : t('statusChip.offline', 'Offline')
 
   const open = async () => {
+    if (webAddress) return address.open()
     if (!destination || !port) return
     setOpening(true)
     try {
@@ -143,16 +153,17 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
         secondary={
           <>
             {online ? service.device.name : `${service.device.name} · ${status}`}
-            {failed && (
+            {(failed || address.failed) && (
               <Typography component="span" display="block" variant="caption" color="error">
-                {t('serviceShortcuts.openFailed', 'Could not open the service. Try the Connect button.')}
+                {address.failed?.reason ||
+                  t('serviceShortcuts.openFailed', 'Could not open the service. Try the Connect button.')}
               </Typography>
             )}
           </>
         }
       />
-      {online && destination && !failed ? (
-        <Button size="small" variant="contained" disabled={opening} onClick={open}>
+      {online && (destination || webAddress) && !failed && !address.failed ? (
+        <Button size="small" variant="contained" disabled={opening || address.opening} onClick={open}>
           {t('serviceShortcuts.open', 'Open')}
         </Button>
       ) : (

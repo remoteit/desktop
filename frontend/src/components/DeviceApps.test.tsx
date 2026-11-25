@@ -18,6 +18,11 @@ vi.mock('../hooks/useDeviceSettings', () => ({ useDeviceSettings: () => ({ setti
 vi.mock('../hooks/useLocalSubnetName', () => ({ useSubnetName: () => name.value }))
 vi.mock('../helpers/terminalHelper', () => ({ openTerminal, terminalReaches: () => true }))
 vi.mock('../services/browser', () => ({ default: { isNative: false }, windowOpen: vi.fn() }))
+vi.mock('../hooks/useWebAddress', () => ({
+  useWebTarget: () => undefined,
+  useWebAddress: () => false,
+  useOpenWebService: () => ({}),
+}))
 vi.mock('./Icon', () => ({ Icon: ({ name }: any) => (name ? <i data-icon={name} /> : null) }))
 vi.mock('./Confirm', () => ({
   Confirm: ({ open, title, action, children, onConfirm, onDeny }: any) =>

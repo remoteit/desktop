@@ -33,6 +33,8 @@ import {
   graphQLRemoveLink,
 } from '../services/graphQLMutation'
 import { graphQLFetchConnections, graphQLDeviceAdaptor } from '../services/graphQLDevice'
+import { decideWebAddress, readyWebAddress, webTarget } from '../services/webAddress'
+import { UNSUPPORTED } from '../services/graphQLDaemon'
 import { selectApplication } from '../selectors/applications'
 import { accountFromDevice } from './accounts'
 import { selectConnection } from '../selectors/connections'
@@ -541,6 +543,26 @@ export default createModel<RootModel>()({
     async connect(connection: IConnection, state) {
       connection = structuredClone(connection)
       const [service] = selectById(state, undefined, connection.id)
+      // A web service opened at its web address (services/webAddress) has no connection. One of a network's started
+      // together is made ready, nothing opened; one asked for with no click — a link, on arrival — is opened from its
+      // page, a tab being only a click's to open.
+      const target = webTarget(state, service, connection)
+      if (target?.web && (await decideWebAddress(target))) {
+        dispatch.ui.clearAutoLaunch(connection.id)
+        if (connection.autoStart) {
+          const ready = await readyWebAddress(target.id)
+          if (ready !== UNSUPPORTED) {
+            const error = ready === true ? undefined : { message: ready.reason || i18n.t('webAddress.failed', { defaultValue: 'Could not open it: try again' }) }
+            if (error || connection.error)
+              setConnection({ ...connection, enabled: false, autoStart: undefined, error })
+            return false
+          }
+        } else {
+          if (!window.location.hash.includes(target.id))
+            dispatch.ui.set({ redirect: `/devices/${target.deviceID}/${target.id}/connect` })
+          return false
+        }
+      }
       if (connection.autoLaunch && !connection.autoStart) dispatch.ui.set({ autoLaunch: connection.id })
       else dispatch.ui.clearAutoLaunch(connection.id)
       connection.online = service ? service?.state === 'active' : connection.online

@@ -2,7 +2,8 @@ import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { apps, catalog, push, params, openTerminal } = vi.hoisted(() => ({
+const { apps, catalog, push, params, openTerminal, web } = vi.hoisted(() => ({
+  web: { value: false as boolean | undefined, opening: false, open: vi.fn() },
   apps: { value: {} as any },
   catalog: vi.fn(),
   push: vi.fn(),
@@ -18,6 +19,11 @@ vi.mock('../hooks/useDeviceApps', () => ({ useDeviceApps: () => apps.value }))
 vi.mock('../hooks/useLocalSubnetName', () => ({ useSubnetName: () => 'pi.on.remote.it' }))
 vi.mock('../helpers/terminalHelper', () => ({ openTerminal, terminalReaches: () => true }))
 vi.mock('../services/browser', () => ({ default: { isNative: false }, windowOpen: vi.fn() }))
+vi.mock('../hooks/useWebAddress', () => ({
+  useWebTarget: (service?: IService) => service && { id: service.id, web: true },
+  useWebAddress: (target?: unknown) => (target ? web.value : false),
+  useOpenWebService: (target?: { id: string }) => ({ opening: web.opening, open: () => web.open(target?.id) }),
+}))
 vi.mock('../services/graphQLDeviceApps', async () => ({
   ...(await import('../services/deviceAppsShared')),
   SCREENVIEW: 'remoteit.screenview',
@@ -159,6 +165,8 @@ afterEach(() => {
 
 beforeEach(() => {
   params.appID = 'acme.backup'
+  Object.assign(web, { value: false, opening: false })
+  web.open.mockReset()
   push.mockReset()
   openTerminal.mockReset()
   catalog.mockReset().mockResolvedValue(CATALOG)
@@ -428,6 +436,26 @@ describe('its service, settings, root, delivery and problems', () => {
     expect(text(page, 'service')).toContain('Backup · port 30001')
     await click(page.querySelector('[data-app-open]'))
     expect(push).toHaveBeenCalledWith({ pathname: '/devices/D1/S7/connect', state: { autoConnect: true, autoLaunch: true } })
+  })
+
+  describe('its Open, of a web service opened at its web address', () => {
+    const open = (page: HTMLElement) => page.querySelector<HTMLButtonElement>('[data-app-open]')!
+
+    it('opens it on the click, with no connection', async () => {
+      web.value = true
+      const page = await render()
+      await click(open(page))
+      expect(web.open).toHaveBeenCalledExactlyOnceWith('S7')
+      expect(push).not.toHaveBeenCalled()
+    })
+
+    it('is held until whether it is is known, and while it opens', async () => {
+      web.value = undefined
+      expect(open(await render()).disabled).toBe(true)
+      web.value = true
+      web.opening = true
+      expect(open(await render()).disabled).toBe(true)
+    })
   })
 
   it('disabled: no Open — its service stopped, said where its release names a protocol', async () => {

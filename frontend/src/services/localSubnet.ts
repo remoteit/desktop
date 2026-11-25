@@ -32,6 +32,10 @@ export type LocalSubnetName = { name: string; address?: string }
 export const subnetWebURL = (name: string, port: number) =>
   port === 443 ? `https://${name}` : `https://${name}:${port}`
 
+// The port a web service's name is opened at.
+export const subnetWebPort = (port: number | undefined, defaultHttp?: boolean): number =>
+  port === 80 && defaultHttp ? 443 : port || 443
+
 const kept = new Map<string, { at: number; answer: Promise<LocalSubnetName | null> }>()
 // An answer is the sign-in's that served the service then: none is kept past a change of who serves an account, and
 // whoever shows one (hooks/useLocalSubnetName) is told to ask again — the name asked about may be the very same.

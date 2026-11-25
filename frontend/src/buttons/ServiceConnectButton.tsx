@@ -1,4 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import type { Dispatch, State } from '../store'
 import { clearConnectionError } from '../helpers/connectionHelper'
 import { useTranslation } from 'react-i18next'
 import { GUIDE_START_DATE } from '../constants'
@@ -15,6 +17,10 @@ import { opensTerminal } from '../helpers/sshHelper'
 import { useLocalSignIn, useSubnetReach } from '../hooks/useLocalSubnetName'
 import { LocalSignInNotice } from '../components/LocalSignInNotice'
 import { BrowserGatewayConnect } from '../components/BrowserGatewayConnect'
+import { WebAddressConnect, WebAddressFailed } from '../components/WebAddressConnect'
+import { useOpenWebAddress, useWebAddress, useWebTarget } from '../hooks/useWebAddress'
+import { useWaited } from '../hooks/useWaited'
+import { WEB_ADDRESS_WAIT_MS } from '../services/webAddress'
 import { AppTerminalOption } from '../components/AppTerminal'
 import { useServiceApp } from '../hooks/useDeviceApps'
 import { useApplication } from '../hooks/useApplication'
@@ -23,11 +29,13 @@ import { LocalPortConnect } from '../components/LocalPortConnect'
 import { LocalPortsListed } from '../components/LocalPortsListed'
 import { useLocalPort } from '../hooks/useLocalPort'
 import { wantsHttps } from '../services/localPorts'
-import { HTTP_TYPE } from '../services/graphQLDetectedScheme'
+import { defaultHttpOnName } from '../services/graphQLDetectedScheme'
 
 export const ServiceConnectButton: React.FC = () => {
   const { t } = useTranslation()
   const { device, service, connection, instance } = useContext(DeviceContext)
+  const dispatch = useDispatch<Dispatch>()
+  const autoConnect = useSelector((state: State) => state.ui.autoConnect)
   const [showError, setShowError] = useState<boolean>(true)
   // A name that works on this machine needs no connection: it is shown in place of Connect, the proxy one step away.
   const reach = useSubnetReach(device?.id, service?.id)
@@ -35,10 +43,7 @@ export const ServiceConnectButton: React.FC = () => {
   // A service's own name's port goes with that name alone: the one this machine answered may be its device's (a daemon
   // without service names, through the portal's probe), reached at the service's own port.
   const namePort = local && local.name !== reach.name ? undefined : reach.port
-  const sharedHttpsInUse = device?.services.some(
-    other => other.id !== service?.id && other.enabled !== false && other.port === 443
-  )
-  const defaultHttp = !sharedHttpsInUse && service?.typeID === HTTP_TYPE && service.port === 80
+  const defaultHttp = defaultHttpOnName(service, device)
   const [proxy, setProxy] = useState(false)
   const web = useApplication(service, connection).web
   const ssh = service?.typeID === 28
@@ -49,6 +54,15 @@ export const ServiceConnectButton: React.FC = () => {
   // No agent here reaches it, but it has a name and is SSH: a terminal opens it through this browser's client
   // (components/BrowserGatewayConnect), the proxy one step away as for a local name.
   const terminal = !local && reach.checked && !!reach.name && ssh && !proxy
+  // A web service is opened at its web address where the new proxies are enabled (services/webAddress): shown where no
+  // agent here reaches it, and what the proxy is where one does. Whether one does is waited on before either is, and no
+  // connection is started meanwhile.
+  const webAddress = useWebAddress(useWebTarget(service, connection))
+  const address = useOpenWebAddress(service?.id)
+  const unchecked = !!webAddress && !reach.checked
+  const unanswered = useWaited(unchecked, WEB_ADDRESS_WAIT_MS)
+  const webPanel = !!webAddress && !local && (reach.checked || unanswered)
+  const hold = webAddress === undefined || (unchecked && !unanswered)
   // A local port of this machine (services/localPorts), where it runs our daemon: asked for here, or open already —
   // then it is what the panel shows, until it is disconnected.
   const localPort = useLocalPort(service?.id, device?.id)
@@ -57,7 +71,7 @@ export const ServiceConnectButton: React.FC = () => {
   useEffect(() => {
     if (localPort.local && !localPort.local.open && !localPort.busy) setPortAsked(false)
   }, [localPort.local?.open, localPort.busy])
-  const named = !connection.enabled && !onPort && ((!!local && !proxy) || terminal)
+  const named = !connection.enabled && !onPort && ((!!local && (!!webAddress || !proxy)) || webPanel || terminal)
   // remote.it is on this machine but does not act for this person (services/localSubnet localSignIn): Connect goes
   // through this browser meanwhile, and signing in there is offered.
   const signIn = useLocalSignIn(!local && reach.checked && !!reach.name && !onPort)
@@ -73,10 +87,17 @@ export const ServiceConnectButton: React.FC = () => {
   )
   // The name works here, so the proxy is not in use: an error an earlier proxy attempt left on the connection — saved
   // with it, so back on every reload, and red on the service — is stale, and cleared. A proxy attempt asked for after
-  // this sets its own.
+  // this sets its own. A web address's own, where that is what is shown, is cleared by one that opens.
+  const clearError = () => {
+    if (connection?.error) clearConnectionError(connection)
+  }
   useEffect(() => {
-    if (named && connection?.error) clearConnectionError(connection)
-  }, [named, connection?.error])
+    if (named && !webPanel) clearError()
+  }, [named, webPanel, connection?.error])
+  // Nothing is connected from here then: what was asked for on arrival at the page is what it shows.
+  useEffect(() => {
+    if (named && autoConnect && autoConnect === service?.id) dispatch.ui.set({ autoConnect: undefined })
+  }, [named, autoConnect, service?.id])
 
   return (
     <Collapse in={!connection.connectLink} timeout={800}>
@@ -146,6 +167,8 @@ export const ServiceConnectButton: React.FC = () => {
                     connection={connection}
                     byCertificate={byCertificate}
                   />
+                ) : webPanel ? (
+                  service && <WebAddressConnect service={service} onOpened={clearError} />
                 ) : (
                   service && (
                     <BrowserGatewayConnect
@@ -157,11 +180,14 @@ export const ServiceConnectButton: React.FC = () => {
                     />
                   )
                 )}
-                <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
-                  <Link onClick={() => setProxy(true)}>
-                    {t('serviceConnectButton.useProxy', 'Connect through the proxy instead')}
-                  </Link>
-                </Typography>
+                {!webPanel && webAddress !== undefined && (
+                  <Typography variant="caption" component="div" sx={{ marginTop: 0.75, textAlign: 'right' }}>
+                    <Link onClick={webAddress ? address.open : () => setProxy(true)}>
+                      {t('serviceConnectButton.useProxy', 'Connect through the proxy instead')}
+                    </Link>
+                    {address.failed && <WebAddressFailed reason={address.failed.reason} />}
+                  </Typography>
+                )}
                 {portLink}
               </Box>
             ) : (
@@ -173,6 +199,7 @@ export const ServiceConnectButton: React.FC = () => {
                   service={service}
                   connection={connection}
                   permissions={instance?.permissions}
+                  hold={hold}
                   fullWidth
                 />
               </>

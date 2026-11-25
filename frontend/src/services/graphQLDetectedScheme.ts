@@ -69,3 +69,9 @@ export const redirectLoops = (
 
 export const HTTP_TYPE = 7
 export const HTTPS_TYPE = 8
+
+// The shared name's HTTPS entry forwards to a plain HTTP service on port 80, where no service of the device has port 443.
+export const defaultHttpOnName = (service?: IService, device?: IDevice): boolean =>
+  service?.typeID === HTTP_TYPE &&
+  service.port === 80 &&
+  !device?.services?.some(other => other.id !== service.id && other.enabled !== false && other.port === 443)

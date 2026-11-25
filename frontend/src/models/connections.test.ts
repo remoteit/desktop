@@ -1,16 +1,31 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { DEFAULT_CONNECTION } from '@common/constants'
 
-const { setConnection, graphQLConnect, graphQLSetLink, graphQLFetchConnections, fetchIds, cleanOrphans } = vi.hoisted(
-  () => ({
-    graphQLFetchConnections: vi.fn(),
-    fetchIds: vi.fn(() => [] as string[]),
-    cleanOrphans: vi.fn(),
-    setConnection: vi.fn(),
-    graphQLConnect: vi.fn(),
-    graphQLSetLink: vi.fn(),
-  })
-)
+const {
+  setConnection,
+  graphQLConnect,
+  graphQLSetLink,
+  graphQLFetchConnections,
+  fetchIds,
+  cleanOrphans,
+  byId,
+  web,
+  ready,
+  target,
+  selected,
+} = vi.hoisted(() => ({
+  byId: vi.fn((..._args: any[]): any[] => []),
+  web: vi.fn(async (): Promise<boolean | undefined> => false),
+  ready: vi.fn(async (_id: string): Promise<any> => true),
+  target: vi.fn((..._args: any[]): any => undefined),
+  selected: vi.fn(),
+  graphQLFetchConnections: vi.fn(),
+  fetchIds: vi.fn(() => [] as string[]),
+  cleanOrphans: vi.fn(),
+  setConnection: vi.fn(),
+  graphQLConnect: vi.fn(),
+  graphQLSetLink: vi.fn(),
+}))
 
 vi.mock('../services/browser', () => ({ default: { hasBackend: false } }))
 vi.mock('../constants', () => ({ REGEX_HIDDEN_PASSWORD: /^\*+$/ }))
@@ -29,11 +44,13 @@ vi.mock('../services/graphQLDevice', () => ({
 }))
 vi.mock('../selectors/applications', () => ({}))
 vi.mock('./accounts', () => ({}))
-vi.mock('../selectors/connections', () => ({}))
-vi.mock('../selectors/devices', () => ({ selectById: () => [] }))
+vi.mock('../selectors/connections', () => ({ selectConnection: selected }))
+vi.mock('../selectors/devices', () => ({ selectById: byId }))
+vi.mock('../services/webAddress', () => ({ decideWebAddress: web, readyWebAddress: ready, webTarget: target }))
+vi.mock('../services/graphQLDaemon', () => ({ UNSUPPORTED: 'UNSUPPORTED' }))
 vi.mock('../services/Controller', () => ({}))
 vi.mock('../services/Heartbeat', () => ({ default: {} }))
-vi.mock('../i18n', () => ({ default: {} }))
+vi.mock('../i18n', () => ({ default: { t: (_key: string, options: any) => options.defaultValue } }))
 
 import connectionsModel from './connections'
 import { requestSignIn } from '../selectors/signIns'
@@ -219,5 +236,133 @@ describe('connections — with several sign-ins in use', () => {
     graphQLFetchConnections.mockResolvedValue({ data: { data: { login: { device: [] } } } })
     await effects.fetch(undefined, { ...state(), accounts: { membership: [], signIns: {} } })
     expect(graphQLFetchConnections.mock.calls).toEqual([[{ ids: ['s-me', 's-work'] }, undefined]])
+  })
+})
+
+/* A web service opened at its web address has no connection: from wherever one is asked for with no click, its page is
+   gone to; and one of a network's started together is made ready, with nothing opened. */
+describe('connecting to a service opened at its web address', () => {
+  const dispatch = {
+    ui: { set: vi.fn(), clearAutoLaunch: vi.fn() },
+    connections: { proxyConnect: vi.fn(), connect: vi.fn(), set: vi.fn(), checkQueue: vi.fn() },
+  }
+  const effects = () => (connectionsModel as any).effects(dispatch)
+  const connect = (set: Partial<IConnection> = {}) =>
+    effects().connect({ ...connection, autoLaunch: undefined, error: undefined, ...set }, {})
+  let open: any
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    byId.mockReturnValue([{ id: 'service-1', deviceID: 'device-1', state: 'active' }])
+    target.mockImplementation((_state, service) => ({ id: service.id, deviceID: service.deviceID, web: true }))
+    web.mockResolvedValue(true)
+    ready.mockResolvedValue(true)
+    open = vi.spyOn(window, 'open').mockReturnValue(null)
+    window.location.hash = '#/devices'
+  })
+  afterEach(() => {
+    byId.mockReturnValue([])
+    target.mockReturnValue(undefined)
+    web.mockResolvedValue(false)
+    window.location.hash = ''
+    open.mockRestore()
+  })
+
+  it('goes to its page, opening and making nothing', async () => {
+    expect(await connect({ autoLaunch: true })).toBe(false)
+    expect(dispatch.connections.proxyConnect).not.toHaveBeenCalled()
+    expect(dispatch.ui.clearAutoLaunch).toHaveBeenCalledWith('service-1')
+    expect(dispatch.ui.set.mock.calls).toEqual([[{ redirect: '/devices/device-1/service-1/connect' }]])
+    expect(ready).not.toHaveBeenCalled()
+    expect(open).not.toHaveBeenCalled()
+  })
+
+  it('goes nowhere from its own page', async () => {
+    window.location.hash = '#/connections/service-1'
+    expect(await connect()).toBe(false)
+    expect(dispatch.ui.set).not.toHaveBeenCalled()
+    expect(dispatch.connections.proxyConnect).not.toHaveBeenCalled()
+  })
+
+  it('is made ready where it is started with others: nothing opened, gone to, connected or kept as a connection', async () => {
+    expect(await connect({ autoStart: true, enabled: true, autoLaunch: true })).toBe(false)
+    expect(ready).toHaveBeenCalledExactlyOnceWith('service-1')
+    expect(open).not.toHaveBeenCalled()
+    expect(dispatch.ui.set).not.toHaveBeenCalled()
+    expect(dispatch.connections.proxyConnect).not.toHaveBeenCalled()
+    expect(setConnection).not.toHaveBeenCalled()
+  })
+
+  it('a failure is shown on it, as no enabled connection, and is cleared by one that is made ready', async () => {
+    ready.mockResolvedValue({ reason: 'No proxy is in service' })
+    await connect({ autoStart: true, enabled: true })
+    expect(setConnection).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ id: 'service-1', enabled: false, error: { message: 'No proxy is in service' } })
+    )
+    ready.mockResolvedValue({ reason: '' })
+    await connect({ autoStart: true, enabled: true })
+    expect(setConnection.mock.lastCall![0].error.message).toBe('Could not open it: try again')
+    ready.mockResolvedValue(true)
+    await connect({ autoStart: true, enabled: true, error: { message: 'No proxy is in service' } })
+    expect(setConnection.mock.lastCall![0]).toMatchObject({ enabled: false, error: undefined })
+    expect(dispatch.connections.proxyConnect).not.toHaveBeenCalled()
+  })
+
+  it.each([false, undefined])('any other is connected as ever: %s, the gate off or not known', async decided => {
+    web.mockResolvedValue(decided)
+    expect(await connect({ autoStart: true })).not.toBe(false)
+    expect(await connect()).not.toBe(false)
+    expect(dispatch.connections.proxyConnect).toHaveBeenCalledTimes(2)
+    expect(ready).not.toHaveBeenCalled()
+    expect(dispatch.ui.set).not.toHaveBeenCalled()
+  })
+
+  it('a service that is not web is connected with nothing asked', async () => {
+    target.mockReturnValue({ id: 'service-1', web: false })
+    await connect()
+    expect(web).not.toHaveBeenCalled()
+    expect(dispatch.connections.proxyConnect).toHaveBeenCalledOnce()
+  })
+
+  it('an API without it after all connects it as ever', async () => {
+    ready.mockResolvedValue('UNSUPPORTED')
+    await connect({ autoStart: true })
+    expect(dispatch.connections.proxyConnect).toHaveBeenCalledOnce()
+  })
+
+  it('of a network’s started together, each web one is made ready once, a failed one alone failing, the others connected', async () => {
+    byId.mockImplementation((_state: any, _account: any, id: string) => [{ id, deviceID: 'device-1', state: 'active' }])
+    selected.mockImplementation((_state: any, service: any) => ({
+      ...connection,
+      id: service.id,
+      enabled: false,
+      error: undefined,
+    }))
+    target.mockImplementation((_state, service) => ({ id: service.id, web: service.id.startsWith('web') }))
+    ready.mockImplementation(async (id: string) => (id === 'web-2' ? { reason: 'No access' } : true))
+    const running: Promise<unknown>[] = []
+    const state = { connections: { queue: [] as any[] } }
+    dispatch.connections.set.mockImplementation(async (set: any) => Object.assign(state.connections, set))
+    dispatch.connections.connect.mockImplementation((c: any) => running.push(effects().connect(c, state)))
+    vi.useFakeTimers()
+    dispatch.connections.checkQueue.mockImplementation(() => effects().checkQueue(undefined, state))
+    await effects().queueEnable({ serviceIds: ['web-1', 'ssh', 'web-2', 'web-3'], enabled: true })
+    await vi.advanceTimersByTimeAsync(2_000)
+    vi.useRealTimers()
+    await Promise.all(running)
+    expect(ready.mock.calls).toEqual([['web-1'], ['web-2'], ['web-3']])
+    expect(dispatch.connections.proxyConnect.mock.calls.map(([c]: any) => c.id)).toEqual(['ssh'])
+    expect(setConnection.mock.calls.map(([c]: any) => [c.id, c.enabled, c.error.message])).toEqual([
+      ['web-2', false, 'No access'],
+    ])
+    expect(open).not.toHaveBeenCalled()
+    expect(dispatch.ui.set.mock.calls.filter(([set]: any) => set.redirect)).toEqual([])
+
+    // Stopped together: nothing of it to stop.
+    dispatch.connections.connect.mockClear()
+    await effects().queueEnable({ serviceIds: ['web-1'], enabled: false })
+    await new Promise(resolve => setTimeout(resolve, 300))
+    expect(dispatch.connections.connect).not.toHaveBeenCalled()
+    selected.mockReset()
   })
 })

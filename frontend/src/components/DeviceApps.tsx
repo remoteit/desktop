@@ -18,6 +18,7 @@ import { useHistory } from 'react-router-dom'
 import { DeviceApp, DeviceAppService, SCREENVIEW } from '../services/graphQLDeviceApps'
 import { useDeviceApps } from '../hooks/useDeviceApps'
 import { useAppSwitch } from './AppRootConsent'
+import { useOpenWebService, useWebAddress, useWebTarget } from '../hooks/useWebAddress'
 import { AppTerminalAction } from './AppTerminal'
 import {
   adminLine,
@@ -219,7 +220,8 @@ export const DeviceApps: React.FC<{ device: IDevice }> = ({ device }) => {
    started and launched as its application type launches (graphql makes the type from the manifest's protocol: http and
    https open in the browser, vnc and rdp in a viewer, udp nothing: a port for the person's own UDP client), as any
    service's Connect page does — a multi-port service's on its first port, its launch port; said by its protocol (Open
-   page, Open screen, Connect). One that opens as a terminal (helpers/sshHelper opensTerminal) has Open terminal
+   page, Open screen, Connect). A web one opens at its web address instead where the new proxies are enabled (services/
+   webAddress), on this click, with no connection. One that opens as a terminal (helpers/sshHelper opensTerminal) has Open terminal
    instead (components/AppTerminal). */
 export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp; service: DeviceAppService }> = ({
   device,
@@ -228,19 +230,24 @@ export const AppOpen: React.FC<{ device: IDevice; app: DeviceApp; service: Devic
 }) => {
   const { t } = useTranslation()
   const history = useHistory()
+  const target = useWebTarget(device.services?.find(s => s.id === service.serviceId))
+  const webAddress = useWebAddress(target)
+  const web = useOpenWebService(target)
   if (!app.enabled || app.state !== 'running' || !service.serviceId) return null
   return (
     <Button
       size="small"
       variant="contained"
       data-app-open
-      onClick={() =>
+      disabled={webAddress === undefined || web.opening}
+      onClick={() => {
+        if (webAddress) return web.open()
         history.push({
           pathname: `/devices/${device.id}/${service.serviceId}/connect`,
           // A udp service's connection is all it has: its port is for the person's own UDP client.
           state: service.protocol === 'udp' ? { autoConnect: true } : { autoConnect: true, autoLaunch: true },
         })
-      }
+      }}
     >
       {openWord(t, service.protocol)}
     </Button>

@@ -5,10 +5,14 @@ import { ComboButton } from '../buttons/ComboButton'
 import { LaunchButton } from '../buttons/LaunchButton'
 import { Box } from '@mui/material'
 import { copyReady } from '../helpers/connectionHelper'
+import { useKnownWebAddress, useWebAddress, useWebTarget } from '../hooks/useWebAddress'
 
 export const ConnectAttribute = ({ device, service, connection }: IDataOptions) => {
   const app = useApplication(service, connection)
   const canCopy = copyReady(connection)
+  // Opened at its web address (services/webAddress): that is copied, where there is one, as a connection's is.
+  const target = useWebTarget(service, connection)
+  const address = useKnownWebAddress(target, useWebAddress(target) === true)
   const buttons =
     connection &&
     connection.online &&
@@ -22,6 +26,20 @@ export const ConnectAttribute = ({ device, service, connection }: IDataOptions) 
   return (
     <Box zIndex={3} position="relative" onClick={e => e.stopPropagation()} onMouseDown={e => e.stopPropagation()}>
       <ComboButton size="chip" service={service} connection={connection} permissions={device?.permissions}>
+        {!buttons && address && (
+          <>
+            &nbsp;
+            <CopyIconButton
+              value={address}
+              color="primary"
+              icon="clone"
+              type="regular"
+              size="sm"
+              buttonBaseSize="small"
+              fixedWidth
+            />
+          </>
+        )}
         {buttons && (
           <>
             &nbsp;

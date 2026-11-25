@@ -125,7 +125,6 @@ describe('every effect and callback that reads', () => {
     ['/hooks/useChatSync.ts', 'the page’s own person’s conversations'],
     ['/hooks/useSafeArea.ts', 'the screen’s insets'],
     ['/hooks/useReadAgain.ts', 'these hooks themselves'],
-    ['/pages/EndpointSignInPage.tsx', 'a sign-in to an endpoint, made once'],
     [
       '/pages/PartnerStatsPage/PartnerStatsListPage.tsx',
       'read by the model when the account’s data is (accounts.select)',

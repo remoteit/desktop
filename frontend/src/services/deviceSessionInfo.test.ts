@@ -14,6 +14,7 @@ vi.mock('axios', () => ({ default: { request } }))
 
 import {
   deviceSessionInfo,
+  readDeviceSessionInfo,
   requestDeviceSessionInfo,
   requestServiceSessionInfo,
   resetDeviceSessionInfo,
@@ -34,6 +35,43 @@ beforeEach(() => {
   state.ui = {}
   request.mockReset()
   vi.spyOn(console, 'error').mockImplementation(() => {})
+})
+
+describe('a device’s, waited on', () => {
+  it('is read once, and kept', async () => {
+    request.mockResolvedValue({
+      data: {
+        data: {
+          login: { device: [{ id: 'A', subnetName: 'a.on.remote.it', services: [{ id: 'S', subnetName: 's' }] }] },
+        },
+      },
+    })
+    const [first, second] = await Promise.all([readDeviceSessionInfo('A', 'S'), readDeviceSessionInfo('A', 'S')])
+    expect(first.services).toEqual({ S: 's' })
+    expect(second).toBe(first)
+    expect(await readDeviceSessionInfo('A', 'S')).toBe(first)
+    expect(request).toHaveBeenCalledTimes(1)
+  })
+
+  it('is read again, once, for a service it does not list', async () => {
+    const device = (services: object[]) => ({
+      data: { data: { login: { device: [{ id: 'A', subnetName: 'a.on.remote.it', services }] } } },
+    })
+    request.mockResolvedValueOnce(device([])).mockResolvedValueOnce(device([{ id: 'NEW', subnetName: 'n' }]))
+    request.mockResolvedValue(device([{ id: 'NEW', subnetName: 'n' }]))
+    expect((await readDeviceSessionInfo('A', 'NEW')).services).toEqual({ NEW: 'n' })
+    expect(request).toHaveBeenCalledTimes(2)
+    expect((await readDeviceSessionInfo('A', 'GONE')).services).toEqual({ NEW: 'n' })
+    expect((await readDeviceSessionInfo('A', 'GONE')).services).toEqual({ NEW: 'n' })
+    expect(request).toHaveBeenCalledTimes(3)
+  })
+
+  it('is none, and never waited on again, from an API without device sessions', async () => {
+    request.mockResolvedValue({ data: { errors: [{ message: 'Cannot query field "subnetName" on type "Device".' }] } })
+    expect((await readDeviceSessionInfo('A', 'S')).services).toBeUndefined()
+    expect((await readDeviceSessionInfo('B', 'S')).services).toBeUndefined()
+    expect(request).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('device session info', () => {

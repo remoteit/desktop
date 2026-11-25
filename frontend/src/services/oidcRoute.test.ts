@@ -4,10 +4,11 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // route rides the flow and the callback puts it back. A signed-out visit to the proxy's
 // #/endpoint-sign-in?endpoint=…&return=… then carries on to the endpoint, as it does for someone already signed in.
 
-const { leaveTo, graphQLBasicRequest } = vi.hoisted(() => ({ leaveTo: vi.fn(), graphQLBasicRequest: vi.fn() }))
+const { leaveTo, post } = vi.hoisted(() => ({ leaveTo: vi.fn(), post: vi.fn() }))
 vi.mock('./browser', () => ({ default: { isNative: false, isElectron: false }, leaveTo }))
 vi.mock('./chatPopout', () => ({ isChatPopout: false }))
-vi.mock('./graphQL', () => ({ graphQLBasicRequest }))
+vi.mock('./post', () => ({ post }))
+vi.mock('./graphQL', () => ({ graphQLGetErrors: (response: any) => response.data?.errors }))
 vi.mock('../i18n', () => ({ default: { language: 'en', resolvedLanguage: 'en' } }))
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (_key: string, text: string) => text }) }))
 vi.mock('../constants', () => ({
@@ -75,7 +76,7 @@ beforeEach(async () => {
   sessionStorage.clear()
   history.replaceState({}, '', '/')
   leaveTo.mockReset()
-  graphQLBasicRequest.mockReset()
+  post.mockReset()
   fetchSpy.mockClear()
   vi.stubGlobal('fetch', fetchSpy)
   // PKCE needs WebCrypto's digest, which jsdom's crypto lacks.
@@ -190,7 +191,7 @@ describe('after the sign-in', () => {
     const { state, nonce } = await startFrom(`#${ENDPOINT_ROUTE}`)
     tokenReply = issued({ sub: 'sub-a', nonce })
     const oidc = await callback(`code=the-code&state=${state}`)
-    graphQLBasicRequest.mockResolvedValue('ERROR')
+    post.mockResolvedValue({ data: { errors: [{ extensions: { code: 'NO_ACCESS' } }] } })
     // One module graph for the router and the page (imported after the reset above).
     const [React, { createRoot }, { HashRouter, Switch, Route }, { EndpointSignInPage }] = await Promise.all([
       import('react'),
@@ -220,9 +221,35 @@ describe('after the sign-in', () => {
       await oidc.oidcCompleteFromUrl()
       await new Promise(resolve => setTimeout(resolve, 0)) // the hashchange the router listens for
     })
-    expect(graphQLBasicRequest).toHaveBeenCalledTimes(1)
-    expect(graphQLBasicRequest.mock.calls[0][0]).toContain('endpointTicket')
-    expect(graphQLBasicRequest.mock.calls[0][1]).toEqual({ endpointId: 'EP-1', returnUrl: RETURN })
+    expect(post).toHaveBeenCalledTimes(1)
+    expect(post.mock.calls[0][0].query).toContain('endpointTicket')
+    expect(post.mock.calls[0][0].variables).toEqual({ endpointId: 'EP-1', returnUrl: RETURN })
     expect(container.textContent).toBe('You do not have access to this endpoint.')
+  })
+})
+
+describe('a bookmark of an endpoint, opened with nothing in memory', () => {
+  // No account has been read for anyone then: who is signed in is what this browser keeps.
+  it.each([
+    ['1', ['', 'sub-b', 'sub-c']],
+    ['0', ['']],
+  ])('asks every sign-in this browser keeps in use (several: %s)', async (several, subs) => {
+    localStorage.setItem('oidc.several', several)
+    signedInAs('sub-a')
+    const saved = (sub: string) => ({ email: `${sub}@x.test`, refresh_token: `rt-${sub}`, id_token: jwt({ sub }) })
+    localStorage.setItem(
+      'oidc.accounts',
+      JSON.stringify({
+        'sub-a': saved('sub-a'),
+        'sub-b': saved('sub-b'),
+        'sub-c': saved('sub-c'),
+        'sub-idle': { ...saved('sub-idle'), idle: true },
+      })
+    )
+    vi.resetModules()
+    post.mockResolvedValue({ data: { errors: [{ extensions: { code: 'NO_ACCESS' } }] } })
+    const { endpointTicket } = await import('./endpointTicket')
+    expect(await endpointTicket('EP-1', RETURN)).toBe('REFUSED')
+    expect(post.mock.calls.map(args => args[4].sub)).toEqual(subs)
   })
 })
