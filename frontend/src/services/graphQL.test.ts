@@ -101,6 +101,20 @@ describe('graphQLBasicRequest', () => {
   })
 })
 
+describe('where a request goes', () => {
+  it('sends GraphQL to the graphql URL and REST routes to the API tree', async () => {
+    request.mockResolvedValue({ data: {} })
+    await post({})
+    await post({ type: 'event' }, '/event')
+    await get('/file/download/f1')
+    expect(request.mock.calls.map(([config]) => config.url)).toEqual([
+      'https://api.test/api/graphql',
+      'https://api.test/api/event',
+      'https://api.test/api/file/download/f1',
+    ])
+  })
+})
+
 describe('a request the network dropped in flight', () => {
   const dropped = () => Object.assign(new Error('Network Error'), { isAxiosError: true, code: 'ERR_NETWORK' })
 
@@ -149,18 +163,6 @@ describe('a request the network dropped in flight', () => {
     request.mockRejectedValue(answered)
     expect(await graphQLBasicRequest('{ login { id } }')).toBe('ERROR')
     expect(request).toHaveBeenCalledOnce()
-  })
-
-  it('sends GraphQL to the graphql URL and REST routes to the API tree', async () => {
-    request.mockResolvedValue({ data: {} })
-    await post({})
-    await post({ type: 'event' }, '/event')
-    await get('/file/download/f1')
-    expect(request.mock.calls.map(([config]) => config.url)).toEqual([
-      'https://api.test/api/graphql',
-      'https://api.test/api/event',
-      'https://api.test/api/file/download/f1',
-    ])
   })
 
   it('never resends a plain post', async () => {

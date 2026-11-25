@@ -9,11 +9,12 @@ vi.mock('../services/graphQLMutation', () => ({ graphQLRentANode: vi.fn() }))
 import { getApiURL, getApiTreeURL } from './apiHelper'
 import { GRAPHQL_API } from '../constants'
 
-describe('getApiURL — CLI config overrides', () => {
-  beforeEach(() => {
-    h.overrides = {}
-  })
+beforeEach(() => {
+  h.overrides = {}
+  h.apis = {}
+})
 
+describe('getApiURL — CLI config overrides', () => {
   it('ignores a shared-domain override the new login cannot mint for', () => {
     h.overrides = { apiURL: 'https://api.remote.it/graphql/v1' }
     expect(getApiURL()).toBe(GRAPHQL_API)
@@ -26,11 +27,6 @@ describe('getApiURL — CLI config overrides', () => {
 })
 
 describe('getApiTreeURL — where REST routes live', () => {
-  beforeEach(() => {
-    h.overrides = {}
-    h.apis = {}
-  })
-
   it('is the /api tree on the cloud front, beside /graphql', () => {
     h.overrides = { apiURL: 'https://cloud.remote.it/api/graphql' }
     expect(getApiTreeURL()).toBe('https://cloud.remote.it/api')
