@@ -34,7 +34,21 @@ vi.mock('react-router-dom', async importOriginal => ({
   useLocation: () => ({ pathname: flags.pathname }),
 }))
 vi.mock('@mui/material', () => ({
-  Box: ({ children }: { children?: React.ReactNode }) => <div>{children}</div>,
+  Box: ({
+    component: Tag = 'div',
+    children,
+    'aria-label': label,
+    'aria-hidden': hidden,
+  }: {
+    component?: React.ElementType
+    children?: React.ReactNode
+    'aria-label'?: string
+    'aria-hidden'?: boolean
+  }) => (
+    <Tag aria-label={label} aria-hidden={hidden}>
+      {children}
+    </Tag>
+  ),
   List: ({ children }: { children?: React.ReactNode }) => <ul>{children}</ul>,
   Tooltip: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   Chip: ({ label }: { label: string }) => <span data-chip={label} />,
@@ -60,11 +74,6 @@ vi.mock('@mui/material', () => ({
   ListItemText: ({ primary }: { primary: string }) => <span>{primary}</span>,
 }))
 vi.mock('./Icon', () => ({ Icon: ({ name }: { name: string }) => <i data-icon={name} /> }))
-vi.mock('./Quote', () => ({
-  Quote: ({ indent, children }: { indent?: string; children?: React.ReactNode }) => (
-    <div data-quote={indent}>{children}</div>
-  ),
-}))
 vi.mock('./ListItemLocation', () => ({
   ListItemLocation: ({
     title,
@@ -107,7 +116,7 @@ vi.mock('../selectors/products', () => ({ getProductModel: () => ({ all: new Arr
 vi.mock('../selectors/organizations', () => ({ selectLimitsLookup: () => ({}) }))
 vi.mock('../selectors/ui', () => ({ selectDefaultSelectedPage: () => ({}) }))
 vi.mock('../helpers/dateHelper', () => ({ getLocale: () => 'en-US' }))
-vi.mock('../styling', () => ({ spacing: { xs: 2, sm: 4, md: 8, lg: 16 } }))
+vi.mock('../styling', () => ({ spacing: { xxs: 1, xs: 2, sm: 4, md: 8, lg: 16 }, LIST_ITEM_ICON_WIDTH: 56 }))
 
 import { SidebarNav } from './SidebarNav'
 
@@ -174,13 +183,25 @@ describe('SidebarNav', () => {
     expect(pages()).toEqual(['All', 'Connections', 'Services'])
   })
 
-  it("shows each page's icon, the pages set off by a line under their section", () => {
+  it("shows each page's icon, in a list named for the section, set off by rules hidden from assistive tech", () => {
     render({ pathname: '/exits', deviceSessions: true })
     const icons = () => [...container.querySelectorAll('[data-page] [data-icon]')].map(i => i.getAttribute('data-icon'))
     expect(icons()).toEqual(['rectangle-list', 'door-open', 'globe', 'server'])
-    expect(container.querySelectorAll('[data-quote="listIcon"] [data-page]')).toHaveLength(4)
+    const list = container.querySelector('ul[aria-label="Network"]')!
+    expect(list.querySelectorAll(':scope > li > [data-page]')).toHaveLength(4)
+    const rule = list.parentElement!.querySelector(':scope > [aria-hidden="true"]')!
+    expect(rule.querySelector('svg')).not.toBeNull()
+    expect(rule.querySelector('[data-page]')).toBeNull()
     render({ pathname: '/connect-ai' })
-    expect(container.querySelector('[data-quote]')).toBeNull()
+    expect(container.querySelector('[aria-hidden="true"]')).toBeNull()
+    expect(container.querySelector('ul[aria-label]')).toBeNull()
+  })
+
+  it('does not indent the pages', () => {
+    render({ pathname: '/exits', deviceSessions: true })
+    const list = container.querySelector('ul[aria-label="Network"]')!
+    expect(list.parentElement!.tagName).toBe('LI')
+    expect(list.parentElement!.parentElement).toBe(item('Network').parentElement)
   })
 
   it('opens no pages under a section with one page', () => {
