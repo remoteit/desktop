@@ -9,7 +9,7 @@ import {
 import { graphQLRentANode } from '../services/graphQLMutation'
 import { store } from '../store'
 
-export function getApiURL(): string | undefined {
+export function getApiURL(): string {
   if (!store) return GRAPHQL_API
 
   const { apiGraphqlURL, switchApi } = store.getState().ui.apis
@@ -25,7 +25,12 @@ export function getApiURL(): string | undefined {
 // stage. An off-allowlist target fails at MINT with a legible invalid_target instead of as
 // ambient 401s an hour later.
 export function getApiResource(): string {
-  return resourceForApiURL(getApiURL() ?? GRAPHQL_API)
+  return resourceForApiURL(getApiURL())
+}
+
+// The cloud front serves REST routes under the /api tree beside /graphql, not under it.
+export function getApiTreeURL(): string {
+  return getApiResource()
 }
 
 export function getRestApi(): string | undefined {
