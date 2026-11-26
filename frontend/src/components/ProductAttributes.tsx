@@ -85,7 +85,7 @@ export const productAttributes: ProductAttribute[] = [
   new ProductAttribute({
     id: 'productCreated',
     label: 'Created',
-    defaultWidth: 150,
+    defaultWidth: 190,
     value: ({ product }: IDataOptions) =>
       product?.created && (
         <Typography variant="body2" color="grayDarker.main" noWrap>
@@ -96,7 +96,7 @@ export const productAttributes: ProductAttribute[] = [
   new ProductAttribute({
     id: 'productUpdated',
     label: 'Updated',
-    defaultWidth: 150,
+    defaultWidth: 190,
     value: ({ product }: IDataOptions) =>
       product?.updated && (
         <Typography variant="body2" color="grayDarker.main" noWrap>

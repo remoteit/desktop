@@ -176,7 +176,7 @@ export const ProductPage: React.FC = () => {
             </Button>
           </Stack>
           {detailed && (
-            <Typography variant="caption" color="textSecondary" component="p" sx={{ marginTop: 1 }}>
+            <Typography variant="caption" color="textSecondary" component="p" sx={{ marginTop: 1, textWrap: 'pretty' }}>
               {t('productPage.keysInForce', {
                 count: keysInForce,
                 defaultValue_zero: 'No join key is in force.',
