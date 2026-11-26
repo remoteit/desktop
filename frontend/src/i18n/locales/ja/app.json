@@ -768,7 +768,8 @@
     "exit": "",
     "network": "",
     "proxy": "",
-    "publicAddress": ""
+    "publicAddress": "",
+    "publicAddressListed": ""
   },
   "claimDevice": {
     "claim": "登録",

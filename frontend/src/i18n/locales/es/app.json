@@ -806,7 +806,8 @@
     "exit": "",
     "network": "",
     "proxy": "",
-    "publicAddress": ""
+    "publicAddress": "",
+    "publicAddressListed": ""
   },
   "claimDevice": {
     "claim": "Reclamar",
