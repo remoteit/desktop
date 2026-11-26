@@ -81,8 +81,13 @@ export const GridListHeader = <TOptions,>({
         </GridListHeaderTitle>
       )}
       {!mobile &&
-        attributes?.map(attribute => (
-          <GridListHeaderTitle key={attribute.id} attribute={attribute} onMouseDown={onDown} />
+        attributes?.map((attribute, index) => (
+          <GridListHeaderTitle
+            key={attribute.id}
+            attribute={attribute}
+            onMouseDown={onDown}
+            last={index === attributes.length - 1}
+          />
         ))}
       <LinearProgress loading={fetching} />
     </ListSubheader>
