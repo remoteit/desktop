@@ -16,7 +16,11 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
   if (!props) return null
   return (
     <List
-      sx={{ width: '100%', padding: '4px 0', '& .ddAttribute': { overflow: 'hidden', textOverflow: 'ellipsis' } }}
+      sx={{
+        width: '100%',
+        padding: '4px 0',
+        '& .ddAttribute': { overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0, overflowWrap: 'anywhere' },
+      }}
       disablePadding={disablePadding}
     >
       {attributes.map((attribute, index) => {
@@ -31,12 +35,12 @@ export const DataDisplay: React.FC<Props> = ({ attributes, limits, width = 140, 
                 sx={{
                   '& > :first-of-type': { alignSelf: 'start' },
                   color: 'grayDark.main',
-                  textTransform: 'capitalize',
                   alignSelf: 'flex-start',
-                  minWidth: width,
+                  minWidth: { xs: Math.min(width, 88), sm: width },
+                  flexShrink: 0,
                 }}
               >
-                {attribute.label}:
+                {attribute.label}
                 {attribute.help && (
                   <Tooltip title={attribute.help} placement="top" arrow>
                     <sup>

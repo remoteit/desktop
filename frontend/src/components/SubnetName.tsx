@@ -31,9 +31,15 @@ export const SubnetName: React.FC<{ deviceId?: string; serviceId?: string; copy?
           </span>
         </Tooltip>
       )}
-      <Typography component="span" variant="caption" noWrap>
-        {name}
-      </Typography>
+      {copy ? (
+        <Typography component="span" variant="inherit" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+          {name}
+        </Typography>
+      ) : (
+        <Typography component="span" variant="caption" noWrap>
+          {name}
+        </Typography>
+      )}
       {copy && <CopyIconButton sx={{ marginY: -1 }} size="sm" color="gray" value={name} />}
     </Box>
   )
