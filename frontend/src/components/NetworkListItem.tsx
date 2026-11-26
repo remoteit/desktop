@@ -4,6 +4,8 @@ import { State } from '../store'
 import { ConnectionListItem } from './ConnectionListItem'
 import { useSelector } from 'react-redux'
 import { selectById } from '../selectors/devices'
+import { useKnownWebAddress, useWebAddress, useWebTarget } from '../hooks/useWebAddress'
+import { WebServiceButton } from './WebServiceButton'
 
 export interface NetworkListItemProps {
   serviceId: string
@@ -26,6 +28,10 @@ export const NetworkListItem: React.FC<NetworkListItemProps> = ({
 }) => {
   const [service, device] = useSelector((state: State) => selectById(state, undefined, serviceId))
   const connection = useSelector((state: State) => selectConnection(state, service))
+  // Opened at its web address (services/webAddress), and available once it has one: opened from its row, with no
+  // connection to show.
+  const target = useWebTarget(service, service && connection)
+  const available = !!useKnownWebAddress(target, useWebAddress(service && target) === true)
   const external = !!session?.id && session.id !== connection.sessionId
   const offline = service?.state !== 'active' && !external
   const name = external ? session.target.name : connection.name || session?.target.name
@@ -47,6 +53,7 @@ export const NetworkListItem: React.FC<NetworkListItemProps> = ({
       connection={external ? undefined : connection}
       connectionsPage={connectionsPage}
     >
+      {available && target && !offline && !external && !connection.enabled && <WebServiceButton target={target} />}
       {children}
     </ConnectionListItem>
   )

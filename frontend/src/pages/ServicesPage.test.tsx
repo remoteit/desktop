@@ -1,16 +1,21 @@
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ServicesPage } from './ServicesPage'
 import type { ServiceShortcut } from '../services/graphQLServiceShortcuts'
 
-const { state, list, openServiceURL } = vi.hoisted(() => ({
+const { state, list, openServiceURL, openWebAddress, allowed, recheck } = vi.hoisted(() => ({
   state: {
     account: 'my-account',
     applicationTypes: { all: [{ id: 48, proxy: true, scheme: '' }] },
     localNames: {} as Record<string, string>,
+    checked: true,
+    webAddresses: false as boolean | undefined,
   },
+  openWebAddress: vi.fn(),
+  allowed: vi.fn(),
+  recheck: vi.fn(),
   list: vi.fn(),
   openServiceURL: vi.fn(),
 }))
@@ -20,11 +25,29 @@ vi.mock('../selectors/accounts', () => ({ selectActiveAccountId: (value: typeof 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (_key: string, text: string) => text }) }))
 vi.mock('../hooks/useDeviceSessions', () => ({ useDeviceSessions: () => true }))
 vi.mock('../hooks/useLocalSubnetName', () => ({
-  useLocalSubnetName: (_deviceId?: string, serviceId?: string) => {
+  useSubnetReach: (_deviceId?: string, serviceId?: string) => {
     const name = serviceId && state.localNames[serviceId]
-    return name ? { name } : undefined
+    return serviceId
+      ? { name: 'home-acme.on.remote.it', checked: state.checked, local: name ? { name } : undefined }
+      : { checked: false }
   },
 }))
+vi.mock('../hooks/useWebAddress', async () => {
+  const { useState } = await import('react')
+  return {
+    useWebAddress: (target: any) =>
+      target.web !== false && state.webAddresses ? allowed(target) : state.webAddresses && false,
+    useRecheck: () => ({ checking: false, recheck }),
+    useOpenWebAddress: (id: string) => {
+      const [failed, setFailed] = useState<{ reason: string }>()
+      const open = async () => {
+        const result = await openWebAddress(id)
+        setFailed(result === true ? undefined : result)
+      }
+      return { open, failed }
+    },
+  }
+})
 vi.mock('../hooks/useServiceShortcutsSupport', () => ({
   useServiceShortcutsSupport: () => ({ available: true, namedAddress: true }),
 }))
@@ -74,7 +97,110 @@ afterEach(async () => {
   root = undefined
   state.account = 'my-account'
   state.localNames = {}
+  state.checked = true
+  state.webAddresses = false
   vi.resetAllMocks()
+})
+
+async function renderPage() {
+  const container = document.createElement('div')
+  root = createRoot(container)
+  await act(async () =>
+    root?.render(
+      <MemoryRouter>
+        <ServicesPage />
+      </MemoryRouter>
+    )
+  )
+  return container
+}
+
+describe('a web service where the new proxies are enabled', () => {
+  beforeEach(() => {
+    state.webAddresses = true
+    allowed.mockReturnValue(true)
+    openWebAddress.mockResolvedValue(true)
+  })
+
+  it.each([443, 8123, 80])('on port %i opens at its web address where no agent here reaches it', async subnetPort => {
+    list.mockResolvedValue([{ ...home, subnetPort }])
+    const row = (await renderPage()).querySelector('li')!
+    await act(async () => row.querySelector('button')!.click())
+    expect(openWebAddress).toHaveBeenCalledExactlyOnceWith('home')
+    expect(openServiceURL).not.toHaveBeenCalled()
+  })
+
+  it('opens its name where an agent here reaches it', async () => {
+    state.localNames = { home: 'home-acme.on.remote.it' }
+    list.mockResolvedValue([home])
+    const row = (await renderPage()).querySelector('li')!
+    await act(async () => row.querySelector('button')!.click())
+    expect(openServiceURL.mock.calls).toEqual([['https://home-acme.on.remote.it']])
+    expect(openWebAddress).not.toHaveBeenCalled()
+  })
+
+  it('has Connect until it is known whether an agent here reaches it', async () => {
+    state.checked = false
+    list.mockResolvedValue([home])
+    expect((await renderPage()).querySelector('li button')).toBeNull()
+  })
+
+  it('has Connect where its web address is not the portal’s to open, which its route says in part', async () => {
+    list.mockResolvedValue([{ ...home, attributes: { $remoteit: { route: 'p2p' } } }])
+    for (const known of [false, undefined]) {
+      allowed.mockReturnValue(known)
+      expect((await renderPage()).querySelector('li button')).toBeNull()
+      await act(async () => root?.unmount())
+    }
+    expect(allowed).toHaveBeenCalledWith({ id: 'home', deviceID: 'server', route: 'p2p', web: true, type: 7 })
+  })
+
+  it('is tried again where it could not be checked, with nothing to open; not where an agent here reaches it', async () => {
+    allowed.mockReturnValue('UNCHECKED')
+    list.mockResolvedValue([home])
+    let row = (await renderPage()).querySelector('li')!
+    expect(row.textContent).toContain('Could not check how this service opens, so it was not connected. Try again.')
+    expect(row.querySelector(':scope > a')).toBeNull()
+    expect(row.querySelector('button')!.textContent).toBe('Try again')
+    await act(async () => row.querySelector('button')!.click())
+    expect(recheck).toHaveBeenCalledOnce()
+    expect(openWebAddress).not.toHaveBeenCalled()
+    await act(async () => root?.unmount())
+    state.localNames = { home: 'home-acme.on.remote.it' }
+    row = (await renderPage()).querySelector('li')!
+    expect(row.textContent).not.toContain('Could not check')
+    expect(row.querySelector('button')!.textContent).toBe('Open')
+  })
+
+  it('of a type not known yet is tried again where it could not be checked, its name not opened meanwhile', async () => {
+    const types = state.applicationTypes.all
+    state.applicationTypes.all = []
+    allowed.mockReturnValue('UNCHECKED')
+    state.localNames = { screen: 'x.on.remote.it' }
+    list.mockResolvedValue([{ ...home, id: 'screen', application: 48, subnetPort: 8959 }])
+    const row = (await renderPage()).querySelector('li')!
+    expect(allowed.mock.calls[0][0]).toMatchObject({ web: undefined, type: 48 })
+    expect(row.querySelector('button')!.textContent).toBe('Try again')
+    state.applicationTypes.all = types
+  })
+
+  it('has Connect for a service that is not web, or is offline', async () => {
+    list.mockResolvedValue([
+      { ...shell, state: 'active', subnetName: 'x', subnetPort: 22 },
+      { ...home, state: 'inactive' },
+    ])
+    expect((await renderPage()).querySelector('li button')).toBeNull()
+  })
+
+  it('says one that did not open, in graphql’s words where it refused, and has Connect then', async () => {
+    openWebAddress.mockResolvedValue({ reason: 'No proxy is in service' })
+    list.mockResolvedValue([home])
+    const row = (await renderPage()).querySelector('li')!
+    await act(async () => row.querySelector('button')!.click())
+    expect(row.textContent).toContain('No proxy is in service')
+    expect(row.querySelector('button')).toBeNull()
+    expect(row.querySelector(':scope > a')!.textContent).toBe('Connect')
+  })
 })
 
 describe('Services page', () => {

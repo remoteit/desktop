@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { Box, Button, List, ListItem, ListItemText, Typography } from '@mui/material'
-import { getApplicationType, isWebType } from '@common/applications'
+import { webTypeOf } from '@common/applications'
 import { selectActiveAccountId } from '../selectors/accounts'
 import type { State } from '../store'
 import { useDeviceSessions } from '../hooks/useDeviceSessions'
-import { useLocalSubnetName } from '../hooks/useLocalSubnetName'
+import { useSubnetReach } from '../hooks/useLocalSubnetName'
 import { useServiceShortcutsSupport } from '../hooks/useServiceShortcutsSupport'
+import { useOpenWebAddress, useRecheck, useWebAddress } from '../hooks/useWebAddress'
 import { graphQLServiceShortcuts, ServiceShortcut } from '../services/graphQLServiceShortcuts'
 import { openServiceURL } from '../services/browser'
 import { subnetWebURL } from '../services/localSubnet'
@@ -106,15 +107,24 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
   useEffect(() => setFailed(false), [dropped])
   const to = `/devices/${service.device.id}/${service.id}/connect`
   const online = service.enabled && service.state === 'active'
-  const type = useSelector((state: State) => state.applicationTypes.all.find(type => type.id === service.application))
-  const web = isWebType(getApplicationType(service.application), type)
+  const web = useSelector((state: State) => webTypeOf(service.application, state.applicationTypes.all))
   const name = web ? service.subnetName : undefined
   const port = service.subnetPort
-  // Its name opens here only where an agent on this machine reaches it: nothing else answers for the name.
+  // Its name opens here only where an agent on this machine reaches it: nothing else answers for the name. Where none
+  // does — once asked — it is opened at its web address.
   const named = online && !!name && !!port
-  const local = useLocalSubnetName(named ? service.device.id : undefined, named ? service.id : undefined)
-  // The port is this name's: an agent may answer with the device's own name instead, where the port is another's.
-  const destination = local?.name === name ? name : undefined
+  const reach = useSubnetReach(named ? service.device.id : undefined, named ? service.id : undefined)
+  // The port is this name's: an agent may answer with the device's own name instead, where the port is another's. The
+  // service is reached then, from its own page, so it is not opened at its web address.
+  const destination = reach.local?.name === name ? name : undefined
+  const route = service.attributes?.$remoteit?.route
+  const couldBe = online && !!service.subnetName && !!port && web
+  const target = { id: service.id, deviceID: service.device.id, route, web: couldBe, type: service.application }
+  const checked = useWebAddress(target)
+  const webAddress = checked === true && !reach.local && reach.checked
+  const unchecked = checked === 'UNCHECKED' && !reach.local
+  const { checking, recheck } = useRecheck(target)
+  const address = useOpenWebAddress(service.id)
   const status = !service.enabled
     ? t('serviceShortcuts.disabled', 'Disabled')
     : service.state === 'unlicensed'
@@ -122,6 +132,7 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
     : t('statusChip.offline', 'Offline')
 
   const open = async () => {
+    if (webAddress) return address.open()
     if (!destination || !port) return
     setOpening(true)
     try {
@@ -145,17 +156,30 @@ function ServiceRow({ service }: { service: ServiceShortcut }) {
         secondary={
           <>
             {online ? service.device.name : `${service.device.name} · ${status}`}
-            {failed && (
+            {unchecked && (
               <Typography component="span" display="block" variant="caption" color="error">
-                {t('serviceShortcuts.openFailed', 'Could not open the service. Try the Connect button.')}
+                {t(
+                  'webAddress.unchecked',
+                  'Could not check how this service opens, so it was not connected. Try again.'
+                )}
+              </Typography>
+            )}
+            {(failed || address.failed) && (
+              <Typography component="span" display="block" variant="caption" color="error">
+                {address.failed?.reason ||
+                  t('serviceShortcuts.openFailed', 'Could not open the service. Try the Connect button.')}
               </Typography>
             )}
           </>
         }
       />
-      {online && destination && !failed ? (
-        <Button size="small" variant="contained" disabled={opening} onClick={open}>
+      {online && (destination || webAddress) && !failed && !address.failed ? (
+        <Button size="small" variant="contained" disabled={opening || address.opening} onClick={open}>
           {t('serviceShortcuts.open', 'Open')}
+        </Button>
+      ) : unchecked ? (
+        <Button size="small" variant="outlined" disabled={checking} onClick={recheck}>
+          {t('webAddress.retry', 'Try again')}
         </Button>
       ) : (
         <Button size="small" variant="outlined" component={Link} to={to}>

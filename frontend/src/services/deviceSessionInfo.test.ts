@@ -14,6 +14,8 @@ vi.mock('axios', () => ({ default: { request } }))
 
 import {
   deviceSessionInfo,
+  deviceSessionName,
+  readDeviceSessionName,
   requestDeviceSessionInfo,
   requestServiceSessionInfo,
   resetDeviceSessionInfo,
@@ -34,6 +36,104 @@ beforeEach(() => {
   state.ui = {}
   request.mockReset()
   vi.spyOn(console, 'error').mockImplementation(() => {})
+})
+
+describe('a service’s name, waited on', () => {
+  const device = (services: object[]) => ({
+    data: { data: { login: { device: [{ id: 'A', subnetName: 'a.on.remote.it', services }] } } },
+  })
+  const failure = { data: { errors: [{ message: 'Internal error' }] } }
+  const S = { id: 'S', subnetName: 's.on.remote.it' }
+
+  it('is read once, and kept', async () => {
+    request.mockResolvedValue(device([S, { id: 'NONE', subnetName: null }]))
+    expect(deviceSessionName('A', 'S')).toBeUndefined()
+    expect(await Promise.all([readDeviceSessionName('A', 'S'), readDeviceSessionName('A', 'S')])).toEqual([
+      S.subnetName,
+      S.subnetName,
+    ])
+    expect(await readDeviceSessionName('A', 'NONE')).toBeNull()
+    expect(deviceSessionName('A', 'S')).toBe(S.subnetName)
+    expect(request).toHaveBeenCalledTimes(1)
+  })
+
+  it('is read again, once, for a service its device does not list, and not taken for none until it is answered', async () => {
+    let again: (value: unknown) => void = () => {}
+    request.mockResolvedValueOnce(device([])).mockReturnValueOnce(new Promise(resolve => (again = resolve)))
+    const reading = readDeviceSessionName('A', 'NEW')
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2))
+    expect(deviceSessionName('A', 'NEW')).toBeUndefined()
+    again(device([{ id: 'NEW', subnetName: 'n' }]))
+    expect(await reading).toBe('n')
+    request.mockResolvedValue(device([{ id: 'NEW', subnetName: 'n' }]))
+    expect(await readDeviceSessionName('A', 'GONE')).toBeNull()
+    expect(await readDeviceSessionName('A', 'GONE')).toBeNull()
+    expect(deviceSessionName('A', 'GONE')).toBeNull()
+    expect(request).toHaveBeenCalledTimes(3)
+  })
+
+  it('is none of a device that is answered without: one not seen', async () => {
+    request.mockResolvedValue({ data: { data: { login: { device: [] } } } })
+    expect(await readDeviceSessionName('A', 'S')).toBeNull()
+    expect(await readDeviceSessionName('A', 'S')).toBeNull()
+    expect(request).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    ['an error', async () => failure],
+    ['no answer', async () => Promise.reject(new Error('network'))],
+  ])(
+    'is not known where the read failed — %s —, and is read again by each that asks, not by itself',
+    async (_what, how) => {
+      request.mockImplementationOnce(how)
+      requestDeviceSessionInfo('A')
+      await settled()
+      // Shown as none, and no row asks again; but not known to be none.
+      expect(deviceSessionInfo('A')).toEqual({ subnetName: null, actsFor: null, agent: null })
+      requestDeviceSessionInfo('A')
+      await new Promise(resolve => setTimeout(resolve, 5))
+      expect(request).toHaveBeenCalledTimes(1)
+      expect(deviceSessionName('A', 'S')).toBeUndefined()
+      request.mockImplementationOnce(how)
+      expect(await readDeviceSessionName('A', 'S')).toBeUndefined()
+      expect(request).toHaveBeenCalledTimes(2)
+      request.mockResolvedValue(device([S]))
+      expect(await readDeviceSessionName('A', 'S')).toBe(S.subnetName)
+      expect(deviceSessionInfo('A')?.services).toEqual({ S: S.subnetName })
+      expect(request).toHaveBeenCalledTimes(3)
+    }
+  )
+
+  it('nor where the read for a service not listed failed; the names it has are kept', async () => {
+    request.mockResolvedValueOnce(device([S])).mockResolvedValueOnce(failure)
+    expect(await readDeviceSessionName('A', 'NEW')).toBeUndefined()
+    expect(deviceSessionName('A', 'S')).toBe(S.subnetName)
+    request.mockResolvedValue(device([S, { id: 'NEW', subnetName: 'n' }]))
+    expect(await readDeviceSessionName('A', 'NEW')).toBe('n')
+    expect(request).toHaveBeenCalledTimes(3)
+  })
+
+  it('is read anew by whoever asks next where a read never answers', async () => {
+    const now = vi.spyOn(Date, 'now')
+    request.mockReturnValueOnce(new Promise(() => {}))
+    void readDeviceSessionName('A', 'S')
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(1))
+    void readDeviceSessionName('A', 'S')
+    await new Promise(resolve => setTimeout(resolve, 5))
+    expect(request).toHaveBeenCalledTimes(1) // the one being read is waited on
+    now.mockReturnValue(Date.now() + 5_000)
+    request.mockResolvedValue(device([S]))
+    expect(await readDeviceSessionName('A', 'S')).toBe(S.subnetName)
+    expect(request).toHaveBeenCalledTimes(2)
+    now.mockRestore()
+  })
+
+  it('is none, and never asked for again, from an API without device sessions', async () => {
+    request.mockResolvedValue({ data: { errors: [{ message: 'Cannot query field "subnetName" on type "Device".' }] } })
+    expect(await readDeviceSessionName('A', 'S')).toBeNull()
+    expect(await readDeviceSessionName('B', 'S')).toBeNull()
+    expect(request).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('device session info', () => {

@@ -60,7 +60,7 @@ vi.mock('../buttons/IconButton', () => ({
     <button onClick={e => onClick({ ...e, stopPropagation() {} })}>{title}</button>
   ),
 }))
-vi.mock('../buttons/ConfirmIconButton', () => ({ ConfirmIconButton: () => null }))
+vi.mock('../buttons/ConfirmIconButton', () => ({ ConfirmIconButton: ({ title }: any) => <span data-action={title} /> }))
 vi.mock('../buttons/CopyIconButton', () => ({ CopyIconButton: ({ value }: any) => <span data-copy={value} /> }))
 vi.mock('./Timestamp', async importOriginal => ({
   ...(await importOriginal<object>()),
@@ -258,6 +258,48 @@ describe('an endpoint on a proxy with an own name', () => {
     expect(items.map(item => item.querySelector('[data-copy]')?.getAttribute('data-copy'))).toEqual([
       'https://pi.office.example.com',
       'office.example.com:40001',
+    ])
+  })
+})
+
+describe('a service’s web address', () => {
+  const endpoint = (id: string, webAddress?: boolean) => ({
+    id,
+    serviceId: 'SERVICE',
+    proxy: { id: 'P1', name: 'remote.it pdx1a', host: 'pdx1a-r3.solo.r3proxy.com', remoteit: true, local: false },
+    kind: 'https',
+    lifetime: 'temporary',
+    access: 'signed-in',
+    lockedIp: null,
+    allow: null,
+    host: `${id}.solo.r3proxy.com`,
+    port: null,
+    url: `https://${id}.solo.r3proxy.com`,
+    localAddresses: [],
+    created: '2026-11-01T00:00:00.000Z',
+    expires: '2026-11-01T00:15:00.000Z',
+    webAddress,
+  })
+
+  it('is said to be that, and has no remove button; a temporary endpoint like it has both as ever', async () => {
+    document.body.innerHTML = ''
+    endpoints.mockResolvedValue([endpoint('web-acme', true), endpoint('random'), endpoint('other', false)])
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const device = { id: 'DEVICE', permissions: ['MANAGE'] } as any
+    await act(async () =>
+      createRoot(container).render(<EndpointsAccordion device={device} service={{ id: 'SERVICE' } as any} />)
+    )
+    const items = [...container.querySelectorAll('li.MuiListItem-root')].slice(0, 3)
+    const second = items.map(item => item.querySelector('.MuiListItemText-secondary')?.textContent)
+    expect(second[0]).toBe('Web address · People who may connect, signed in')
+    expect(second[1]).toContain('People who may connect, signed in · unless used, released')
+    expect(second[2]).toBe(second[1])
+    expect(items.map(item => !!item.querySelector('[data-action="Remove"]'))).toEqual([false, true, true])
+    expect(items.map(item => item.querySelector('[data-copy]')?.getAttribute('data-copy'))).toEqual([
+      'https://web-acme.solo.r3proxy.com',
+      'https://random.solo.r3proxy.com',
+      'https://other.solo.r3proxy.com',
     ])
   })
 })

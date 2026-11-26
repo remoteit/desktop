@@ -103,6 +103,7 @@ export type Endpoint = {
   localAddresses: string[]
   created: string
   expires: string | null
+  webAddress?: boolean // its service's web address (services/webAddress), where the API says: made again when removed
 }
 
 export type NewEndpoint = {
@@ -451,16 +452,38 @@ export async function graphQLMoveProxyEndpoints(
   return result.data?.data?.moveProxyEndpoints ?? { reason: '' }
 }
 
+// Which are web addresses only where the API says: one without is asked again without, and not asked it again.
+let withWebAddress = true
+
 // A service's endpoints: all of them for whoever manages it, otherwise one's own.
-export const graphQLServiceEndpoints = (deviceId: string, serviceId: string) =>
-  read<Endpoint[]>(
-    `query ServiceEndpoints($id: [String!]!) {
-      login { device(id: $id) { id services { id endpoints { ${ENDPOINT_FIELDS} } } } }
-    }`,
-    { id: [deviceId] },
-    'endpoints',
-    data => data?.login?.device?.[0]?.services?.find((s: { id: string }) => s.id === serviceId)?.endpoints ?? []
+export async function graphQLServiceEndpoints(
+  deviceId: string,
+  serviceId: string
+): Promise<Endpoint[] | 'ERROR' | typeof UNSUPPORTED> {
+  const query = `query ServiceEndpoints($id: [String!]!) {
+      login { device(id: $id) { id services { id endpoints { ${ENDPOINT_FIELDS}${
+    withWebAddress ? ' webAddress' : ''
+  } } } } }
+    }`
+  const variables = { id: [deviceId] }
+  const response = await post({ query, variables })
+  if (response === 'ERROR') return 'ERROR'
+  if (withWebAddress && withoutDeviceSessions(response.data?.errors, 'webAddress')) {
+    withWebAddress = false
+    return graphQLServiceEndpoints(deviceId, serviceId)
+  }
+  const errors = graphQLGetErrors(response, true, { query, variables })
+  if (withoutDeviceSessions(errors, 'endpoints')) return UNSUPPORTED
+  if (errors) return 'ERROR'
+  return (
+    response.data?.data?.login?.device?.[0]?.services?.find((s: { id: string }) => s.id === serviceId)?.endpoints ?? []
   )
+}
+
+// For tests, and for a change of API.
+export const resetEndpointFields = () => {
+  withWebAddress = true
+}
 
 // Made on the proxy named, or remote.it's nearest the device in service.
 export const graphQLCreateEndpoint = (serviceId: string, endpoint: NewEndpoint) =>

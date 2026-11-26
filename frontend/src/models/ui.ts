@@ -130,7 +130,7 @@ export type UIState = {
   guidesResetDate?: number
   confirm?: { id: string; callback: () => void }
   accordion: ILookup<boolean>
-  autoConnect: boolean
+  autoConnect?: string // the service a connection was asked for on arrival at its page
   autoLaunch?: string
   autoCopy: boolean
   updateNoticeCleared?: number
@@ -232,7 +232,7 @@ export const defaultState: UIState = {
   guidesResetDate: undefined,
   accordion: { config: false, configConnected: false, options: false, service: false, networks: false, logs: false },
   confirm: undefined,
-  autoConnect: false,
+  autoConnect: undefined,
   autoLaunch: undefined,
   autoCopy: false,
   updateNoticeCleared: undefined,

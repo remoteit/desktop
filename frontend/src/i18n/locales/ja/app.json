@@ -1966,12 +1966,15 @@
     "temporaryChoice": "",
     "title": "",
     "udp": "",
-    "via": ""
+    "via": "",
+    "webAddress": "Web アドレス"
   },
   "endpointSignIn": {
+    "failed": "サインインできませんでした。接続を確認して、もう一度お試しください。",
     "lost": "",
     "missing": "",
     "refused": "",
+    "retry": "もう一度試す",
     "signingIn": ""
   },
   "eventMessage": {
@@ -5040,5 +5043,13 @@
     "notHosted": "",
     "notHostedNotice": "",
     "platform": ""
+  },
+  "webAddress": {
+    "caption": "remote.it のプロキシを経由するため、プロキシは内容を読み取れます。エンドツーエンドで接続するには remote.it アプリを使用してください。",
+    "failed": "開けませんでした。もう一度お試しください",
+    "open": "ブラウザで開く",
+    "retry": "もう一度試す",
+    "title": "サインインしてブラウザで開く",
+    "unchecked": "このサービスの開き方を確認できなかったため、接続しませんでした。もう一度お試しください。"
   }
 }

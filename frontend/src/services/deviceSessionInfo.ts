@@ -70,6 +70,46 @@ export function requestDeviceSessionInfo(deviceId: string, again?: boolean) {
   timer ??= setTimeout(flush)
 }
 
+/* A service's name, for what must not take a name that could not be read for one it does not have: null where it has none
+   — and from an API without them —, undefined where that is not known: not read yet, or the read failed. */
+export function deviceSessionName(deviceId: string, serviceId: string): string | null | undefined {
+  if (unsupported) return null
+  const known = info.get(deviceId)
+  if (known?.services && serviceId in known.services) return known.services[serviceId]
+  if (!known || failed.has(deviceId)) return undefined
+  // One the device's answer does not list is asked about again, and has none where it is not listed still.
+  const asked = missingAsked.has(`${deviceId}/${serviceId}`) && !reading(deviceId)
+  return known.services && !asked ? undefined : null
+}
+
+/** The same, read where it is not known, and read again where that failed: once, for each that asks. */
+export async function readDeviceSessionName(deviceId: string, serviceId: string): Promise<string | null | undefined> {
+  const name = deviceSessionName(deviceId, serviceId)
+  if (name !== undefined) return name
+  if (!info.has(deviceId) || failed.has(deviceId)) await answer(deviceId)
+  requestServiceSessionInfo(deviceId, serviceId)
+  if (reading(deviceId)) await answer(deviceId)
+  return deviceSessionName(deviceId, serviceId)
+}
+
+// The devices whose last read failed: none is shown of one never read, which is not that it has no names.
+const failed = new Set<string>()
+// Those being read, since when: one not answered this long is read anew by whoever asks next.
+const asking = new Map<string, number>()
+const ANSWER_MS = 4_000
+const waiting = new Map<string, (() => void)[]>()
+const reading = (deviceId: string) =>
+  wanted.has(deviceId) || Date.now() - (asking.get(deviceId) ?? -Infinity) < ANSWER_MS
+
+// A device's next answer: the one being read, or one asked for now.
+const answer = (deviceId: string) =>
+  new Promise<void>(resolve => {
+    waiting.set(deviceId, [...(waiting.get(deviceId) ?? []), resolve])
+    if (reading(deviceId)) return
+    wanted.add(deviceId)
+    timer ??= setTimeout(flush)
+  })
+
 /* A service the device's answer does not list — added since it was read (here or anywhere else) — has its name only
    in a new answer: the device is read again, once for each such service, keeping what it has meanwhile so the names
    of its other services stay shown. A service still missing from the new answer is not asked about again. */
@@ -108,7 +148,9 @@ async function read(ids: string[], sub: string) {
   )}) { id subnetName actsFor { email } agent { running package { version format } update { version state detail }${upkeep} } services { id subnetName${
     withServiceNames ? ` subnetOwnName subnetPort${withNamePorts ? ' subnetPorts subnetDefaultLabel' : ''}` : ''
   } } } } }`
-  const response = await post({ query }, '', false, false, { sub, about: ids })
+  ids.forEach(id => asking.set(id, Date.now()))
+  const response = await post({ query }, '', false, false, { sub, about: ids }).catch(() => 'ERROR' as const)
+  let answered = false
   if (response !== 'ERROR') {
     if (withUpkeep && withoutDeviceSessions(response.data?.errors, 'howToUpdate')) {
       withUpkeep = false
@@ -137,7 +179,8 @@ async function read(ids: string[], sub: string) {
     }
     const errors = graphQLGetErrors(response, true, { query, variables: {} })
     if (withoutDeviceSessions(errors, 'subnetName')) unsupported = true
-    else if (!errors)
+    answered = unsupported || !errors
+    if (!errors)
       for (const device of response.data?.data?.login?.device || [])
         info.set(device.id, {
           subnetName: device.subnetName ?? null,
@@ -159,8 +202,22 @@ async function read(ids: string[], sub: string) {
         })
   }
   // Asked and not answered (unsupported, an error, not visible): none, so the row stops asking.
-  for (const id of ids) if (!info.has(id)) info.set(id, NONE)
+  for (const id of ids) {
+    if (!info.has(id)) info.set(id, NONE)
+    asking.delete(id)
+    if (answered) failed.delete(id)
+    else {
+      failed.add(id)
+      // Its services asked about for want of a name are asked about again.
+      missingAsked.forEach(key => key.startsWith(`${id}/`) && missingAsked.delete(key))
+    }
+  }
   listeners.forEach(listener => listener())
+  ids.forEach(id => {
+    const waited = waiting.get(id) ?? []
+    waiting.delete(id)
+    waited.forEach(resolve => resolve())
+  })
 }
 
 // Every device read so far, read anew: an account's slug changed, and with it each of its devices' names.
@@ -186,6 +243,9 @@ export async function setDeviceUserMode(deviceId: string, on: boolean) {
 export function resetDeviceSessionInfo() {
   info.clear()
   missingAsked.clear()
+  failed.clear()
+  asking.clear()
+  waiting.clear()
   wanted = new Set()
   unsupported = false
   withUpkeep = true

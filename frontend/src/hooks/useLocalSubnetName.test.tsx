@@ -6,7 +6,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // page is open, so a "no" that did not last showed only Connect until a reload.
 const local = vi.hoisted(() => ({
   ask: vi.fn(),
-  absent: false,
+  present: true,
+  now: { checked: false } as any,
   forgotten: new Set<() => void>(),
 }))
 vi.mock('./useDeviceSessions', () => ({ useDeviceSessions: () => true }))
@@ -19,7 +20,8 @@ vi.mock('./useDeviceSessionInfo', () => ({
 vi.mock('../services/deviceSessionInfo', () => ({ requestServiceSessionInfo: vi.fn() }))
 vi.mock('../services/localSubnet', () => ({
   localSubnetName: (...args: unknown[]) => local.ask(...args),
-  localAbsent: () => local.absent,
+  localNow: () => local.now,
+  localPresent: () => local.present,
   localSignIn: async () => null,
   onLocalForgotten: (listener: () => void) => {
     local.forgotten.add(listener)
@@ -49,7 +51,8 @@ describe('useSubnetReach', () => {
     vi.useFakeTimers()
     root = createRoot(document.createElement('div'))
     local.ask.mockReset().mockResolvedValue(null)
-    local.absent = false
+    local.present = true
+    local.now = { checked: false }
     local.forgotten.clear()
   })
   afterEach(async () => {
@@ -80,8 +83,8 @@ describe('useSubnetReach', () => {
     expect(seen).toEqual({ name: NAME, local: undefined, checked: true })
   })
 
-  it('no daemon here: not asked again — its backoff is its own', async () => {
-    local.absent = true
+  it('no daemon here, or none known to be: not asked again — its pace is its own', async () => {
+    local.present = false
     await render()
     await wait(total)
     expect(local.ask).toHaveBeenCalledTimes(1)
@@ -103,5 +106,54 @@ describe('useSubnetReach', () => {
     root = createRoot(document.createElement('div'))
     await wait(total)
     expect(local.ask).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows what is known at once: that none is here, or the last answer, while it is asked again', async () => {
+    local.now = { checked: true }
+    let answer: (value: unknown) => void = () => {}
+    local.ask.mockReturnValue(new Promise(resolve => (answer = resolve)))
+    await render()
+    expect(seen).toEqual({ name: NAME, local: undefined, checked: true })
+    await act(async () => answer(null))
+    await act(() => root.unmount())
+    root = createRoot(document.createElement('div'))
+    local.now = { checked: true, local: { name: NAME } }
+    local.ask.mockReturnValue(new Promise(resolve => (answer = resolve)))
+    await render()
+    expect(seen.local).toEqual({ name: NAME })
+    await act(async () => answer(null))
+    expect(seen.local).toBeUndefined()
+  })
+
+  it('keeps what is shown where it is not known: a request that failed is no answer', async () => {
+    local.ask.mockResolvedValueOnce({ name: NAME })
+    await render()
+    expect(seen.local).toEqual({ name: NAME })
+    local.ask.mockResolvedValueOnce(undefined)
+    await act(async () => local.forgotten.forEach(told => told()))
+    expect(seen).toEqual({ name: NAME, local: { name: NAME }, checked: true })
+    local.ask.mockResolvedValueOnce(null)
+    await act(async () => local.forgotten.forEach(told => told()))
+    expect(seen.local).toBeUndefined()
+  })
+
+  it('a first answer not known is not waited on', async () => {
+    local.ask.mockResolvedValueOnce(undefined)
+    local.present = false
+    await render()
+    expect(seen).toEqual({ name: NAME, local: undefined, checked: true })
+  })
+
+  it('does not move from under a press', async () => {
+    local.ask.mockResolvedValueOnce(null)
+    local.present = false
+    await render()
+    window.dispatchEvent(new Event('pointerdown'))
+    local.ask.mockResolvedValueOnce({ name: NAME })
+    await act(async () => local.forgotten.forEach(told => told()))
+    expect(seen.local).toBeUndefined()
+    window.dispatchEvent(new Event('pointerup'))
+    await wait(1)
+    expect(seen.local).toEqual({ name: NAME })
   })
 })

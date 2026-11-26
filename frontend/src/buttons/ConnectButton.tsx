@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import browser from '../services/browser'
 import { Stack } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
@@ -7,6 +7,7 @@ import { connectionState, newConnection, launchDisabled } from '../helpers/conne
 import { DynamicButton, DynamicButtonProps } from './DynamicButton'
 import { getLicenseChip } from '../components/LicenseChip'
 import { useHistory } from 'react-router-dom'
+import { useOpenWebService, useWebAddress, useWebTarget } from '../hooks/useWebAddress'
 
 export type ConnectButtonProps = Omit<DynamicButtonProps, 'title' | 'onClick'> & {
   connection?: IConnection
@@ -14,6 +15,7 @@ export type ConnectButtonProps = Omit<DynamicButtonProps, 'title' | 'onClick'> &
   permissions?: IPermission[]
   preventDefault?: boolean
   all?: boolean
+  hold?: boolean // not to start a connection yet: how the service is opened is not known
   onClick?: (event: React.MouseEvent<HTMLButtonElement | HTMLDivElement>) => void
 }
 
@@ -25,6 +27,7 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   disabled,
   preventDefault,
   all,
+  hold,
   onClick,
   ...props
 }) => {
@@ -34,6 +37,14 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
   const history = useHistory()
   const chip = getLicenseChip(service?.license)
   const state = connectionState(service, connection)
+  // A web service is opened at its web address where the new proxies are enabled (services/webAddress), with no connection
+  // started; nor is one before that is known.
+  const starts = !connection?.connectLink && !connection?.connecting && !connection?.enabled && !connection?.starting
+  const target = useWebTarget(service, connection)
+  const webAddress = useWebAddress(starts && !preventDefault ? target : undefined)
+  const web = useOpenWebService(target)
+  const [checking, setChecking] = useState(false)
+  const held = starts && !preventDefault && (!!hold || webAddress === undefined)
 
   useEffect(() => {
     if (!connection?.id) return
@@ -72,27 +83,36 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
     } else if (connection?.connecting || connection?.enabled || connection?.starting) {
       if (connection.connected) dispatch.connections.onClose(connection)
       await dispatch.connections.disconnect({ connection, forceStop })
+    } else if (held || checking) {
+      return
+    } else if (webAddress === true && event) {
+      await web.open()
     } else {
       connection = connection || newConnection(service)
-      await dispatch.connections.connect({ ...connection, connectOnReady: true })
-      await dispatch.networks.join(instanceId)
+      // What could not be checked is checked again as it connects, and connected only where it is known to be.
+      setChecking(webAddress === 'UNCHECKED')
+      // Not connected where it is opened another way, from its page: nothing to list among the connections.
+      const started = await dispatch.connections
+        .connect({ ...connection, connectOnReady: true })
+        .finally(() => setChecking(false))
+      if (started !== false) await dispatch.networks.join(instanceId)
     }
     event && onClick?.(event)
   }
 
   useEffect(() => {
-    if (autoConnect && service) {
-      dispatch.ui.set({ autoConnect: false })
+    if (autoConnect && autoConnect === service?.id && !held) {
+      dispatch.ui.set({ autoConnect: undefined })
       clickHandler()
     }
-  }, [autoConnect, service])
+  }, [autoConnect, service, held])
 
   let title = 'Connect'
   let variant: 'text' | 'outlined' | 'contained' | undefined = 'text'
   let loading = false
   let icon: string | undefined = 'play'
 
-  if (connection?.autoLaunch && !launchDisabled(connection)) title += ' + Launch'
+  if (connection?.autoLaunch && !launchDisabled(connection) && webAddress === false) title += ' + Launch'
 
   if (!permissions?.includes('CONNECT')) {
     disabled = true
@@ -144,7 +164,8 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
 
   if (all) title += ' all'
 
-  props.loading = props.loading || loading
+  props.loading = props.loading || loading || web.opening || checking || (held && state !== 'offline')
+  disabled = disabled || held || web.opening || checking
 
   if (props.loading) icon = 'spinner-third'
   if (service?.attributes.route === 'p2p' && !browser.hasBackend) disabled = true

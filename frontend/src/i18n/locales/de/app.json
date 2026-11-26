@@ -2009,12 +2009,15 @@
     "temporaryChoice": "",
     "title": "",
     "udp": "",
-    "via": ""
+    "via": "",
+    "webAddress": "Webadresse"
   },
   "endpointSignIn": {
+    "failed": "Sie konnten nicht angemeldet werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
     "lost": "",
     "missing": "",
     "refused": "",
+    "retry": "Erneut versuchen",
     "signingIn": ""
   },
   "eventMessage": {
@@ -5153,5 +5156,13 @@
     "notHosted": "",
     "notHostedNotice": "",
     "platform": ""
+  },
+  "webAddress": {
+    "caption": "Läuft über den Proxy von remote.it, der die Daten lesen kann. Für eine Ende-zu-Ende-Verbindung verwenden Sie die remote.it-App.",
+    "failed": "Konnte nicht geöffnet werden: Versuchen Sie es erneut",
+    "open": "Im Browser öffnen",
+    "retry": "Erneut versuchen",
+    "title": "Anmelden und im Browser öffnen",
+    "unchecked": "Es konnte nicht geprüft werden, wie dieser Dienst geöffnet wird, daher wurde er nicht verbunden. Versuchen Sie es erneut."
   }
 }

@@ -34,7 +34,8 @@ type Props = { device: IDevice; service: IService }
    one of yours — a name for https, a port for tcp and udp, at graphql's address for each, under its proxy's own name
    once that is active; on a local network proxy (graphql-api docs/PROXY-GROUPS.md §14), said to be reached on its
    devices' own network only, with its .local name and, a tcp or udp one, each device's IP and port after its public
-   name — and making one; and, for whoever manages the service, who used them (components/ProxyAccessList.tsx).
+   name — and making one; and, for whoever manages the service, who used them (components/ProxyAccessList.tsx). Its web
+   address (services/webAddress) is said to be that, and is not removed here: its next visit makes it again.
    Device-session API only: on an API without it, nothing shows. */
 export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
   const { t } = useTranslation()
@@ -131,19 +132,21 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
               secondaryAction={
                 <Box display="flex">
                   <CopyIconButton value={endpointAddress(endpoint)} title={t('endpoints.copy', 'Copy the address')} />
-                  <ConfirmIconButton
-                    icon="trash"
-                    title={t('endpoints.remove', 'Remove')}
-                    disabled={busy}
-                    confirm
-                    confirmProps={{
-                      title: t('endpoints.removeConfirm', 'Remove this endpoint?'),
-                      children: t('endpoints.removeConfirmBody', '{{address}} stops working for everyone using it.', {
-                        address: endpointAddress(endpoint),
-                      }),
-                    }}
-                    onClick={() => remove(endpoint.id)}
-                  />
+                  {!endpoint.webAddress && (
+                    <ConfirmIconButton
+                      icon="trash"
+                      title={t('endpoints.remove', 'Remove')}
+                      disabled={busy}
+                      confirm
+                      confirmProps={{
+                        title: t('endpoints.removeConfirm', 'Remove this endpoint?'),
+                        children: t('endpoints.removeConfirmBody', '{{address}} stops working for everyone using it.', {
+                          address: endpointAddress(endpoint),
+                        }),
+                      }}
+                      onClick={() => remove(endpoint.id)}
+                    />
+                  )}
                 </Box>
               }
             >
@@ -156,9 +159,10 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
                 secondaryTypographyProps={{ component: 'div' }}
                 secondary={
                   <>
+                    {endpoint.webAddress && `${t('endpoints.webAddress', 'Web address')} · `}
                     {accessLabel(endpoint)}
-                    {' · '}
-                    {endpoint.lifetime === 'permanent' ? (
+                    {!endpoint.webAddress && ' · '}
+                    {endpoint.webAddress ? null : endpoint.lifetime === 'permanent' ? (
                       t('endpoints.permanent', 'permanent')
                     ) : endpoint.expires ? (
                       <>

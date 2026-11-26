@@ -1,6 +1,6 @@
 import { createModel } from '@rematch/core'
 import { DEFAULT_SERVICE } from '@common/constants'
-import { getApplicationType } from '@common/applications'
+import { UDP_TYPES, getApplicationType } from '@common/applications'
 import { graphQLBasicRequest } from '../services/graphQL'
 import { rowSaid } from '../selectors/accounts'
 import { asRow, rowGone } from '../selectors/signIns'
@@ -132,7 +132,6 @@ export function isReverseProxy(state: State, typeId?: number) {
 }
 
 // The ids of UDP types have this bit set.
-const UDP_TYPES = 0x8000
 
 const emptyServiceType: IApplicationType = {
   id: 1,

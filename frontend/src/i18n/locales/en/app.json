@@ -2009,12 +2009,15 @@
     "temporaryChoice": "Temporary — released after 15 idle minutes",
     "title": "Proxy endpoints",
     "udp": "UDP — a port",
-    "via": "via {{host}}"
+    "via": "via {{host}}",
+    "webAddress": "Web address"
   },
   "endpointSignIn": {
+    "failed": "You could not be signed in. Check your connection and try again.",
     "lost": "You no longer have access to this endpoint.",
     "missing": "This sign-in link is incomplete.",
     "refused": "You do not have access to this endpoint.",
+    "retry": "Try again",
     "signingIn": "Signing you in…"
   },
   "eventMessage": {
@@ -5153,5 +5156,13 @@
     "notHosted": "Not hosted",
     "notHostedNotice": "Not hosted. Choose a gateway to bring it back online.",
     "platform": "Platform"
+  },
+  "webAddress": {
+    "caption": "Goes through remote.it's proxy, which can read it. Use the remote.it app for an end-to-end connection.",
+    "failed": "Could not open it: try again",
+    "open": "Open in the browser",
+    "retry": "Try again",
+    "title": "Sign in and open in your browser",
+    "unchecked": "Could not check how this service opens, so it was not connected. Try again."
   }
 }

@@ -346,6 +346,26 @@ export function isWebType(app: Pick<Application, 'urlForm'>, type?: Pick<IApplic
   return app.urlForm || type?.scheme === 'http' || type?.scheme === 'https' || !!(type?.proxy && !type.scheme)
 }
 
+// The types the app itself knows no browser opens, whatever the cloud lists: TCP, VNC, RDP, SSH, Samba, OpenVPN, the game
+// servers and databases, SOCKS — and every UDP type. Of any other with no web form of its own (ScreenView, Docker) the
+// cloud's list says.
+const NOT_WEB = [1, 4, 5, 28, 34, 39, 41, 43, 44, 45, 46, 49]
+// The ids of UDP types have this bit set.
+export const UDP_TYPES = 0x8000
+
+/** Whether a type is a web one, as far as can be said with the cloud's list, or before it is loaded: undefined where only
+ *  the list says. */
+export function webTypeOf(typeID: number | undefined, types: IApplicationType[]): boolean | undefined {
+  if (typeID === undefined) return false
+  const app = getApplicationType(typeID)
+  if (types.length || app.urlForm)
+    return isWebType(
+      app,
+      types.find(type => type.id === typeID)
+    )
+  return NOT_WEB.includes(typeID) || typeID >= UDP_TYPES ? false : undefined
+}
+
 // A connection by another way than the proxy — a subnet name, a local port — with that host and port in place of the
 // proxy's address. Not public: a public template drops the port, which only the cloud proxy's address goes without.
 // Never saved, only launched from.

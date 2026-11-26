@@ -12,6 +12,7 @@ export type ServiceShortcut = {
   application: number
   subnetName?: string | null
   subnetPort?: number | null
+  attributes?: { $remoteit?: { route?: IRouteType } } | null
   device: { id: string; name: string }
 }
 
@@ -55,7 +56,7 @@ export async function graphQLServiceShortcuts(
     `query ServiceShortcuts($accountId: String!) {
       login { account(id: $accountId) {
         serviceShortcuts {
-          id name state enabled application
+          id name state enabled application attributes
           ${namedAddress ? 'subnetName subnetPort' : ''}
           device { id name }
         }
