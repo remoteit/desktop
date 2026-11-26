@@ -68,6 +68,9 @@ export function appSettings(listed: DeviceSetting[], apps?: DeviceApp[] | null) 
 }
 // A switch's words keep clear of the switch at the row's end, at a phone's width too.
 export const SWITCH_TEXT = { paddingRight: '72px' }
+
+// A row of text buttons: the first one's label lines up with the text of the rows above it.
+export const ACTIONS_SX = { flexWrap: 'wrap', gap: 1, '& > .MuiButton-text:first-of-type': { marginLeft: -2.25 } }
 // The relay's menu, at the row's end where a switch would be.
 const SELECT_WIDTH = 150
 

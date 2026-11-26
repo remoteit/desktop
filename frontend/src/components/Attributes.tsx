@@ -554,13 +554,13 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceCreated',
-    label: 'Service Created',
+    label: 'Created',
     defaultWidth: 175,
     value: ({ service }) => <Timestamp date={service?.createdAt} />,
   }),
   new ServiceAttribute({
     id: 'serviceHost',
-    label: 'Service Host',
+    label: 'Host',
     defaultWidth: 130,
     // A virtual device's service with no host of its own uses the device's (graphql answers null): never the gateway.
     value: ({ device, service }) =>
@@ -568,19 +568,19 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'servicePort',
-    label: 'Service Port',
+    label: 'Port',
     defaultWidth: 130,
     // A multi-port service's ports and ranges, its first first (services/multiPortServices).
     value: ({ device, service }) => (managed(device) ? (isMultiPort(service) ? formatPorts(service?.ports) : service?.port) : undefined),
   }),
   new ServiceAttribute({
     id: 'serviceProtocol',
-    label: 'Service Protocol',
+    label: 'Protocol',
     value: ({ service }) => service?.protocol,
   }),
   new ServiceAttribute({
     id: 'serviceType',
-    label: 'Service Type',
+    label: 'Type',
     value: ({ service }) => service?.type,
   }),
   new ServiceAttribute({
@@ -591,12 +591,12 @@ export const attributes: Attribute[] = [
   }),
   new ServiceAttribute({
     id: 'serviceDockerName',
-    label: 'Docker Name',
+    label: 'Docker name',
     value: ({ service }) => service?.attributes.docker?.name,
   }),
   new ServiceAttribute({
     id: 'serviceDockerImage',
-    label: 'Docker Image',
+    label: 'Docker image',
     value: ({ service }) => service?.attributes.docker?.image,
   }),
   new ServiceAttribute({

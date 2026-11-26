@@ -199,7 +199,7 @@ export const AddPage: React.FC = () => {
         </Box>
       }
     >
-      <Box sx={{ paddingX: { xs: 2, sm: 4.5 }, paddingTop: 3, maxWidth: 1080 }}>
+      <Box sx={{ paddingX: 4.5, paddingTop: 3, maxWidth: 1080 }}>
         <Box
           component="nav"
           aria-label={t('addPage.recommended', 'Recommended')}

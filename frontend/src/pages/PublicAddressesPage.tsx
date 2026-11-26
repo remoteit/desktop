@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { useReadCallback, useReadEffect } from '../hooks/useReadAgain'
@@ -19,6 +19,7 @@ import { Notice } from '../components/Notice'
 import { NetworkSectionIntro } from '../components/NetworkSectionIntro'
 import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
+import { setPublicAddressCount } from '../components/ChooseOne'
 import { windowOpen } from '../services/browser'
 
 const KIND_ICON: Record<PublicAddress['kind'], string> = {
@@ -50,6 +51,11 @@ export const PublicAddressesPage: React.FC = () => {
   )
 
   const addresses = read && typeof read === 'object' ? read.addresses : []
+
+  useEffect(() => {
+    setPublicAddressCount(read && typeof read === 'object' ? read.addresses.length : undefined)
+    return () => setPublicAddressCount(undefined)
+  }, [read])
   const usage = useTransferUsageHint(
     accountId,
     'proxy',

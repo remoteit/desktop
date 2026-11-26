@@ -129,7 +129,7 @@ export const ConnectionDefaultsPage: React.FC = () => {
       }
     >
       <Typography variant="subtitle1">{applicationTypes.find(t => t.id === id)?.description}</Typography>
-      <Gutters size="sm">
+      <Gutters size={null}>
         <List disablePadding>
           <ServiceAttributesForm
             globalDefaults

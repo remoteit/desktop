@@ -120,13 +120,22 @@ export const EndpointsAccordion: React.FC<Props> = ({ device, service }) => {
           variant="text"
           color="primary"
           startIcon={<Icon name={adding ? 'times' : 'plus'} size="sm" />}
+          aria-label={adding ? t('endpoints.cancel', 'Cancel') : t('endpoints.addPublicAddress', 'Add public address')}
+          sx={{
+            flexShrink: 0,
+            minWidth: { xs: 0, sm: 64 },
+            '& .label': { display: { xs: 'none', sm: 'inline' } },
+            '& .MuiButton-startIcon': { marginRight: { xs: 0, sm: 1 } },
+          }}
           onClick={event => {
             event.stopPropagation()
             setOpen(true)
             setAdding(!adding)
           }}
         >
-          {adding ? t('endpoints.cancel', 'Cancel') : t('endpoints.addPublicAddress', 'Add public address')}
+          <span className="label">
+            {adding ? t('endpoints.cancel', 'Cancel') : t('endpoints.addPublicAddress', 'Add public address')}
+          </span>
         </Button>
       }
     >

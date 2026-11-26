@@ -13,6 +13,7 @@ import { TemplateSetting } from './TemplateSetting'
 import { getRoutes } from './RouteSetting'
 import { Notice } from './Notice'
 import { Quote } from './Quote'
+import { FormField } from './FormField'
 
 type Props = IService['attributes'] & {
   connection?: IConnection
@@ -43,24 +44,36 @@ export const ServiceAttributesForm: React.FC<Props> = ({
   return (
     <>
       {!globalDefaults && (
-        <ListItem sx={fieldSx}>
+        <FormField
+          help={
+            <>
+              {t(
+                'serviceAttributesForm.localPortCaption',
+                'Default local port to use when a system connects to this service.'
+              )}{' '}
+              <b>{t('serviceAttributesForm.localPortAutoAssign', 'Port will auto assign if unset.')}</b>
+            </>
+          }
+        >
           <TextField
             label={t('serviceAttributesForm.localPort', 'Local Port')}
             value={attributes.defaultPort || ''}
+            InputLabelProps={{ shrink: true }}
             disabled={disabled}
             variant="filled"
             onChange={event => onChange({ ...attributes, defaultPort: validPort(event) })}
           />
-          <Typography variant="caption">
-            {t(
-              'serviceAttributesForm.localPortCaption',
-              'Default local port to use when a system connects to this service.'
-            )}{' '}
-            <b>{t('serviceAttributesForm.localPortAutoAssign', 'Port will auto assign if unset.')}</b>
-          </Typography>
-        </ListItem>
+        </FormField>
       )}
-      <ListItem sx={fieldSx}>
+      <FormField
+        help={
+          <>
+            {routingMessage || routes.find(route => route.key === attributes.route)?.description}
+            <i> {t('serviceAttributesForm.routingDesktopOnly', 'Routing is only available on desktop.')}</i>
+            <b> {t('serviceAttributesForm.defaultAdaptiveRouting', 'Default adaptive routing')}</b>
+          </>
+        }
+      >
         <TextField
           select
           label={t('serviceAttributesForm.routing', 'Routing')}
@@ -68,6 +81,8 @@ export const ServiceAttributesForm: React.FC<Props> = ({
           disabled={!!routingLock || disabled}
           variant="filled"
           placeholder={routingLock || attributes.route || routes[0].key}
+          InputLabelProps={{ shrink: true }}
+          SelectProps={{ displayEmpty: true }}
           onChange={event => onChange({ ...attributes, route: event.target.value as IRouteType })}
         >
           <MenuItem value="">
@@ -79,41 +94,42 @@ export const ServiceAttributesForm: React.FC<Props> = ({
             </MenuItem>
           ))}
         </TextField>
-        <Typography variant="caption">
-          {routingMessage || routes.find(route => route.key === attributes.route)?.description}
-          <i> {t('serviceAttributesForm.routingDesktopOnly', 'Routing is only available on desktop.')}</i>
-          <b> {t('serviceAttributesForm.defaultAdaptiveRouting', 'Default adaptive routing')}</b>
-        </Typography>
-      </ListItem>
+      </FormField>
       {!globalDefaults && app.reverseProxy && (
-        <ListItem sx={fieldSx}>
+        <FormField
+          help={
+            <>
+              {t(
+                'serviceAttributesForm.hostHeaderOverrideCaption',
+                'A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing scenarios to route requests to the appropriate server.'
+              )}
+              <i>
+                &nbsp;{t('serviceAttributesForm.example', 'Example')}
+                <b> webui.example.com</b>
+              </i>
+            </>
+          }
+        >
           <TextField
             label={t('serviceAttributesForm.hostHeaderOverride', 'Host Header Override')}
             value={attributes.targetHost || ''}
+            InputLabelProps={{ shrink: true }}
             disabled={disabled}
             variant="filled"
             onChange={event => onChange({ ...attributes, targetHost: event.target.value.toString() })}
           />
-          <Typography variant="caption">
-            {t(
-              'serviceAttributesForm.hostHeaderOverrideCaption',
-              'A way to specify a different hostname in the host header of an HTTP request. Can be used in load balancing scenarios to route requests to the appropriate server.'
-            )}
-            <i>
-              &nbsp;{t('serviceAttributesForm.example', 'Example')}
-              <b> webui.example.com</b>
-            </i>
-          </Typography>
-        </ListItem>
+        </FormField>
       )}
       {globalDefaults && (
         <>
-          <ListItem sx={fieldSx}>
+          <FormField>
             <TextField
               select
               variant="filled"
               label={t('serviceAttributesForm.launchMethod', 'Launch method')}
               value={attributes.launchType || ''}
+              InputLabelProps={{ shrink: true }}
+              SelectProps={{ displayEmpty: true }}
               onChange={event => onChange({ ...attributes, launchType: event.target.value })}
             >
               <MenuItem value="">
@@ -122,7 +138,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
               <MenuItem value="URL">URL</MenuItem>
               <MenuItem value="COMMAND">{t('serviceAttributesForm.command', 'Command')}</MenuItem>
             </TextField>
-          </ListItem>
+          </FormField>
           <ListItem dense>
             <ListItemCheckbox
               disableGutters
@@ -137,7 +153,6 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         </>
       )}
       <TemplateSetting
-        sx={fieldSx}
         label={`${app.launchTitle} Template`}
         value={attributes.launchTemplate || ''}
         placeholder={app.launchTemplate}
@@ -156,7 +171,6 @@ export const ServiceAttributesForm: React.FC<Props> = ({
         )}
       </TemplateSetting>
       <TemplateSetting
-        sx={fieldSx}
         label={`${app.commandTitle} Template`}
         value={attributes.commandTemplate || ''}
         placeholder={app.commandTemplate}
@@ -200,6 +214,7 @@ export const ServiceAttributesForm: React.FC<Props> = ({
                       value={attributes[token] || ''}
                       disabled={disabled}
                       variant="filled"
+                      InputLabelProps={{ shrink: true }}
                       onChange={event => onChange({ ...attributes, [token]: event.target.value })}
                     />
                     {customTokensNote[token] && (

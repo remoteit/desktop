@@ -1180,7 +1180,7 @@ describe('This device’s ssh and exit', () => {
     expect(part.textContent).toContain('Shares its connection')
     expect(state(container).getAttribute('data-exit-node-state')).toBe('off')
     expect(state(container).textContent).toContain('Off')
-    expect(part.querySelector('[data-setting="exit_node"]')!.textContent).toContain('Carry exit traffic')
+    expect(part.querySelector('[data-setting="exit_node"]')!.textContent).toContain('Let this Mac be an exit device')
     expect(bridge.calls.filter(c => c.method === 'exitNode.list')).toHaveLength(1)
 
     bridge.status = { ...bridge.status, exitNode: undefined }

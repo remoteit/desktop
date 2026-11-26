@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Alert,
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -28,7 +29,7 @@ import {
 import { failing, runStateLabel } from '../../helpers/runsHelper'
 import type { RunState } from '../../services/graphQLDeviceRuns'
 import { ThisDeviceModel } from './model'
-import { Note, SettingRow, T } from './shared'
+import { ACTIONS_SX, Note, SettingRow, T } from './shared'
 
 /* "Shares its connection" on This device's Advanced (bridge 1.12.0, 'exitNode'): this machine offered as one of its
    owner's exits — the menu's "Use this Mac as an exit…". What it runs and its state, the checks that keep it from
@@ -135,34 +136,33 @@ export const ThisDeviceExitNode: React.FC<{
               : stateWords(t)[key as keyof ReturnType<typeof stateWords>]
           }
           secondary={
-            held
-              ? heldLine(held, kind, t)
-              : listError
-              ? t('thisDevice.exitListFailed', 'Couldn’t list your exits. {{reason}}', { reason: listError })
-              : exitLine(runs, kind, t)
+            <>
+              {held
+                ? heldLine(held, kind, t)
+                : listError
+                ? t('thisDevice.exitListFailed', 'Couldn’t list your exits. {{reason}}', { reason: listError })
+                : exitLine(runs, kind, t)}
+              {runs?.lan && (
+                <Box component="span" display="block" data-note="exit-lan">
+                  {status.lanLocal
+                    ? t(
+                        'thisDevice.exitLanLocal',
+                        'This {{kind}} decides whether users of {{exit}} reach its local network.',
+                        {
+                          kind,
+                          exit: runs.name,
+                        }
+                      )
+                    : t('thisDevice.exitLanOpen', 'Users of {{exit}} can reach this {{kind}}’s local network.', {
+                        kind,
+                        exit: runs.name,
+                      })}
+                </Box>
+              )}
+            </>
           }
         />
       </ListItem>
-      {runs?.lan && (
-        <Note
-          id="exit-lan"
-          text={
-            status.lanLocal
-              ? t(
-                  'thisDevice.exitLanLocal',
-                  'This {{kind}} decides whether users of {{exit}} reach its local network.',
-                  {
-                    kind,
-                    exit: runs.name,
-                  }
-                )
-              : t('thisDevice.exitLanOpen', 'Users of {{exit}} can reach this {{kind}}’s local network.', {
-                  kind,
-                  exit: runs.name,
-                })
-          }
-        />
-      )}
       {checks.map((c, i) => (
         <Note
           key={`${c.name}-${i}`}
@@ -182,7 +182,7 @@ export const ThisDeviceExitNode: React.FC<{
         />
       )}
       {!held && (
-        <ListItem sx={{ flexWrap: 'wrap', gap: 1 }}>
+        <ListItem sx={ACTIONS_SX}>
           {listError && (
             <Button size="small" disabled={m.busy} data-control="exit-retry" onClick={load}>
               {t('thisDevice.tryAgain', 'Try again')}
@@ -223,7 +223,7 @@ export const ThisDeviceExitNode: React.FC<{
       {m.exitNodeSetting && (
         <SettingRow
           setting={m.exitNodeSetting}
-          title={t('thisDevice.carryTraffic', 'Carry exit traffic')}
+          title={t('thisDevice.carryTraffic', 'Let this {{kind}} be an exit device', { kind })}
           disabled={m.busy}
           onSet={value => m.setSetting('exit_node', value)}
         />

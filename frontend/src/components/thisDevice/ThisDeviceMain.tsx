@@ -17,6 +17,7 @@ import { ThisDeviceModel } from './model'
 import { CloudExits, ReadCloudExits, useCloudExits } from './cloudExits'
 import {
   T,
+  ACTIONS_SX,
   Card,
   CARD_SX,
   ICON_COLUMN,
@@ -456,7 +457,7 @@ const ShareRow: React.FC<{ device: ThisDevice; m: ThisDeviceModel }> = ({ device
           </ListItem>
         ))}
       {on && has('permissions') && ['notAsked', 'unknown'].includes(lan!.localNetworkPermission ?? '') && (
-        <ListItem>
+        <ListItem sx={ACTIONS_SX}>
           <Button
             size="small"
             disabled={m.busy}

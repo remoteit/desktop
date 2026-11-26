@@ -142,6 +142,7 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
             label={t('virtualDeviceForm.name', 'Name')}
             value={name}
             variant="filled"
+            InputLabelProps={{ shrink: true }}
             inputProps={{ maxLength: MAX_NAME_LENGTH }}
             onChange={event => setName(event.target.value)}
           />
@@ -299,6 +300,7 @@ export const VirtualDeviceForm: React.FC<Props> = ({ prefill, onDone, onCancel }
             variant="filled"
             label={t('virtualDeviceForm.gateway', 'Gateway')}
             value={gatewayId}
+            InputLabelProps={{ shrink: true }}
             disabled={converting}
             onChange={event => setGatewayId(event.target.value)}
           >

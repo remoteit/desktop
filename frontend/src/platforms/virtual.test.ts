@@ -4,7 +4,10 @@ import { VIRTUAL_PLATFORM_TYPES, allPlatformChoices, suggestPlatform, virtualPla
 
 // Every platform module, loaded once before the cases: under a full run vitest 5's module runner can take longer than a
 // test's 5 s default to import them all, and a case that timed out mid-import left the next reading half-loaded modules.
-beforeAll(() => platforms.initialize(), 30_000)
+beforeAll(async () => {
+  await platforms.ready.catch(() => {})
+  await platforms.initialize()
+}, 30_000)
 
 // The machines a virtual device can be (graphql-api docs/VIRTUAL-DEVICES.md): new catalogue entries with icons of
 // their own, offered to a virtual device and to no picker of a daemon's platform.

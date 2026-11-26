@@ -7,6 +7,7 @@ type Props<TOptions = IDataOptions> = {
   attribute: Attribute<TOptions>
   sticky?: boolean
   resizable?: boolean
+  last?: boolean
   onMouseDown: (event: React.MouseEvent<HTMLSpanElement, MouseEvent>, attribute: Attribute<TOptions>) => void
   children?: React.ReactNode
 }
@@ -15,6 +16,7 @@ export const GridListHeaderTitle = <TOptions,>({
   attribute,
   sticky,
   resizable = true,
+  last,
   onMouseDown,
   children,
 }: Props<TOptions>) => {
@@ -82,7 +84,7 @@ export const GridListHeaderTitle = <TOptions,>({
               width: '1px',
               height: `${spacing.sm}px`,
               display: 'block',
-              background: theme.palette.grayLight.main,
+              background: last ? 'transparent' : theme.palette.grayLight.main,
             },
             '&:hover::after': {
               width: '3px',
