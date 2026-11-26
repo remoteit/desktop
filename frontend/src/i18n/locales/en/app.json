@@ -5309,7 +5309,7 @@
     "allow": "Allow",
     "allowLocalNetwork": "Allow Local Network access",
     "cancel": "Cancel",
-    "carryTraffic": "Carry exit traffic",
+    "carryTraffic": "Let this {{kind}} be an exit device",
     "checkAgain": "Check again",
     "checkFailed": "Failed: {{reason}}",
     "checkPassed": "Passed: {{reason}}",

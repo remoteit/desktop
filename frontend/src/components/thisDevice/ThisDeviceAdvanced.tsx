@@ -3,7 +3,7 @@ import { Box, Button, Divider, List, ListItem, ListItemText, Switch, Typography 
 import { PermissionName, ThisDevice } from '../../services/thisDevice'
 import { useDeviceApps } from '../../hooks/useDeviceApps'
 import { ThisDeviceModel } from './model'
-import { appSettings, SettingRow, SWITCH_TEXT } from './shared'
+import { ACTIONS_SX, appSettings, SettingRow, SWITCH_TEXT } from './shared'
 import { ThisDeviceExitNode } from './ThisDeviceExitNode'
 
 /* This device's Advanced (pages/ThisDevicePage.tsx, /this-device/advanced): what is changed seldom — what the device
@@ -206,7 +206,7 @@ export const ThisDeviceAdvanced: React.FC<{
             </ListItem>
           )}
           {has('diagnostics') && (
-            <ListItem>
+            <ListItem sx={ACTIONS_SX}>
               <Button
                 size="small"
                 disabled={m.busy}
@@ -243,7 +243,7 @@ export const ThisDeviceAdvanced: React.FC<{
                 }
               />
             </ListItem>
-            <ListItem>
+            <ListItem sx={ACTIONS_SX}>
               <Button
                 size="small"
                 color="error"
