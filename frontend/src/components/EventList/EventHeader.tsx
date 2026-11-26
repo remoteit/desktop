@@ -10,6 +10,7 @@ import { List, ListItem, ListItemSecondaryAction } from '@mui/material'
 import { CSVDownloadButton } from '../../buttons/CSVDownloadButton'
 import { DatePicker } from '../DatePicker'
 import { EventTypeFilterMenu } from './EventTypeFilterMenu'
+import { spacing } from '../../styling'
 
 // Earliest date the user can select in the picker: the start of the plan's retention
 // window, floored at device creation. This is purely a UI bound — it is NOT sent as the
@@ -83,7 +84,7 @@ export const EventHeader: React.FC<{ device?: IDevice }> = ({ device }) => {
 
   return (
     <List disablePadding>
-      <ListItem dense>
+      <ListItem dense sx={{ paddingLeft: `${spacing.md}px` }}>
         <DatePicker onChange={handleChangeDate} minDay={pickerMinDay} selectedDate={selectedDate} />
         <ListItemSecondaryAction>
           <EventTypeFilterMenu device={device} value={eventTypes} onChange={handleChangeEventTypes} />
