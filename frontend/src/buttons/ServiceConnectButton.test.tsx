@@ -156,7 +156,9 @@ describe('ServiceConnectButton', () => {
     await render({ ...webService, ...kind })
     expect(primary().getAttribute('data-route')).toBe('public')
     expect(container.textContent).not.toContain(NAME)
-    expect(container.querySelector('[data-testid="connect-no-agent"]')?.textContent).toContain('with Access on')
+    expect(container.querySelector('[data-testid="connect-no-agent"]')?.textContent).toBe(
+      'With the Remote.It app on this computer and Access on, you can open this service directly, with no public address.'
+    )
   })
 
   it('a browser and an ssh service: opens a terminal', async () => {

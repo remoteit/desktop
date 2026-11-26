@@ -212,8 +212,7 @@ export const ServiceConnectButton: React.FC = () => {
           >
             {t(
               'serviceConnectButton.noAgent',
-              'To open {{service}} by its address, use the Remote.It app on this computer with Access on.',
-              { service: service.name }
+              'With the Remote.It app on this computer and Access on, you can open this service directly, with no public address.'
             )}
           </Typography>
         )}

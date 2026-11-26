@@ -4906,7 +4906,7 @@
     "guideTitleBrowser": "Starting a connection",
     "guideTitleDesktop": "Connect on demand",
     "moreWays": "More ways to connect",
-    "noAgent": "To open {{service}} by its address, use the Remote.It app on this computer with Access on.",
+    "noAgent": "With the Remote.It app on this computer and Access on, you can open this service directly, with no public address.",
     "offline": "{{device}} is offline. Connecting works again once it is back online.",
     "useLocalPort": "Connect on a local port instead",
     "useProxy": "Connect through the proxy instead"
