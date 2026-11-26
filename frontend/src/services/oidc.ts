@@ -2081,8 +2081,10 @@ export async function oidcRefreshBrowserAccounts(): Promise<void> {
   const listed = new Set<string>()
   const reg = readRegistry()
   for (const a of body.accounts ?? []) {
-    if (!a.sub || a.current) continue
+    if (!a.sub) continue
     listed.add(a.sub)
+    // The caller's own (`current`) is listed — it is a member — but its identity is its own tokens', not the list's.
+    if (a.current) continue
     const prev = reg[a.sub]
     reg[a.sub] = {
       ...(prev ?? {}),
@@ -2106,8 +2108,12 @@ export async function oidcRefreshBrowserAccounts(): Promise<void> {
   // pre-existing behaviour. Identity-only entries carry no such risk either way: they exist only
   // because some earlier answer named them.
   //
-  // The active account is never in `listed` (it arrives as `current` and is skipped above), so
-  // it is held out explicitly. Support entries live in a tab-scoped store and are not members.
+  // The account the token was minted for arrives as `current`, and is listed like any member: the
+  // answer speaks for the account that ASKED, and the page's person can change while it is on its way
+  // (the menu opens, which asks, and a click on another account makes that one the page's person) —
+  // the active account read now is then another, and the one that asked must not read as gone. The
+  // active account is held out explicitly too. Support entries live in a tab-scoped store and are not
+  // members.
   //
   // One case this deliberately treats as "gone": a session the AS's write cap evicted from the
   // set (SESSION_SET_CAP = 10) stays LIVE but stops being part of this browser, and nothing in

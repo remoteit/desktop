@@ -24,9 +24,10 @@ import {
   oidcCallbackReason,
   oidcActivateAccount,
   oidcTakeSwitched,
+  oidcRefreshBrowserAccounts,
 } from './oidc'
 import browser, { leaveTo } from './browser'
-import { OAUTH_ISSUER, PROTOCOL } from '../constants'
+import { OAUTH_ACCOUNT_RESOURCE, OAUTH_ISSUER, PROTOCOL } from '../constants'
 
 const stubDiscovery = (
   doc: object,
@@ -552,5 +553,91 @@ describe('a DPoP proof refused for its time', () => {
 
     await expect(oidcCompleteFromUrl()).rejects.toMatchObject({ code: 'clock', clockOffset: -3600 })
     expect(tokenCalls).toBe(2)
+  })
+})
+
+describe("the browser's accounts", () => {
+  afterEach(() => vi.mocked(fetch).mockImplementation(() => Promise.reject(new Error('offline'))))
+
+  // The menu opens, which asks the AS who is signed in on this browser, and a click on another saved account makes it
+  // the page's person while the answer is on its way: the account that asked is the answer's `current`, and it stays
+  // saved, a click away.
+  it("keeps the account that asked saved when another was made the page's person while the answer was on its way", async () => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+    signIn()
+    let answer: (response: Response) => void = () => {}
+    const asked = new Promise<void>(heard =>
+      stubDiscovery(
+        { authorization_endpoint: 'https://login.test/authorize', token_endpoint: 'https://login.test/token' },
+        (url, init) => {
+          if (String(init?.body ?? '').includes('grant_type=refresh_token'))
+            return Promise.resolve(
+              new Response(JSON.stringify({ refresh_token: 'r3', access_token: 'at', expires_in: 300 }))
+            )
+          if (String(url) === `${OAUTH_ACCOUNT_RESOURCE}/accounts`) {
+            heard()
+            return new Promise<Response>(resolve => (answer = resolve))
+          }
+          return Promise.reject(new Error('offline'))
+        }
+      )
+    )
+    invalidateOidcToken()
+
+    const refreshed = oidcRefreshBrowserAccounts()
+    await asked
+    expect(oidcActivateAccount('b')).toBe(true)
+    answer(
+      new Response(
+        JSON.stringify({
+          multi: true,
+          authoritative: true,
+          accounts: [
+            { sub: 'a', email: 'a@x.test', current: true },
+            { sub: 'b', email: 'b@x.test' },
+          ],
+        })
+      )
+    )
+    await refreshed
+
+    expect(
+      oidcAccounts()
+        .filter(account => account.saved)
+        .map(account => account.sub)
+        .sort()
+    ).toEqual(['a', 'b'])
+  })
+
+  it('still lets go of a saved account the AS no longer lists', async () => {
+    window.sessionStorage.clear()
+    window.localStorage.clear()
+    signIn()
+    stubDiscovery(
+      { authorization_endpoint: 'https://login.test/authorize', token_endpoint: 'https://login.test/token' },
+      (url, init) => {
+        if (String(init?.body ?? '').includes('grant_type=refresh_token'))
+          return Promise.resolve(
+            new Response(JSON.stringify({ refresh_token: 'r3', access_token: 'at', expires_in: 300 }))
+          )
+        if (String(url) === `${OAUTH_ACCOUNT_RESOURCE}/accounts`)
+          return Promise.resolve(
+            new Response(
+              JSON.stringify({
+                multi: true,
+                authoritative: true,
+                accounts: [{ sub: 'a', email: 'a@x.test', current: true }],
+              })
+            )
+          )
+        return Promise.reject(new Error('offline'))
+      }
+    )
+    invalidateOidcToken()
+
+    await oidcRefreshBrowserAccounts()
+
+    expect(oidcAccounts().map(account => account.sub)).toEqual(['a'])
   })
 })
