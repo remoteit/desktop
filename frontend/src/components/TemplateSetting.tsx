@@ -1,15 +1,21 @@
 import React from 'react'
-import { ListItem, TextField, TextFieldProps, Typography } from '@mui/material'
+import { TextField, TextFieldProps } from '@mui/material'
+import { FormField } from './FormField'
 
 type Props = TextFieldProps & {
   onChange: (value: string) => void
 }
 
-export const TemplateSetting: React.FC<Props> = ({ onChange, sx, children, ...props }) => {
+export const TemplateSetting: React.FC<Props> = ({ onChange, children, ...props }) => {
   return (
-    <ListItem dense sx={sx}>
-      <TextField {...props} variant="filled" onChange={event => onChange(event.target.value)} multiline={true} />
-      <Typography variant="caption">{children}</Typography>
-    </ListItem>
+    <FormField help={children}>
+      <TextField
+        {...props}
+        variant="filled"
+        InputLabelProps={{ shrink: true }}
+        onChange={event => onChange(event.target.value)}
+        multiline={true}
+      />
+    </FormField>
   )
 }

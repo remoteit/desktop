@@ -620,6 +620,7 @@ export const jssTheme = (isDark: boolean): ThemeOptions => {
         styleOverrides: {
           select: {
             '&:focus': { backgroundColor: 'inherit' },
+            '&.MuiFilledInput-input:not(.MuiInputBase-inputSizeSmall)': { minHeight: '1.1876em', lineHeight: '1.1876em' },
           },
         },
       },
