@@ -64,10 +64,12 @@ export const ConnectAIPage: React.FC = () => {
               label={t('connectAiPage.step3', 'Sign in with your Remote.It account when asked. No API keys needed.')}
             />
           </Box>
-          <Link href={MCP_CONNECT_DOCS_LINK} noUnderline>
-            {t('connectAiPage.setupGuides', 'Setup guides for Claude, ChatGPT and more')}
-            <Icon name="launch" size="sm" />
-          </Link>
+          <Box paddingLeft={3.75}>
+            <Link href={MCP_CONNECT_DOCS_LINK} noUnderline>
+              {t('connectAiPage.setupGuides', 'Setup guides for Claude, ChatGPT and more')}
+              <Icon name="launch" size="sm" />
+            </Link>
+          </Box>
         </Gutters>
       </Container>
     </Box>
